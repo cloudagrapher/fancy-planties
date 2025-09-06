@@ -59,8 +59,16 @@ export default function PlantCard({
 
   // Handle card press
   const handlePress = () => {
-    if (onSelect) {
-      onSelect(plant);
+    if (isSelectionMode) {
+      // In selection mode, toggle selection
+      if (onSelect) {
+        onSelect(plant);
+      }
+    } else {
+      // Normal mode, open plant detail
+      if (onSelect) {
+        onSelect(plant);
+      }
     }
   };
 
@@ -116,7 +124,7 @@ export default function PlantCard({
 
     return (
       <div className="flex space-x-1 mt-2">
-        {plant.careStatus !== 'healthy' && (
+        {(plant.careStatus === 'overdue' || plant.careStatus === 'due_today' || plant.careStatus === 'due_soon') && (
           <button
             onClick={(e) => handleCareAction('fertilize', e)}
             className="flex-1 px-2 py-1 bg-primary-100 hover:bg-primary-200 text-primary-700 text-xs rounded transition-colors"

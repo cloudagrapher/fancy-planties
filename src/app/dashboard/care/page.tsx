@@ -1,4 +1,4 @@
-import { requireAuthSession } from '@/lib/auth/session';
+import { requireAuthSession } from '@/lib/auth/server';
 import { CareDashboard } from '@/components/care';
 
 export default async function CarePage() {

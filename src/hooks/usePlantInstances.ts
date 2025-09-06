@@ -226,9 +226,9 @@ export function useLogCare() {
       return response.json();
     },
     onSuccess: (result) => {
-      if (result.success && result.plantInstance) {
+      if (result.success && result.instance) {
         // Update the specific plant instance cache
-        queryClient.setQueryData(['plant-instance', result.plantInstance.id], result.plantInstance);
+        queryClient.setQueryData(['plant-instance', result.instance.id], result.instance);
         
         // Invalidate related queries
         queryClient.invalidateQueries({ queryKey: ['plant-instances'] });

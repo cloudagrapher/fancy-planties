@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { createPlantInstanceSchema, plantInstanceFilterSchema } from '@/lib/validation/plant-schemas';
-import { validateRequest } from '@/lib/auth';
+import { validateRequest } from '@/lib/auth/server';
 
 // GET /api/plant-instances - Get plant instances with optional filtering
 export async function GET(request: NextRequest) {

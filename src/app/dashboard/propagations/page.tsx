@@ -1,4 +1,4 @@
-import { requireAuthSession } from '@/lib/auth/session';
+import { requireAuthSession } from '@/lib/auth/server';
 
 export default async function PropagationsPage() {
   const { user } = await requireAuthSession();

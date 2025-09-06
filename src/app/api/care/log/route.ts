@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuthSession } from '@/lib/auth/session';
+import { requireAuthSession } from '@/lib/auth/server';
 import { CareService } from '@/lib/services/care-service';
 import { careValidation } from '@/lib/validation/care-schemas';
 
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     
     if (!validation.success) {
       return NextResponse.json(
-        { error: validation.error.errors[0]?.message || 'Invalid care data' },
+        { error: validation.error.issues[0]?.message || 'Invalid care data' },
         { status: 400 }
       );
     }

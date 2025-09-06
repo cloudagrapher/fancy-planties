@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { requireAuthSession } from '@/lib/auth/session';
+import { requireAuthSession } from '@/lib/auth/server';
 
 interface AuthGuardProps {
   children: React.ReactNode;

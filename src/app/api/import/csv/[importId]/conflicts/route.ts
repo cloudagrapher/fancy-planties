@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateRequest } from '@/lib/auth';
+import { validateRequest } from '@/lib/auth/server';
 import { CSVImportService } from '@/lib/services/csv-import-service';
 import { z } from 'zod';
 
@@ -8,7 +8,7 @@ const csvImportService = new CSVImportService();
 // GET /api/import/csv/[importId]/conflicts - Get suggested conflict resolutions
 export async function GET(
   request: NextRequest,
-  { params }: { params: { importId: string } }
+  { params }: { params: Promise<{ importId: string }> }
 ) {
   try {
     const { user } = await validateRequest();
@@ -16,7 +16,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const progress = csvImportService.getImportProgress(params.importId);
+    const resolvedParams = await params;
+    const progress = csvImportService.getImportProgress(resolvedParams.importId);
     
     if (!progress) {
       return NextResponse.json({ error: 'Import not found' }, { status: 404 });
@@ -26,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const suggestions = csvImportService.getSuggestedResolutions(params.importId);
+    const suggestions = csvImportService.getSuggestedResolutions(resolvedParams.importId);
     
     return NextResponse.json({ 
       conflicts: progress.conflicts,
@@ -45,7 +46,7 @@ export async function GET(
 // POST /api/import/csv/[importId]/conflicts - Resolve conflicts
 export async function POST(
   request: NextRequest,
-  { params }: { params: { importId: string } }
+  { params }: { params: Promise<{ importId: string }> }
 ) {
   try {
     const { user } = await validateRequest();
@@ -53,7 +54,8 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const progress = csvImportService.getImportProgress(params.importId);
+    const resolvedParams = await params;
+    const progress = csvImportService.getImportProgress(resolvedParams.importId);
     
     if (!progress) {
       return NextResponse.json({ error: 'Import not found' }, { status: 404 });
@@ -77,7 +79,7 @@ export async function POST(
     const { resolutions } = requestSchema.parse(body);
 
     // Resolve conflicts
-    const summary = await csvImportService.resolveConflicts(params.importId, resolutions);
+    const summary = await csvImportService.resolveConflicts(resolvedParams.importId, resolutions);
     
     return NextResponse.json({ summary });
 
@@ -86,7 +88,7 @@ export async function POST(
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Validation error', details: error.issues },
         { status: 400 }
       );
     }

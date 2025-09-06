@@ -420,7 +420,10 @@ export class PlantInstanceQueries {
         totalCount,
         hasMore: offset + limit < totalCount,
         searchTime,
-        filters: searchParams,
+        filters: {
+          ...searchParams,
+          overdueOnly: false, // Add missing field
+        },
       };
     } catch (error) {
       console.error('Failed to search plant instances with filters:', error);

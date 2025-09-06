@@ -1,4 +1,4 @@
-import { redirectIfAuthenticated } from '@/lib/auth/session';
+import { redirectIfAuthenticated } from '@/lib/auth/server';
 import SignUpForm from '@/components/auth/SignUpForm';
 
 export default async function SignUpPage() {

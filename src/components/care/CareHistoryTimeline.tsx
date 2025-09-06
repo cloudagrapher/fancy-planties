@@ -2,74 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import type { EnhancedCareHistory } from '@/lib/types/care-types';
+import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { careHelpers } from '@/lib/types/care-types';
 
 interface CareHistoryTimelineProps {
-  plantInstanceId: number;
+  careHistory: EnhancedCareHistory[];
+  plantInstance: EnhancedPlantInstance;
   limit?: number;
   showPlantName?: boolean;
 }
 
 export default function CareHistoryTimeline({ 
-  plantInstanceId, 
+  careHistory,
+  plantInstance,
   limit = 10, 
   showPlantName = false 
 }: CareHistoryTimelineProps) {
-  const [careHistory, setCareHistory] = useState<EnhancedCareHistory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Display limited history if limit is specified
+  const displayHistory = limit ? careHistory.slice(0, limit) : careHistory;
 
-  useEffect(() => {
-    loadCareHistory();
-  }, [plantInstanceId, limit]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadCareHistory = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/care/history/${plantInstanceId}?limit=${limit}`);
-      if (!response.ok) {
-        throw new Error('Failed to load care history');
-      }
-      const data = await response.json();
-      setCareHistory(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load care history');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="animate-pulse flex space-x-4">
-            <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-            <div className="flex-1 space-y-2">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-4">
-        <p className="text-red-600 text-sm">{error}</p>
-        <button
-          onClick={loadCareHistory}
-          className="mt-2 text-primary-600 hover:text-primary-700 text-sm"
-        >
-          Try again
-        </button>
-      </div>
-    );
-  }
-
-  if (careHistory.length === 0) {
+  if (displayHistory.length === 0) {
     return (
       <div className="text-center py-8">
         <div className="text-4xl mb-4">📝</div>
@@ -82,7 +34,7 @@ export default function CareHistoryTimeline({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="p-6 space-y-4">
       <h3 className="text-lg font-semibold text-gray-900">Care History</h3>
       
       <div className="relative">
@@ -90,7 +42,7 @@ export default function CareHistoryTimeline({
         <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-200"></div>
         
         <div className="space-y-6">
-          {careHistory.map((care) => {
+          {displayHistory.map((care) => {
             const careTypeDisplay = careHelpers.getCareTypeDisplay(care.careType as 'fertilizer' | 'water' | 'repot' | 'prune' | 'inspect' | 'other');
 
             
@@ -195,14 +147,11 @@ export default function CareHistoryTimeline({
         </div>
       </div>
 
-      {careHistory.length >= limit && (
+      {careHistory.length > limit && (
         <div className="text-center pt-4 border-t border-gray-200">
-          <button
-            onClick={() => loadCareHistory()}
-            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-          >
-            Load more history
-          </button>
+          <p className="text-sm text-gray-500">
+            Showing {displayHistory.length} of {careHistory.length} care events
+          </p>
         </div>
       )}
     </div>

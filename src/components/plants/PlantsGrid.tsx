@@ -38,6 +38,7 @@ export default function PlantsGrid({
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<PlantInstanceFilter>({
     userId,
+    overdueOnly: false,
     isActive: true,
     limit: 20,
     offset: 0,
@@ -61,7 +62,7 @@ export default function PlantsGrid({
     refetch,
   } = useInfiniteQuery({
     queryKey: ['plant-instances', userId, searchQuery, filters, sortBy, sortOrder],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: async ({ pageParam }) => {
       const params = new URLSearchParams({
         ...Object.fromEntries(
           Object.entries(filters).map(([key, value]) => [
@@ -84,6 +85,7 @@ export default function PlantsGrid({
         return response.json() as Promise<PlantInstanceSearchResult>;
       }
     },
+    initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       return lastPage.hasMore ? lastPage.filters.offset + lastPage.filters.limit : undefined;
     },

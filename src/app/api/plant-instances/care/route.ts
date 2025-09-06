@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { logFertilizerSchema, logRepotSchema } from '@/lib/validation/plant-schemas';
-import { validateRequest } from '@/lib/auth';
+import { validateRequest } from '@/lib/auth/server';
 
 // POST /api/plant-instances/care - Log care activities (fertilizer, repot)
 export async function POST(request: NextRequest) {

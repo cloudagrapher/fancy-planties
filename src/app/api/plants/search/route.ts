@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateRequest } from '@/lib/auth';
+import { validateRequest } from '@/lib/auth/server';
 import { plantSearchService } from '@/lib/services/plant-search';
 import { plantSearchSchema } from '@/lib/validation/plant-schemas';
 import { ZodError } from 'zod';

@@ -82,11 +82,11 @@ export function ImportHistory({ className = '' }: ImportHistoryProps) {
     return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleString();
   };
 
-  const getDuration = (startTime: string, endTime?: string) => {
+  const getDuration = (startTime: Date | string, endTime?: Date | string) => {
     const start = new Date(startTime);
     const end = endTime ? new Date(endTime) : new Date();
     const duration = Math.round((end.getTime() - start.getTime()) / 1000);

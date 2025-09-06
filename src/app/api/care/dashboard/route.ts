@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuthSession } from '@/lib/auth/session';
+import { requireAuthSession } from '@/lib/auth/server';
 import { CareService } from '@/lib/services/care-service';
 
 export async function GET(request: NextRequest) {

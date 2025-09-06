@@ -1,5 +1,6 @@
 import type { PlantInstance, Plant } from '@/lib/db/schema';
 import type { PlantInstanceData, PlantInstanceFilter } from '@/lib/validation/plant-schemas';
+import type { CareStatus, CareUrgency } from './care-types';
 
 // Enhanced PlantInstance interface with computed properties
 export interface EnhancedPlantInstance extends PlantInstance {
@@ -27,22 +28,6 @@ export interface EnhancedPlantInstance extends PlantInstance {
   // Care urgency level for sorting and display
   careUrgency: CareUrgency;
 }
-
-// Care status enumeration
-export type CareStatus = 
-  | 'healthy'      // No care needed
-  | 'due_soon'     // Care due within a week
-  | 'due_today'    // Care due today
-  | 'overdue'      // Care is overdue
-  | 'unknown';     // No schedule set
-
-// Care urgency levels for prioritization
-export type CareUrgency = 
-  | 'critical'     // Severely overdue (>7 days)
-  | 'high'         // Overdue (1-7 days)
-  | 'medium'       // Due today or tomorrow
-  | 'low'          // Due within a week
-  | 'none';        // No care needed
 
 // Plant instance with care statistics
 export interface PlantInstanceWithStats extends EnhancedPlantInstance {

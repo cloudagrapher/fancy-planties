@@ -104,7 +104,7 @@ export const plantMatchSchema = z.object({
 
 export const plantMatchResultSchema = z.object({
   rowIndex: z.number().int().min(0),
-  originalData: z.record(z.string()),
+  originalData: z.record(z.string(), z.string()),
   matches: z.array(plantMatchSchema),
   bestMatch: plantMatchSchema.optional(),
   requiresManualReview: z.boolean(),

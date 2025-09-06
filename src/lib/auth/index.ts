@@ -1,55 +1,11 @@
-import { Lucia } from 'lucia';
-import { PostgresJsAdapter } from '@lucia-auth/adapter-postgresql';
-import { cookies } from 'next/headers';
-import { cache } from 'react';
+import 'server-only';
+
 import bcrypt from 'bcryptjs';
 import { generateRandomString } from 'oslo/crypto';
-import postgres from 'postgres';
 import { db } from '../db';
 import { users, sessions, type User as DatabaseUser, type Session as DatabaseSession } from '../db/schema';
 import { eq } from 'drizzle-orm';
-
-// Create postgres client for Lucia adapter
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
-const client = postgres(connectionString);
-
-// Initialize PostgreSQL adapter for Lucia
-const adapter = new PostgresJsAdapter(client, {
-  session: 'sessions',
-  user: 'users',
-});
-
-// Initialize Lucia with configuration
-export const lucia = new Lucia(adapter, {
-  sessionCookie: {
-    expires: false,
-    attributes: {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    },
-  },
-  getUserAttributes: (attributes) => {
-    return {
-      id: attributes.id,
-      email: attributes.email,
-      name: attributes.name,
-    };
-  },
-});
-
-// Extend Lucia types
-declare module 'lucia' {
-  interface Register {
-    Lucia: typeof lucia;
-    DatabaseUserAttributes: DatabaseUserAttributes;
-  }
-}
-
-interface DatabaseUserAttributes {
-  id: number;
-  email: string;
-  name: string;
-}
+import { lucia } from './lucia';
 
 // Export types for use throughout the application
 export type User = DatabaseUser;
@@ -87,56 +43,6 @@ export async function invalidateUserSessions(userId: number): Promise<void> {
   await lucia.invalidateUserSessions(userId.toString());
 }
 
-// Cached session validation for performance
-export const validateRequest = cache(async (): Promise<{ user: User; session: Session } | { user: null; session: null }> => {
-  const sessionId = (await cookies()).get(lucia.sessionCookieName)?.value ?? null;
-  
-  if (!sessionId) {
-    return {
-      user: null,
-      session: null,
-    };
-  }
-
-  const result = await lucia.validateSession(sessionId);
-  
-  // Next.js throws when you attempt to set cookie when rendering page
-  try {
-    if (result.session && result.session.fresh) {
-      const sessionCookie = lucia.createSessionCookie(result.session.id);
-      (await cookies()).set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-    }
-    if (!result.session) {
-      const sessionCookie = lucia.createBlankSessionCookie();
-      (await cookies()).set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-    }
-  } catch {
-    // Ignore cookie setting errors in server components
-  }
-  
-  // Convert Lucia result to our expected format
-  if (result.user && result.session) {
-    // Get full user data from database
-    const fullUser = await getUserById(parseInt(result.user.id));
-    if (!fullUser) {
-      return { user: null, session: null };
-    }
-    
-    return {
-      user: fullUser,
-      session: {
-        id: result.session.id,
-        userId: parseInt(result.user.id),
-        expiresAt: result.session.expiresAt,
-      },
-    };
-  }
-  
-  return {
-    user: null,
-    session: null,
-  };
-});
 
 // User management utilities
 export async function createUser(email: string, password: string, name: string): Promise<User> {
@@ -219,7 +125,7 @@ export async function signOut(sessionId: string): Promise<void> {
   await lucia.invalidateSession(sessionId);
 }
 
-// Re-export utilities from other auth modules
+// Re-export utilities from other auth modules  
 export * from './validation';
 export * from './middleware';
 export * from './session';

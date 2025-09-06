@@ -7,6 +7,7 @@ import type {
   PlantInstance,
   Plant 
 } from '@/lib/db/schema';
+import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { 
   CareFilterInput,
   CareStatsQueryInput,
@@ -62,6 +63,32 @@ export class CareHistoryQueries {
     userId: number,
     filters?: Partial<CareFilterInput>
   ): Promise<EnhancedCareHistory[]> {
+    // Build where conditions
+    const conditions = [
+      eq(careHistory.plantInstanceId, plantInstanceId),
+      eq(careHistory.userId, userId)
+    ];
+
+    if (filters?.careType) {
+      conditions.push(eq(careHistory.careType, filters.careType));
+    }
+
+    if (filters?.startDate) {
+      conditions.push(gte(careHistory.careDate, filters.startDate));
+    }
+
+    if (filters?.endDate) {
+      conditions.push(lte(careHistory.careDate, filters.endDate));
+    }
+
+    // Apply sorting
+    const sortField = filters?.sortBy === 'care_type' ? careHistory.careType :
+                     filters?.sortBy === 'created_at' ? careHistory.createdAt :
+                     careHistory.careDate;
+    
+    const sortOrder = filters?.sortOrder === 'asc' ? asc(sortField) : desc(sortField);
+
+    // Build the query
     let query = db
       .select({
         careHistory: careHistory,
@@ -71,52 +98,15 @@ export class CareHistoryQueries {
       .from(careHistory)
       .leftJoin(plantInstances, eq(careHistory.plantInstanceId, plantInstances.id))
       .leftJoin(plants, eq(plantInstances.plantId, plants.id))
-      .where(
-        and(
-          eq(careHistory.plantInstanceId, plantInstanceId),
-          eq(careHistory.userId, userId)
-        )
-      );
-
-    // Apply filters
-    if (filters?.careType) {
-      query = query.where(and(
-        eq(careHistory.plantInstanceId, plantInstanceId),
-        eq(careHistory.userId, userId),
-        eq(careHistory.careType, filters.careType)
-      ));
-    }
-
-    if (filters?.startDate) {
-      query = query.where(and(
-        eq(careHistory.plantInstanceId, plantInstanceId),
-        eq(careHistory.userId, userId),
-        gte(careHistory.careDate, filters.startDate)
-      ));
-    }
-
-    if (filters?.endDate) {
-      query = query.where(and(
-        eq(careHistory.plantInstanceId, plantInstanceId),
-        eq(careHistory.userId, userId),
-        lte(careHistory.careDate, filters.endDate)
-      ));
-    }
-
-    // Apply sorting
-    const sortField = filters?.sortBy === 'care_type' ? careHistory.careType :
-                     filters?.sortBy === 'created_at' ? careHistory.createdAt :
-                     careHistory.careDate;
-    
-    const sortOrder = filters?.sortOrder === 'asc' ? asc(sortField) : desc(sortField);
-    query = query.orderBy(sortOrder);
+      .where(and(...conditions))
+      .orderBy(sortOrder);
 
     // Apply pagination
     if (filters?.limit) {
-      query = query.limit(filters.limit);
+      query = query.limit(filters.limit) as any;
     }
     if (filters?.offset) {
-      query = query.offset(filters.offset);
+      query = query.offset(filters.offset) as any;
     }
 
     const results = await query;
@@ -134,6 +124,32 @@ export class CareHistoryQueries {
   ): Promise<EnhancedCareHistory[]> {
     if (plantInstanceIds.length === 0) return [];
 
+    // Build where conditions
+    const conditions = [
+      inArray(careHistory.plantInstanceId, plantInstanceIds),
+      eq(careHistory.userId, userId)
+    ];
+
+    if (filters?.careType) {
+      conditions.push(eq(careHistory.careType, filters.careType));
+    }
+
+    if (filters?.startDate) {
+      conditions.push(gte(careHistory.careDate, filters.startDate));
+    }
+
+    if (filters?.endDate) {
+      conditions.push(lte(careHistory.careDate, filters.endDate));
+    }
+
+    // Apply sorting
+    const sortField = filters?.sortBy === 'care_type' ? careHistory.careType :
+                     filters?.sortBy === 'created_at' ? careHistory.createdAt :
+                     careHistory.careDate;
+    
+    const sortOrder = filters?.sortOrder === 'asc' ? asc(sortField) : desc(sortField);
+
+    // Build the query
     let query = db
       .select({
         careHistory: careHistory,
@@ -143,52 +159,15 @@ export class CareHistoryQueries {
       .from(careHistory)
       .leftJoin(plantInstances, eq(careHistory.plantInstanceId, plantInstances.id))
       .leftJoin(plants, eq(plantInstances.plantId, plants.id))
-      .where(
-        and(
-          inArray(careHistory.plantInstanceId, plantInstanceIds),
-          eq(careHistory.userId, userId)
-        )
-      );
-
-    // Apply filters similar to single plant query
-    if (filters?.careType) {
-      query = query.where(and(
-        inArray(careHistory.plantInstanceId, plantInstanceIds),
-        eq(careHistory.userId, userId),
-        eq(careHistory.careType, filters.careType)
-      ));
-    }
-
-    if (filters?.startDate) {
-      query = query.where(and(
-        inArray(careHistory.plantInstanceId, plantInstanceIds),
-        eq(careHistory.userId, userId),
-        gte(careHistory.careDate, filters.startDate)
-      ));
-    }
-
-    if (filters?.endDate) {
-      query = query.where(and(
-        inArray(careHistory.plantInstanceId, plantInstanceIds),
-        eq(careHistory.userId, userId),
-        lte(careHistory.careDate, filters.endDate)
-      ));
-    }
-
-    // Apply sorting
-    const sortField = filters?.sortBy === 'care_type' ? careHistory.careType :
-                     filters?.sortBy === 'created_at' ? careHistory.createdAt :
-                     careHistory.careDate;
-    
-    const sortOrder = filters?.sortOrder === 'asc' ? asc(sortField) : desc(sortField);
-    query = query.orderBy(sortOrder);
+      .where(and(...conditions))
+      .orderBy(sortOrder);
 
     // Apply pagination
     if (filters?.limit) {
-      query = query.limit(filters.limit);
+      query = query.limit(filters.limit) as any;
     }
     if (filters?.offset) {
-      query = query.offset(filters.offset);
+      query = query.offset(filters.offset) as any;
     }
 
     const results = await query;
@@ -257,7 +236,7 @@ export class CareHistoryQueries {
         )
       );
 
-    return result.rowCount > 0;
+    return result.length > 0;
   }
 
   /**
@@ -407,7 +386,7 @@ export class CareHistoryQueries {
         displayName,
         primaryImage,
       };
-    }).filter(Boolean);
+    }).filter((plant): plant is EnhancedPlantInstance => plant !== null);
 
     // Categorize plants by care status
     const overdue = enhancedPlants.filter(p => p.careStatus === 'overdue');

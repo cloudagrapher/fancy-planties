@@ -1,4 +1,4 @@
-import { redirectIfAuthenticated } from '@/lib/auth/session';
+import { redirectIfAuthenticated } from '@/lib/auth/server';
 import SignInForm from '@/components/auth/SignInForm';
 
 export default async function SignInPage() {

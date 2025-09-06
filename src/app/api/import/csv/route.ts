@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateRequest } from '@/lib/auth';
+import { validateRequest } from '@/lib/auth/server';
 import { CSVImportService, type ImportType } from '@/lib/services/csv-import-service';
 import { csvFileSchema, csvImportConfigSchema } from '@/lib/validation/csv-schemas';
 import { z } from 'zod';
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Validation error', details: error.issues },
         { status: 400 }
       );
     }

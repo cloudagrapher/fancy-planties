@@ -13,6 +13,7 @@ import type {
   CareDashboardData,
   PlantCareStatistics
 } from '@/lib/types/care-types';
+import { careHelpers } from '@/lib/types/care-types';
 import { CareHistoryQueries } from '@/lib/db/queries/care-history';
 import { CareCalculator } from './care-calculator';
 import { careValidation } from '@/lib/validation/care-schemas';
@@ -34,7 +35,7 @@ export class CareService {
       if (!validation.success) {
         return {
           success: false,
-          error: validation.error.errors[0]?.message || 'Invalid care data'
+          error: validation.error.issues[0]?.message || 'Invalid care data'
         };
       }
 
@@ -69,7 +70,25 @@ export class CareService {
       }
 
       // Get enhanced care history for response
-      const enhancedCareHistory = await CareHistoryQueries.getCareHistoryById(newCareHistory.id);
+      const careHistoryRecord = await CareHistoryQueries.getCareHistoryById(newCareHistory.id);
+      
+      if (!careHistoryRecord) {
+        return {
+          success: false,
+          error: 'Failed to retrieve care history after creation'
+        };
+      }
+
+      // Create enhanced care history record
+      const now = new Date();
+      const daysSinceCare = Math.floor((now.getTime() - careHistoryRecord.careDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      const enhancedCareHistory: EnhancedCareHistory = {
+        ...careHistoryRecord,
+        daysSinceCare,
+        formattedDate: careHelpers.formatCareDate(careHistoryRecord.careDate),
+        careTypeDisplay: careHelpers.getCareTypeDisplay(careHistoryRecord.careType),
+      };
       
       return {
         success: true,
@@ -97,7 +116,7 @@ export class CareService {
       if (!validation.success) {
         return {
           success: false,
-          error: validation.error.errors[0]?.message || 'Invalid quick care data'
+          error: validation.error.issues[0]?.message || 'Invalid quick care data'
         };
       }
 
@@ -107,6 +126,7 @@ export class CareService {
         careType: quickCareData.careType,
         careDate: quickCareData.careDate,
         notes: quickCareData.notes,
+        images: [],
         updateSchedule: quickCareData.careType === 'fertilizer',
       };
 
@@ -138,7 +158,7 @@ export class CareService {
           results: bulkCareData.plantInstanceIds.map(id => ({
             plantInstanceId: id,
             success: false,
-            error: validation.error.errors[0]?.message || 'Invalid bulk care data'
+            error: validation.error.issues[0]?.message || 'Invalid bulk care data'
           }))
         };
       }
@@ -156,6 +176,7 @@ export class CareService {
             careDate: bulkCareData.careDate,
             notes: bulkCareData.notes,
             fertilizerType: bulkCareData.fertilizerType,
+            images: [],
             updateSchedule: bulkCareData.careType === 'fertilizer',
           };
 

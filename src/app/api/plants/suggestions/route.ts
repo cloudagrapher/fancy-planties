@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateRequest } from '@/lib/auth';
+import { validateRequest } from '@/lib/auth/server';
 import { getQuickSelectPlants } from '@/lib/db/queries/plant-taxonomy';
 import { plantSearchService } from '@/lib/services/plant-search';
 

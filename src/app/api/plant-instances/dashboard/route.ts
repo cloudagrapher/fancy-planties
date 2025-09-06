@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
-import { validateRequest } from '@/lib/auth';
+import { validateRequest } from '@/lib/auth/server';
 
 // GET /api/plant-instances/dashboard - Get care dashboard data
 export async function GET(request: NextRequest) {

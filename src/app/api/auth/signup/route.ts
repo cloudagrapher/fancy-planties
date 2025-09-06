@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { signUp, setSessionCookie } from '@/lib/auth';
+import { signUp } from '@/lib/auth';
+import { setSessionCookie } from '@/lib/auth/server';
 import { signUpSchema, validateInput } from '@/lib/auth/validation';
 import { withRateLimit } from '@/lib/auth/middleware';
 

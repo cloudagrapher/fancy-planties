@@ -1,79 +1,8 @@
-import { cookies } from 'next/headers';
-import { lucia, validateRequest } from './index';
-import { redirect } from 'next/navigation';
+// Re-export client-safe utilities
+export * from './client';
 
-// Session cookie management
-export async function setSessionCookie(sessionId: string): Promise<void> {
-  const sessionCookie = lucia.createSessionCookie(sessionId);
-  (await cookies()).set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-}
-
-export async function clearSessionCookie(): Promise<void> {
-  const sessionCookie = lucia.createBlankSessionCookie();
-  (await cookies()).set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-}
-
-// Session validation with redirect
-export async function requireAuthSession() {
-  const { user, session } = await validateRequest();
-  
-  if (!user || !session) {
-    redirect('/auth/signin');
-  }
-  
-  return { user, session };
-}
-
-// Optional authentication (doesn't redirect)
-export async function getAuthSession() {
-  return await validateRequest();
-}
-
-// Redirect authenticated users away from auth pages
-export async function redirectIfAuthenticated(redirectTo: string = '/dashboard') {
-  const { user, session } = await validateRequest();
-  
-  if (user && session) {
-    redirect(redirectTo);
-  }
-}
-
-// Session cleanup utility
-export async function cleanupExpiredSessions(): Promise<void> {
-  try {
-    // This would typically be run as a background job
-    // For now, we'll rely on Lucia's built-in cleanup
-    console.log('Session cleanup would run here');
-  } catch (error) {
-    console.error('Session cleanup error:', error);
-  }
-}
-
-// Session security helpers
-export function getSessionSecurityInfo(request: Request) {
-  const userAgent = request.headers.get('user-agent') || 'Unknown';
-  const ip = request.headers.get('x-forwarded-for') || 
-            request.headers.get('x-real-ip') || 
-            'Unknown';
-  
-  return {
-    userAgent,
-    ip,
-    timestamp: new Date().toISOString(),
-  };
-}
-
-// Session activity tracking (for future security features)
-export interface SessionActivity {
-  sessionId: string;
-  userId: number;
-  action: string;
-  ip: string;
-  userAgent: string;
-  timestamp: Date;
-}
-
-// In a production app, you'd store this in the database
+// In-memory session activity storage (for demonstration)
+// In production, this would be in a database
 const sessionActivities: SessionActivity[] = [];
 
 export function logSessionActivity(activity: Omit<SessionActivity, 'timestamp'>) {
@@ -101,3 +30,6 @@ export function logSessionActivity(activity: Omit<SessionActivity, 'timestamp'>)
 export function getSessionActivities(sessionId: string): SessionActivity[] {
   return sessionActivities.filter(a => a.sessionId === sessionId);
 }
+
+// Import SessionActivity type from client
+import type { SessionActivity } from './client';

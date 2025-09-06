@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateRequest } from '@/lib/auth';
+import { validateRequest } from '@/lib/auth/server';
 import { CSVImportService } from '@/lib/services/csv-import-service';
 
 const csvImportService = new CSVImportService();
@@ -7,7 +7,7 @@ const csvImportService = new CSVImportService();
 // GET /api/import/csv/[importId] - Get import progress
 export async function GET(
   request: NextRequest,
-  { params }: { params: { importId: string } }
+  { params }: { params: Promise<{ importId: string }> }
 ) {
   try {
     const { user } = await validateRequest();
@@ -15,7 +15,8 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const progress = csvImportService.getImportProgress(params.importId);
+    const resolvedParams = await params;
+    const progress = csvImportService.getImportProgress(resolvedParams.importId);
     
     if (!progress) {
       return NextResponse.json({ error: 'Import not found' }, { status: 404 });
@@ -39,7 +40,7 @@ export async function GET(
 // DELETE /api/import/csv/[importId] - Cancel import
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { importId: string } }
+  { params }: { params: Promise<{ importId: string }> }
 ) {
   try {
     const { user } = await validateRequest();
@@ -47,7 +48,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const progress = csvImportService.getImportProgress(params.importId);
+    const resolvedParams = await params;
+    const progress = csvImportService.getImportProgress(resolvedParams.importId);
     
     if (!progress) {
       return NextResponse.json({ error: 'Import not found' }, { status: 404 });
@@ -57,7 +59,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const cancelled = csvImportService.cancelImport(params.importId);
+    const cancelled = csvImportService.cancelImport(resolvedParams.importId);
     
     if (!cancelled) {
       return NextResponse.json(

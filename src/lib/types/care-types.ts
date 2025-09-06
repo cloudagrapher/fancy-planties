@@ -1,6 +1,9 @@
 import type { CareHistory, PlantInstance, Plant } from '@/lib/db/schema';
 import type { EnhancedPlantInstance } from './plant-instance-types';
 
+// Re-export EnhancedPlantInstance for convenience
+export type { EnhancedPlantInstance } from './plant-instance-types';
+
 // Care type enumeration
 export type CareType = 
   | 'fertilizer'

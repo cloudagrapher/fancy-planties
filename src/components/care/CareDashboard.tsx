@@ -123,10 +123,19 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       <CareStatistics statistics={dashboardData.statistics} />
 
       {/* Quick Actions */}
-      <QuickCareActions 
-        actions={dashboardData.quickActions}
-        onQuickCare={handleQuickCare}
-      />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {dashboardData.quickActions.map((action) => (
+          <button
+            key={action.id}
+            onClick={() => handleQuickCare(0, action.careType)} // TODO: Implement proper plant selection
+            className={`p-3 rounded-lg text-white font-medium ${action.color} transition-colors`}
+            disabled={!action.isEnabled}
+          >
+            <div className="text-lg mb-1">{action.icon}</div>
+            <div className="text-sm">{action.label}</div>
+          </button>
+        ))}
+      </div>
 
       {/* Care Tasks Tabs */}
       <div>
