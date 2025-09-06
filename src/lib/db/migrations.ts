@@ -36,15 +36,30 @@ export class MigrationUtils {
       if (fs.existsSync(rlsPath)) {
         const rlsSQL = fs.readFileSync(rlsPath, 'utf8');
         
-        // Split by statement separator and execute each statement
+        // Split by semicolon and filter out comments
         const statements = rlsSQL
-          .split('--')
+          .split(';')
           .map(stmt => stmt.trim())
-          .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+          .filter(stmt => 
+            stmt.length > 0 && 
+            !stmt.startsWith('--') && 
+            !stmt.match(/^\/\*.*\*\/$/s)
+          );
 
         for (const statement of statements) {
-          if (statement.trim()) {
-            await db.execute(sql.raw(statement));
+          const cleanStatement = statement.trim();
+          if (cleanStatement && !cleanStatement.startsWith('--')) {
+            try {
+              await db.execute(sql.raw(cleanStatement));
+            } catch (error) {
+              // Log but don't fail on policy conflicts (they might already exist)
+              if (error instanceof Error && error.message.includes('already exists')) {
+                console.log(`Policy already exists, skipping: ${cleanStatement.substring(0, 50)}...`);
+              } else {
+                console.error(`Failed to execute statement: ${cleanStatement.substring(0, 50)}...`);
+                throw error;
+              }
+            }
           }
         }
         
