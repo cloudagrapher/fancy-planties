@@ -10,29 +10,29 @@
   - Setup basic PWA configuration with "Fancy Planties" manifest and service worker
   - _Requirements: 7.1, 7.2, 8.5_
 
-- [-] 2. Database Schema and Core Infrastructure
+- [x] 2. Database Schema and Core Infrastructure
   - [x] 2.1 Implement database schema with Drizzle
     - Create users, plants, plant_instances, propagations, and sessions tables
     - Implement Row-Level Security policies for user data segregation
     - Add proper indexes for performance optimization
     - _Requirements: 1.3, 8.4_
 
-  - [-] 2.2 Create database connection and query utilities
+  - [x] 2.2 Create database connection and query utilities
     - Setup database connection with connection pooling
     - Implement base CRUD operations for all entities
     - Add error handling and logging for database operations
     - Create database migration and rollback utilities
     - _Requirements: 8.4_
 
-- [ ] 3. Authentication System Implementation
-  - [ ] 3.1 Setup Lucia auth with PostgreSQL adapter
+- [-] 3. Authentication System Implementation
+  - [x] 3.1 Setup Lucia auth with PostgreSQL adapter
     - Configure Lucia auth with session-based authentication
     - Implement secure password hashing with bcrypt
     - Create session management utilities
     - Add CSRF protection and rate limiting
     - _Requirements: 1.1, 1.2, 1.4_
 
-  - [ ] 3.2 Create authentication UI components and flows
+  - [-] 3.2 Create authentication UI components and flows
     - Build user registration form with validation
     - Create login form with error handling
     - Implement logout functionality
