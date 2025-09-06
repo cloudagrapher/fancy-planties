@@ -1,5 +1,6 @@
 import AuthGuard from '@/components/auth/AuthGuard';
 import { UserProvider } from '@/components/auth/UserProvider';
+import BottomNavigation from '@/components/navigation/BottomNavigation';
 import { requireAuthSession } from '@/lib/auth/session';
 
 export default async function DashboardLayout({
@@ -14,6 +15,7 @@ export default async function DashboardLayout({
       <UserProvider user={user}>
         <div className="min-h-screen bg-gray-50">
           {children}
+          <BottomNavigation />
         </div>
       </UserProvider>
     </AuthGuard>

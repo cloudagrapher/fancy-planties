@@ -1,6 +1,19 @@
-import { eq, and, desc, asc, isNotNull, lte, gte, ilike, or, sql } from 'drizzle-orm';
+import { eq, and, desc, asc, isNotNull, lte, gte, ilike, or, sql, inArray } from 'drizzle-orm';
 import { db } from '../index';
 import { plantInstances, plants, type PlantInstance, type NewPlantInstance } from '../schema';
+import type { 
+  PlantInstanceFilter, 
+  PlantInstanceSearch,
+  BulkPlantInstanceOperation 
+} from '@/lib/validation/plant-schemas';
+import type { 
+  EnhancedPlantInstance, 
+  PlantInstanceSearchResult,
+  CareDashboardData,
+  BulkOperationResult,
+  PlantInstanceOperationResult
+} from '@/lib/types/plant-instance-types';
+import { plantInstanceHelpers } from '@/lib/types/plant-instance-types';
 
 // Plant instance CRUD operations
 export class PlantInstanceQueries {
@@ -348,6 +361,427 @@ export class PlantInstanceQueries {
     } catch (error) {
       console.error('Failed to get care stats:', error);
       throw new Error('Failed to get care stats');
+    }
+  }
+
+  // Enhanced search with filters
+  static async searchWithFilters(searchParams: PlantInstanceSearch): Promise<PlantInstanceSearchResult> {
+    try {
+      const startTime = Date.now();
+      const { query, userId, activeOnly, limit, offset } = searchParams;
+      const searchTerm = `%${query.toLowerCase()}%`;
+      
+      const conditions = [eq(plantInstances.userId, userId)];
+      
+      if (activeOnly) {
+        conditions.push(eq(plantInstances.isActive, true));
+      }
+
+      // Add search conditions
+      conditions.push(
+        or(
+          ilike(plantInstances.nickname, searchTerm),
+          ilike(plantInstances.location, searchTerm),
+          ilike(plantInstances.notes, searchTerm),
+          ilike(plants.commonName, searchTerm),
+          ilike(plants.genus, searchTerm),
+          ilike(plants.species, searchTerm),
+          ilike(plants.family, searchTerm)
+        )!
+      );
+
+      // Get total count
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(plantInstances)
+        .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+        .where(and(...conditions));
+
+      const totalCount = countResult.count;
+
+      // Get instances with plant data
+      const instances = await db
+        .select()
+        .from(plantInstances)
+        .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+        .where(and(...conditions))
+        .orderBy(desc(plantInstances.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      const enhancedInstances = instances.map(instance => 
+        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      );
+
+      const searchTime = Date.now() - startTime;
+
+      return {
+        instances: enhancedInstances,
+        totalCount,
+        hasMore: offset + limit < totalCount,
+        searchTime,
+        filters: searchParams,
+      };
+    } catch (error) {
+      console.error('Failed to search plant instances with filters:', error);
+      throw new Error('Failed to search plant instances');
+    }
+  }
+
+  // Advanced filtering
+  static async getWithFilters(filterParams: PlantInstanceFilter): Promise<PlantInstanceSearchResult> {
+    try {
+      const startTime = Date.now();
+      const { 
+        userId, 
+        location, 
+        plantId, 
+        isActive, 
+        overdueOnly, 
+        dueSoonDays,
+        createdAfter,
+        createdBefore,
+        lastFertilizedAfter,
+        lastFertilizedBefore,
+        limit, 
+        offset 
+      } = filterParams;
+
+      const conditions = [eq(plantInstances.userId, userId)];
+      
+      // Apply filters
+      if (location) {
+        conditions.push(ilike(plantInstances.location, `%${location}%`));
+      }
+      
+      if (plantId) {
+        conditions.push(eq(plantInstances.plantId, plantId));
+      }
+      
+      if (isActive !== undefined) {
+        conditions.push(eq(plantInstances.isActive, isActive));
+      }
+
+      if (overdueOnly) {
+        const now = new Date();
+        conditions.push(
+          and(
+            isNotNull(plantInstances.fertilizerDue),
+            lte(plantInstances.fertilizerDue, now)
+          )!
+        );
+      }
+
+      if (dueSoonDays) {
+        const now = new Date();
+        const futureDate = new Date();
+        futureDate.setDate(now.getDate() + dueSoonDays);
+        conditions.push(
+          and(
+            isNotNull(plantInstances.fertilizerDue),
+            gte(plantInstances.fertilizerDue, now),
+            lte(plantInstances.fertilizerDue, futureDate)
+          )!
+        );
+      }
+
+      if (createdAfter) {
+        conditions.push(gte(plantInstances.createdAt, createdAfter));
+      }
+
+      if (createdBefore) {
+        conditions.push(lte(plantInstances.createdAt, createdBefore));
+      }
+
+      if (lastFertilizedAfter) {
+        conditions.push(
+          and(
+            isNotNull(plantInstances.lastFertilized),
+            gte(plantInstances.lastFertilized, lastFertilizedAfter)
+          )!
+        );
+      }
+
+      if (lastFertilizedBefore) {
+        conditions.push(
+          and(
+            isNotNull(plantInstances.lastFertilized),
+            lte(plantInstances.lastFertilized, lastFertilizedBefore)
+          )!
+        );
+      }
+
+      // Get total count
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(plantInstances)
+        .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+        .where(and(...conditions));
+
+      const totalCount = countResult.count;
+
+      // Get instances with plant data
+      const instances = await db
+        .select()
+        .from(plantInstances)
+        .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+        .where(and(...conditions))
+        .orderBy(
+          overdueOnly || dueSoonDays 
+            ? asc(plantInstances.fertilizerDue)
+            : desc(plantInstances.createdAt)
+        )
+        .limit(limit)
+        .offset(offset);
+
+      const enhancedInstances = instances.map(instance => 
+        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      );
+
+      const searchTime = Date.now() - startTime;
+
+      return {
+        instances: enhancedInstances,
+        totalCount,
+        hasMore: offset + limit < totalCount,
+        searchTime,
+        filters: filterParams,
+      };
+    } catch (error) {
+      console.error('Failed to get plant instances with filters:', error);
+      throw new Error('Failed to get plant instances with filters');
+    }
+  }
+
+  // Get enhanced plant instances for a user
+  static async getEnhancedByUserId(userId: number, activeOnly: boolean = true): Promise<EnhancedPlantInstance[]> {
+    try {
+      const conditions = [eq(plantInstances.userId, userId)];
+      if (activeOnly) {
+        conditions.push(eq(plantInstances.isActive, true));
+      }
+
+      const instances = await db
+        .select()
+        .from(plantInstances)
+        .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+        .where(and(...conditions))
+        .orderBy(desc(plantInstances.createdAt));
+
+      return instances.map(instance => 
+        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      );
+    } catch (error) {
+      console.error('Failed to get enhanced plant instances:', error);
+      throw new Error('Failed to get enhanced plant instances');
+    }
+  }
+
+  // Get care dashboard data
+  static async getCareDashboardData(userId: number): Promise<CareDashboardData> {
+    try {
+      const now = new Date();
+      const tomorrow = new Date();
+      tomorrow.setDate(now.getDate() + 1);
+      const weekFromNow = new Date();
+      weekFromNow.setDate(now.getDate() + 7);
+
+      // Get all active instances with plant data
+      const instances = await this.getEnhancedByUserId(userId, true);
+
+      // Categorize by care status
+      const overdue = instances.filter(instance => instance.careStatus === 'overdue');
+      const dueToday = instances.filter(instance => instance.careStatus === 'due_today');
+      const dueSoon = instances.filter(instance => instance.careStatus === 'due_soon');
+      
+      // Get recently cared for plants (fertilized in last 7 days)
+      const recentlyCared = instances.filter(instance => {
+        if (!instance.lastFertilized) return false;
+        const daysSince = plantInstanceHelpers.calculateDaysSinceLastFertilized(instance.lastFertilized);
+        return daysSince !== null && daysSince <= 7;
+      });
+
+      // Calculate care streak (consecutive days with care activity)
+      const careStreakDays = await this.calculateCareStreak(userId);
+
+      return {
+        overdue: plantInstanceHelpers.sortByCareUrgency(overdue),
+        dueToday: plantInstanceHelpers.sortByCareUrgency(dueToday),
+        dueSoon: plantInstanceHelpers.sortByCareUrgency(dueSoon),
+        recentlyCared,
+        statistics: {
+          totalActivePlants: instances.length,
+          overdueCount: overdue.length,
+          dueTodayCount: dueToday.length,
+          dueSoonCount: dueSoon.length,
+          careStreakDays,
+        },
+      };
+    } catch (error) {
+      console.error('Failed to get care dashboard data:', error);
+      throw new Error('Failed to get care dashboard data');
+    }
+  }
+
+  // Calculate care streak
+  static async calculateCareStreak(userId: number): Promise<number> {
+    try {
+      // This is a simplified implementation
+      // In a real app, you might want to track care events in a separate table
+      const instances = await db
+        .select({
+          lastFertilized: plantInstances.lastFertilized,
+        })
+        .from(plantInstances)
+        .where(
+          and(
+            eq(plantInstances.userId, userId),
+            eq(plantInstances.isActive, true),
+            isNotNull(plantInstances.lastFertilized)
+          )
+        )
+        .orderBy(desc(plantInstances.lastFertilized));
+
+      if (instances.length === 0) return 0;
+
+      // Simple streak calculation based on recent fertilizer applications
+      let streak = 0;
+      const now = new Date();
+      
+      for (const instance of instances) {
+        if (!instance.lastFertilized) break;
+        
+        const daysSince = Math.floor(
+          (now.getTime() - instance.lastFertilized.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        if (daysSince <= 1) {
+          streak = Math.max(streak, 1);
+        }
+      }
+
+      return streak;
+    } catch (error) {
+      console.error('Failed to calculate care streak:', error);
+      return 0;
+    }
+  }
+
+  // Bulk operations
+  static async bulkOperation(operation: BulkPlantInstanceOperation): Promise<BulkOperationResult> {
+    try {
+      const { plantInstanceIds, operation: op, fertilizerDate, notes } = operation;
+      const results: BulkOperationResult['results'] = [];
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (const id of plantInstanceIds) {
+        try {
+          let result: PlantInstance;
+          
+          switch (op) {
+            case 'activate':
+              result = await this.reactivate(id);
+              break;
+            case 'deactivate':
+              result = await this.deactivate(id);
+              break;
+            case 'delete':
+              await this.delete(id);
+              result = { id } as PlantInstance; // Placeholder for deleted item
+              break;
+            case 'fertilize':
+              result = await this.logFertilizer(id, fertilizerDate);
+              break;
+            default:
+              throw new Error(`Unknown operation: ${op}`);
+          }
+
+          results.push({ plantInstanceId: id, success: true });
+          successCount++;
+        } catch (error) {
+          results.push({ 
+            plantInstanceId: id, 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+          failureCount++;
+        }
+      }
+
+      return {
+        success: successCount > 0,
+        successCount,
+        failureCount,
+        results,
+      };
+    } catch (error) {
+      console.error('Failed to perform bulk operation:', error);
+      throw new Error('Failed to perform bulk operation');
+    }
+  }
+
+  // Get plant instances by location
+  static async getByLocation(userId: number, location: string): Promise<EnhancedPlantInstance[]> {
+    try {
+      const instances = await db
+        .select()
+        .from(plantInstances)
+        .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+        .where(
+          and(
+            eq(plantInstances.userId, userId),
+            eq(plantInstances.isActive, true),
+            ilike(plantInstances.location, `%${location}%`)
+          )
+        )
+        .orderBy(plantInstances.nickname);
+
+      return instances.map(instance => 
+        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      );
+    } catch (error) {
+      console.error('Failed to get plant instances by location:', error);
+      throw new Error('Failed to get plant instances by location');
+    }
+  }
+
+  // Get unique locations for a user
+  static async getUserLocations(userId: number): Promise<string[]> {
+    try {
+      const locations = await db
+        .selectDistinct({ location: plantInstances.location })
+        .from(plantInstances)
+        .where(
+          and(
+            eq(plantInstances.userId, userId),
+            eq(plantInstances.isActive, true)
+          )
+        )
+        .orderBy(plantInstances.location);
+
+      return locations.map(l => l.location).filter(Boolean);
+    } catch (error) {
+      console.error('Failed to get user locations:', error);
+      throw new Error('Failed to get user locations');
+    }
+  }
+
+  // Get enhanced plant instance by ID
+  static async getEnhancedById(id: number): Promise<EnhancedPlantInstance | null> {
+    try {
+      const [instance] = await db
+        .select()
+        .from(plantInstances)
+        .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+        .where(eq(plantInstances.id, id));
+      
+      if (!instance || !instance.plants) return null;
+      
+      return plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants);
+    } catch (error) {
+      console.error('Failed to get enhanced plant instance by ID:', error);
+      throw new Error('Failed to get enhanced plant instance');
     }
   }
 }

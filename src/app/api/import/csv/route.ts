@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/auth/session';
+import { validateRequest } from '@/lib/auth';
 import { CSVImportService, type ImportType } from '@/lib/services/csv-import-service';
 import { csvFileSchema, csvImportConfigSchema } from '@/lib/validation/csv-schemas';
 import { z } from 'zod';
@@ -9,7 +9,7 @@ const csvImportService = new CSVImportService();
 // POST /api/import/csv - Start CSV import
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
+    const { user } = await validateRequest();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 // GET /api/import/csv - Get user's imports
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUser();
+    const { user } = await validateRequest();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

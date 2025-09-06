@@ -5,7 +5,7 @@ export default async function DashboardPage() {
   const { user } = await requireAuthSession();
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 pb-20"> {/* pb-20 for bottom navigation */}
       <div className="bg-white rounded-2xl shadow-soft p-8">
         <div className="flex justify-between items-start mb-6">
           <div>

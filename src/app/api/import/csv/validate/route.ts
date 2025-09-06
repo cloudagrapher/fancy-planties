@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/auth/session';
+import { validateRequest } from '@/lib/auth';
 import { CSVImportService, type ImportType } from '@/lib/services/csv-import-service';
 import { z } from 'zod';
 
@@ -8,7 +8,7 @@ const csvImportService = new CSVImportService();
 // POST /api/import/csv/validate - Validate CSV content
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
+    const { user } = await validateRequest();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

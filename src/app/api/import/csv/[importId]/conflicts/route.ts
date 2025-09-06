@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUser } from '@/lib/auth/session';
+import { validateRequest } from '@/lib/auth';
 import { CSVImportService } from '@/lib/services/csv-import-service';
 import { z } from 'zod';
 
@@ -11,7 +11,7 @@ export async function GET(
   { params }: { params: { importId: string } }
 ) {
   try {
-    const user = await getUser();
+    const { user } = await validateRequest();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -48,7 +48,7 @@ export async function POST(
   { params }: { params: { importId: string } }
 ) {
   try {
-    const user = await getUser();
+    const { user } = await validateRequest();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

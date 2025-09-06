@@ -97,12 +97,40 @@ export const propagations = pgTable('propagations', {
   userStatusIdx: index('propagations_user_status_idx').on(table.userId, table.status),
 }));
 
+// Care history table for tracking all care activities
+export const careHistory = pgTable('care_history', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  plantInstanceId: integer('plant_instance_id').notNull().references(() => plantInstances.id),
+  careType: text('care_type', { 
+    enum: ['fertilizer', 'water', 'repot', 'prune', 'inspect', 'other'] 
+  }).notNull(),
+  careDate: timestamp('care_date').notNull(),
+  notes: text('notes'),
+  fertilizerType: text('fertilizer_type'), // For fertilizer care type
+  potSize: text('pot_size'), // For repot care type
+  soilType: text('soil_type'), // For repot care type
+  images: jsonb('images').$type<string[]>().default([]).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  // Indexes for care history queries
+  userIdIdx: index('care_history_user_id_idx').on(table.userId),
+  plantInstanceIdIdx: index('care_history_plant_instance_id_idx').on(table.plantInstanceId),
+  careTypeIdx: index('care_history_care_type_idx').on(table.careType),
+  careDateIdx: index('care_history_care_date_idx').on(table.careDate),
+  userPlantIdx: index('care_history_user_plant_idx').on(table.userId, table.plantInstanceId),
+  userCareTypeIdx: index('care_history_user_care_type_idx').on(table.userId, table.careType),
+  plantCareDateIdx: index('care_history_plant_care_date_idx').on(table.plantInstanceId, table.careDate),
+}));
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   plantInstances: many(plantInstances),
   propagations: many(propagations),
   sessions: many(sessions),
   createdPlants: many(plants),
+  careHistory: many(careHistory),
 }));
 
 export const plantsRelations = relations(plants, ({ many, one }) => ({
@@ -124,6 +152,7 @@ export const plantInstancesRelations = relations(plantInstances, ({ one, many })
     references: [plants.id],
   }),
   propagations: many(propagations),
+  careHistory: many(careHistory),
 }));
 
 export const propagationsRelations = relations(propagations, ({ one }) => ({
@@ -137,6 +166,17 @@ export const propagationsRelations = relations(propagations, ({ one }) => ({
   }),
   parentInstance: one(plantInstances, {
     fields: [propagations.parentInstanceId],
+    references: [plantInstances.id],
+  }),
+}));
+
+export const careHistoryRelations = relations(careHistory, ({ one }) => ({
+  user: one(users, {
+    fields: [careHistory.userId],
+    references: [users.id],
+  }),
+  plantInstance: one(plantInstances, {
+    fields: [careHistory.plantInstanceId],
     references: [plantInstances.id],
   }),
 }));
@@ -159,3 +199,5 @@ export type PlantInstance = typeof plantInstances.$inferSelect;
 export type NewPlantInstance = typeof plantInstances.$inferInsert;
 export type Propagation = typeof propagations.$inferSelect;
 export type NewPropagation = typeof propagations.$inferInsert;
+export type CareHistory = typeof careHistory.$inferSelect;
+export type NewCareHistory = typeof careHistory.$inferInsert;
