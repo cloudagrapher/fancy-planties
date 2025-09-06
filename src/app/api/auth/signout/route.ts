@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateRequest, signOut, clearSessionCookie } from '@/lib/auth';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const { session } = await validateRequest();
     
