@@ -210,7 +210,22 @@ export async function searchPlants(
     })
     .from(plants)
     .where(whereClause)
-    .orderBy(sql`score DESC, ${plants.isVerified} DESC, ${plants.commonName} ASC`)
+    .orderBy(desc(sql<number>`
+        CASE 
+          WHEN LOWER(${plants.commonName}) = LOWER(${query}) THEN 100
+          WHEN LOWER(${plants.commonName}) LIKE ${`${query.toLowerCase()}%`} THEN 90
+          WHEN LOWER(CONCAT(${plants.genus}, ' ', ${plants.species})) = LOWER(${query}) THEN 85
+          WHEN LOWER(CONCAT(${plants.genus}, ' ', ${plants.species})) LIKE ${`${query.toLowerCase()}%`} THEN 80
+          WHEN LOWER(${plants.genus}) = LOWER(${query}) THEN 75
+          WHEN LOWER(${plants.species}) = LOWER(${query}) THEN 70
+          WHEN LOWER(${plants.family}) = LOWER(${query}) THEN 65
+          WHEN LOWER(${plants.commonName}) LIKE ${searchTerm} THEN 60
+          WHEN LOWER(${plants.genus}) LIKE ${searchTerm} THEN 50
+          WHEN LOWER(${plants.species}) LIKE ${searchTerm} THEN 45
+          WHEN LOWER(${plants.family}) LIKE ${searchTerm} THEN 40
+          ELSE 30
+        END
+      `), plants.isVerified.desc(), plants.commonName.asc())
     .limit(limit)
     .offset(offset);
 

@@ -8,6 +8,8 @@ export async function POST(request: NextRequest) {
     const { user } = await requireAuthSession();
     const body = await request.json();
     
+    console.log('Quick care log request body:', body);
+    
     // Validate the quick care log data
     const validation = careValidation.validateQuickCareLog({
       ...body,
@@ -15,8 +17,12 @@ export async function POST(request: NextRequest) {
     });
     
     if (!validation.success) {
+      console.error('Quick care validation error:', validation.error.issues);
       return NextResponse.json(
-        { error: validation.error.issues[0]?.message || 'Invalid quick care data' },
+        { 
+          error: validation.error.issues[0]?.message || 'Invalid quick care data',
+          details: validation.error.issues 
+        },
         { status: 400 }
       );
     }

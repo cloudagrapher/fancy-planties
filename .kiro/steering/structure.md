@@ -1,8 +1,12 @@
+---
+inclusion: always
+---
+
 # File Organization and Architecture
 
 ## Project Structure
 
-```
+```text
 src/
 ├── app/                    # Next.js App Router (Server Components)
 │   ├── api/               # API routes (always server-side)
@@ -22,6 +26,7 @@ src/
 ### Authentication Layer Separation
 
 **Server-Only Files** (must have `import 'server-only';`):
+
 - `/lib/auth/lucia.ts` - Lucia instance
 - `/lib/auth/server.ts` - Server functions (cookies, redirect)
 - `/lib/auth/index.ts` - Core auth logic
@@ -29,6 +34,7 @@ src/
 - `/lib/db/migrations.ts` - Migration utilities
 
 **Client-Safe Files** (no server imports):
+
 - `/lib/auth/client.ts` - Browser-safe auth utilities
 - `/lib/auth/session.ts` - Re-exports client utilities
 - `/components/**/*.tsx` - UI components
@@ -37,6 +43,7 @@ src/
 ### Component Organization
 
 **Server Component Pattern** (default in `/app/`):
+
 ```typescript
 // No 'use client' directive
 export default async function ServerPage() {
@@ -46,6 +53,7 @@ export default async function ServerPage() {
 ```
 
 **Client Component Pattern** (explicit `'use client'`):
+
 ```typescript
 'use client';
 import { useState } from 'react'; // ✅ Can use React hooks
@@ -57,6 +65,7 @@ export default function ClientComponent({ data }) {
 ```
 
 **Mixed Pattern** (separate files):
+
 ```typescript
 // page.tsx (Server)
 import { getServerData } from '@/lib/server-only-module';
@@ -77,7 +86,8 @@ export default function PageClient({ data }) {
 ## Database Layer
 
 ### Required Structure
-```
+
+```text
 src/lib/db/
 ├── index.ts           # Connection (server-only)
 ├── schema.ts          # Drizzle schema  
@@ -88,14 +98,16 @@ src/lib/db/
     └── users.ts
 ```
 
-### Every Database File Must Start With:
+### Every Database File Must Start With
+
 ```typescript
 import 'server-only';
 ```
 
 ## API Routes
 
-**All API routes are server-side by default**
+All API routes are server-side by default:
+
 - Location: `/src/app/api/`
 - Can import database and auth modules
 - Pattern: Export named HTTP methods (GET, POST, etc.)
@@ -103,18 +115,21 @@ import 'server-only';
 ## Component Guidelines
 
 ### When to Use Server Components
+
 - Data fetching from database
 - Authentication checks
 - Server-side logic
 - SEO-critical pages
 
-### When to Use Client Components  
+### When to Use Client Components
+
 - Interactive UI (forms, modals)
 - React hooks (useState, useEffect)
 - Browser APIs
 - Event handlers
 
 ### File Naming Conventions
+
 - **Server pages**: `page.tsx` (in app directory)
 - **Client components**: `ComponentName.tsx` with `'use client'`
 - **Mixed pattern**: `page.tsx` + `PageClient.tsx`
@@ -123,6 +138,7 @@ import 'server-only';
 ## Import Patterns
 
 ### Authentication Imports
+
 ```typescript
 // API routes and server components
 import { validateRequest } from '@/lib/auth/server';
@@ -135,13 +151,15 @@ import { getUserById } from '@/lib/auth'; // Core functions
 ```
 
 ### Database Imports
-```typescript  
+
+```typescript
 // Only in server components and API routes
 import { db } from '@/lib/db';
 import { getUserPlants } from '@/lib/db/queries/plant-instances';
 ```
 
 ### Client-Safe Imports
+
 ```typescript
 // Client components
 import { User, Session } from '@/lib/auth/client';
@@ -151,12 +169,14 @@ import { PlantInstance } from '@/lib/types/plant-types';
 ## Build Considerations
 
 ### Files That Must Be Server-Only
+
 1. Anything importing Node.js modules (`fs`, `net`, `tls`)
 2. Database connection and query files  
 3. Authentication server logic
 4. Migration and setup scripts
 
 ### Files That Can Be Client-Safe
+
 1. Type definitions
 2. Client-side utilities  
 3. React components (with 'use client')
@@ -164,7 +184,7 @@ import { PlantInstance } from '@/lib/types/plant-types';
 
 ## Testing Structure
 
-```
+```text
 src/
 ├── __tests__/         # Global tests
 ├── components/
@@ -173,11 +193,29 @@ src/
     └── __tests__/     # Utility tests
 ```
 
-## Common Pitfalls to Avoid
+## Critical Rules for AI Assistant
 
-1. **Circular Dependencies**: Never have auth/server.ts import from auth/index.ts if index.ts exports from server.ts
-2. **Mixed Components**: Don't put server logic in files marked with 'use client'  
-3. **Wrong Imports**: Don't import server modules in client components
-4. **Missing Directives**: Always add 'server-only' to database/auth files
+### ALWAYS Do
 
-This structure ensures clean separation of concerns and prevents the build issues that occur when client and server boundaries are violated.
+1. Add `import 'server-only';` to all database and auth files
+2. Use correct import paths: `@/lib/auth/server` for server, `@/lib/auth/client` for client
+3. Separate server and client components into different files
+4. Use the mixed pattern (`page.tsx` + `PageClient.tsx`) for complex interactions
+5. Verify component boundaries before suggesting code changes
+
+### NEVER Do
+
+1. Mix server logic in files marked with `'use client'`
+2. Import server modules in client components
+3. Create circular dependencies in auth modules
+4. Import Node.js modules in client components
+5. Forget server-only directives in database/auth files
+
+### Common Pitfalls
+
+- **Circular Dependencies**: auth/server.ts importing from auth/index.ts when index.ts exports from server.ts
+- **Wrong Import Paths**: Using `@/lib/auth` instead of `@/lib/auth/server` in API routes
+- **Mixed Boundaries**: Server logic in client components or vice versa
+- **Missing Directives**: Database files without `import 'server-only';`
+
+This architecture ensures clean separation of concerns and prevents build failures from client/server boundary violations.

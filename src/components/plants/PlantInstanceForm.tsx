@@ -276,7 +276,7 @@ export default function PlantInstanceForm({
       />
       
       {/* Modal */}
-      <div className="relative h-full flex items-end sm:items-center justify-center p-4">
+      <div className="relative h-full flex items-end sm:items-center justify-center p-4 pb-20 sm:pb-4">
         <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-full overflow-hidden shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -294,7 +294,7 @@ export default function PlantInstanceForm({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-auto max-h-[70vh]">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-auto max-h-[60vh] sm:max-h-[70vh]">
             <div className="p-6 space-y-6">
               {/* Plant Type Selection */}
               <div>
@@ -325,7 +325,7 @@ export default function PlantInstanceForm({
                         {...field}
                         type="text"
                         placeholder="My favorite monstera"
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        className={`w-full px-3 py-2 text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                           errors.nickname ? 'border-red-300' : 'border-gray-300'
                         }`}
                       />
@@ -349,7 +349,7 @@ export default function PlantInstanceForm({
                           {...field}
                           type="text"
                           placeholder="Living room window"
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                          className={`w-full px-3 py-2 text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                             errors.location ? 'border-red-300' : 'border-gray-300'
                           }`}
                           onChange={(e) => {
@@ -456,7 +456,7 @@ export default function PlantInstanceForm({
                     <div className="space-y-3">
                       <select
                         {...field}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        className={`w-full px-3 py-2 text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                           errors.fertilizerSchedule ? 'border-red-300' : 'border-gray-300'
                         }`}
                       >
@@ -519,7 +519,7 @@ export default function PlantInstanceForm({
                         {...field}
                         type="date"
                         max={new Date().toISOString().split('T')[0]}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     )}
                   />
@@ -537,7 +537,7 @@ export default function PlantInstanceForm({
                         {...field}
                         type="date"
                         max={new Date().toISOString().split('T')[0]}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     )}
                   />
@@ -557,7 +557,7 @@ export default function PlantInstanceForm({
                       {...field}
                       rows={3}
                       placeholder="Any special care instructions or observations..."
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none ${
+                      className={`w-full px-3 py-2 text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none ${
                         errors.notes ? 'border-red-300' : 'border-gray-300'
                       }`}
                     />

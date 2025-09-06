@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import QueryClientProvider from "@/components/providers/QueryClientProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -51,7 +52,9 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#a7f3d0" />
       </head>
       <body className="antialiased">
-        {children}
+        <QueryClientProvider>
+          {children}
+        </QueryClientProvider>
       </body>
     </html>
   );

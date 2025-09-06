@@ -124,17 +124,31 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        {dashboardData.quickActions.map((action) => (
-          <button
-            key={action.id}
-            onClick={() => handleQuickCare(0, action.careType)} // TODO: Implement proper plant selection
-            className={`p-3 rounded-lg text-white font-medium ${action.color} transition-colors`}
-            disabled={!action.isEnabled}
-          >
-            <div className="text-lg mb-1">{action.icon}</div>
-            <div className="text-sm">{action.label}</div>
-          </button>
-        ))}
+        {dashboardData.quickActions.map((action) => {
+          const hasPlants = dashboardData.statistics.totalActivePlants > 0;
+          const firstPlantId = hasPlants ? (
+            dashboardData.overdue[0]?.id ||
+            dashboardData.dueToday[0]?.id ||
+            dashboardData.dueSoon[0]?.id ||
+            dashboardData.recentlyCared[0]?.id ||
+            0
+          ) : 0;
+          
+          return (
+            <button
+              key={action.id}
+              onClick={() => handleQuickCare(firstPlantId, action.careType)}
+              className={`p-3 rounded-lg text-white font-medium transition-colors ${
+                hasPlants && action.isEnabled ? action.color : 'bg-gray-400 cursor-not-allowed'
+              }`}
+              disabled={!action.isEnabled || !hasPlants}
+              title={!hasPlants ? 'Add plants to use quick care actions' : action.description}
+            >
+              <div className="text-lg mb-1">{action.icon}</div>
+              <div className="text-sm">{action.label}</div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Care Tasks Tabs */}
