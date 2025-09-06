@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { eq, and, desc, asc, ilike, or, sql } from 'drizzle-orm';
 import { db } from '../index';
 import { propagations, plants, plantInstances, type Propagation, type NewPropagation } from '../schema';
@@ -273,7 +275,7 @@ export class PropagationQueries {
   // Delete propagation
   static async delete(id: number): Promise<boolean> {
     try {
-      const result = await db.delete(propagations).where(eq(propagations.id, id));
+      const result = await db.delete(propagations).where(eq(propagations.id, id)).returning();
       return result.length > 0;
     } catch (error) {
       console.error('Failed to delete propagation:', error);
@@ -301,20 +303,20 @@ export class PropagationQueries {
         .from(propagations)
         .where(eq(propagations.userId, userId));
 
-      const total = stats.totalPropagations;
-      const established = stats.established;
+      const total = Number(stats.totalPropagations);
+      const established = Number(stats.established);
       const successRate = total > 0 ? (established / total) * 100 : 0;
 
       return {
         totalPropagations: total,
         byStatus: {
-          started: stats.started,
-          rooting: stats.rooting,
-          planted: stats.planted,
-          established: stats.established
+          started: Number(stats.started),
+          rooting: Number(stats.rooting),
+          planted: Number(stats.planted),
+          established: established
         },
         successRate: Math.round(successRate * 100) / 100,
-        averageDaysToEstablished: Math.round((stats.avgDays || 0) * 100) / 100
+        averageDaysToEstablished: Math.round((Number(stats.avgDays) || 0) * 100) / 100
       };
     } catch (error) {
       console.error('Failed to get propagation stats:', error);
