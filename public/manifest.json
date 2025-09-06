@@ -1,0 +1,41 @@
+{
+  "name": "Fancy Planties",
+  "short_name": "Fancy Planties",
+  "description": "Track your fancy plant collection and care schedules",
+  "start_url": "/dashboard/plants",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#a7f3d0",
+  "background_color": "#fefefe",
+  "categories": ["lifestyle", "productivity"],
+  "lang": "en",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Plant",
+      "short_name": "Add Plant",
+      "description": "Quickly add a new plant to your collection",
+      "url": "/dashboard/plants?action=add"
+    },
+    {
+      "name": "Care Tasks",
+      "short_name": "Care",
+      "description": "View overdue and upcoming care tasks",
+      "url": "/dashboard/care"
+    },
+    {
+      "name": "Propagations",
+      "short_name": "Props",
+      "description": "Check propagation progress",
+      "url": "/dashboard/propagation"
+    }
+  ]
+}
