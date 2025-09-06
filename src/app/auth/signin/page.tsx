@@ -23,7 +23,7 @@ export default async function SignInPage() {
         
         <div className="text-center">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <a 
               href="/auth/signup" 
               className="font-medium text-primary-600 hover:text-primary-500 transition-colors"
