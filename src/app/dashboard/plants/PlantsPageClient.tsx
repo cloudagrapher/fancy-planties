@@ -84,6 +84,10 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
             onBulkAction={handleBulkAction}
             showSearch={true}
             showFilters={true}
+            showAdvancedSearch={true}
+            showSearchResults={true}
+            showPresets={true}
+            showHistory={true}
             cardSize="medium"
           />
         </div>

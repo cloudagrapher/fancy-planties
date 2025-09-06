@@ -208,13 +208,37 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
                   <MapPin className="w-4 h-4 mr-1" />
                   {propagation.location}
                 </div>
-                {propagation.parentInstance && (
+                
+                {/* Source type indicator */}
+                {(propagation as any).sourceType === 'internal' && propagation.parentInstance && (
                   <div className="flex items-center">
                     <TreePine className="w-4 h-4 mr-1" />
                     From: {propagation.parentInstance.nickname}
                   </div>
                 )}
+                
+                {(propagation as any).sourceType === 'external' && (
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 mr-1 flex items-center justify-center">
+                      {(propagation as any).externalSource === 'gift' && '🎁'}
+                      {(propagation as any).externalSource === 'trade' && '🔄'}
+                      {(propagation as any).externalSource === 'purchase' && '🛒'}
+                      {(propagation as any).externalSource === 'other' && '📦'}
+                    </div>
+                    {(propagation as any).externalSource === 'gift' && 'Gift'}
+                    {(propagation as any).externalSource === 'trade' && 'Trade'}
+                    {(propagation as any).externalSource === 'purchase' && 'Purchase'}
+                    {(propagation as any).externalSource === 'other' && 'Other source'}
+                  </div>
+                )}
               </div>
+              
+              {/* External source details */}
+              {(propagation as any).sourceType === 'external' && (propagation as any).externalSourceDetails && (
+                <div className="mt-1 text-xs text-gray-500">
+                  {(propagation as any).externalSourceDetails}
+                </div>
+              )}
 
               {/* Notes preview */}
               {propagation.notes && (

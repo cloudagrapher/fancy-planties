@@ -50,21 +50,22 @@
     - Create authentication API endpoints
     - _Requirements: 1.1, 1.2, 1.4, 1.5_
 
-- [x] 4. Plant Taxonomy Management System
-  - [x] 4.1 Implement plant taxonomy data models and validation
-    - Create TypeScript interfaces for Plant and related entities
-    - Implement Zod validation schemas for all plant data
+- [x] 4. Enhanced Plant Taxonomy Management System
+  - [x] 4.1 Implement enhanced plant taxonomy data models and validation
+    - Create TypeScript interfaces for Plant with separate cultivar and common_name fields
+    - Implement Zod validation schemas for all plant data with new taxonomy structure
     - Build plant taxonomy CRUD operations with user tracking
-    - Add fuzzy search functionality for plant lookup
-    - _Requirements: 2.1, 2.2_
+    - Add fuzzy search functionality across all taxonomy fields (family, genus, species, cultivar, common name)
+    - _Requirements: 2.1, 2.2, 2.6_
 
-  - [x] 4.2 Build PlantTaxonomySelector component
-    - Create autocomplete search component with real-time suggestions
-    - Implement fuzzy matching across family, genus, species, common name
+  - [x] 4.2 Build enhanced PlantTaxonomySelector and PlantTaxonomyForm components
+    - Create autocomplete search component with real-time suggestions across all taxonomy fields
+    - Implement fuzzy matching across family, genus, species, cultivar, and common name
     - Add "Add new plant type" functionality when no matches found
-    - Build quick-add form for new plant taxonomy entries
+    - Build detailed PlantTaxonomyForm with separate fields for Family, Genus, Species, Cultivar, Common Name
+    - Add validation and help text for proper botanical naming conventions
     - Add recent selections and popular plants features
-    - _Requirements: 2.1, 2.2_
+    - _Requirements: 2.1, 2.2, 2.6_
 
 - [x] 5. CSV Data Import System
   - [x] 5.1 Create CSV parsing and validation utilities
@@ -153,22 +154,23 @@
     - _Requirements: 5.1, 5.2, 5.4, 5.5_
   - [x] 9.3 Ensure there are no errors, there is proper test coverage, and all relevant tests pass for tasks 9.*
 
-- [x] 10. Propagation Management System
-  - [x] 10.1 Implement propagation tracking data models
-    - Create Propagation TypeScript interfaces and validation
-    - Build propagation CRUD operations with parent plant linking
+- [x] 10. Enhanced Propagation Management System
+  - [x] 10.1 Implement enhanced propagation tracking data models
+    - Create enhanced Propagation TypeScript interfaces with source_type, external_source fields
+    - Build propagation CRUD operations supporting both internal parent plant linking and external sources
     - Implement propagation status progression tracking
-    - Add propagation success rate calculation utilities
-    - _Requirements: 4.1, 4.2, 4.5_
+    - Add propagation success rate calculation utilities for both internal and external propagations
+    - _Requirements: 4.1, 4.2, 4.5, 4.8, 4.9_
 
-  - [x] 10.2 Build propagation tracking UI components for Propagation tab
-    - Create PropagationDashboard component with status-grouped propagations
-    - Build PropagationCard component with status indicators and quick actions
-    - Implement PropagationForm for creating new propagations
-    - Add propagation status update interface with quick actions
+  - [x] 10.2 Build enhanced propagation tracking UI components for Propagation tab
+    - Create PropagationDashboard component with status-grouped propagations showing source types
+    - Build PropagationCard component with status indicators, source indicators, and quick actions
+    - Implement enhanced PropagationForm with source type selection (internal/external)
+    - Add plant selector for internal propagations and external source details form
+    - Add propagation editing functionality to change parent relationships or external source info
     - Create propagation conversion to full plant instance functionality
-    - Build propagation success analytics display in Propagation tab
-    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
+    - Build propagation success analytics display in Propagation tab with source type breakdown
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.8, 4.9, 4.10_
   - [x] 10.3 Ensure there are no errors, there is proper test coverage, and all relevant tests pass for tasks 10.*
 
 - [x] 11. Bottom Navigation and Tab Architecture
@@ -214,23 +216,78 @@
     - Implement advanced PWA features like background sync and push notifications
     - _Requirements: 8.1, 8.2, 8.5_
   - [x] 12.3 Ensure there are no errors, there is proper test coverage, and all relevant tests pass for tasks 12.*
-- [ ] 13. Search and Filter System
-  - [ ] 13.1 Implement advanced search functionality
+- [x] 13. Search and Filter System
+  - [x] 13.1 Implement advanced search functionality
     - Create multi-field search across plant data
     - Build filter system for location, care status, plant type
     - Implement search result highlighting and sorting
     - Add saved search and filter presets
     - _Requirements: 2.4_
 
-  - [ ] 13.2 Build search UI and user experience within tab context
+  - [x] 13.2 Build search UI and user experience within tab context
     - Create search interface with autocomplete suggestions for Plants tab
     - Implement filter chips and quick filter options in tab headers
     - Build search history and recent searches with tab-specific memory
     - Add search result pagination and performance optimization within tabs
     - _Requirements: 2.4, 9.1, 9.2_
-  - [ ] 13.3 Ensure there are no errors, there is proper test coverage, and all relevant tests pass for tasks 13.*
-- [ ] 14. Performance Optimization and Testing
-  - [x] 14.1 Implement performance optimizations
+  - [x] 13.3 Ensure there are no errors, there is proper test coverage, and all relevant tests pass for tasks 13.*
+- [x] 14. Database Schema Updates for Enhanced Features
+
+  **Note**: The CSV import system is implemented as a user-facing interface in the Profile tab, not as a backend script. Users upload CSV files through the web interface, which processes them with proper authentication and user data segregation.
+  - [x] 14.1 Update plant taxonomy schema
+    - Add cultivar field to plants table as separate column from common_name
+    - Update plant taxonomy validation to support new field structure
+    - Create database migration to add cultivar column and migrate existing data
+    - Update all plant-related queries to include cultivar field
+    - _Requirements: 2.6_
+
+  - [x] 14.2 Update propagation schema for external sources
+    - Add source_type, external_source, and external_source_details fields to propagations table
+    - Make parent_instance_id nullable to support external propagations
+    - Create database migration to add new fields with default values
+    - Update propagation queries and validation to support new source tracking
+    - _Requirements: 4.8, 4.9, 4.10_
+
+  - [x] 14.3 Update CSV import system for new taxonomy structure
+    - Modify plant CSV import to handle separate cultivar field
+    - Update propagation CSV import to support external source detection
+    - Add data migration utilities for existing CSV data
+    - Update import validation and conflict resolution for new fields
+    - _Requirements: 6.1, 6.2, 6.3_
+
+  - [x] 14.4 Update frontend components for new schema
+    - Update PlantTaxonomyForm component to include separate cultivar field input
+    - Modify PlantTaxonomySelector to search across cultivar field
+    - Update PropagationForm to support source type selection (internal/external)
+    - Add external source input fields to PropagationForm (gift, trade, purchase details)
+    - Update PropagationCard to display source type indicators
+    - Modify plant and propagation display components to show cultivar information
+    - Update all forms and validation to work with new database schema
+    - _Requirements: 2.6, 4.8, 4.9, 4.10_
+
+  - [x] 14.5 Update CSV import UI for enhanced features
+    - Enhance Profile tab import interface to support new taxonomy structure with cultivar field
+    - Add import preview showing cultivar field mapping and validation
+    - Update propagation import to detect and handle external sources automatically
+    - Add user-friendly import validation messages for new fields and source types
+    - Create downloadable import templates and examples for new schema structure
+    - Build import progress tracking for new field processing
+    - Add import conflict resolution UI for cultivar vs common_name field mapping
+    - _Requirements: 6.1, 6.2, 6.3, 7.6_
+
+  - [x] 14.6 Ensure frontend components work with updated schema
+    - Test all plant forms with new cultivar field requirements
+    - Verify propagation forms handle source type selection correctly
+    - Test search functionality across all taxonomy fields including cultivar
+    - Validate import UI works with new schema structure
+    - Ensure all existing plant and propagation data displays correctly with new fields
+    - Test CSV import end-to-end with new taxonomy and propagation source features
+    - _Requirements: 2.6, 4.8, 4.9, 4.10, 6.1, 6.2, 6.3_
+
+  - [x] 14.7 Ensure there are no errors, there is proper test coverage, and all relevant tests pass for tasks 14.*
+
+- [ ] 15. Performance Optimization and Testing
+  - [x] 15.1 Implement performance optimizations
     - Add code splitting and dynamic imports for large components
     - Optimize bundle size with tree shaking and compression
     - Implement image lazy loading and optimization
@@ -238,7 +295,7 @@
     - Create performance monitoring and metrics collection
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
-  - [ ] 14.2 Create comprehensive test suite
+  - [ ] 15.2 Create comprehensive test suite
     - Expand existing test coverage to include all components and utilities
     - Write unit tests for React components using React Testing Library
     - Create integration tests for API routes and database operations
@@ -249,20 +306,20 @@
     - Ensure all tests pass and maintain high coverage standards
     - _Requirements: All requirements validation_
 
-- [ ] 15. Production Readiness and Deployment
-  - [ ] 15.1 Configure production environment and security
+- [ ] 16. Production Readiness and Deployment
+  - [x] 16.1 Configure production environment and security
     - Setup production Docker configuration with security hardening
     - Implement environment-specific configuration management
     - Add comprehensive error logging and monitoring
-    - Configure HTTPS enforcement and security headers
+    - Configure security headers for reverse proxy deployment
     - Create backup and recovery procedures
     - _Requirements: 1.3, 9.4_
 
-  - [ ] 15.2 Prepare deployment and documentation
-    - Create deployment scripts and CI/CD pipeline configuration
+  - [ ] 16.2 Prepare deployment and documentation
+    - Create deployment scripts and docker-compose configuration
     - Build user documentation and getting started guide
     - Create API documentation for future extensions
     - Add contributor guidelines and development setup instructions
-    - Prepare static export configuration for S3/CDN hosting
+    - Configure application for reverse proxy deployment
     - _Requirements: 9.5_
-  - [ ] 15.3 Ensure there are no errors, there is proper test coverage, and all relevant tests pass for tasks 15.*
+  - [ ] 16.3 Ensure there are no errors, there is proper test coverage, and all relevant tests pass for tasks 16.*

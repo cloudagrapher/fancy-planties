@@ -39,6 +39,7 @@ export class PlantQueries {
             ilike(plants.family, searchTerm),
             ilike(plants.genus, searchTerm),
             ilike(plants.species, searchTerm),
+            ilike(plants.cultivar, searchTerm),
             ilike(plants.commonName, searchTerm)
           )
         )
@@ -79,19 +80,26 @@ export class PlantQueries {
     }
   }
 
-  // Check if plant taxonomy already exists
-  static async taxonomyExists(family: string, genus: string, species: string): Promise<Plant | null> {
+  // Check if plant taxonomy already exists (including cultivar)
+  static async taxonomyExists(family: string, genus: string, species: string, cultivar?: string): Promise<Plant | null> {
     try {
+      const conditions = [
+        eq(plants.family, family),
+        eq(plants.genus, genus),
+        eq(plants.species, species)
+      ];
+      
+      // Add cultivar condition - both null or both matching
+      if (cultivar) {
+        conditions.push(eq(plants.cultivar, cultivar));
+      } else {
+        conditions.push(sql`${plants.cultivar} IS NULL`);
+      }
+      
       const [plant] = await db
         .select()
         .from(plants)
-        .where(
-          and(
-            eq(plants.family, family),
-            eq(plants.genus, genus),
-            eq(plants.species, species)
-          )
-        );
+        .where(and(...conditions));
       return plant || null;
     } catch (error) {
       console.error('Failed to check taxonomy existence:', error);
@@ -139,6 +147,7 @@ export class PlantQueries {
           family: plants.family,
           genus: plants.genus,
           species: plants.species,
+          cultivar: plants.cultivar,
           commonName: plants.commonName,
           careInstructions: plants.careInstructions,
           defaultImage: plants.defaultImage,
@@ -163,7 +172,7 @@ export class PlantQueries {
         .select()
         .from(plants)
         .where(
-          sql`to_tsvector('english', ${plants.family} || ' ' || ${plants.genus} || ' ' || ${plants.species} || ' ' || ${plants.commonName}) @@ plainto_tsquery('english', ${query})`
+          sql`to_tsvector('english', ${plants.family} || ' ' || ${plants.genus} || ' ' || ${plants.species} || ' ' || COALESCE(${plants.cultivar}, '') || ' ' || ${plants.commonName}) @@ plainto_tsquery('english', ${query})`
         )
         .orderBy(desc(plants.isVerified), plants.commonName)
         .limit(limit);

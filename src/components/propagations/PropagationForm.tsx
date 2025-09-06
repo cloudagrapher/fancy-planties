@@ -25,6 +25,9 @@ interface FormData {
   location: string;
   dateStarted: string;
   status: 'started' | 'rooting' | 'planted' | 'established';
+  sourceType: 'internal' | 'external';
+  externalSource: 'gift' | 'trade' | 'purchase' | 'other' | null;
+  externalSourceDetails: string;
   notes: string;
   images: string[];
 }
@@ -39,6 +42,9 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
       ? new Date(propagation.dateStarted).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0],
     status: propagation?.status || 'started',
+    sourceType: (propagation as any)?.sourceType || 'internal',
+    externalSource: (propagation as any)?.externalSource || null,
+    externalSourceDetails: (propagation as any)?.externalSourceDetails || '',
     notes: propagation?.notes || '',
     images: propagation?.images || [],
   });
@@ -82,6 +88,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
         family: plant.family,
         genus: plant.genus,
         species: plant.species,
+        cultivar: plant.cultivar || null,
         commonName: plant.commonName,
         careInstructions: null,
         defaultImage: null,
@@ -141,6 +148,12 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
     if (!formData.dateStarted) {
       newErrors.dateStarted = 'Start date is required';
     }
+    if (formData.sourceType === 'internal' && !formData.parentInstanceId) {
+      newErrors.parentInstanceId = 'Parent plant is required for internal propagations';
+    }
+    if (formData.sourceType === 'external' && !formData.externalSource) {
+      newErrors.externalSource = 'External source is required for external propagations';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -170,6 +183,10 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
         body: JSON.stringify({
           ...formData,
           dateStarted: new Date(formData.dateStarted),
+          // Ensure proper null values for unused fields
+          parentInstanceId: formData.sourceType === 'internal' ? formData.parentInstanceId : null,
+          externalSource: formData.sourceType === 'external' ? formData.externalSource : null,
+          externalSourceDetails: formData.sourceType === 'external' ? formData.externalSourceDetails : null,
         }),
       });
 
@@ -218,6 +235,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                 family: selectedPlant.family,
                 genus: selectedPlant.genus,
                 species: selectedPlant.species,
+                cultivar: selectedPlant.cultivar,
                 commonName: selectedPlant.commonName,
                 isVerified: selectedPlant.isVerified,
               } : null}
@@ -230,27 +248,133 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
             )}
           </div>
 
-          {/* Parent Plant Instance */}
-          {parentInstances.length > 0 && (
+          {/* Source Type Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Propagation Source *
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                <input
+                  type="radio"
+                  name="sourceType"
+                  value="internal"
+                  checked={formData.sourceType === 'internal'}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    sourceType: e.target.value as 'internal' | 'external',
+                    parentInstanceId: null, // Reset selections when changing type
+                    externalSource: null,
+                    externalSourceDetails: '',
+                  }))}
+                  className="mr-3 text-primary-600"
+                />
+                <div>
+                  <div className="font-medium text-gray-900">From My Plants</div>
+                  <div className="text-sm text-gray-500">Propagated from one of your existing plants</div>
+                </div>
+              </label>
+              
+              <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                <input
+                  type="radio"
+                  name="sourceType"
+                  value="external"
+                  checked={formData.sourceType === 'external'}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    sourceType: e.target.value as 'internal' | 'external',
+                    parentInstanceId: null, // Reset selections when changing type
+                    externalSource: null,
+                    externalSourceDetails: '',
+                  }))}
+                  className="mr-3 text-primary-600"
+                />
+                <div>
+                  <div className="font-medium text-gray-900">External Source</div>
+                  <div className="text-sm text-gray-500">Gift, trade, purchase, or other source</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Parent Plant Instance - Only for Internal */}
+          {formData.sourceType === 'internal' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Parent Plant (Optional)
+                Parent Plant *
               </label>
-              <select
-                value={formData.parentInstanceId || ''}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  parentInstanceId: e.target.value ? parseInt(e.target.value) : null
-                }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="">Select parent plant (optional)</option>
-                {parentInstances.map((instance) => (
-                  <option key={instance.id} value={instance.id}>
-                    {instance.nickname} - {instance.location}
-                  </option>
-                ))}
-              </select>
+              {parentInstances.length > 0 ? (
+                <select
+                  value={formData.parentInstanceId || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    parentInstanceId: e.target.value ? parseInt(e.target.value) : null
+                  }))}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                    errors.parentInstanceId ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Select parent plant</option>
+                  {parentInstances.map((instance) => (
+                    <option key={instance.id} value={instance.id}>
+                      {instance.nickname} - {instance.location}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    No existing plants of this type found. You'll need to add a plant instance first, or select "External Source" instead.
+                  </p>
+                </div>
+              )}
+              {errors.parentInstanceId && (
+                <p className="mt-1 text-sm text-red-600">{errors.parentInstanceId}</p>
+              )}
+            </div>
+          )}
+
+          {/* External Source Details - Only for External */}
+          {formData.sourceType === 'external' && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Source Type *
+                </label>
+                <select
+                  value={formData.externalSource || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    externalSource: e.target.value as FormData['externalSource']
+                  }))}
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                    errors.externalSource ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Select source type</option>
+                  <option value="gift">Gift (received from someone)</option>
+                  <option value="trade">Trade/Swap (exchanged with someone)</option>
+                  <option value="purchase">Purchase (bought from store/online)</option>
+                  <option value="other">Other</option>
+                </select>
+                {errors.externalSource && (
+                  <p className="mt-1 text-sm text-red-600">{errors.externalSource}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Source Details (Optional)
+                </label>
+                <textarea
+                  value={formData.externalSourceDetails}
+                  onChange={(e) => setFormData(prev => ({ ...prev, externalSourceDetails: e.target.value }))}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="e.g., Gift from Sarah, Purchased at Home Depot, Trade with local plant group..."
+                />
+              </div>
             </div>
           )}
 

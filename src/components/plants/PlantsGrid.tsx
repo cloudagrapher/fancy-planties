@@ -11,9 +11,13 @@ import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { 
   EnhancedPlantInstance, 
   PlantInstanceSearchResult,
-  PlantInstanceSortField 
+  PlantInstanceSortField,
+  AdvancedSearchResult 
 } from '@/lib/types/plant-instance-types';
-import type { PlantInstanceFilter } from '@/lib/validation/plant-schemas';
+import type { 
+  PlantInstanceFilter,
+  EnhancedPlantInstanceFilter 
+} from '@/lib/validation/plant-schemas';
 
 interface PlantsGridProps {
   userId: number;
@@ -22,6 +26,10 @@ interface PlantsGridProps {
   onBulkAction?: (plants: EnhancedPlantInstance[], action: string) => void;
   showSearch?: boolean;
   showFilters?: boolean;
+  showAdvancedSearch?: boolean;
+  showSearchResults?: boolean;
+  showPresets?: boolean;
+  showHistory?: boolean;
   initialFilters?: Partial<PlantInstanceFilter>;
   cardSize?: 'small' | 'medium' | 'large';
   className?: string;
@@ -34,6 +42,10 @@ export default function PlantsGrid({
   onBulkAction,
   showSearch = true,
   showFilters = true,
+  showAdvancedSearch = false,
+  showSearchResults = false,
+  showPresets = false,
+  showHistory = false,
   initialFilters = {},
   cardSize = 'medium',
   className = '',
@@ -51,6 +63,8 @@ export default function PlantsGrid({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedPlants, setSelectedPlants] = useState<number[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
+  const [useSearchResults, setUseSearchResults] = useState(false);
   const { triggerHaptic } = useHapticFeedback();
 
   // Fetch plants with infinite query
@@ -95,14 +109,27 @@ export default function PlantsGrid({
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Flatten all pages into a single array
+  // Flatten all pages into a single array or use search results
   const plants = useMemo(() => {
+    if (useSearchResults && searchResults) {
+      return searchResults.instances;
+    }
     return data?.pages.flatMap(page => page.instances) ?? [];
-  }, [data]);
+  }, [data, searchResults, useSearchResults]);
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
+    setSelectedPlants([]);
+    setIsSelectionMode(false);
+    setUseSearchResults(false);
+    setSearchResults(null);
+  }, []);
+
+  // Handle advanced search results
+  const handleSearchResults = useCallback((results: AdvancedSearchResult) => {
+    setSearchResults(results);
+    setUseSearchResults(true);
     setSelectedPlants([]);
     setIsSelectionMode(false);
   }, []);
@@ -254,12 +281,18 @@ export default function PlantsGrid({
             onSearch={handleSearch}
             onFilterChange={handleFilterChange}
             onSortChange={handleSortChange}
+            onSearchResults={handleSearchResults}
+            onPlantSelect={onPlantSelect}
             searchQuery={searchQuery}
             filters={filters}
             sortBy={sortBy}
             sortOrder={sortOrder}
             showSearch={showSearch}
             showFilters={showFilters}
+            showAdvancedSearch={showAdvancedSearch}
+            showSearchResults={showSearchResults}
+            showPresets={showPresets}
+            showHistory={showHistory}
             isLoading={isLoading}
             onRefresh={() => refetch()}
             isRefreshing={isRefreshing}

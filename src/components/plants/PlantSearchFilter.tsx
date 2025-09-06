@@ -2,19 +2,36 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import AdvancedSearchInterface from '@/components/search/AdvancedSearchInterface';
+import SearchResults from '@/components/search/SearchResults';
+import SearchPresetManager from '@/components/search/SearchPresetManager';
+import SearchHistory from '@/components/search/SearchHistory';
 import type { PlantInstanceSortField } from '@/lib/types/plant-instance-types';
-import type { PlantInstanceFilter } from '@/lib/validation/plant-schemas';
+import type { 
+  PlantInstanceFilter, 
+  EnhancedPlantInstanceFilter 
+} from '@/lib/validation/plant-schemas';
+import type { 
+  AdvancedSearchResult,
+  EnhancedPlantInstance 
+} from '@/lib/types/plant-instance-types';
 
 interface PlantSearchFilterProps {
   onSearch: (query: string) => void;
   onFilterChange: (filters: Partial<PlantInstanceFilter>) => void;
   onSortChange: (field: PlantInstanceSortField, order: 'asc' | 'desc') => void;
+  onSearchResults?: (results: AdvancedSearchResult) => void;
+  onPlantSelect?: (plant: EnhancedPlantInstance) => void;
   searchQuery: string;
   filters: PlantInstanceFilter;
   sortBy: PlantInstanceSortField;
   sortOrder: 'asc' | 'desc';
   showSearch?: boolean;
   showFilters?: boolean;
+  showAdvancedSearch?: boolean;
+  showSearchResults?: boolean;
+  showPresets?: boolean;
+  showHistory?: boolean;
   isLoading?: boolean;
   onRefresh?: () => void;
   isRefreshing?: boolean;
@@ -24,19 +41,44 @@ export default function PlantSearchFilter({
   onSearch,
   onFilterChange,
   onSortChange,
+  onSearchResults,
+  onPlantSelect,
   searchQuery,
   filters,
   sortBy,
   sortOrder,
   showSearch = true,
   showFilters = true,
+  showAdvancedSearch = false,
+  showSearchResults = false,
+  showPresets = false,
+  showHistory = false,
   isLoading = false,
   onRefresh,
   isRefreshing = false,
 }: PlantSearchFilterProps) {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [showAdvancedPanel, setShowAdvancedPanel] = useState(false);
+  const [showPresetsPanel, setShowPresetsPanel] = useState(false);
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
+  
+  // Enhanced filters for advanced search
+  const [enhancedFilters, setEnhancedFilters] = useState<EnhancedPlantInstanceFilter>({
+    userId: filters.userId,
+    overdueOnly: filters.overdueOnly,
+    limit: filters.limit || 20,
+    offset: filters.offset || 0,
+    sortBy: sortBy,
+    sortOrder: sortOrder,
+    location: filters.location,
+    dueSoonDays: filters.dueSoonDays,
+    isActive: filters.isActive,
+    includeStats: false,
+    includeFacets: false,
+  });
 
   // Fetch user locations for filter dropdown
   const { data: locations } = useQuery({
@@ -78,6 +120,49 @@ export default function PlantSearchFilter({
     onSortChange(field, newOrder);
   }, [sortBy, sortOrder, onSortChange]);
 
+  // Handle advanced search results
+  const handleSearchResults = useCallback((results: AdvancedSearchResult) => {
+    setSearchResults(results);
+    onSearchResults?.(results);
+  }, [onSearchResults]);
+
+  // Handle enhanced filter changes
+  const handleEnhancedFiltersChange = useCallback((newFilters: EnhancedPlantInstanceFilter) => {
+    setEnhancedFilters(newFilters);
+    
+    // Update basic filters for backward compatibility
+    onFilterChange({
+      location: newFilters.location,
+      overdueOnly: newFilters.overdueOnly,
+      dueSoonDays: newFilters.dueSoonDays,
+      isActive: newFilters.isActive,
+    });
+    
+    // Update sort
+    if (newFilters.sortBy !== sortBy || newFilters.sortOrder !== sortOrder) {
+      onSortChange(newFilters.sortBy, newFilters.sortOrder);
+    }
+  }, [onFilterChange, onSortChange, sortBy, sortOrder]);
+
+  // Handle preset selection
+  const handlePresetSelect = useCallback(async (presetId: string) => {
+    try {
+      const response = await fetch(`/api/search/presets/${presetId}`);
+      if (!response.ok) throw new Error('Failed to load preset');
+      
+      const data = await response.json();
+      handleSearchResults(data.data);
+    } catch (error) {
+      console.error('Failed to load search preset:', error);
+    }
+  }, [handleSearchResults]);
+
+  // Handle search from history
+  const handleHistorySearch = useCallback((query: string) => {
+    setLocalSearchQuery(query);
+    onSearch(query);
+  }, [onSearch]);
+
   // Clear all filters
   const clearFilters = useCallback(() => {
     onFilterChange({
@@ -92,7 +177,18 @@ export default function PlantSearchFilter({
     });
     setLocalSearchQuery('');
     onSearch('');
-  }, [onFilterChange, onSearch]);
+    setSearchResults(null);
+    setEnhancedFilters({
+      userId: filters.userId,
+      overdueOnly: false,
+      limit: 20,
+      offset: 0,
+      sortBy: 'created_at',
+      sortOrder: 'desc',
+      includeStats: false,
+      includeFacets: false,
+    });
+  }, [onFilterChange, onSearch, filters.userId]);
 
   // Count active filters
   const activeFilterCount = Object.entries(filters).filter(([key, value]) => {
@@ -173,6 +269,63 @@ export default function PlantSearchFilter({
                 {activeFilterCount}
               </span>
             )}
+          </button>
+        )}
+
+        {/* Advanced Search Toggle */}
+        {showAdvancedSearch && (
+          <button
+            onClick={() => setShowAdvancedPanel(!showAdvancedPanel)}
+            className={`
+              px-3 py-2 border rounded-lg text-sm font-medium transition-colors
+              ${showAdvancedPanel 
+                ? 'bg-primary-50 border-primary-300 text-primary-700' 
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }
+            `}
+          >
+            <svg className="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+            </svg>
+            Smart Search
+          </button>
+        )}
+
+        {/* Presets Toggle */}
+        {showPresets && (
+          <button
+            onClick={() => setShowPresetsPanel(!showPresetsPanel)}
+            className={`
+              px-3 py-2 border rounded-lg text-sm font-medium transition-colors
+              ${showPresetsPanel 
+                ? 'bg-primary-50 border-primary-300 text-primary-700' 
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }
+            `}
+          >
+            <svg className="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" clipRule="evenodd" />
+            </svg>
+            Saved
+          </button>
+        )}
+
+        {/* History Toggle */}
+        {showHistory && (
+          <button
+            onClick={() => setShowHistoryPanel(!showHistoryPanel)}
+            className={`
+              px-3 py-2 border rounded-lg text-sm font-medium transition-colors
+              ${showHistoryPanel 
+                ? 'bg-primary-50 border-primary-300 text-primary-700' 
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }
+            `}
+          >
+            <svg className="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+            </svg>
+            History
           </button>
         )}
 
@@ -304,6 +457,57 @@ export default function PlantSearchFilter({
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Advanced Search Panel */}
+      {showAdvancedPanel && showAdvancedSearch && (
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <AdvancedSearchInterface
+            onResults={handleSearchResults}
+            onFiltersChange={handleEnhancedFiltersChange}
+            initialFilters={enhancedFilters}
+            placeholder="Smart search across all plant data..."
+            showPresets={false}
+            showHistory={false}
+            compact={true}
+          />
+        </div>
+      )}
+
+      {/* Search Presets Panel */}
+      {showPresetsPanel && showPresets && (
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <SearchPresetManager
+            currentFilters={enhancedFilters}
+            currentSortBy={sortBy}
+            currentSortOrder={sortOrder}
+            onPresetSelect={handlePresetSelect}
+          />
+        </div>
+      )}
+
+      {/* Search History Panel */}
+      {showHistoryPanel && showHistory && (
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <SearchHistory
+            onSearchSelect={handleHistorySearch}
+            limit={10}
+            showClearAll={true}
+          />
+        </div>
+      )}
+
+      {/* Search Results */}
+      {showSearchResults && searchResults && (
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <SearchResults
+            results={searchResults}
+            isLoading={isLoading}
+            onPlantSelect={onPlantSelect}
+            showFacets={true}
+            showStats={true}
+          />
         </div>
       )}
     </div>

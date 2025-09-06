@@ -90,6 +90,7 @@ export async function getPlantsWithStats(
       family: plants.family,
       genus: plants.genus,
       species: plants.species,
+      cultivar: plants.cultivar,
       commonName: plants.commonName,
       careInstructions: plants.careInstructions,
       defaultImage: plants.defaultImage,

@@ -200,11 +200,21 @@ graph TB
 #### PlantTaxonomySelector Component
 - **Purpose**: Smart plant selection with autocomplete and add-new functionality
 - **Features**: 
-  - Autocomplete search across family, genus, species, common names
+  - Autocomplete search across family, genus, species, cultivar, and common names
   - "Add new plant type" option when no matches found
-  - Quick-add form for new taxonomy entries
+  - Quick-add form for new taxonomy entries with separate fields
   - Fuzzy matching for typos and variations
 - **UX Flow**: Search → Select existing OR Add new → Confirm details
+
+#### PlantTaxonomyForm Component
+- **Purpose**: Detailed plant taxonomy entry with proper botanical classification
+- **Features**:
+  - Separate input fields for Family, Genus, Species, Cultivar, and Common Name
+  - Validation for proper botanical naming conventions
+  - Autocomplete suggestions for each taxonomy level
+  - Help text and examples for each field
+  - Optional care instructions and default image upload
+- **Field Layout**: Hierarchical form with Family → Genus → Species → Cultivar → Common Name
 
 #### CareTracker Component
 - **Purpose**: Fertilizer and repotting schedule management
@@ -212,9 +222,20 @@ graph TB
 - **Integration**: Updates plant instance records, calculates next due dates
 
 #### PropagationTracker Component
-- **Purpose**: Track propagation attempts and success rates
-- **Features**: Status progression, parent plant linking, conversion to full plants
+- **Purpose**: Track propagation attempts and success rates from both internal and external sources
+- **Features**: Status progression, flexible parent plant linking, conversion to full plants
 - **Workflow**: Started → Rooting → Planted → Established → Converted
+- **Source Options**: Internal (from owned plants) or External (gifts, trades, purchases)
+
+#### PropagationForm Component
+- **Purpose**: Create and edit propagations with flexible source selection
+- **Features**: 
+  - Source type selection (Internal/External)
+  - Plant selector for internal propagations
+  - External source details form (gift from friend, trade, purchase, etc.)
+  - Ability to edit and change source relationships later
+  - Plant taxonomy selector for external propagations
+- **UX Flow**: Select source type → Choose plant OR enter external details → Fill propagation details → Save
 
 ## Data Models
 
@@ -243,6 +264,7 @@ erDiagram
         string family
         string genus
         string species
+        string cultivar
         string common_name
         text care_instructions
         text default_image
@@ -271,11 +293,14 @@ erDiagram
         int id PK
         int user_id FK
         int plant_id FK
-        int parent_instance_id FK
+        int parent_instance_id FK "nullable for external sources"
         string nickname
         string location
         timestamp date_started
         string status
+        string source_type "internal|external"
+        string external_source "gift|trade|purchase|other"
+        text external_source_details
         text notes
         jsonb images
         timestamp created_at
@@ -320,6 +345,7 @@ interface Plant {
   family: string;
   genus: string;
   species: string;
+  cultivar: string;
   commonName: string;
   careInstructions?: string;
   defaultImage?: string;
@@ -351,11 +377,14 @@ interface Propagation {
   id: number;
   userId: number;
   plantId: number;
-  parentInstanceId?: number;
+  parentInstanceId?: number; // null for external sources
   nickname: string;
   location: string;
   dateStarted: Date;
   status: 'started' | 'rooting' | 'planted' | 'established';
+  sourceType: 'internal' | 'external';
+  externalSource?: 'gift' | 'trade' | 'purchase' | 'other';
+  externalSourceDetails?: string;
   notes?: string;
   images: string[];
   createdAt: Date;
@@ -395,7 +424,8 @@ Based on the provided CSV files, the import system will map:
 - Family → family
 - Genus → genus  
 - Species → species
-- Common Name/Variety → common_name
+- Common Name → common_name
+- Cultivar/Variety → cultivar (if separate column exists, otherwise parse from common_name)
 - Auto-set: createdBy = import_user_id, isVerified = false
 
 **Fertilizer Schedule CSV** → `plant_instances` table:

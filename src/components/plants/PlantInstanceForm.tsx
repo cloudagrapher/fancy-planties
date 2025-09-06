@@ -325,7 +325,7 @@ export default function PlantInstanceForm({
                         {...field}
                         type="text"
                         placeholder="My favorite monstera"
-                        className={`w-full px-3 py-2 text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                           errors.nickname ? 'border-red-300' : 'border-gray-300'
                         }`}
                       />
@@ -349,7 +349,7 @@ export default function PlantInstanceForm({
                           {...field}
                           type="text"
                           placeholder="Living room window"
-                          className={`w-full px-3 py-2 text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                          className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                             errors.location ? 'border-red-300' : 'border-gray-300'
                           }`}
                           onChange={(e) => {
@@ -456,7 +456,7 @@ export default function PlantInstanceForm({
                     <div className="space-y-3">
                       <select
                         {...field}
-                        className={`w-full px-3 py-2 text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        className={`w-full px-3 py-2 bg-white text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                           errors.fertilizerSchedule ? 'border-red-300' : 'border-gray-300'
                         }`}
                       >
@@ -519,7 +519,7 @@ export default function PlantInstanceForm({
                         {...field}
                         type="date"
                         max={new Date().toISOString().split('T')[0]}
-                        className="w-full px-3 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     )}
                   />
@@ -537,7 +537,7 @@ export default function PlantInstanceForm({
                         {...field}
                         type="date"
                         max={new Date().toISOString().split('T')[0]}
-                        className="w-full px-3 py-2 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                       />
                     )}
                   />
@@ -557,7 +557,7 @@ export default function PlantInstanceForm({
                       {...field}
                       rows={3}
                       placeholder="Any special care instructions or observations..."
-                      className={`w-full px-3 py-2 text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none ${
+                      className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none ${
                         errors.notes ? 'border-red-300' : 'border-gray-300'
                       }`}
                     />
