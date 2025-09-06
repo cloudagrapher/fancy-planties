@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateRequest } from './index';
+import { validateRequest, type User } from './index';
 
 // Rate limiting store (in production, use Redis or similar)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
@@ -21,7 +21,6 @@ export function validateCSRFToken(token: string, sessionToken: string): boolean 
 // Rate limiting middleware
 export function rateLimit(identifier: string): { success: boolean; remaining: number; resetTime: number } {
   const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW;
   
   // Clean up old entries
   for (const [key, value] of rateLimitStore.entries()) {
@@ -64,7 +63,7 @@ export function rateLimit(identifier: string): { success: boolean; remaining: nu
 // Authentication middleware for API routes
 export async function withAuth(
   request: NextRequest,
-  handler: (request: NextRequest, user: any) => Promise<NextResponse>
+  handler: (request: NextRequest, user: User) => Promise<NextResponse>
 ): Promise<NextResponse> {
   try {
     const { user, session } = await validateRequest();
@@ -93,7 +92,9 @@ export async function withRateLimit(
 ): Promise<NextResponse> {
   try {
     // Use IP address for rate limiting (in production, consider user ID for authenticated requests)
-    const identifier = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    const identifier = request.headers.get('x-forwarded-for') || 
+                      request.headers.get('x-real-ip') || 
+                      'unknown';
     
     const rateLimitResult = rateLimit(identifier);
     
@@ -134,7 +135,7 @@ export async function withRateLimit(
 // Combined middleware for authenticated and rate-limited routes
 export async function withAuthAndRateLimit(
   request: NextRequest,
-  handler: (request: NextRequest, user: any) => Promise<NextResponse>
+  handler: (request: NextRequest, user: User) => Promise<NextResponse>
 ): Promise<NextResponse> {
   return withRateLimit(request, async (req) => {
     return withAuth(req, handler);
@@ -182,7 +183,7 @@ export async function withCSRFProtection(
 }
 
 // Route protection helper for pages
-export async function requireAuth(): Promise<{ user: any; session: any } | null> {
+export async function requireAuth(): Promise<{ user: User; session: { id: string; userId: number; expiresAt: Date } } | null> {
   const { user, session } = await validateRequest();
   
   if (!user || !session) {

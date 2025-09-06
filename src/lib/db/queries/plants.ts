@@ -123,7 +123,7 @@ export class PlantQueries {
   static async delete(id: number): Promise<boolean> {
     try {
       const result = await db.delete(plants).where(eq(plants.id, id));
-      return result.rowCount > 0;
+      return result.length > 0;
     } catch (error) {
       console.error('Failed to delete plant:', error);
       throw new Error('Failed to delete plant');

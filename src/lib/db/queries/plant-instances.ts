@@ -1,4 +1,4 @@
-import { eq, and, desc, asc, isNull, isNotNull, lte, gte, ilike, or, sql } from 'drizzle-orm';
+import { eq, and, desc, asc, isNotNull, lte, gte, ilike, or, sql } from 'drizzle-orm';
 import { db } from '../index';
 import { plantInstances, plants, type PlantInstance, type NewPlantInstance } from '../schema';
 
@@ -315,7 +315,7 @@ export class PlantInstanceQueries {
   static async delete(id: number): Promise<boolean> {
     try {
       const result = await db.delete(plantInstances).where(eq(plantInstances.id, id));
-      return result.rowCount > 0;
+      return result.length > 0;
     } catch (error) {
       console.error('Failed to delete plant instance:', error);
       throw new Error('Failed to delete plant instance');

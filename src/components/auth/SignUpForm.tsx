@@ -28,9 +28,9 @@ export default function SignUpForm() {
       const validation = signUpSchema.safeParse(formData);
       if (!validation.success) {
         const fieldErrors: Record<string, string> = {};
-        validation.error.errors.forEach((error) => {
-          const field = error.path.join('.');
-          fieldErrors[field] = error.message;
+        validation.error.issues.forEach((issue) => {
+          const field = issue.path.join('.');
+          fieldErrors[field] = issue.message;
         });
         setErrors(fieldErrors);
         return;

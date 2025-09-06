@@ -274,7 +274,7 @@ export class PropagationQueries {
   static async delete(id: number): Promise<boolean> {
     try {
       const result = await db.delete(propagations).where(eq(propagations.id, id));
-      return result.rowCount > 0;
+      return result.length > 0;
     } catch (error) {
       console.error('Failed to delete propagation:', error);
       throw new Error('Failed to delete propagation');

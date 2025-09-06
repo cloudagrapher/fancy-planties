@@ -63,7 +63,7 @@ export class SessionQueries {
   static async delete(id: string): Promise<boolean> {
     try {
       const result = await db.delete(sessions).where(eq(sessions.id, id));
-      return result.rowCount > 0;
+      return result.length > 0;
     } catch (error) {
       console.error('Failed to delete session:', error);
       throw new Error('Failed to delete session');
@@ -74,7 +74,7 @@ export class SessionQueries {
   static async deleteByUserId(userId: number): Promise<number> {
     try {
       const result = await db.delete(sessions).where(eq(sessions.userId, userId));
-      return result.rowCount;
+      return result.length;
     } catch (error) {
       console.error('Failed to delete sessions by user ID:', error);
       throw new Error('Failed to delete sessions');
@@ -86,7 +86,7 @@ export class SessionQueries {
     try {
       const now = new Date();
       const result = await db.delete(sessions).where(lte(sessions.expiresAt, now));
-      return result.rowCount;
+      return result.length;
     } catch (error) {
       console.error('Failed to delete expired sessions:', error);
       throw new Error('Failed to delete expired sessions');

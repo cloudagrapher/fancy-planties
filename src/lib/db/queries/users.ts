@@ -61,7 +61,7 @@ export class UserQueries {
   static async delete(id: number): Promise<boolean> {
     try {
       const result = await db.delete(users).where(eq(users.id, id));
-      return result.rowCount > 0;
+      return result.length > 0;
     } catch (error) {
       console.error('Failed to delete user:', error);
       throw new Error('Failed to delete user');

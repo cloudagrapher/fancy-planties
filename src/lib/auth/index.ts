@@ -3,13 +3,21 @@ import { PostgresJsAdapter } from '@lucia-auth/adapter-postgresql';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
 import bcrypt from 'bcryptjs';
-import { generateId } from 'oslo/crypto';
+import { generateRandomString } from 'oslo/crypto';
+import postgres from 'postgres';
 import { db } from '../db';
 import { users, sessions, type User as DatabaseUser, type Session as DatabaseSession } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
+// Create postgres client for Lucia adapter
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+const client = postgres(connectionString);
+
 // Initialize PostgreSQL adapter for Lucia
-const adapter = new PostgresJsAdapter(db, sessions, users);
+const adapter = new PostgresJsAdapter(client, {
+  session: 'sessions',
+  user: 'users',
+});
 
 // Initialize Lucia with configuration
 export const lucia = new Lucia(adapter, {
@@ -18,7 +26,6 @@ export const lucia = new Lucia(adapter, {
     attributes: {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      httpOnly: true,
     },
   },
   getUserAttributes: (attributes) => {
@@ -60,7 +67,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 
 // Session management utilities
 export async function createSession(userId: number): Promise<Session> {
-  const sessionId = generateId(40);
+  const sessionId = generateRandomString(40, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days
   
   const [session] = await db.insert(sessions).values({
@@ -77,7 +84,7 @@ export async function invalidateSession(sessionId: string): Promise<void> {
 }
 
 export async function invalidateUserSessions(userId: number): Promise<void> {
-  await lucia.invalidateUserSessions(userId);
+  await lucia.invalidateUserSessions(userId.toString());
 }
 
 // Cached session validation for performance
@@ -107,7 +114,28 @@ export const validateRequest = cache(async (): Promise<{ user: User; session: Se
     // Ignore cookie setting errors in server components
   }
   
-  return result;
+  // Convert Lucia result to our expected format
+  if (result.user && result.session) {
+    // Get full user data from database
+    const fullUser = await getUserById(parseInt(result.user.id));
+    if (!fullUser) {
+      return { user: null, session: null };
+    }
+    
+    return {
+      user: fullUser,
+      session: {
+        id: result.session.id,
+        userId: parseInt(result.user.id),
+        expiresAt: result.session.expiresAt,
+      },
+    };
+  }
+  
+  return {
+    user: null,
+    session: null,
+  };
 });
 
 // User management utilities
@@ -147,7 +175,13 @@ export async function signIn(email: string, password: string): Promise<{ user: U
     return null;
   }
   
-  const session = await lucia.createSession(user.id, {});
+  const luciaSession = await lucia.createSession(user.id.toString(), {});
+  
+  const session: Session = {
+    id: luciaSession.id,
+    userId: user.id,
+    expiresAt: luciaSession.expiresAt,
+  };
   
   return {
     user,
@@ -167,7 +201,13 @@ export async function signUp(email: string, password: string, name: string): Pro
   const user = await createUser(email, password, name);
   
   // Create session
-  const session = await lucia.createSession(user.id, {});
+  const luciaSession = await lucia.createSession(user.id.toString(), {});
+  
+  const session: Session = {
+    id: luciaSession.id,
+    userId: user.id,
+    expiresAt: luciaSession.expiresAt,
+  };
   
   return {
     user,

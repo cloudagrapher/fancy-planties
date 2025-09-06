@@ -43,7 +43,7 @@ export class MigrationUtils {
           .filter(stmt => 
             stmt.length > 0 && 
             !stmt.startsWith('--') && 
-            !stmt.match(/^\/\*.*\*\/$/s)
+            !stmt.match(/^\/\*.*\*\/$/)
           );
 
         for (const statement of statements) {
@@ -203,7 +203,7 @@ export class MigrationUtils {
           WHERE table_name = '__drizzle_migrations'
         ) as exists
       `);
-      const migrationsApplied = migrationTable?.exists || false;
+      const migrationsApplied = Boolean(migrationTable?.exists) || false;
 
       // Check if main tables exist
       const [tablesCheck] = await db.execute(sql`
