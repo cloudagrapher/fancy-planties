@@ -291,4 +291,158 @@ When encountering TypeScript errors:
 4. **Test with simple cases** - isolate the problematic code
 5. **Use type assertions carefully** - prefer proper interfaces
 
+## Database Schema Compliance
+
+### Drizzle ORM Type Safety
+
+**CRITICAL**: Database inserts must match exact schema requirements.
+
+```typescript
+// ❌ WRONG - Missing required fields, extra fields
+await db.insert(careHistory).values({
+  userId,           // Not in schema if user field doesn't exist
+  plantInstanceId,  // Missing careDate (required)
+  careType,
+  notes,
+  createdAt: new Date()
+});
+
+// ✅ CORRECT - Match schema exactly
+await db.insert(careHistory).values({
+  plantInstanceId,
+  careType,
+  careDate: new Date(),  // Required field
+  notes,
+  // userId not included if not in schema
+  // createdAt handled by database default
+});
+```
+
+### Schema Field Verification
+
+Before database operations:
+1. **Check schema definition** - Verify required vs optional fields
+2. **Match field names exactly** - `careDate` not `createdAt`
+3. **Include all required fields** - TypeScript will show missing ones
+4. **Remove fields not in schema** - Don't add `userId` if not defined
+
+## Error Handling Standards
+
+### Unknown Error Type Handling
+
+**CRITICAL**: TypeScript treats caught errors as `unknown` type.
+
+```typescript
+// ❌ WRONG - Accessing properties on unknown
+try {
+  await someOperation();
+} catch (error) {
+  console.error('Error:', error.message);  // Type error
+  return { error: error.message };         // Type error
+}
+
+// ✅ CORRECT - Type guard for Error objects
+try {
+  await someOperation();
+} catch (error) {
+  const message = error instanceof Error ? error.message : 'Unknown error';
+  console.error('Error:', message);
+  return { error: message };
+}
+
+// ✅ ALTERNATIVE - Type assertion with safety
+try {
+  await someOperation();
+} catch (error) {
+  const errorMessage = (error as Error)?.message || 'Unknown error';
+  return { error: errorMessage };
+}
+```
+
+## Testing Standards
+
+### Browser API Mocking
+
+**CRITICAL**: Jest environment requires careful browser API handling.
+
+```typescript
+// ❌ WRONG - Cannot delete non-configurable properties
+delete (navigator as any).vibrate;  // TypeError in Jest
+
+// ✅ CORRECT - Mock with Object.defineProperty
+Object.defineProperty(navigator, 'vibrate', {
+  value: undefined,
+  configurable: true,
+  writable: true
+});
+
+// ✅ ALTERNATIVE - Use jest.spyOn for methods
+const vibrateSpy = jest.spyOn(navigator, 'vibrate').mockImplementation();
+// Later: vibrateSpy.mockRestore();
+```
+
+### Service Worker Testing
+
+```typescript
+// ❌ WRONG - Global state pollution between tests
+let mockServiceWorker = { register: jest.fn() };
+
+// ✅ CORRECT - Reset state in beforeEach
+beforeEach(() => {
+  // Reset all mocks and state
+  jest.clearAllMocks();
+  delete (global as any).navigator;
+  delete (global as any).serviceWorker;
+  
+  // Fresh mock setup for each test
+  Object.defineProperty(global, 'navigator', {
+    value: { serviceWorker: { register: jest.fn() } },
+    configurable: true
+  });
+});
+```
+
+### Test Isolation
+
+```typescript
+// ✅ Proper test setup and teardown
+describe('Component', () => {
+  beforeEach(() => {
+    // Clean state before each test
+    jest.clearAllMocks();
+    // Reset any global objects
+  });
+  
+  afterEach(() => {
+    // Clean up after each test
+    jest.restoreAllMocks();
+  });
+});
+```
+
+## Critical Error Patterns to Avoid
+
+### Database Operations
+```typescript
+// ❌ These will cause build failures
+await db.insert(table).values({ unknownField: value });
+await db.insert(table).values({ missingRequiredField });
+```
+
+### Error Handling
+```typescript
+// ❌ These will cause TypeScript errors  
+catch (error) {
+  error.message;        // error is unknown
+  error.stack;          // error is unknown
+}
+```
+
+### Testing
+```typescript
+// ❌ These will cause test failures
+delete navigator.vibrate;           // Cannot delete
+expect(globalState).toBe(value);    // State pollution
+```
+
 This document prevents the most common build failures and ensures code quality standards.

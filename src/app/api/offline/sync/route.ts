@@ -7,7 +7,7 @@ const syncRequestSchema = z.object({
   pendingEntries: z.array(z.object({
     id: z.string(),
     plantInstanceId: z.number(),
-    careType: z.enum(['fertilizer', 'repot', 'water', 'prune']),
+    careType: z.enum(['fertilizer', 'repot', 'water', 'prune', 'inspect', 'other']),
     notes: z.string().optional(),
     timestamp: z.string(),
   })),

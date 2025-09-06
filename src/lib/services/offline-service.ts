@@ -110,15 +110,19 @@ export class OfflineService {
             userId,
             plantInstanceId: entry.plantInstanceId,
             careType: entry.careType,
+            careDate: new Date(entry.timestamp),
             notes: entry.notes,
-            createdAt: new Date(entry.timestamp),
           })
           .returning();
 
         results.push({ success: true, entry, result: result[0] });
       } catch (error) {
         console.error('Error processing pending care entry:', error);
-        results.push({ success: false, entry, error: error.message });
+        results.push({ 
+          success: false, 
+          entry, 
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
       }
     }
 

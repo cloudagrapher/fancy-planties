@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { plantInstanceHelpers } from '@/lib/types/plant-instance-types';
+import { useSwipeGestures } from '@/hooks/useSwipeGestures';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 
 interface PlantCardProps {
   plant: EnhancedPlantInstance;
@@ -13,6 +15,8 @@ interface PlantCardProps {
   showLastCare?: boolean;
   onSelect?: (plant: EnhancedPlantInstance) => void;
   onCareAction?: (plant: EnhancedPlantInstance, action: 'fertilize' | 'repot') => void;
+  onSwipeLeft?: (plant: EnhancedPlantInstance) => void;
+  onSwipeRight?: (plant: EnhancedPlantInstance) => void;
   isSelected?: boolean;
   isSelectionMode?: boolean;
   className?: string;
@@ -26,12 +30,16 @@ export default function PlantCard({
   showLastCare = false,
   onSelect,
   onCareAction,
+  onSwipeLeft,
+  onSwipeRight,
   isSelected = false,
   isSelectionMode = false,
   className = '',
 }: PlantCardProps) {
   const [imageError, setImageError] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
+  const [isSwipeActive, setIsSwipeActive] = useState(false);
+  const { triggerHaptic } = useHapticFeedback();
 
   // Size configurations
   const sizeConfig = {
@@ -57,8 +65,31 @@ export default function PlantCard({
 
   const config = sizeConfig[size];
 
+  // Handle swipe gestures
+  const swipeRef = useSwipeGestures({
+    onSwipeLeft: () => {
+      if (onSwipeLeft) {
+        triggerHaptic('light');
+        setIsSwipeActive(true);
+        setTimeout(() => setIsSwipeActive(false), 200);
+        onSwipeLeft(plant);
+      }
+    },
+    onSwipeRight: () => {
+      if (onSwipeRight) {
+        triggerHaptic('light');
+        setIsSwipeActive(true);
+        setTimeout(() => setIsSwipeActive(false), 200);
+        onSwipeRight(plant);
+      }
+    },
+    threshold: 60,
+  });
+
   // Handle card press
   const handlePress = () => {
+    triggerHaptic('selection');
+    
     if (isSelectionMode) {
       // In selection mode, toggle selection
       if (onSelect) {
@@ -75,6 +106,7 @@ export default function PlantCard({
   // Handle care action
   const handleCareAction = (action: 'fertilize' | 'repot', event: React.MouseEvent) => {
     event.stopPropagation();
+    triggerHaptic('medium');
     if (onCareAction) {
       onCareAction(plant, action);
     }
@@ -146,15 +178,18 @@ export default function PlantCard({
 
   return (
     <div
+      ref={swipeRef}
       className={`
         ${config.container}
         bg-white rounded-xl shadow-soft hover:shadow-dreamy
         border border-gray-100 overflow-hidden
         transition-all duration-200 ease-out
         ${isPressed ? 'scale-95' : 'scale-100'}
+        ${isSwipeActive ? 'scale-105 shadow-lg' : ''}
         ${isSelected ? 'ring-2 ring-primary-400 shadow-dreamy' : ''}
         ${onSelect ? 'cursor-pointer' : ''}
         ${className}
+        touch-manipulation select-none
       `}
       onClick={handlePress}
       onTouchStart={() => setIsPressed(true)}

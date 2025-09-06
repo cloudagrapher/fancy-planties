@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import QueryClientProvider from "@/components/providers/QueryClientProvider";
 import { ServiceWorkerProvider } from "@/components/shared/ServiceWorkerProvider";
 import { NetworkStatus, OfflineBanner } from "@/components/shared/NetworkStatus";
+import { PWAInstallPrompt, StandaloneModeIndicator } from "@/components/shared/PWAInstallPrompt";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -58,6 +59,8 @@ export default function RootLayout({
           <QueryClientProvider>
             <NetworkStatus />
             <OfflineBanner />
+            <StandaloneModeIndicator />
+            <PWAInstallPrompt />
             {children}
           </QueryClientProvider>
         </ServiceWorkerProvider>
