@@ -79,86 +79,108 @@ export default function SignUpForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-token">
-      {generalError && (
-        <div className="form-error bg-salmon-50 border border-salmon-200 text-salmon-700 px-4 py-3 rounded-token-lg">
-          {generalError}
+    <div className={`${isLoading ? 'form--loading' : ''}`}>
+      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="on" noValidate>
+        {generalError && (
+          <div className="form-validation-summary">
+            <div className="form-validation-summary-title">
+              Account Creation Failed
+            </div>
+            <ul className="form-validation-summary-list">
+              <li className="form-validation-summary-item">{generalError}</li>
+            </ul>
+          </div>
+        )}
+
+        <div className="form-group">
+          <label htmlFor="signup-name" className="form-label form-label--required">
+            Full Name
+          </label>
+          <input
+            id="signup-name"
+            name="name"
+            type="text"
+            autoComplete="name"
+            required
+            value={formData.name}
+            onChange={handleChange}
+            className={`form-input ${errors.name ? 'form-input--error' : ''}`}
+            placeholder="Enter your full name"
+            aria-describedby={errors.name ? 'signup-name-error' : undefined}
+          />
+          {errors.name && (
+            <div id="signup-name-error" className="form-error" role="alert">
+              {errors.name}
+            </div>
+          )}
         </div>
-      )}
 
-      <div className="form-group">
-        <label htmlFor="name" className="form-label form-label--required">
-          Full Name
-        </label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          autoComplete="name"
-          required
-          value={formData.name}
-          onChange={handleChange}
-          className={`form-input ${errors.name ? 'form-input--error' : ''}`}
-          placeholder="Enter your full name"
-        />
-        {errors.name && (
-          <div className="form-error">{errors.name}</div>
-        )}
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="email" className="form-label form-label--required">
-          Email Address
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={formData.email}
-          onChange={handleChange}
-          className={`form-input ${errors.email ? 'form-input--error' : ''}`}
-          placeholder="Enter your email"
-        />
-        {errors.email && (
-          <div className="form-error">{errors.email}</div>
-        )}
-      </div>
-
-      <div className="form-group">
-        <label htmlFor="password" className="form-label form-label--required">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          data-new-password="true"
-          required
-          value={formData.password}
-          onChange={handleChange}
-          className={`form-input ${errors.password ? 'form-input--error' : ''}`}
-          placeholder="Create a strong password"
-        />
-        {errors.password && (
-          <div className="form-error">{errors.password}</div>
-        )}
-        <div className="form-help">
-          Password must be at least 8 characters with uppercase, lowercase, and number
+        <div className="form-group">
+          <label htmlFor="signup-email" className="form-label form-label--required">
+            Email Address
+          </label>
+          <input
+            id="signup-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={formData.email}
+            onChange={handleChange}
+            className={`form-input ${errors.email ? 'form-input--error' : ''}`}
+            placeholder="Enter your email address"
+            aria-describedby={errors.email ? 'signup-email-error' : undefined}
+          />
+          {errors.email && (
+            <div id="signup-email-error" className="form-error" role="alert">
+              {errors.email}
+            </div>
+          )}
         </div>
-      </div>
 
-      <div className="form-actions form-actions--full">
-        <button
-          type="submit"
-          disabled={isLoading}
-          className={`btn btn--primary btn--full ${isLoading ? 'btn--loading' : ''}`}
-        >
-          {isLoading ? 'Creating account...' : 'Create Account'}
-        </button>
-      </div>
-    </form>
+        <div className="form-group">
+          <label htmlFor="signup-password" className="form-label form-label--required">
+            Password
+          </label>
+          <input
+            id="signup-password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            data-new-password="true"
+            required
+            value={formData.password}
+            onChange={handleChange}
+            className={`form-input ${errors.password ? 'form-input--error' : ''}`}
+            placeholder="Create a strong password"
+            aria-describedby={`${errors.password ? 'signup-password-error ' : ''}signup-password-help`}
+          />
+          {errors.password && (
+            <div id="signup-password-error" className="form-error" role="alert">
+              {errors.password}
+            </div>
+          )}
+          <div id="signup-password-help" className="form-help">
+            Password must be at least 8 characters with uppercase, lowercase, and number
+          </div>
+        </div>
+
+        <div className="form-actions form-actions--full">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`btn btn--primary btn--full ${isLoading ? 'btn--loading' : ''}`}
+            aria-describedby={isLoading ? 'signup-loading' : undefined}
+          >
+            {isLoading ? 'Creating account...' : 'Create Account'}
+          </button>
+          {isLoading && (
+            <span id="signup-loading" className="sr-only">
+              Please wait while we create your account
+            </span>
+          )}
+        </div>
+      </form>
+    </div>
   );
 }

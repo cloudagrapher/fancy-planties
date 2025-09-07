@@ -177,26 +177,26 @@ export function CSVImportModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="modal-overlay">
+      <div className="modal-content modal-content--large">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="modal-header">
+          <h2 className="modal-title">
             {getStepTitle()}
           </h2>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="modal-close"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div className="modal-body">
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mb-6 card card-body bg-red-50 border border-red-200">
+              <p className="text-sm text-error">{error}</p>
             </div>
           )}
 
@@ -211,10 +211,10 @@ export function CSVImportModal({
             <div className="space-y-6">
               <div className="text-center">
                 <Upload className="w-12 h-12 text-primary-500 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-neutral-900 mb-2">
                   Upload your {importType?.replace('_', ' ')} CSV file
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-neutral-600">
                   Make sure your CSV file has the required columns for this import type.
                 </p>
               </div>
@@ -276,7 +276,7 @@ export function CSVImportModal({
                   if (step === 'upload-file') setStep('select-type');
                   else if (step === 'preview') setStep('upload-file');
                 }}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="btn btn--outline"
               >
                 Back
               </button>
@@ -287,7 +287,7 @@ export function CSVImportModal({
             {step === 'complete' ? (
               <button
                 onClick={handleClose}
-                className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                className="btn btn--primary"
               >
                 Done
               </button>
@@ -295,14 +295,14 @@ export function CSVImportModal({
               <button
                 onClick={handleStartImport}
                 disabled={isLoading}
-                className="px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className={`btn btn--primary ${isLoading ? 'btn--loading' : ''}`}
               >
                 {isLoading ? 'Starting...' : 'Start Import'}
               </button>
             ) : (
               <button
                 onClick={handleClose}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="btn btn--outline"
               >
                 Cancel
               </button>

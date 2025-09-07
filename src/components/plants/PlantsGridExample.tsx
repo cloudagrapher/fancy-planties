@@ -23,7 +23,7 @@ export default function PlantsGridExample({
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="flex-center py-12">
         <p className="text-gray-600">Please sign in to view your plants.</p>
       </div>
     );
@@ -112,9 +112,9 @@ export default function PlantsGridExample({
 
       {/* Loading overlay for mutations */}
       {(logCareMutation.isPending || bulkOperationMutation.isPending) && (
-        <div className="absolute inset-0 bg-white bg-opacity-50 flex items-center justify-center z-40">
+        <div className="loading-overlay z-40">
           <div className="bg-white rounded-lg shadow-lg p-4 flex items-center space-x-3">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-500" />
+            <div className="spinner spinner--primary" />
             <span className="text-sm text-gray-700">
               {logCareMutation.isPending ? 'Logging care...' : 'Processing...'}
             </span>

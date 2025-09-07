@@ -60,9 +60,9 @@ export function ImportProgress({
 
   if (loading || !progress) {
     return (
-      <div className={`flex items-center justify-center p-8 ${className}`}>
-        <Loader2 className="w-6 h-6 animate-spin text-primary-500" />
-        <span className="ml-2 text-gray-600">Loading import status...</span>
+      <div className={`flex-center p-8 ${className}`}>
+        <div className="spinner spinner--primary" />
+        <span className="loading-text">Loading import status...</span>
       </div>
     );
   }
@@ -70,15 +70,15 @@ export function ImportProgress({
   const getStatusIcon = () => {
     switch (progress.status) {
       case 'pending':
-        return <Clock className="w-6 h-6 text-yellow-500" />;
+        return <Clock className="w-6 h-6 text-warning" />;
       case 'processing':
-        return <Loader2 className="w-6 h-6 animate-spin text-blue-500" />;
+        return <div className="spinner spinner--primary" />;
       case 'completed':
-        return <CheckCircle className="w-6 h-6 text-green-500" />;
+        return <CheckCircle className="w-6 h-6 text-success" />;
       case 'failed':
-        return <XCircle className="w-6 h-6 text-red-500" />;
+        return <XCircle className="w-6 h-6 text-error" />;
       default:
-        return <FileText className="w-6 h-6 text-gray-500" />;
+        return <FileText className="w-6 h-6 text-neutral-500" />;
     }
   };
 
@@ -100,25 +100,25 @@ export function ImportProgress({
   const getStatusColor = () => {
     switch (progress.status) {
       case 'pending':
-        return 'text-yellow-700';
+        return 'text-warning';
       case 'processing':
-        return 'text-blue-700';
+        return 'text-info';
       case 'completed':
-        return 'text-green-700';
+        return 'text-success';
       case 'failed':
-        return 'text-red-700';
+        return 'text-error';
       default:
-        return 'text-gray-700';
+        return 'text-neutral-700';
     }
   };
 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Status Header */}
-      <div className="flex items-center space-x-3">
+      <div className="flex-start space-x-3">
         {getStatusIcon()}
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-neutral-900">
             Import Progress
           </h3>
           <p className={`text-sm ${getStatusColor()}`}>
@@ -130,11 +130,11 @@ export function ImportProgress({
       {/* Progress Bar */}
       {progress.status === 'processing' && (
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="flex-between text-sm text-neutral-600">
             <span>Processing rows...</span>
             <span>{progress.processedRows} / {progress.totalRows}</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-neutral-200 rounded-full h-2">
             <div
               className="bg-primary-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress.progress}%` }}
@@ -144,28 +144,28 @@ export function ImportProgress({
       )}
 
       {/* File Info */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <div className="grid grid-cols-2 gap-4 text-sm">
+      <div className="card card-body">
+        <div className="grid-responsive text-sm">
           <div>
-            <span className="font-medium text-gray-700">File:</span>
-            <p className="text-gray-600 truncate">{progress.fileName}</p>
+            <span className="font-medium text-neutral-700">File:</span>
+            <p className="text-neutral-600 truncate">{progress.fileName}</p>
           </div>
           <div>
-            <span className="font-medium text-gray-700">Type:</span>
-            <p className="text-gray-600 capitalize">
+            <span className="font-medium text-neutral-700">Type:</span>
+            <p className="text-neutral-600 capitalize">
               {progress.importType.replace('_', ' ')}
             </p>
           </div>
           <div>
-            <span className="font-medium text-gray-700">Started:</span>
-            <p className="text-gray-600">
+            <span className="font-medium text-neutral-700">Started:</span>
+            <p className="text-neutral-600">
               {new Date(progress.startTime).toLocaleString()}
             </p>
           </div>
           {progress.endTime && (
             <div>
-              <span className="font-medium text-gray-700">Completed:</span>
-              <p className="text-gray-600">
+              <span className="font-medium text-neutral-700">Completed:</span>
+              <p className="text-neutral-600">
                 {new Date(progress.endTime).toLocaleString()}
               </p>
             </div>
@@ -175,24 +175,24 @@ export function ImportProgress({
 
       {/* Results Summary */}
       {progress.status === 'completed' && progress.summary && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h4 className="font-medium text-green-900 mb-3">Import Summary</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="card card--mint card-body">
+          <h4 className="font-medium text-success mb-3">Import Summary</h4>
+          <div className="grid-responsive text-sm">
             <div>
-              <span className="font-medium text-green-700">Total Rows:</span>
-              <p className="text-green-600">{progress.summary.totalRows}</p>
+              <span className="font-medium text-success">Total Rows:</span>
+              <p className="text-success">{progress.summary.totalRows}</p>
             </div>
             <div>
-              <span className="font-medium text-green-700">Successful:</span>
-              <p className="text-green-600">{progress.summary.successfulImports}</p>
+              <span className="font-medium text-success">Successful:</span>
+              <p className="text-success">{progress.summary.successfulImports}</p>
             </div>
             <div>
-              <span className="font-medium text-green-700">Errors:</span>
-              <p className="text-green-600">{progress.summary.errors.length}</p>
+              <span className="font-medium text-success">Errors:</span>
+              <p className="text-success">{progress.summary.errors.length}</p>
             </div>
             <div>
-              <span className="font-medium text-green-700">Conflicts:</span>
-              <p className="text-green-600">{progress.summary.conflicts.length}</p>
+              <span className="font-medium text-success">Conflicts:</span>
+              <p className="text-success">{progress.summary.conflicts.length}</p>
             </div>
           </div>
         </div>
