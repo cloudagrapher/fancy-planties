@@ -123,7 +123,7 @@
 
 ## Phase 4: Fix Critical Business Logic Issues (Priority 1 - Core Functionality Bugs)
 
-- [-] 4. Fix CareCalculator Service Missing Implementation (Core Plant Care Logic Broken)
+- [ ] 4. Fix CareCalculator Service Missing Implementation (Core Plant Care Logic Broken)
   - **IMPLEMENT**: calculateNextDueDate method - Plant care scheduling is completely broken
   - **IMPLEMENT**: parseScheduleString method - Custom care schedules cannot be processed
   - **IMPLEMENT**: calculateCareUrgency method - Users cannot see which plants need urgent care
