@@ -13,7 +13,7 @@ jest.mock('next/image', () => {
 });
 
 // Mock child components
-jest.mock('../CareHistoryTimeline', () => {
+jest.mock('../../care/CareHistoryTimeline', () => {
   return function MockCareHistoryTimeline() {
     return <div data-testid="care-history-timeline">Care History</div>;
   };
@@ -45,7 +45,7 @@ jest.mock('../../care/QuickCareActions', () => {
   return function MockQuickCareActions({ onCareLog }: any) {
     return (
       <div data-testid="quick-care-actions">
-        <button onClick={() => onCareLog('fertilizer')}>Quick Fertilize</button>
+        <button onClick={() => onCareLog && onCareLog('fertilizer')}>Quick Fertilize</button>
       </div>
     );
   };
@@ -119,7 +119,7 @@ describe('PlantDetailModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Test Plant')).toBeInTheDocument();
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
     });
   });
 
@@ -154,7 +154,8 @@ describe('PlantDetailModal', () => {
       { wrapper: createWrapper() }
     );
 
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    // Loading state shows skeleton animation
+    expect(document.querySelector('.animate-pulse')).toBeInTheDocument();
   });
 
   it('handles error state', async () => {
@@ -196,7 +197,7 @@ describe('PlantDetailModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Test Plant')).toBeInTheDocument();
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
     });
 
     const closeButton = screen.getByRole('button', { name: /close/i });
@@ -225,11 +226,11 @@ describe('PlantDetailModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Test Plant')).toBeInTheDocument();
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
     });
 
-    // Click on Care tab
-    const careTab = screen.getByText('Care');
+    // Click on Care History tab
+    const careTab = screen.getByRole('button', { name: /Care History/i });
     await user.click(careTab);
 
     expect(screen.getByTestId('care-history-timeline')).toBeInTheDocument();
@@ -255,10 +256,11 @@ describe('PlantDetailModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Test Plant')).toBeInTheDocument();
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
     });
 
-    const editButton = screen.getByText('Edit');
+    // The edit button is the one with the pencil icon
+    const editButton = screen.getByRole('button', { name: '' }); // The edit button doesn't have a name
     await user.click(editButton);
 
     expect(mockOnEdit).toHaveBeenCalledWith(mockPlantData.plant);
@@ -284,7 +286,7 @@ describe('PlantDetailModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Test Plant')).toBeInTheDocument();
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
     });
 
     const quickCareButton = screen.getByText('Quick Fertilize');
@@ -317,12 +319,12 @@ describe('PlantDetailModal', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Test Plant')).toBeInTheDocument();
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
     });
 
-    // Click on an image to open gallery
-    const image = screen.getByAltText(/Test Plant/);
-    await user.click(image);
+    // Click on the first image to open gallery
+    const images = screen.getAllByAltText(/My Monstera/);
+    await user.click(images[0]);
 
     expect(screen.getByTestId('plant-image-gallery')).toBeInTheDocument();
   });

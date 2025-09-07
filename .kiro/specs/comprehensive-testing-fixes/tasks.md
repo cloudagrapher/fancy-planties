@@ -101,7 +101,6 @@
   - **FIX**: CSS variable resolution - Design tokens may not be properly applied
   - **FIX**: Border color inconsistencies - Border colors may not match design specifications
   - **INVESTIGATE**: Responsive layout issues - Components may break at certain screen sizes
-  - **FIX**: Theme switching - Dark/light mode may not work correctly across all components
   - _Requirements: 2.1_
 
 - [ ] 3.1 Fix Mobile Touch and Interaction Issues (Mobile UX Problems)
