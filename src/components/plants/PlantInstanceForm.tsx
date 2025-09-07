@@ -84,6 +84,7 @@ export default function PlantInstanceForm({
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [locationInput, setLocationInput] = useState('');
+  const [isCreatingPlant, setIsCreatingPlant] = useState(false);
   const queryClient = useQueryClient();
   const isEditing = !!plantInstance;
 
@@ -120,6 +121,88 @@ export default function PlantInstanceForm({
       return response.json() as Promise<string[]>;
     },
     staleTime: 1000 * 60 * 10, // 10 minutes
+  });
+
+  // Helper function to parse plant query into taxonomy components
+  const parsePlantQuery = (query: string) => {
+    const parts = query.trim().split(/\s+/);
+    
+    if (parts.length === 1) {
+      // Single word - assume it's common name
+      return {
+        family: 'Unknown',
+        genus: 'Unknown', 
+        species: 'unknown',
+        commonName: query,
+        cultivar: null,
+      };
+    } else if (parts.length === 2) {
+      // Two words - assume Genus species
+      return {
+        family: 'Unknown',
+        genus: parts[0],
+        species: parts[1].toLowerCase(),
+        commonName: query,
+        cultivar: null,
+      };
+    } else {
+      // Three or more words - assume Genus species and remaining as cultivar/common name
+      const genus = parts[0];
+      const species = parts[1].toLowerCase();
+      const remaining = parts.slice(2).join(' ');
+      
+      // Check if remaining looks like a cultivar (in quotes or title case)
+      const cultivar = remaining.match(/^['"](.+)['"]$/) || remaining.match(/^[A-Z][a-z\s]+$/) ? remaining.replace(/['"]/g, '') : null;
+      
+      return {
+        family: 'Unknown',
+        genus,
+        species,
+        commonName: query,
+        cultivar,
+      };
+    }
+  };
+
+  // Create new plant mutation
+  const createPlantMutation = useMutation({
+    mutationFn: async (plantData: any) => {
+      const response = await fetch('/api/plants', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(plantData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create plant');
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['plants'] });
+      
+      // Set the newly created plant as selected
+      const newPlant: PlantSuggestion = {
+        id: data.data.id,
+        family: data.data.family,
+        genus: data.data.genus,
+        species: data.data.species,
+        cultivar: data.data.cultivar,
+        commonName: data.data.commonName,
+        isVerified: data.data.isVerified,
+      };
+      
+      handlePlantSelect(newPlant);
+      setIsCreatingPlant(false);
+    },
+    onError: (error) => {
+      console.error('Failed to create plant:', error);
+      setIsCreatingPlant(false);
+    },
   });
 
   // Create/update mutation
@@ -304,11 +387,30 @@ export default function PlantInstanceForm({
                 <PlantTaxonomySelector
                   selectedPlant={selectedPlant}
                   onSelect={handlePlantSelect}
+                  disabled={isCreatingPlant}
                   onAddNew={(query) => {
-                    // Handle adding new plant type
-                    console.log('Add new plant:', query);
+                    setIsCreatingPlant(true);
+                    const plantData = parsePlantQuery(query);
+                    createPlantMutation.mutate(plantData);
                   }}
                 />
+                {isCreatingPlant && (
+                  <div className="mt-2 flex items-center text-sm text-primary-600">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Creating new plant type...
+                  </div>
+                )}
+                {createPlantMutation.isError && (
+                  <div className="mt-2 text-sm text-red-600">
+                    Failed to create plant: {createPlantMutation.error instanceof Error ? createPlantMutation.error.message : 'Unknown error'}
+                  </div>
+                )}
+                {errors.plantId && (
+                  <div className="mt-1 text-sm text-red-600">{errors.plantId.message}</div>
+                )}
               </div>
 
               {/* Basic Information */}
