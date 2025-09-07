@@ -295,7 +295,7 @@ export default function AdvancedSearchInterface({
             {searchQuery && (
               <button
                 onClick={clearSearch}
-                className="pr-3 text-gray-400 hover:text-gray-600"
+                className="btn btn--ghost btn--icon btn--sm"
                 type="button"
               >
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
@@ -356,13 +356,7 @@ export default function AdvancedSearchInterface({
           {/* Advanced Search Toggle */}
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`
-              px-3 py-1 text-sm rounded-md border transition-colors
-              ${showAdvanced 
-                ? 'bg-primary-50 border-primary-300 text-primary-700' 
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-              }
-            `}
+            className={`btn btn--sm ${showAdvanced ? 'btn--primary' : 'btn--outline'}`}
           >
             Advanced
           </button>
@@ -390,7 +384,7 @@ export default function AdvancedSearchInterface({
             <button
               onClick={handleAdvancedSearch}
               disabled={isLoading}
-              className="px-3 py-1 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
+              className={`btn btn--sm btn--primary ${isLoading ? 'btn--loading' : ''}`}
             >
               Search
             </button>
@@ -405,7 +399,7 @@ export default function AdvancedSearchInterface({
             <h3 className="text-sm font-medium text-gray-900">Advanced Search</h3>
             <button
               onClick={() => setShowAdvanced(false)}
-              className="text-gray-400 hover:text-gray-600"
+              className="btn btn--ghost btn--icon btn--sm"
             >
               <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />

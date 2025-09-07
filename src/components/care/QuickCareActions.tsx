@@ -94,14 +94,14 @@ export default function QuickCareActions({
                   setNotes('');
                 }}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="btn btn--ghost"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitCare}
                 disabled={isLoading}
-                className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+                className={`btn btn--primary ${isLoading ? 'btn--loading' : ''}`}
               >
                 {isLoading ? 'Logging...' : `Log ${selectedAction.label}`}
               </button>

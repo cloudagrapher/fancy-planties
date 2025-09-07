@@ -154,7 +154,7 @@ export default function SearchResults({
           {activeFacetCount > 0 && (
             <button
               onClick={clearFacets}
-              className="text-primary-600 hover:text-primary-800 text-sm"
+              className="btn btn--ghost btn--sm"
             >
               Clear filters ({activeFacetCount})
             </button>
@@ -291,7 +291,7 @@ export default function SearchResults({
           <button
             onClick={onLoadMore}
             disabled={isLoading}
-            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
+            className={`btn btn--primary ${isLoading ? 'btn--loading' : ''}`}
           >
             {isLoading ? 'Loading...' : 'Load More'}
           </button>
