@@ -70,9 +70,16 @@ export async function PUT(
 
     const body = await request.json();
     
+    // Convert date strings to Date objects if they exist and are not empty
+    const processedBody = {
+      ...body,
+      lastFertilized: body.lastFertilized && body.lastFertilized !== '' ? new Date(body.lastFertilized) : null,
+      lastRepot: body.lastRepot && body.lastRepot !== '' ? new Date(body.lastRepot) : null,
+    };
+    
     // Validate the update data
     const updateData = updatePlantInstanceSchema.parse({
-      ...body,
+      ...processedBody,
       id,
       userId: user.id,
     });
