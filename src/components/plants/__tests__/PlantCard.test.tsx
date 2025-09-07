@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
-import { render, createMockPlantInstance, createUserEvent } from '@/__tests__/utils/test-utils';
+import { render, createMockPlantInstance, createUserEvent } from '@/__tests__/utils/test-helpers';
 import PlantCard from '../PlantCard';
 
 describe('PlantCard', () => {

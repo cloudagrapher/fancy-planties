@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import LogoutButton from '@/components/auth/LogoutButton';
+import Link from 'next/link';
 import FertilizerCalendar from '@/components/calendar/FertilizerCalendar';
 import type { DashboardStats } from '@/app/api/dashboard/route';
 
@@ -50,7 +50,13 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 Your plants are looking great today
               </p>
             </div>
-            <LogoutButton className="btn btn--ghost btn--sm text-neutral-600" />
+            <Link 
+              href="/dashboard/profile"
+              className="btn btn--ghost btn--sm text-neutral-600 flex items-center gap-2"
+            >
+              <span>👤</span>
+              Profile
+            </Link>
           </div>
 
           {/* Main Dashboard */}
