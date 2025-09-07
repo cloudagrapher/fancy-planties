@@ -6,7 +6,7 @@
 import { NextRequest } from 'next/server';
 import { GET as getPlantInstances, POST as createPlantInstance } from '@/app/api/plant-instances/route';
 import { POST as logCare } from '@/app/api/care/log/route';
-import { createMockPlantInstance, mockApiResponse } from '@/__tests__/utils/test-utils';
+import { createMockPlantInstance, mockApiResponse } from '@/__tests__/utils/test-helpers';
 
 // Mock the entire database module
 const mockDb = {
