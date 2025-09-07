@@ -1,0 +1,152 @@
+/* ==========================================================================
+   COLOR DESIGN TOKENS
+   Mint Green & Salmon Palette for Millennial Women
+   ========================================================================== */
+
+:root {
+  /* PRIMARY: Mint Green (Plant/Growth/Success) */
+  --color-mint-50: #f0fdf4;
+  --color-mint-100: #d1fae5;
+  --color-mint-200: #a7f3d0;  /* Main brand color */
+  --color-mint-300: #6ee7b7;
+  --color-mint-400: #34d399;
+  --color-mint-500: #10b981;
+  --color-mint-600: #059669;
+  --color-mint-700: #047857;
+  --color-mint-800: #065f46;
+  --color-mint-900: #064e3b;
+  
+  /* SECONDARY: Salmon/Coral (Care/Love/Warmth) */
+  --color-salmon-50: #fff1f2;
+  --color-salmon-100: #ffe4e6;
+  --color-salmon-200: #fecdd3;
+  --color-salmon-300: #fda4af;  /* Main secondary color */
+  --color-salmon-400: #fb7185;
+  --color-salmon-500: #f43f5e;
+  --color-salmon-600: #e11d48;
+  --color-salmon-700: #be123c;
+  --color-salmon-800: #9f1239;
+  --color-salmon-900: #881337;
+  
+  /* TERTIARY: Soft Lavender (Propagation/Growth) */
+  --color-lavender-50: #f5f3ff;
+  --color-lavender-100: #e0e7ff;
+  --color-lavender-200: #c7d2fe;
+  --color-lavender-300: #c4b5fd;
+  --color-lavender-400: #a78bfa;
+  --color-lavender-500: #8b5cf6;
+  --color-lavender-600: #7c3aed;
+  --color-lavender-700: #6d28d9;
+  --color-lavender-800: #5b21b6;
+  --color-lavender-900: #4c1d95;
+  
+  /* ACCENT: Peachy Pink (Special features) */
+  --color-peach-50: #fef7f0;
+  --color-peach-100: #feecdc;
+  --color-peach-200: #fed7d7;
+  --color-peach-300: #f9a8d4;
+  --color-peach-400: #f472b6;
+  --color-peach-500: #ec4899;
+  --color-peach-600: #db2777;
+  
+  /* STATUS COLORS (Soft & Friendly) */
+  --color-success: var(--color-mint-300);
+  --color-warning: #fcd34d;
+  --color-error: #fca5a5;
+  --color-info: #93c5fd;
+  
+  /* NEUTRALS (Warm & Soft) */
+  --color-neutral-50: #fefefe;
+  --color-neutral-100: #faf9f7;
+  --color-neutral-200: #f3f1ee;
+  --color-neutral-300: #e5e3e0;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+  
+  /* SEMANTIC COLOR ALIASES */
+  --color-background: var(--color-neutral-50);
+  --color-surface: var(--color-neutral-100);
+  --color-border: var(--color-neutral-200);
+  --color-foreground: var(--color-neutral-700);
+  --color-text-primary: var(--color-neutral-800);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-muted: var(--color-neutral-400);
+}
+
+/* Tailwind CSS v4 Theme Integration */
+@theme inline {
+  /* Colors mapped to design tokens */
+  --color-primary: var(--color-mint-200);
+  --color-secondary: var(--color-salmon-300);
+  --color-tertiary: var(--color-lavender-300);
+  --color-accent: var(--color-peach-400);
+  
+  /* Legacy aliases for backward compatibility */
+  --color-primary-50: var(--color-mint-50);
+  --color-primary-100: var(--color-mint-100);
+  --color-primary-200: var(--color-mint-200);
+  --color-primary-300: var(--color-mint-300);
+  --color-primary-400: var(--color-mint-400);
+  --color-primary-500: var(--color-mint-500);
+  --color-primary-600: var(--color-mint-600);
+  --color-primary-700: var(--color-mint-700);
+  --color-primary-800: var(--color-mint-800);
+  --color-primary-900: var(--color-mint-900);
+  
+  --color-secondary-50: var(--color-salmon-50);
+  --color-secondary-100: var(--color-salmon-100);
+  --color-secondary-200: var(--color-salmon-200);
+  --color-secondary-300: var(--color-salmon-300);
+  --color-secondary-400: var(--color-salmon-400);
+  --color-secondary-500: var(--color-salmon-500);
+  --color-secondary-600: var(--color-salmon-600);
+  --color-secondary-700: var(--color-salmon-700);
+  --color-secondary-800: var(--color-salmon-800);
+  --color-secondary-900: var(--color-salmon-900);
+  
+  --color-tertiary-50: var(--color-lavender-50);
+  --color-tertiary-100: var(--color-lavender-100);
+  --color-tertiary-200: var(--color-lavender-200);
+  --color-tertiary-300: var(--color-lavender-300);
+  --color-tertiary-400: var(--color-lavender-400);
+  --color-tertiary-500: var(--color-lavender-500);
+  --color-tertiary-600: var(--color-lavender-600);
+  --color-tertiary-700: var(--color-lavender-700);
+  --color-tertiary-800: var(--color-lavender-800);
+  --color-tertiary-900: var(--color-lavender-900);
+  
+  --color-accent-300: var(--color-peach-300);
+  --color-accent-400: var(--color-peach-400);
+  --color-accent-500: var(--color-peach-500);
+  
+  --color-danger: var(--color-error);
+  
+  /* Background and surface colors */
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --surface: var(--color-surface);
+  --border: var(--color-border);
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode color overrides */
+    --color-background: var(--color-neutral-900);
+    --color-surface: var(--color-neutral-800);
+    --color-border: var(--color-neutral-700);
+    --color-foreground: var(--color-neutral-100);
+    --color-text-primary: var(--color-neutral-50);
+    --color-text-secondary: var(--color-neutral-300);
+    --color-text-muted: var(--color-neutral-500);
+    
+    /* Legacy aliases for backward compatibility */
+    --background: var(--color-background);
+    --surface: var(--color-surface);
+    --foreground: var(--color-foreground);
+  }
+}

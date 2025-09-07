@@ -23,7 +23,7 @@ export class ServiceWorkerManager {
    * Register the service worker
    */
   async register(): Promise<boolean> {
-    if (!('serviceWorker' in navigator)) {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
       console.log('Service Worker not supported');
       return false;
     }

@@ -150,16 +150,11 @@ export default function PlantDetailModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop */}
+    <div className="modal-overlay" onClick={onClose}>
       <div 
-        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
-        onClick={onClose}
-      />
-      
-      {/* Modal */}
-      <div className="relative h-full flex items-end sm:items-center justify-center p-4">
-        <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-4xl max-h-full overflow-hidden shadow-2xl">
+        className="modal-content modal-content--large"
+        onClick={(e) => e.stopPropagation()}
+      >
           {isLoading ? (
             <PlantDetailSkeleton />
           ) : error ? (
@@ -167,18 +162,18 @@ export default function PlantDetailModal({
           ) : data ? (
             <>
               {/* Header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div className="modal-header">
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={onClose}
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+                    className="modal-close"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900">{data.plant.displayName}</h2>
+                    <h2 className="modal-title">{data.plant.displayName}</h2>
                     <p className="text-sm text-gray-600 italic">
                       {data.plant.plant.genus} {data.plant.plant.species}
                     </p>
@@ -198,7 +193,7 @@ export default function PlantDetailModal({
                   
                   <button
                     onClick={handleEdit}
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+                    className="btn btn--icon btn--ghost"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -208,7 +203,7 @@ export default function PlantDetailModal({
               </div>
 
               {/* Tab Navigation */}
-              <div className="flex border-b border-gray-200">
+              <div className="modal-tabs">
                 {[
                   { id: 'overview', label: 'Overview', icon: '🌱' },
                   { id: 'care', label: 'Care History', icon: '💚' },
@@ -218,11 +213,7 @@ export default function PlantDetailModal({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === tab.id
-                        ? 'border-primary-500 text-primary-600 bg-primary-50'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
+                    className={`tab ${activeTab === tab.id ? 'tab--active' : ''}`}
                   >
                     <span className="mr-2">{tab.icon}</span>
                     {tab.label}
@@ -231,7 +222,8 @@ export default function PlantDetailModal({
               </div>
 
               {/* Content */}
-              <div className="flex-1 overflow-auto max-h-96 sm:max-h-[60vh]">
+              <div className="modal-body modal-body--no-padding">
+                <div className="overflow-auto max-h-96 sm:max-h-[60vh]">
                 {activeTab === 'overview' && (
                   <PlantOverview 
                     plant={data.plant}
@@ -263,10 +255,10 @@ export default function PlantDetailModal({
                     parentPlant={data.parentPlant}
                   />
                 )}
+                </div>
               </div>
             </>
           ) : null}
-        </div>
       </div>
 
       {/* Image Gallery Modal */}
@@ -541,7 +533,7 @@ function PlantDetailError({
         <p className="text-gray-600 mb-4">{error.message}</p>
         <button
           onClick={onRetry}
-          className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+          className="btn btn--primary"
         >
           Try Again
         </button>

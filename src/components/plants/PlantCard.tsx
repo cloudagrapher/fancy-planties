@@ -131,8 +131,12 @@ export default function PlantCard({
     const urgencyColor = plantInstanceHelpers.getCareUrgencyColor(plant.careUrgency);
 
     return (
-      <div className="flex items-center justify-between mb-1">
-        <div className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColors}`}>
+      <div className="flex-between mb-2">
+        <div className={`plant-card-status ${
+          careStatus === 'overdue' ? 'plant-card-status--overdue' :
+          careStatus === 'due_today' || careStatus === 'due_soon' ? 'plant-card-status--needs-care' :
+          'plant-card-status--healthy'
+        }`}>
           <div className={`w-2 h-2 rounded-full mr-1 ${urgencyColor}`} />
           {careStatus === 'overdue' && 'Overdue'}
           {careStatus === 'due_today' && 'Due Today'}
@@ -142,7 +146,7 @@ export default function PlantCard({
         </div>
         
         {daysUntilFertilizerDue !== null && (
-          <span className={`${config.text} text-gray-600`}>
+          <span className={`${config.text} text-neutral-600`}>
             {formatDays(daysUntilFertilizerDue)}
           </span>
         )}
@@ -180,16 +184,12 @@ export default function PlantCard({
     <div
       ref={swipeRef}
       className={`
-        ${config.container}
-        bg-white rounded-xl shadow-soft hover:shadow-dreamy
-        border border-gray-100 overflow-hidden
-        transition-all duration-200 ease-out
+        plant-card ${config.container}
         ${isPressed ? 'scale-95' : 'scale-100'}
         ${isSwipeActive ? 'scale-105 shadow-lg' : ''}
         ${isSelected ? 'ring-2 ring-primary-400 shadow-dreamy' : ''}
         ${onSelect ? 'cursor-pointer' : ''}
         ${className}
-        touch-manipulation select-none
       `}
       onClick={handlePress}
       onTouchStart={() => setIsPressed(true)}
@@ -218,7 +218,7 @@ export default function PlantCard({
       )}
 
       {/* Plant Image */}
-      <div className={`${config.image} relative bg-gradient-to-br from-primary-50 to-secondary-50`}>
+      <div className={`plant-card-image ${config.image} relative bg-gradient-to-br from-primary-50 to-secondary-50`}>
         {plant.primaryImage && !imageError ? (
           <Image
             src={plant.primaryImage}
@@ -229,7 +229,7 @@ export default function PlantCard({
             sizes={`(max-width: 768px) ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}, ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}`}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="w-full h-full flex-center">
             <div className="text-4xl opacity-30">🌱</div>
           </div>
         )}
@@ -243,17 +243,17 @@ export default function PlantCard({
       </div>
 
       {/* Plant Info */}
-      <div className="p-3 flex-1 flex flex-col">
+      <div className="plant-card-content">
         {/* Care Status */}
         {getCareStatusDisplay()}
 
         {/* Plant Name */}
-        <h3 className={`${config.title} font-medium text-gray-900 mb-1 line-clamp-2`}>
+        <h3 className={`plant-card-title ${config.title}`}>
           {plant.displayName}
         </h3>
 
         {/* Plant Species */}
-        <p className={`${config.text} text-gray-600 italic mb-1 line-clamp-1`}>
+        <p className={`plant-card-subtitle ${config.text} italic`}>
           {plant.plant.genus} {plant.plant.species}
         </p>
 

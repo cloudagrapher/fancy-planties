@@ -31,7 +31,7 @@ export function useOffline() {
   // Initialize network status
   useEffect(() => {
     const updateOnlineStatus = () => {
-      setIsOnline(navigator.onLine);
+      setIsOnline(typeof navigator !== 'undefined' ? navigator.onLine : true);
     };
 
     // Set initial status

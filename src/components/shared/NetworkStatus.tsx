@@ -20,7 +20,8 @@ export function NetworkStatus() {
   const [showStatus, setShowStatus] = useState(false);
   const [justWentOnline, setJustWentOnline] = useState(false);
 
-  // Show status indicator when offline or when there are pending entries
+  // Show status indicator only when offline, syncing, or when there are pending entries
+  // Hide when online and everything is synced to be less intrusive
   useEffect(() => {
     setShowStatus(!isOnline || pendingEntries.length > 0 || isSyncing);
   }, [isOnline, pendingEntries.length, isSyncing]);
@@ -53,20 +54,20 @@ export function NetworkStatus() {
   };
 
   const getStatusIcon = () => {
-    if (!isOnline) return <WifiOff className="w-4 h-4" />;
-    if (isSyncing) return <RefreshCw className="w-4 h-4 animate-spin" />;
-    if (pendingEntries.length > 0) return <AlertCircle className="w-4 h-4" />;
-    return <Wifi className="w-4 h-4" />;
+    if (!isOnline) return <WifiOff className="w-3 h-3" />;
+    if (isSyncing) return <RefreshCw className="w-3 h-3 animate-spin" />;
+    if (pendingEntries.length > 0) return <AlertCircle className="w-3 h-3" />;
+    return <Wifi className="w-3 h-3" />;
   };
 
   return (
     <div className="fixed top-4 right-4 z-50">
       <div 
         className={`
-          flex items-center gap-2 px-3 py-2 rounded-full text-white text-sm font-medium
-          ${getStatusColor()} shadow-lg backdrop-blur-sm
+          flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-white text-xs font-medium
+          ${getStatusColor()} shadow-md backdrop-blur-sm
           transition-all duration-300 ease-in-out
-          ${showStatus || justWentOnline ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}
+          ${showStatus || justWentOnline ? 'opacity-90 translate-y-0' : 'opacity-0 -translate-y-2'}
         `}
       >
         {getStatusIcon()}

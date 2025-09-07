@@ -9,7 +9,7 @@ interface LogoutButtonProps {
 }
 
 export default function LogoutButton({ 
-  className = "text-red-600 hover:text-red-700 transition-colors",
+  className = "btn btn--ghost btn--danger",
   children = "Sign Out"
 }: LogoutButtonProps) {
   const router = useRouter();
@@ -52,7 +52,7 @@ export default function LogoutButton({
     <button
       onClick={handleLogout}
       disabled={isLoading}
-      className={className}
+      className={`${className} ${isLoading ? 'btn--loading' : ''}`}
     >
       {isLoading ? 'Signing out...' : children}
     </button>

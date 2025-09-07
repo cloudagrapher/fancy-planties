@@ -28,6 +28,26 @@ services:
       - /tmp
       - /var/run/postgresql
 
+  db-migrate:
+    image: postgres:16-alpine
+    container_name: fancy-planties-db-migrate
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-fancy_planties}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./scripts/init-db.sh:/init-db.sh:ro
+      - ./drizzle:/app/drizzle:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - fancy-planties-network
+    command: ["/init-db.sh"]
+    restart: "no"
+
   app:
     build:
       context: .
@@ -38,14 +58,17 @@ services:
     ports:
       - "${APP_PORT:-3000}:3000"
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fancy_planties}
+      - DATABASE_URL=${DATABASE_URL}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
       - NODE_ENV=production
       - HOSTNAME=0.0.0.0
       - PORT=3000
+      - DISABLE_SECURE_COOKIES=${DISABLE_SECURE_COOKIES:-false}
     depends_on:
       postgres:
         condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
     networks:
       - fancy-planties-network
     # Security hardening
@@ -72,42 +95,9 @@ services:
       retries: 3
       start_period: 40s
 
-  # Reverse proxy for SSL termination and security headers
-  nginx:
-    image: nginx:alpine
-    container_name: fancy-planties-nginx
-    restart: unless-stopped
-    ports:
-      - "${NGINX_HTTP_PORT:-80}:80"
-      - "${NGINX_HTTPS_PORT:-443}:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - nginx_cache:/var/cache/nginx
-      - nginx_logs:/var/log/nginx
-    depends_on:
-      - app
-    networks:
-      - fancy-planties-network
-    # Security hardening
-    security_opt:
-      - no-new-privileges:true
-    read_only: true
-    tmpfs:
-      - /var/run
-      - /var/cache/nginx/client_temp
-      - /var/cache/nginx/proxy_temp
-      - /var/cache/nginx/fastcgi_temp
-      - /var/cache/nginx/uwsgi_temp
-      - /var/cache/nginx/scgi_temp
 
 volumes:
   postgres_data_prod:
-    driver: local
-  nginx_cache:
-    driver: local
-  nginx_logs:
     driver: local
 
 networks:

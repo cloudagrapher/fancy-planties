@@ -102,7 +102,7 @@ export default function PlantImageGallery({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black bg-opacity-95 flex items-center justify-center">
+    <div className="modal-overlay bg-black bg-opacity-95">
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/50 to-transparent">
         <div className="text-white">

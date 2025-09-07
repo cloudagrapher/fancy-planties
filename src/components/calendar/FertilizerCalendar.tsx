@@ -111,32 +111,7 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
     });
   }
   
-  // Sample events for demo (you would replace this with actual data)
-  const sampleEvents: FertilizerEvent[] = [
-    {
-      id: '1',
-      plantName: 'Monstera Deliciosa',
-      plantId: 'p1',
-      date: '2025-09-15',
-      type: 'fertilize'
-    },
-    {
-      id: '2', 
-      plantName: 'Fiddle Leaf Fig',
-      plantId: 'p2',
-      date: '2025-09-20',
-      type: 'fertilize'
-    },
-    {
-      id: '3',
-      plantName: 'Snake Plant',
-      plantId: 'p3',
-      date: '2025-09-28',
-      type: 'fertilize'
-    }
-  ];
-  
-  const displayEvents = events.length > 0 ? events : sampleEvents;
+  const displayEvents = events;
   
   // Filter events for current month
   const monthEvents = displayEvents.filter(event => {
@@ -170,7 +145,7 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
         
         {calendarDays.map((dayData, index) => {
           if (!dayData) {
-            return <div key={index} className="aspect-square" />;
+            return <div key={`empty-${index}`} className="aspect-square" />;
           }
           
           const { day, events: dayEvents, isToday } = dayData;
@@ -178,7 +153,7 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
           
           return (
             <div
-              key={day}
+              key={`day-${day}`}
               className={`aspect-square rounded-xl border text-slate-700 relative p-1 ${
                 isToday ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200'
               }`}

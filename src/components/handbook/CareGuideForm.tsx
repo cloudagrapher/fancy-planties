@@ -248,7 +248,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="modal-overlay">
       <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
       <div className="relative w-full max-w-2xl h-[90vh] flex flex-col">
         <Card className="h-full flex flex-col">
