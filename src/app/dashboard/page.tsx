@@ -73,7 +73,7 @@ export default async function DashboardPage() {
                     <span style={{ fontSize: '1.5rem', marginRight: '8px' }}>🌟</span>
                     <h2 className="text-xl font-semibold text-neutral-900">Getting Started</h2>
                   </div>
-                  <p className="text-neutral-600 text-sm text-center">Let's help you create your dream plant collection</p>
+                  <p className="text-neutral-600 text-sm text-center">Let&apos;s help you create your dream plant collection</p>
                 </div>
                 <div className="card-body">
                   <div className="space-y-4">
@@ -108,11 +108,6 @@ export default async function DashboardPage() {
                 </div>
               </div>
             </div>
-          </div>
-          
-          {/* Fertilizer Calendar */}
-          <div className="section--sm">
-            <FertilizerCalendar />
           </div>
         </div>
       </div>

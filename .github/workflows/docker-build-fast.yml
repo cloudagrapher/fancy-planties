@@ -1,10 +1,10 @@
-name: Build and Push Docker Image
+name: Docker Build & Test
 
 on:
   push:
-    branches: [ main, develop, design-modernization ]
+    branches: [ main ]  # Only push images from main branch
   pull_request:
-    branches: [ main ]
+    branches: [ main ]  # Build-only for PR validation
   workflow_dispatch:
 
 env:
@@ -32,41 +32,49 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    # Cache Node.js dependencies
+    - name: Cache Node modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v5
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
           type=raw,value=latest,enable={{is_default_branch}}
-          type=raw,value=latest,enable=${{ github.ref == 'refs/heads/design-modernization' }}
+          type=sha,prefix=main-
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
-        # Build only for amd64 to speed up builds (add arm64 later if needed)
+        # Single platform for speed (add arm64 later if needed)
         platforms: linux/amd64
-        push: true
+        # Only push on main branch, otherwise just build for validation
+        push: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        # Enhanced caching strategy
+        # Multi-layer caching for maximum performance
         cache-from: |
           type=gha
           type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         cache-to: |
           type=gha,mode=max
-          type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
         target: runner
         build-args: |
           BUILDKIT_INLINE_CACHE=1
+          NODE_ENV=production
 
     - name: Generate deployment summary
       run: |
-        echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "## ⚡ Fast Build Complete!" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "**Docker Image Built and Pushed Successfully!**" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
@@ -75,10 +83,14 @@ jobs:
         echo "- **Repository:** \`${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
         echo "- **Tags:** \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🖥️ Deployment Command" >> $GITHUB_STEP_SUMMARY
-        echo "Use this image in your docker-compose.yml:" >> $GITHUB_STEP_SUMMARY
-        echo "\`\`\`yaml" >> $GITHUB_STEP_SUMMARY
-        echo "services:" >> $GITHUB_STEP_SUMMARY
-        echo "  app:" >> $GITHUB_STEP_SUMMARY
-        echo "    image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚀 Quick Deploy" >> $GITHUB_STEP_SUMMARY
+        echo "Use the deployment script:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+        echo "./deploy.sh" >> $GITHUB_STEP_SUMMARY
         echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ⚡ Performance Optimizations" >> $GITHUB_STEP_SUMMARY
+        echo "- Single platform build (amd64 only)" >> $GITHUB_STEP_SUMMARY
+        echo "- Multi-layer Docker caching" >> $GITHUB_STEP_SUMMARY  
+        echo "- Node.js dependency caching" >> $GITHUB_STEP_SUMMARY
+        echo "- Build optimizations enabled" >> $GITHUB_STEP_SUMMARY
