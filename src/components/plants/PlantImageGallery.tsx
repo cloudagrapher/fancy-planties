@@ -191,6 +191,10 @@ export default function PlantImageGallery({
             }`}
             sizes="100vw"
             priority
+            onError={(e) => {
+              console.error('Failed to load image:', images[currentIndex]);
+              // Could show a fallback image here
+            }}
           />
         </div>
       </div>
@@ -218,6 +222,10 @@ export default function PlantImageGallery({
                   fill
                   className="object-cover"
                   sizes="64px"
+                  loading="lazy"
+                  onError={(e) => {
+                    console.error('Failed to load thumbnail:', image);
+                  }}
                 />
               </button>
             ))}

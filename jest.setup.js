@@ -217,7 +217,9 @@ Object.defineProperty(window, 'getComputedStyle', {
     const elementStyles = {};
     
     if (element && element.className) {
-      const classes = element.className.split(' ');
+      const classes = typeof element.className === 'string' 
+        ? element.className.split(' ')
+        : Array.from(element.className);
       
       // Map common Tailwind classes to computed styles
       classes.forEach(className => {

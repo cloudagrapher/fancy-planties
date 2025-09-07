@@ -119,7 +119,7 @@ export const createMockCareHistory = (
 });
 
 // Mock API responses
-export const mockApiResponse = <T>(data: T, success: boolean = true) => ({
+export const mockApiResponse = <T,>(data: T, success: boolean = true) => ({
   ok: success,
   status: success ? 200 : 400,
   json: async () => ({
@@ -146,8 +146,9 @@ export const setupMockFetch = () => {
 };
 
 // User event helpers
+import userEvent from '@testing-library/user-event';
+
 export const createUserEvent = () => {
-  const { userEvent } = require('@testing-library/user-event');
   return userEvent.setup();
 };
 

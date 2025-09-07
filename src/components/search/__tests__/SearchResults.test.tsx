@@ -110,7 +110,9 @@ describe('SearchResults', () => {
       />
     );
 
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+    // Should show skeleton loading state
+    expect(screen.getByTestId('search-loading')).toBeInTheDocument();
+    expect(screen.getByTestId('search-loading')).toHaveClass('space-y-4');
   });
 
   it('renders empty state when no results', () => {
@@ -348,7 +350,10 @@ describe('SearchResults', () => {
       />
     );
 
-    expect(screen.getByText('Loading...')).toBeDisabled();
+    // Should show results and disabled load more button
+    expect(screen.getByTestId('plant-card-1')).toBeInTheDocument();
+    const loadMoreButton = screen.getByRole('button', { name: /loading/i });
+    expect(loadMoreButton).toBeDisabled();
   });
 
   it('filters results based on selected facets', async () => {

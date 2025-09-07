@@ -7,6 +7,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   hashedPassword: text('hashed_password').notNull(),
   name: text('name').notNull(),
+  isCurator: boolean('is_curator').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
