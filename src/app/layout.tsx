@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import QueryClientProvider from "@/components/providers/QueryClientProvider";
 import { ServiceWorkerProvider } from "@/components/shared/ServiceWorkerProvider";
-import { NetworkStatus, OfflineBanner } from "@/components/shared/NetworkStatus";
 import { PWAInstallPrompt, StandaloneModeIndicator } from "@/components/shared/PWAInstallPrompt";
 import "./globals.css";
 
@@ -57,8 +56,6 @@ export default function RootLayout({
       <body className="antialiased">
         <ServiceWorkerProvider>
           <QueryClientProvider>
-            <NetworkStatus />
-            <OfflineBanner />
             <StandaloneModeIndicator />
             <PWAInstallPrompt />
             {children}

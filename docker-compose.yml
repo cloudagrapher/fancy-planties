@@ -10,7 +10,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
+      - /mnt/user/appdata/fancy-planties-volumes/postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
@@ -94,9 +94,7 @@ services:
       start_period: 40s
 
 
-volumes:
-  postgres_data_prod:
-    driver: local
+# Note: Volumes are defined as bind mounts in the postgres service
 
 networks:
   fancy-planties-network:
