@@ -10,7 +10,7 @@ WORKDIR /app
 # Install dependencies based on the preferred package manager
 COPY package.json package-lock.json* ./
 RUN \
-  if [ -f package-lock.json ]; then npm ci --omit=dev; \
+  if [ -f package-lock.json ]; then npm ci --omit=dev --prefer-offline --no-audit; \
   else echo "Lockfile not found." && exit 1; \
   fi
 
@@ -20,7 +20,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN \
-  if [ -f package-lock.json ]; then npm ci; \
+  if [ -f package-lock.json ]; then npm ci --prefer-offline --no-audit; \
   else echo "Lockfile not found." && exit 1; \
   fi
 
@@ -32,9 +32,11 @@ COPY . .
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
+# Disable telemetry during build for faster builds
 ENV NEXT_TELEMETRY_DISABLED 1
+ENV SKIP_ENV_VALIDATION 1
 
+# Use all available cores for build
 RUN npm run build
 
 # Production image, copy all the files and run next
