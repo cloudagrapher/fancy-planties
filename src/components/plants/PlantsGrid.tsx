@@ -242,29 +242,29 @@ export default function PlantsGrid({
   const getGridColumns = () => {
     switch (cardSize) {
       case 'small':
-        return 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8';
+        return 'grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8';
       case 'medium':
-        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
+        return 'grid-plants';
       case 'large':
-        return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+        return 'grid-responsive';
       default:
-        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
+        return 'grid-plants';
     }
   };
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <div className="text-red-500 text-center mb-4">
-          <svg className="w-12 h-12 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
+      <div className="empty-state">
+        <div className="empty-state-icon text-error">
+          <svg className="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>
-          <p className="text-lg font-medium">Failed to load plants</p>
-          <p className="text-sm text-gray-600">{error?.message}</p>
         </div>
+        <h3 className="empty-state-title">Failed to load plants</h3>
+        <p className="empty-state-message">{error?.message}</p>
         <button
           onClick={() => refetch()}
-          className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+          className="btn btn--primary"
         >
           Try Again
         </button>
@@ -302,44 +302,46 @@ export default function PlantsGrid({
 
       {/* Selection Mode Header */}
       {isSelectionMode && (
-        <div className="flex-shrink-0 mb-4 p-3 bg-primary-50 border border-primary-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={exitSelectionMode}
-                className="p-1 text-primary-600 hover:text-primary-800"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-              <span className="text-sm font-medium text-primary-900">
-                {selectedPlants.length} selected
-              </span>
-              <button
-                onClick={selectAllPlants}
-                className="text-sm text-primary-600 hover:text-primary-800"
-              >
-                Select All
-              </button>
-            </div>
-            
-            {selectedPlants.length > 0 && (
-              <div className="flex space-x-2">
+        <div className="card card--mint mb-4">
+          <div className="card-body">
+            <div className="flex-between">
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleBulkAction('fertilize')}
-                  className="px-3 py-1 bg-primary-500 text-white text-sm rounded hover:bg-primary-600"
+                  onClick={exitSelectionMode}
+                  className="btn btn--icon btn--sm btn--ghost"
                 >
-                  Fertilize
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
                 </button>
+                <span className="text-sm font-medium text-mint-900">
+                  {selectedPlants.length} selected
+                </span>
                 <button
-                  onClick={() => handleBulkAction('deactivate')}
-                  className="px-3 py-1 bg-gray-500 text-white text-sm rounded hover:bg-gray-600"
+                  onClick={selectAllPlants}
+                  className="link text-sm"
                 >
-                  Archive
+                  Select All
                 </button>
               </div>
-            )}
+              
+              {selectedPlants.length > 0 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleBulkAction('fertilize')}
+                    className="btn btn--sm btn--primary"
+                  >
+                    Fertilize
+                  </button>
+                  <button
+                    onClick={() => handleBulkAction('deactivate')}
+                    className="btn btn--sm btn--secondary"
+                  >
+                    Archive
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -360,19 +362,19 @@ export default function PlantsGrid({
         {isLoading ? (
           <PlantCardSkeleton size={cardSize} count={12} />
         ) : plants.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="text-gray-400 text-center">
-              <svg className="w-16 h-16 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+          <div className="empty-state">
+            <div className="empty-state-icon">
+              <svg className="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
               </svg>
-              <p className="text-lg font-medium mb-2">No plants found</p>
-              <p className="text-sm text-gray-500">
-                {searchQuery ? 'Try adjusting your search or filters' : 'Add your first plant to get started'}
-              </p>
             </div>
+            <h3 className="empty-state-title">No plants found</h3>
+            <p className="empty-state-message">
+              {searchQuery ? 'Try adjusting your search or filters' : 'Add your first plant to get started'}
+            </p>
           </div>
         ) : (
-          <div className={`grid gap-4 p-4 ${getGridColumns()}`}>
+          <div className={`${getGridColumns()} p-4`}>
             {plants.map((plant) => (
               <PlantCard
                 key={plant.id}
@@ -394,9 +396,9 @@ export default function PlantsGrid({
 
         {/* Loading more indicator */}
         {isFetchingNextPage && (
-          <div className="flex items-center justify-center py-4">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500" />
-            <span className="ml-2 text-sm text-gray-600">Loading more...</span>
+          <div className="flex-center py-4">
+            <div className="spinner" />
+            <span className="ml-2 text-sm text-neutral-600">Loading more...</span>
           </div>
         )}
       </div>

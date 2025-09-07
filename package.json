@@ -21,6 +21,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:setup": "tsx scripts/db-setup.ts",
+    "db:init:docker": "node scripts/db-init-docker.js",
     "deploy:production": "./scripts/deploy-production.sh",
     "deploy:staging": "ENVIRONMENT=staging ./scripts/deploy-production.sh",
     "deploy:rollback": "./scripts/deploy-production.sh rollback",

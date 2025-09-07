@@ -137,13 +137,7 @@ export default function QuickCareForm({
               key={type.value}
               type="button"
               onClick={() => handleInputChange('careType', type.value)}
-              className={`
-                flex flex-col items-center p-3 rounded-lg border-2 transition-all
-                ${formData.careType === type.value
-                  ? 'border-primary-500 bg-primary-50 text-primary-700'
-                  : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                }
-              `}
+              className={`btn ${formData.careType === type.value ? 'btn--primary' : 'btn--outline'} flex-col h-auto py-3`}
             >
               <span className="text-lg mb-1">{type.icon}</span>
               <span className="text-xs font-medium">{type.label}</span>
@@ -254,12 +248,12 @@ export default function QuickCareForm({
       )}
 
       {/* Action Buttons */}
-      <div className="flex space-x-3 pt-4">
+      <div className="form-actions">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            className="btn btn--outline btn--full"
           >
             Cancel
           </button>
@@ -267,7 +261,7 @@ export default function QuickCareForm({
         <button
           type="submit"
           disabled={isSubmitting || !formData.plantInstanceId}
-          className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className={`btn btn--primary btn--full ${isSubmitting ? 'btn--loading' : ''}`}
         >
           {isSubmitting ? 'Logging...' : isOnline ? 'Log Care' : 'Queue for Sync'}
         </button>

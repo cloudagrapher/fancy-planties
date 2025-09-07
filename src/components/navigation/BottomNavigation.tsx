@@ -70,41 +70,35 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 px-4 py-2 z-50 safe-area-pb">
-      <div className="max-w-md mx-auto">
-        <div className="flex justify-around items-center">
-          {navigationItems.map((item) => (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={`
-                relative flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-200
-                min-h-[60px] min-w-[60px] touch-manipulation
-                ${isActive(item.href)
-                  ? 'text-primary-600 bg-primary-100 scale-105'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }
-                ${pressedItem === item.id ? 'scale-95 bg-gray-100' : ''}
-              `}
-              onTouchStart={() => handleNavPress(item.id)}
-              onMouseDown={() => handleNavPress(item.id)}
-            >
-              <div className="relative">
-                <span className={`text-2xl mb-1 block transition-transform ${isActive(item.href) ? 'scale-110' : ''}`}>
-                  {item.icon}
-                </span>
-                {item.badge && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-pulse">
-                    {item.badge > 99 ? '99+' : item.badge}
-                  </span>
-                )}
-              </div>
-              <span className={`text-xs font-medium transition-all ${isActive(item.href) ? 'font-semibold' : ''}`}>
-                {item.label}
+    <nav className="bottom-nav">
+      <div className="bottom-nav-container">
+        {navigationItems.map((item) => (
+          <Link
+            key={item.id}
+            href={item.href}
+            className={`
+              bottom-nav-item
+              ${isActive(item.href) ? 'bottom-nav-item--active' : 'bottom-nav-item--inactive'}
+              ${pressedItem === item.id ? 'bottom-nav-item--pressed' : ''}
+            `}
+            onTouchStart={() => handleNavPress(item.id)}
+            onMouseDown={() => handleNavPress(item.id)}
+          >
+            <div className="relative">
+              <span className="bottom-nav-icon">
+                {item.icon}
               </span>
-            </Link>
-          ))}
-        </div>
+              {item.badge && (
+                <span className="bottom-nav-badge">
+                  {item.badge > 99 ? '99+' : item.badge}
+                </span>
+              )}
+            </div>
+            <span className="bottom-nav-label">
+              {item.label}
+            </span>
+          </Link>
+        ))}
       </div>
     </nav>
   );
