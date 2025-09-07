@@ -3,95 +3,313 @@
 @tailwind utilities;
 
 :root {
-  --background: #fefefe;
-  --foreground: #374151;
-  --surface: #faf9f7;
-  --border: #f3f1ee;
+  /* ==========================================================================
+     COMPREHENSIVE DESIGN TOKEN SYSTEM
+     Mint Green & Salmon Palette for Millennial Women
+     ========================================================================== */
+
+  /* PRIMARY: Mint Green (Plant/Growth/Success) */
+  --color-mint-50: #f0fdf4;
+  --color-mint-100: #d1fae5;
+  --color-mint-200: #a7f3d0;  /* Main brand color */
+  --color-mint-300: #6ee7b7;
+  --color-mint-400: #34d399;
+  --color-mint-500: #10b981;
+  --color-mint-600: #059669;
+  --color-mint-700: #047857;
+  --color-mint-800: #065f46;
+  --color-mint-900: #064e3b;
+  
+  /* SECONDARY: Salmon/Coral (Care/Love/Warmth) */
+  --color-salmon-50: #fff1f2;
+  --color-salmon-100: #ffe4e6;
+  --color-salmon-200: #fecdd3;
+  --color-salmon-300: #fda4af;  /* Main secondary color */
+  --color-salmon-400: #fb7185;
+  --color-salmon-500: #f43f5e;
+  --color-salmon-600: #e11d48;
+  --color-salmon-700: #be123c;
+  --color-salmon-800: #9f1239;
+  --color-salmon-900: #881337;
+  
+  /* TERTIARY: Soft Lavender (Propagation/Growth) */
+  --color-lavender-50: #f5f3ff;
+  --color-lavender-100: #e0e7ff;
+  --color-lavender-200: #c7d2fe;
+  --color-lavender-300: #c4b5fd;
+  --color-lavender-400: #a78bfa;
+  --color-lavender-500: #8b5cf6;
+  --color-lavender-600: #7c3aed;
+  --color-lavender-700: #6d28d9;
+  --color-lavender-800: #5b21b6;
+  --color-lavender-900: #4c1d95;
+  
+  /* ACCENT: Peachy Pink (Special features) */
+  --color-peach-50: #fef7f0;
+  --color-peach-100: #feecdc;
+  --color-peach-200: #fed7d7;
+  --color-peach-300: #f9a8d4;
+  --color-peach-400: #f472b6;
+  --color-peach-500: #ec4899;
+  --color-peach-600: #db2777;
+  
+  /* STATUS COLORS (Soft & Friendly) */
+  --color-success: var(--color-mint-300);
+  --color-warning: #fcd34d;
+  --color-error: #fca5a5;
+  --color-info: #93c5fd;
+  
+  /* NEUTRALS (Warm & Soft) */
+  --color-neutral-50: #fefefe;
+  --color-neutral-100: #faf9f7;
+  --color-neutral-200: #f3f1ee;
+  --color-neutral-300: #e5e3e0;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+  
+  /* SEMANTIC COLOR ALIASES */
+  --color-background: var(--color-neutral-50);
+  --color-surface: var(--color-neutral-100);
+  --color-border: var(--color-neutral-200);
+  --color-foreground: var(--color-neutral-700);
+  --color-text-primary: var(--color-neutral-800);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-muted: var(--color-neutral-400);
+  
+  /* ==========================================================================
+     TYPOGRAPHY SCALE (Mobile-First)
+     ========================================================================== */
+  
+  /* Font Families */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  
+  /* Font Sizes (Mobile-First) */
+  --text-xs: 0.75rem;    /* 12px - Captions, metadata */
+  --text-sm: 0.875rem;   /* 14px - Secondary text, labels */
+  --text-base: 1rem;     /* 16px - Body text (prevents zoom on iOS) */
+  --text-lg: 1.125rem;   /* 18px - Important body text */
+  --text-xl: 1.25rem;    /* 20px - Card titles, plant names */
+  --text-2xl: 1.5rem;    /* 24px - Section headings */
+  --text-3xl: 1.875rem;  /* 30px - Page titles */
+  --text-4xl: 2.25rem;   /* 36px - App title, major headings */
+  --text-5xl: 3rem;      /* 48px - Hero text */
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+  
+  /* Font Weights */
+  --font-thin: 100;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+  
+  /* ==========================================================================
+     SPACING SYSTEM (Base unit: 4px)
+     ========================================================================== */
+  
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem;  /* 2px */
+  --space-1: 0.25rem;     /* 4px */
+  --space-1-5: 0.375rem;  /* 6px */
+  --space-2: 0.5rem;      /* 8px */
+  --space-2-5: 0.625rem;  /* 10px */
+  --space-3: 0.75rem;     /* 12px */
+  --space-3-5: 0.875rem;  /* 14px */
+  --space-4: 1rem;        /* 16px - Base unit */
+  --space-5: 1.25rem;     /* 20px */
+  --space-6: 1.5rem;      /* 24px */
+  --space-7: 1.75rem;     /* 28px */
+  --space-8: 2rem;        /* 32px */
+  --space-9: 2.25rem;     /* 36px */
+  --space-10: 2.5rem;     /* 40px */
+  --space-11: 2.75rem;    /* 44px */
+  --space-12: 3rem;       /* 48px */
+  --space-14: 3.5rem;     /* 56px */
+  --space-16: 4rem;       /* 64px */
+  --space-18: 4.5rem;     /* 72px */
+  --space-20: 5rem;       /* 80px */
+  --space-24: 6rem;       /* 96px */
+  --space-28: 7rem;       /* 112px */
+  --space-32: 8rem;       /* 128px */
+  --space-36: 9rem;       /* 144px */
+  --space-40: 10rem;      /* 160px */
+  --space-44: 11rem;      /* 176px */
+  --space-48: 12rem;      /* 192px */
+  --space-52: 13rem;      /* 208px */
+  --space-56: 14rem;      /* 224px */
+  --space-60: 15rem;      /* 240px */
+  --space-64: 16rem;      /* 256px */
+  --space-72: 18rem;      /* 288px */
+  --space-80: 20rem;      /* 320px */
+  --space-88: 22rem;      /* 352px */
+  --space-96: 24rem;      /* 384px */
+  
+  /* Touch Targets (Mobile Optimization) */
+  --touch-target-min: 44px;        /* iOS minimum */
+  --touch-target-comfortable: 48px; /* Preferred size */
+  --touch-target-large: 56px;      /* Large buttons */
+  
+  /* ==========================================================================
+     BORDER RADIUS & SHADOWS
+     ========================================================================== */
+  
+  /* Border Radius */
+  --radius-none: 0;
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-2xl: 1.25rem;  /* 20px */
+  --radius-3xl: 1.5rem;   /* 24px */
+  --radius-4xl: 2rem;     /* 32px */
+  --radius-full: 9999px;
+  
+  /* Shadows (Dreamy & Soft with Brand Colors) */
+  --shadow-xs: 0 1px 2px 0 rgba(167, 243, 208, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(167, 243, 208, 0.1), 0 1px 2px 0 rgba(253, 164, 175, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(167, 243, 208, 0.1), 0 2px 4px -1px rgba(253, 164, 175, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(167, 243, 208, 0.1), 0 4px 6px -2px rgba(253, 164, 175, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(167, 243, 208, 0.1), 0 10px 10px -5px rgba(253, 164, 175, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(167, 243, 208, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(167, 243, 208, 0.06);
+  --shadow-dreamy: 0 8px 32px -8px rgba(253, 164, 175, 0.15), 0 0 0 1px rgba(167, 243, 208, 0.05);
+  --shadow-glow: 0 0 20px rgba(167, 243, 208, 0.3);
+  
+  /* ==========================================================================
+     RESPONSIVE BREAKPOINTS
+     ========================================================================== */
+  
+  --breakpoint-xs: 475px;   /* Extra small devices */
+  --breakpoint-sm: 640px;   /* Small tablets */
+  --breakpoint-md: 768px;   /* Tablets */
+  --breakpoint-lg: 1024px;  /* Small desktops */
+  --breakpoint-xl: 1280px;  /* Large desktops */
+  --breakpoint-2xl: 1536px; /* Extra large */
+  
+  /* ==========================================================================
+     Z-INDEX SCALE
+     ========================================================================== */
+  
+  --z-auto: auto;
+  --z-0: 0;
+  --z-10: 10;
+  --z-20: 20;
+  --z-30: 30;
+  --z-40: 40;
+  --z-50: 50;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+  
+  /* ==========================================================================
+     ANIMATION & TRANSITIONS
+     ========================================================================== */
+  
+  /* Transition Durations */
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+  
+  /* Transition Timing Functions */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @theme inline {
-  /* Fancy Planties Color Palette */
+  /* Tailwind CSS v4 Theme Integration */
   
-  /* Pastel Green Primary */
-  --color-primary-50: #f0fdf4;
-  --color-primary-100: #d1fae5;
-  --color-primary-200: #a7f3d0;
-  --color-primary-300: #6ee7b7;
-  --color-primary-400: #34d399;
-  --color-primary-500: #10b981;
-  --color-primary-600: #059669;
-  --color-primary-700: #047857;
-  --color-primary-800: #065f46;
-  --color-primary-900: #064e3b;
-  --color-primary: var(--color-primary-200);
+  /* Colors mapped to design tokens */
+  --color-primary: var(--color-mint-200);
+  --color-secondary: var(--color-salmon-300);
+  --color-tertiary: var(--color-lavender-300);
+  --color-accent: var(--color-peach-400);
   
-  /* Salmon/Coral Secondary */
-  --color-secondary-50: #fff1f2;
-  --color-secondary-100: #ffe4e6;
-  --color-secondary-200: #fecdd3;
-  --color-secondary-300: #fda4af;
-  --color-secondary-400: #fb7185;
-  --color-secondary-500: #f43f5e;
-  --color-secondary-600: #e11d48;
-  --color-secondary-700: #be123c;
-  --color-secondary-800: #9f1239;
-  --color-secondary-900: #881337;
-  --color-secondary: var(--color-secondary-300);
+  /* Legacy aliases for backward compatibility */
+  --color-primary-50: var(--color-mint-50);
+  --color-primary-100: var(--color-mint-100);
+  --color-primary-200: var(--color-mint-200);
+  --color-primary-300: var(--color-mint-300);
+  --color-primary-400: var(--color-mint-400);
+  --color-primary-500: var(--color-mint-500);
+  --color-primary-600: var(--color-mint-600);
+  --color-primary-700: var(--color-mint-700);
+  --color-primary-800: var(--color-mint-800);
+  --color-primary-900: var(--color-mint-900);
   
-  /* Soft Lavender Tertiary */
-  --color-tertiary-50: #f5f3ff;
-  --color-tertiary-100: #e0e7ff;
-  --color-tertiary-200: #c7d2fe;
-  --color-tertiary-300: #c4b5fd;
-  --color-tertiary-400: #a78bfa;
-  --color-tertiary-500: #8b5cf6;
-  --color-tertiary-600: #7c3aed;
-  --color-tertiary-700: #6d28d9;
-  --color-tertiary-800: #5b21b6;
-  --color-tertiary-900: #4c1d95;
-  --color-tertiary: var(--color-tertiary-300);
+  --color-secondary-50: var(--color-salmon-50);
+  --color-secondary-100: var(--color-salmon-100);
+  --color-secondary-200: var(--color-salmon-200);
+  --color-secondary-300: var(--color-salmon-300);
+  --color-secondary-400: var(--color-salmon-400);
+  --color-secondary-500: var(--color-salmon-500);
+  --color-secondary-600: var(--color-salmon-600);
+  --color-secondary-700: var(--color-salmon-700);
+  --color-secondary-800: var(--color-salmon-800);
+  --color-secondary-900: var(--color-salmon-900);
   
-  /* Accent Pink */
-  --color-accent-300: #f9a8d4;
-  --color-accent-400: #f472b6;
-  --color-accent-500: #ec4899;
-  --color-accent: var(--color-accent-400);
-  
-  /* Status Colors */
-  --color-success: #86efac;
-  --color-warning: #fcd34d;
-  --color-danger: #fca5a5;
-  --color-info: #93c5fd;
-  
-  /* Neutral Colors */
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-border: var(--border);
-  --color-foreground: var(--foreground);
-  --color-text-secondary: #9ca3af;
-  --color-text-muted: #d1d5db;
-  
-  /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  
-  /* Spacing */
-  --spacing-18: 4.5rem;
-  --spacing-88: 22rem;
-  
-  /* Border Radius */
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
-  
-  /* Shadows */
-  --shadow-soft: 0 2px 15px -3px rgba(167, 243, 208, 0.1), 0 4px 6px -2px rgba(167, 243, 208, 0.05);
-  --shadow-dreamy: 0 8px 32px -8px rgba(253, 164, 175, 0.15), 0 0 0 1px rgba(167, 243, 208, 0.05);
+  /* Background and surface colors */
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --surface: var(--color-surface);
+  --border: var(--color-border);
 }
+
+/* ==========================================================================
+   DARK MODE SUPPORT
+   ========================================================================== */
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
-    --surface: #1e293b;
-    --foreground: #f1f5f9;
+    /* Dark mode color overrides */
+    --color-background: var(--color-neutral-900);
+    --color-surface: var(--color-neutral-800);
+    --color-border: var(--color-neutral-700);
+    --color-foreground: var(--color-neutral-100);
+    --color-text-primary: var(--color-neutral-50);
+    --color-text-secondary: var(--color-neutral-300);
+    --color-text-muted: var(--color-neutral-500);
+    
+    /* Adjust shadows for dark mode */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --shadow-dreamy: 0 8px 32px -8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(167, 243, 208, 0.1);
+    
+    /* Legacy aliases for backward compatibility */
+    --background: var(--color-background);
+    --surface: var(--color-surface);
+    --foreground: var(--color-foreground);
   }
 }
 
@@ -199,7 +417,11 @@ select {
   backdrop-filter: blur(4px);
 }
 
-/* Animation for micro-interactions */
+/* ==========================================================================
+   ANIMATIONS & KEYFRAMES USING DESIGN TOKENS
+   ========================================================================== */
+
+/* Pulse animation for loading states */
 @keyframes pulse-soft {
   0%, 100% {
     opacity: 1;
@@ -210,8 +432,126 @@ select {
 }
 
 .animate-pulse-soft {
-  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulse-soft var(--duration-1000) var(--ease-in-out) infinite;
 }
+
+/* Slide animations for modals and drawers */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up var(--duration-300) var(--ease-out) forwards;
+}
+
+.animate-slide-down {
+  animation: slide-down var(--duration-300) var(--ease-out) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in var(--duration-200) var(--ease-out) forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in var(--duration-200) var(--ease-spring) forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer var(--duration-1000) ease-in-out infinite;
+}
+
+/* Hover and focus animations */
+.hover-lift {
+  transition: transform var(--duration-200) var(--ease-out), box-shadow var(--duration-200) var(--ease-out);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-scale {
+  transition: transform var(--duration-200) var(--ease-out);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-soft,
+  .animate-slide-up,
+  .animate-slide-down,
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-shimmer,
+  .hover-lift,
+  .hover-scale {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   UTILITY CLASSES FOR DESIGN TOKENS
+   ========================================================================== */
 
 /* Focus styles for accessibility */
 .focus-ring {
