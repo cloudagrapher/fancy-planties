@@ -183,6 +183,42 @@ Cypress.Commands.add('measurePerformance', () => {
   });
 });
 
+// Mock API helper
+Cypress.Commands.add('mockApi', (method, url, response) => {
+  cy.intercept(method, url, response);
+});
+
+// Touch gesture helpers
+Cypress.Commands.add('swipe', { prevSubject: 'element' }, (subject, direction) => {
+  const element = subject[0];
+  const rect = element.getBoundingClientRect();
+  const startX = rect.left + rect.width / 2;
+  const startY = rect.top + rect.height / 2;
+  
+  let endX = startX;
+  let endY = startY;
+  
+  switch (direction) {
+    case 'left':
+      endX = startX - rect.width * 0.8;
+      break;
+    case 'right':
+      endX = startX + rect.width * 0.8;
+      break;
+    case 'up':
+      endY = startY - rect.height * 0.8;
+      break;
+    case 'down':
+      endY = startY + rect.height * 0.8;
+      break;
+  }
+  
+  cy.wrap(subject)
+    .trigger('touchstart', { touches: [{ clientX: startX, clientY: startY }] })
+    .trigger('touchmove', { touches: [{ clientX: endX, clientY: endY }] })
+    .trigger('touchend');
+});
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -207,6 +243,8 @@ declare global {
       clearTestData(): Chainable<void>;
       checkA11y(): Chainable<void>;
       measurePerformance(): Chainable<void>;
+      mockApi(method: string, url: string, response: any): Chainable<void>;
+      swipe(direction: 'left' | 'right' | 'up' | 'down'): Chainable<JQuery<HTMLElement>>;
     }
   }
 }

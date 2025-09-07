@@ -130,9 +130,17 @@ describe('AdvancedSearchInterface', () => {
     await user.type(searchInput, 'mon');
     await user.click(searchInput); // Focus to show suggestions
 
+    // Wait for the query to complete and suggestions to appear
     await waitFor(() => {
-      expect(screen.getByText('Suggestions')).toBeInTheDocument();
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/search/suggestions?query=mon')
+      );
     });
+
+    // Check if suggestions dropdown appears
+    await waitFor(() => {
+      expect(screen.queryByText('Suggestions')).toBeInTheDocument();
+    }, { timeout: 2000 });
   });
 
   it('handles suggestion selection', async () => {
@@ -173,9 +181,17 @@ describe('AdvancedSearchInterface', () => {
     await user.type(searchInput, 'mon');
     await user.click(searchInput);
 
+    // Wait for suggestions to load
     await waitFor(() => {
-      expect(screen.getByText('monstera deliciosa')).toBeInTheDocument();
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/search/suggestions?query=mon')
+      );
     });
+
+    // Check if suggestion appears
+    await waitFor(() => {
+      expect(screen.queryByText('monstera deliciosa')).toBeInTheDocument();
+    }, { timeout: 2000 });
 
     await user.click(screen.getByText('monstera deliciosa'));
 
@@ -218,7 +234,7 @@ describe('AdvancedSearchInterface', () => {
     });
   });
 
-  it('shows presets dropdown when enabled', () => {
+  it('shows presets dropdown when enabled', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -240,7 +256,15 @@ describe('AdvancedSearchInterface', () => {
       { wrapper: createWrapper() }
     );
 
-    expect(screen.getByText('Saved Searches')).toBeInTheDocument();
+    // Wait for presets query to complete
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/search/presets');
+    });
+
+    // Check if presets dropdown appears
+    await waitFor(() => {
+      expect(screen.queryByText('Saved Searches')).toBeInTheDocument();
+    }, { timeout: 2000 });
   });
 
   it('clears search when clear button is clicked', async () => {
@@ -279,7 +303,8 @@ describe('AdvancedSearchInterface', () => {
 
     // Should show loading spinner
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /search/i })).toBeDisabled();
+      const searchButton = screen.getByText('Search');
+      expect(searchButton).toBeDisabled();
     });
   });
 
