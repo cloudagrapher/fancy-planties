@@ -315,7 +315,8 @@ export default function PlantInstanceForm({
     // Update form validation by setting total image count
     const totalImages = existingImages.length + files.length;
     setValue('images', [...existingImages, ...Array(files.length).fill('pending')]);
-    trigger('images');
+    // Trigger validation for all fields to ensure form is valid
+    trigger();
   };
 
   // Handle existing image removal
