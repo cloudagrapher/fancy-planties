@@ -134,20 +134,3 @@
 }
 
 /* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark mode color overrides */
-    --color-background: var(--color-neutral-950);    /* Very dark background */
-    --color-surface: var(--color-neutral-900);       /* Card/surface backgrounds */
-    --color-border: var(--color-neutral-800);        /* Darker for better subtlety */
-    --color-foreground: var(--color-neutral-50);     /* Keep - good for white elements */
-    --color-text-primary: var(--color-neutral-100);  /* Main headings like "My Plants" */
-    --color-text-secondary: var(--color-neutral-400); /* Button labels, secondary text */
-    --color-text-muted: var(--color-neutral-500);    /* "Add your first plant..." placeholder */
-    
-    /* Legacy aliases for backward compatibility */
-    --background: var(--color-background);
-    --surface: var(--color-surface);
-    --foreground: var(--color-foreground);
-  }
-}

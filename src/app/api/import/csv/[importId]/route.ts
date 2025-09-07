@@ -19,7 +19,14 @@ export async function GET(
     const progress = csvImportService.getImportProgress(resolvedParams.importId);
     
     if (!progress) {
-      return NextResponse.json({ error: 'Import not found' }, { status: 404 });
+      // Import might have completed and been cleaned up
+      // For now, return a generic "not found" response
+      // In production, we'd want to persist this to database
+      return NextResponse.json({ 
+        error: 'Import not found',
+        message: 'Import may have completed successfully but progress record is no longer available',
+        importId: resolvedParams.importId
+      }, { status: 404 });
     }
 
     if (progress.userId !== user.id) {

@@ -330,11 +330,11 @@ export default function PlantInstanceForm({
   // Convert enum fertilizer schedule to expected format
   const convertFertilizerSchedule = (schedule: string): string => {
     const scheduleMap = {
-      'weekly': '7 days',
-      'biweekly': '14 days', 
-      'monthly': '30 days',
-      'bimonthly': '60 days',
-      'quarterly': '90 days'
+      'weekly': '1 week',
+      'biweekly': '2 weeks', 
+      'monthly': '1 month',
+      'bimonthly': '2 months',
+      'quarterly': '3 months'
     };
     return scheduleMap[schedule as keyof typeof scheduleMap] || schedule;
   };

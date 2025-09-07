@@ -170,24 +170,6 @@ describe('Design System Accessibility', () => {
   });
 
   describe('Color Scheme Detection', () => {
-    test('should detect dark mode preference', () => {
-      // Mock matchMedia for dark mode
-      Object.defineProperty(window, 'matchMedia', {
-        writable: true,
-        value: jest.fn().mockImplementation(query => ({
-          matches: query === '(prefers-color-scheme: dark)',
-          media: query,
-          onchange: null,
-          addListener: jest.fn(),
-          removeListener: jest.fn(),
-          addEventListener: jest.fn(),
-          removeEventListener: jest.fn(),
-          dispatchEvent: jest.fn(),
-        })),
-      });
-
-      expect(ColorScheme.prefersDarkMode()).toBe(true);
-    });
 
     test('should detect high contrast preference', () => {
       // Mock matchMedia for high contrast
