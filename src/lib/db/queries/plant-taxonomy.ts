@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { plants } from '@/lib/db/schema';
+import { plants, users } from '@/lib/db/schema';
 import { eq, and, or, ilike, desc, asc, sql, count } from 'drizzle-orm';
 import type { 
   PlantSearch, 
@@ -16,6 +16,31 @@ import type {
   QuickSelectPlants
 } from '@/lib/types/plant-types';
 import { plantHelpers } from '@/lib/types/plant-types';
+
+// Helper function to build plant visibility conditions
+function buildPlantVisibilityFilter(currentUserId?: number) {
+  if (!currentUserId) {
+    // If no user context, only show verified plants
+    return eq(plants.isVerified, true);
+  }
+
+  // Plants are visible if:
+  // 1. They are verified (public)
+  // 2. They were created by a curator (public)
+  // 3. They were created by the current user (private)
+  return or(
+    eq(plants.isVerified, true),
+    and(
+      eq(plants.createdBy, currentUserId)
+    ),
+    // Plants created by curators are visible to all
+    sql`EXISTS (
+      SELECT 1 FROM ${users} 
+      WHERE ${users.id} = ${plants.createdBy} 
+      AND ${users.isCurator} = true
+    )`
+  );
+}
 
 // Create a new plant taxonomy entry
 export async function createPlant(data: CreatePlant, userId?: number): Promise<EnhancedPlant> {
@@ -68,6 +93,9 @@ export async function getPlantsWithStats(
 ): Promise<PlantWithStats[]> {
   const conditions = [];
   
+  // Add visibility filter based on curator/user logic
+  conditions.push(buildPlantVisibilityFilter(userId));
+  
   if (filter.family) {
     conditions.push(ilike(plants.family, `%${filter.family}%`));
   }
@@ -81,7 +109,7 @@ export async function getPlantsWithStats(
     conditions.push(eq(plants.createdBy, filter.createdBy));
   }
 
-  const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+  const whereClause = and(...conditions);
 
   // Query with subqueries for statistics
   const plantsWithStats = await db
@@ -144,6 +172,9 @@ export async function searchPlants(
   // Build search conditions
   const searchConditions = [];
   const searchTerm = `%${query.toLowerCase()}%`;
+  
+  // Add visibility filter based on curator/user logic
+  searchConditions.push(buildPlantVisibilityFilter(options.userContext?.userId));
   
   searchConditions.push(
     or(

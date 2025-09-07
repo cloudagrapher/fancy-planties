@@ -174,9 +174,9 @@ export class MigrationUtils {
 
       for (const plant of commonPlants) {
         await db.execute(sql`
-          INSERT INTO plants (family, genus, species, common_name, care_instructions, is_verified)
-          VALUES (${plant.family}, ${plant.genus}, ${plant.species}, ${plant.commonName}, ${plant.careInstructions}, ${plant.isVerified})
-          ON CONFLICT (family, genus, species) DO NOTHING
+          INSERT INTO plants (family, genus, species, cultivar, common_name, care_instructions, is_verified)
+          VALUES (${plant.family}, ${plant.genus}, ${plant.species}, NULL, ${plant.commonName}, ${plant.careInstructions}, ${plant.isVerified})
+          ON CONFLICT (family, genus, species, cultivar) DO NOTHING
         `);
       }
 
