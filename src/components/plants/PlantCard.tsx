@@ -159,7 +159,7 @@ export default function PlantCard({
         {(plant.careStatus === 'overdue' || plant.careStatus === 'due_today' || plant.careStatus === 'due_soon') && (
           <button
             onClick={(e) => handleCareAction('fertilize', e)}
-            className="flex-1 px-2 py-1 bg-primary-100 hover:bg-primary-200 text-primary-700 text-xs rounded transition-colors"
+            className="btn btn--sm btn--outline"
             title="Mark as fertilized"
           >
             💧 Feed
@@ -167,7 +167,7 @@ export default function PlantCard({
         )}
         <button
           onClick={(e) => handleCareAction('repot', e)}
-          className="flex-1 px-2 py-1 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 text-xs rounded transition-colors"
+          className="btn btn--sm btn--secondary"
           title="Log repotting"
         >
           🪴 Repot
