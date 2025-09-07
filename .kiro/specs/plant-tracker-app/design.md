@@ -824,14 +824,11 @@ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica N
 - **Spacing**: 16px base spacing unit, 8px for tight spacing
 - **Margins**: 16px side margins on mobile, 24px on tablet+
 
-### Dark Mode Support (Future Enhancement)
+### Dark Mode Support
 
-**Dark Color Palette**
-- **Background**: `#0f172a` (Slate-900)
-- **Surface**: `#1e293b` (Slate-800)
-- **Primary**: `#34d399` (Emerald-400) - Adjusted for dark backgrounds
-- **Text Primary**: `#f1f5f9` (Slate-100)
-- **Text Secondary**: `#94a3b8` (Slate-400)
+**Status**: Removed - Application now supports light mode only
+
+Dark mode support has been completely removed from the application to simplify the design system and reduce complexity. The application now uses a consistent light theme optimized for the target audience.
 
 ### Accessibility Considerations
 
