@@ -73,7 +73,7 @@ export function useHapticFeedback() {
   }, []);
 
   const isHapticSupported = useCallback(() => {
-    return 'vibrate' in navigator || 'hapticFeedback' in navigator;
+    return (typeof navigator.vibrate === 'function') || 'hapticFeedback' in navigator;
   }, []);
 
   return {

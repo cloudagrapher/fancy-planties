@@ -9,11 +9,25 @@
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open",
+    "test:component": "cypress run --component",
+    "test:component:open": "cypress open --component",
+    "test:all": "npm run test:ci && npm run test:e2e",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:setup": "tsx scripts/db-setup.ts"
+    "db:setup": "tsx scripts/db-setup.ts",
+    "deploy:production": "./scripts/deploy-production.sh",
+    "deploy:staging": "ENVIRONMENT=staging ./scripts/deploy-production.sh",
+    "deploy:rollback": "./scripts/deploy-production.sh rollback",
+    "deploy:status": "./scripts/deploy-production.sh status",
+    "deploy:health": "./scripts/deploy-production.sh health",
+    "backup:create": "./scripts/backup.sh",
+    "backup:restore": "./scripts/restore.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -41,6 +55,8 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@cypress/react": "^9.0.1",
+    "@cypress/webpack-dev-server": "^5.1.1",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.8.0",
@@ -51,6 +67,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cypress": "^15.1.0",
     "drizzle-kit": "^0.31.4",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",

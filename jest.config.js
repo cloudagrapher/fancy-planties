@@ -19,6 +19,29 @@ const customJestConfig = {
   testEnvironmentOptions: {
     customExportConditions: [''],
   },
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/*.stories.{ts,tsx}',
+    '!src/**/__tests__/**',
+    '!src/**/*.test.{ts,tsx}',
+    '!src/**/*.spec.{ts,tsx}',
+  ],
+  coverageThreshold: {
+    global: {
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
+    },
+  },
+  coverageReporters: ['text', 'lcov', 'html'],
+  testTimeout: 10000,
+  maxWorkers: '50%',
+  // Transform node_modules that use ES modules
+  transformIgnorePatterns: [
+    'node_modules/(?!(lucide-react|@tanstack/react-query)/)',
+  ],
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

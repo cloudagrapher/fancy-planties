@@ -257,3 +257,5 @@ export function DataImport({ className = '' }: DataImportProps) {
     </div>
   );
 }
+
+export default DataImport;
