@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateRequest } from '@/lib/auth/server';
 import { db } from '@/lib/db';
 import { plantInstances, propagations } from '@/lib/db/schema';
-import { eq, and, sql, isNull, isNotNull, lte } from 'drizzle-orm';
+import { eq, and, sql, isNull, isNotNull, lte, inArray } from 'drizzle-orm';
 
 export interface DashboardStats {
   totalPlants: number;
@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
     const [propagationStats] = await db
       .select({
         totalPropagations: sql<number>`count(*)`,
-        activePropagations: sql<number>`count(*) filter (where ${propagations.isActive} = true)`,
-        successfulPropagations: sql<number>`count(*) filter (where ${propagations.isActive} = false and ${propagations.plantInstanceId} is not null)`
+        activePropagations: sql<number>`count(*) filter (where ${propagations.status} in ('started', 'rooting'))`,
+        successfulPropagations: sql<number>`count(*) filter (where ${propagations.status} in ('planted', 'established'))`
       })
       .from(propagations)
       .where(eq(propagations.userId, userId));
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       .where(
         and(
           eq(propagations.userId, userId),
-          eq(propagations.isActive, false)
+          inArray(propagations.status, ['planted', 'established'])
         )
       );
 

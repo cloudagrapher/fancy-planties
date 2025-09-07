@@ -87,7 +87,7 @@ Updated both `SignInForm.tsx` and `SignUpForm.tsx`:
 ✅ **Accessibility**: WCAG AA compliant with proper focus management
 ✅ **Design Token Integration**: Uses the established mint green and salmon color palette
 ✅ **Responsive Design**: Mobile-first approach with proper breakpoints
-✅ **Dark Mode Support**: Automatic dark mode styling
+❌ **Dark Mode Support**: Removed - light mode only
 ✅ **Loading States**: Smooth animations and loading indicators
 
 ### Testing

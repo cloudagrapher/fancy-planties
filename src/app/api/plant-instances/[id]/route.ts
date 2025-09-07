@@ -68,7 +68,30 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const body = await request.json();
+    // Handle FormData for file uploads
+    const formData = await request.formData();
+    
+    // Extract form fields
+    const body: any = {};
+    for (const [key, value] of formData.entries()) {
+      if (key.startsWith('existingImages[')) {
+        // Handle existing images array
+        if (!body.existingImages) body.existingImages = [];
+        body.existingImages.push(value);
+      } else if (key.startsWith('imageFiles[')) {
+        // Handle new image files (for future implementation)
+        if (!body.imageFiles) body.imageFiles = [];
+        body.imageFiles.push(value);
+      } else {
+        // Handle regular form fields
+        body[key] = value;
+      }
+    }
+    
+    // Convert string values to appropriate types
+    if (body.plantId) body.plantId = parseInt(body.plantId);
+    if (body.isActive) body.isActive = body.isActive === 'true';
+    if (body.existingImages) body.images = body.existingImages;
     
     // Convert date strings to Date objects if they exist and are not empty
     const processedBody = {
