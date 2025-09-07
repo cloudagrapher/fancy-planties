@@ -1,12 +1,7 @@
 @import "tailwindcss";
+@import "../styles/tokens/colors.css";
 
-:root {
-  --background: #fefefe;
-  --foreground: #1f2937; /* Darker text for better readability */
-  --surface: #faf9f7;
-  --border: #e5e7eb;
-  --text-muted: #6b7280; /* Better contrast for secondary text */
-}
+/* Legacy variables removed - now using color tokens from colors.css */
 
 @theme inline {
   /* Fancy Planties Color Palette */
@@ -99,10 +94,10 @@
   --color-info: #93c5fd;
   
   /* Neutral Colors */
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-border: var(--border);
-  --color-foreground: var(--foreground);
+  --color-background: var(--color-background);
+  --color-surface: var(--color-surface);
+  --color-border: var(--color-border);
+  --color-foreground: var(--color-foreground);
   --color-text-secondary: #9ca3af;
   --color-text-muted: #d1d5db;
   
@@ -122,31 +117,24 @@
   --shadow-dreamy: 0 8px 32px -8px rgba(253, 164, 175, 0.15), 0 0 0 1px rgba(167, 243, 208, 0.05);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --surface: #1e293b;
-    --foreground: #f1f5f9;
-    --border: #334155;
-    --text-muted: #94a3b8;
-  }
+/* Dark mode variables now handled in colors.css */
   
   .bottom-nav {
-    background-color: var(--surface);
-    border-top-color: var(--border);
+    background-color: var(--color-surface);
+    border-top-color: var(--color-border);
   }
   
   .card,
   .plant-card,
   .modal-content {
-    background-color: var(--surface);
-    border-color: var(--border);
-    color: var(--foreground);
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-foreground);
   }
 
   .card--dreamy {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-neutral-950) 100%);
+    border: none;
   }
 
   .card--mint {
@@ -165,28 +153,28 @@
   }
 
   .card--neutral {
-    background: linear-gradient(135deg, #334155 0%, #475569 100%);
-    border: 1px solid #64748b;
+    background: linear-gradient(135deg, var(--color-neutral-700) 0%, var(--color-neutral-800) 100%);
+    border: 1px solid var(--color-neutral-600);
   }
 
   .card--flat {
-    background-color: var(--surface);
-    border: 1px solid var(--border);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
   }
   
   .form-input,
   .form-select,
   .form-textarea {
-    background-color: var(--background);
-    border-color: var(--border);
-    color: var(--foreground);
+    background-color: var(--color-background);
+    border-color: var(--color-border);
+    color: var(--color-foreground);
   }
 
   /* Dark mode text colors */
-  .text-neutral-900 { color: #f1f5f9; }
-  .text-neutral-700 { color: #cbd5e1; }
-  .text-neutral-600 { color: #94a3b8; }
-  .text-neutral-500 { color: #64748b; }
+  .text-neutral-900 { color: var(--color-neutral-50); }
+  .text-neutral-700 { color: var(--color-neutral-300); }
+  .text-neutral-600 { color: var(--color-neutral-400); }
+  .text-neutral-500 { color: var(--color-neutral-500); }
 
   .text-mint-900 { color: #d1fae5; }
   .text-mint-700 { color: #a7f3d0; }
@@ -221,24 +209,24 @@
   }
 
   .step-number-mint {
-    background-color: #047857;
+    background-color: var(--color-mint-700);
   }
 
   .step-number-salmon {
-    background-color: #be123c;
+    background-color: var(--color-salmon-700);
   }
 
   .step-number-lavender {
-    background-color: #6d28d9;
+    background-color: var(--color-lavender-700);
   }
 
   /* Dark mode button styles */
   .btn--ghost {
-    color: var(--foreground);
+    color: var(--color-foreground);
   }
 
   .btn--ghost:hover {
-    background: var(--surface);
+    background: var(--color-surface);
   }
 
   .btn--outline {
@@ -250,11 +238,10 @@
     background: rgba(6, 78, 59, 0.2);
     border-color: var(--color-mint-500);
   }
-}
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-background);
+  color: var(--color-foreground);
   font-family: var(--font-sans);
 }
 
@@ -489,8 +476,8 @@ select {
 
 /* Card Styles */
 .card {
-  background-color: white;
-  border: 1px solid var(--border);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -527,8 +514,8 @@ select {
 }
 
 .card--flat {
-  background: white;
-  border: 1px solid var(--border);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -543,7 +530,7 @@ select {
 
 .card-footer {
   padding: 16px 0 0 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--color-border);
   margin-top: 16px;
 }
 
@@ -606,13 +593,13 @@ select {
 }
 
 .stat-card.card--neutral::before {
-  background: linear-gradient(90deg, #64748b, #94a3b8);
+  background: linear-gradient(90deg, var(--color-neutral-600), var(--color-neutral-400));
 }
 
 .card--neutral {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 4px 20px rgba(203, 213, 225, 0.15);
+  background: linear-gradient(135deg, var(--color-neutral-100) 0%, var(--color-neutral-50) 100%);
+  border: 1px solid var(--color-neutral-200);
+  box-shadow: 0 4px 20px rgba(229, 227, 224, 0.15);
 }
 
 .stat-value {
@@ -644,8 +631,8 @@ select {
 .plant-card {
   display: flex;
   flex-direction: column;
-  background-color: white;
-  border: 1px solid var(--border);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.2s;
@@ -671,13 +658,13 @@ select {
 .plant-card-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--color-foreground);
   margin-bottom: 4px;
 }
 
 .plant-card-subtitle {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
 }
 
 /* Form Styles */
@@ -687,9 +674,9 @@ select {
   width: 100%;
   padding: 10px 12px;
   font-size: 16px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
-  background-color: white;
+  background-color: var(--color-surface);
   transition: all 0.2s;
 }
 
@@ -705,7 +692,7 @@ select {
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: var(--foreground);
+  color: var(--color-foreground);
   margin-bottom: 6px;
 }
 
@@ -728,7 +715,7 @@ select {
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--color-surface);
   border-radius: 16px;
   max-width: 500px;
   width: 100%;
@@ -738,7 +725,7 @@ select {
 
 .modal-header {
   padding: 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .modal-body {
@@ -748,7 +735,7 @@ select {
 
 .modal-footer {
   padding: 20px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--color-border);
   display: flex;
   gap: 12px;
   justify-content: flex-end;
@@ -820,10 +807,10 @@ select {
 .text-lavender-600 { color: var(--color-lavender-600); }
 .text-lavender-700 { color: var(--color-lavender-700); }
 .text-lavender-900 { color: var(--color-lavender-900); }
-.text-neutral-500 { color: #6b7280; }
-.text-neutral-600 { color: #4b5563; }
-.text-neutral-700 { color: #374151; }
-.text-neutral-900 { color: #111827; }
+.text-neutral-500 { color: var(--color-neutral-500); }
+.text-neutral-600 { color: var(--color-neutral-600); }
+.text-neutral-700 { color: var(--color-neutral-700); }
+.text-neutral-900 { color: var(--color-neutral-900); }
 
 /* Getting Started Step Styles */
 .step-mint {
@@ -892,26 +879,26 @@ select {
 .empty-state-icon {
   width: 64px;
   height: 64px;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
   margin-bottom: 16px;
 }
 
 .empty-state-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--foreground);
+  color: var(--color-foreground);
   margin-bottom: 8px;
 }
 
 .empty-state-message {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
 }
 
 .spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--border);
+  border: 2px solid var(--color-border);
   border-top: 2px solid var(--color-primary-600);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -928,8 +915,8 @@ select {
   left: 0;
   right: 0;
   z-index: 50;
-  background-color: white;
-  border-top: 1px solid var(--border);
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
@@ -949,7 +936,7 @@ select {
   justify-content: center;
   gap: 4px;
   padding: 8px;
-  color: var(--text-muted);
+  color: var(--color-text-muted);
   text-decoration: none;
   transition: all 0.2s;
   position: relative;
@@ -958,10 +945,12 @@ select {
 
 .bottom-nav-item--active {
   color: var(--color-primary-600);
+  background-color: var(--color-primary-100);
+  border-radius: 12px;
 }
 
 .bottom-nav-item--inactive:hover {
-  color: var(--foreground);
+  color: var(--color-foreground);
 }
 
 .bottom-nav-item--pressed {

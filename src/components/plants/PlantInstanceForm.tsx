@@ -96,6 +96,7 @@ export default function PlantInstanceForm({
     reset,
     setValue,
     watch,
+    trigger,
   } = useForm({
     resolver: zodResolver(plantInstanceFormSchema),
     mode: 'onChange',
@@ -311,13 +312,18 @@ export default function PlantInstanceForm({
   // Handle image changes
   const handleImageChange = (files: File[]) => {
     setImageFiles(files);
+    // Update form validation by setting total image count
+    const totalImages = existingImages.length + files.length;
+    setValue('images', [...existingImages, ...Array(files.length).fill('pending')]);
+    trigger('images');
   };
 
   // Handle existing image removal
   const handleRemoveExistingImage = (index: number) => {
     const newImages = existingImages.filter((_, i) => i !== index);
     setExistingImages(newImages);
-    setValue('images', newImages);
+    setValue('images', [...newImages, ...Array(imageFiles.length).fill('pending')]);
+    trigger('images');
   };
 
   // Convert enum fertilizer schedule to expected format

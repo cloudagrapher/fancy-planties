@@ -66,6 +66,7 @@
   --color-neutral-700: #374151;
   --color-neutral-800: #1f2937;
   --color-neutral-900: #111827;
+  --color-neutral-950: #0c0a09;
   
   /* SEMANTIC COLOR ALIASES */
   --color-background: var(--color-neutral-50);
@@ -136,13 +137,13 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Dark mode color overrides */
-    --color-background: var(--color-neutral-900);
-    --color-surface: var(--color-neutral-800);
-    --color-border: var(--color-neutral-700);
-    --color-foreground: var(--color-neutral-100);
-    --color-text-primary: var(--color-neutral-50);
-    --color-text-secondary: var(--color-neutral-300);
-    --color-text-muted: var(--color-neutral-500);
+    --color-background: var(--color-neutral-950);    /* Very dark background */
+    --color-surface: var(--color-neutral-900);       /* Card/surface backgrounds */
+    --color-border: var(--color-neutral-800);        /* Darker for better subtlety */
+    --color-foreground: var(--color-neutral-50);     /* Keep - good for white elements */
+    --color-text-primary: var(--color-neutral-100);  /* Main headings like "My Plants" */
+    --color-text-secondary: var(--color-neutral-400); /* Button labels, secondary text */
+    --color-text-muted: var(--color-neutral-500);    /* "Add your first plant..." placeholder */
     
     /* Legacy aliases for backward compatibility */
     --background: var(--color-background);
