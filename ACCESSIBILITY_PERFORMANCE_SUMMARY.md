@@ -101,7 +101,7 @@ This document summarizes the comprehensive accessibility and performance optimiz
 - **Keyboard navigation**: Focus management and trap utilities
 - **Screen reader support**: Announcement and live region management
 - **Reduced motion handling**: Animation preference detection and handling
-- **Color scheme detection**: Dark mode and high contrast support
+- **Color scheme detection**: Light mode only (dark mode support removed)
 
 ### Performance Monitoring (`src/lib/utils/performance-monitor.ts`)
 - **CSS performance tracking**: Load times, layout frequency, paint metrics

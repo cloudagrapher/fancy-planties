@@ -26,6 +26,36 @@ export function ImportProgress({
     const fetchProgress = async () => {
       try {
         const response = await fetch(`/api/import/csv/${importId}`);
+        
+        if (response.status === 404) {
+          // Import might have completed and been cleaned up
+          const errorData = await response.json().catch(() => ({}));
+          
+          if (errorData.message?.includes('completed successfully')) {
+            // Treat as successful completion
+            const completedProgress: ImportProgressType = {
+              id: importId,
+              userId: 0, // Will be filled by onComplete handler
+              fileName: 'Import completed',
+              importType: 'plant_instances',
+              status: 'completed',
+              progress: 100,
+              totalRows: 0,
+              processedRows: 0,
+              errors: [],
+              conflicts: [],
+              startTime: new Date(),
+              endTime: new Date(),
+            };
+            setProgress(completedProgress);
+            onComplete?.(completedProgress);
+            clearInterval(intervalId);
+            return;
+          } else {
+            throw new Error('Import not found - it may have expired');
+          }
+        }
+        
         if (!response.ok) {
           throw new Error('Failed to fetch progress');
         }

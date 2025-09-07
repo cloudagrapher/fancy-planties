@@ -230,33 +230,11 @@ export class ReducedMotion {
  */
 export class ColorScheme {
   /**
-   * Check if user prefers dark mode
-   */
-  static prefersDarkMode(): boolean {
-    if (typeof window === 'undefined') return false;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }
-  
-  /**
    * Check if user prefers high contrast
    */
   static prefersHighContrast(): boolean {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(prefers-contrast: high)').matches;
-  }
-  
-  /**
-   * Listen for color scheme changes
-   */
-  static onColorSchemeChange(callback: (isDark: boolean) => void): () => void {
-    if (typeof window === 'undefined') return () => {};
-    
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handler = (e: MediaQueryListEvent) => callback(e.matches);
-    
-    mediaQuery.addEventListener('change', handler);
-    
-    return () => mediaQuery.removeEventListener('change', handler);
   }
 }
 

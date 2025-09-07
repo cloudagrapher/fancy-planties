@@ -49,10 +49,10 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
       href: '/dashboard/propagations',
     },
     {
-      id: 'handbook',
-      label: 'Handbook',
-      icon: '📖',
-      href: '/dashboard/handbook',
+      id: 'profile',
+      label: 'Profile',
+      icon: '👤',
+      href: '/dashboard/profile',
     },
   ];
 
