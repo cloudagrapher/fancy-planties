@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Login Test</title>
+</head>
+<body>
+    <h1>Login Debug Test</h1>
+    <form id="loginForm">
+        <div>
+            <label>Email: <input type="email" id="email" value="test@example.com"></label>
+        </div>
+        <div>
+            <label>Password: <input type="password" id="password" value="Password123"></label>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                resultDiv.innerHTML = 'Logging in...';
+                
+                const response = await fetch('/api/auth/signin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include' // Important for cookies
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `Success! Redirecting to dashboard... Response: ${JSON.stringify(result)}`;
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    resultDiv.innerHTML = `Error: ${result.error || 'Login failed'}`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `Fetch error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

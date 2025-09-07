@@ -55,42 +55,49 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   };
 
   return (
-    <div className="min-h-screen pb-16 sm:pb-0 bg-gradient-to-b from-emerald-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-white/70 backdrop-blur p-8">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">My Plants</h1>
-              <p className="text-gray-600">Manage your plant collection</p>
+    <div className="page">
+      <div className="container">
+        <div className="page-content">
+          {/* Main Plants Card */}
+          <div className="card card--dreamy">
+            {/* Header */}
+            <div className="card-header">
+              <div className="flex-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-neutral-900">My Plants</h1>
+                  <p className="text-neutral-600 mt-2">Manage your plant collection</p>
+                </div>
+                
+                <button
+                  onClick={handleAddPlant}
+                  className="btn btn--primary"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Add Plant
+                </button>
+              </div>
             </div>
-            
-            <button
-              onClick={handleAddPlant}
-              className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Add Plant
-            </button>
-          </div>
 
-          {/* Plants Grid */}
-          <div className="bg-white/50 rounded-xl shadow-sm overflow-hidden">
-            <PlantsGrid
-              userId={userId}
-              onPlantSelect={handlePlantSelect}
-              onCareAction={handleCareAction}
-              onBulkAction={handleBulkAction}
-              showSearch={true}
-              showFilters={true}
-              showAdvancedSearch={true}
-              showSearchResults={true}
-              showPresets={true}
-              showHistory={true}
-              cardSize="medium"
-            />
+            {/* Plants Grid */}
+            <div className="card-body">
+              <div className="card card--flat">
+                <PlantsGrid
+                  userId={userId}
+                  onPlantSelect={handlePlantSelect}
+                  onCareAction={handleCareAction}
+                  onBulkAction={handleBulkAction}
+                  showSearch={true}
+                  showFilters={true}
+                  showAdvancedSearch={true}
+                  showSearchResults={true}
+                  showPresets={true}
+                  showHistory={true}
+                  cardSize="medium"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

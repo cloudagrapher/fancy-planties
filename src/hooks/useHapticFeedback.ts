@@ -66,13 +66,16 @@ export function useHapticFeedback() {
           pattern = 10;
       }
 
-      navigator.vibrate(pattern);
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(pattern);
+      }
     } catch (error) {
       console.log('Vibration not supported:', error);
     }
   }, []);
 
   const isHapticSupported = useCallback(() => {
+    if (typeof navigator === 'undefined') return false;
     return (typeof navigator.vibrate === 'function') || 'hapticFeedback' in navigator;
   }, []);
 

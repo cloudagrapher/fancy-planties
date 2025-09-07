@@ -6,93 +6,114 @@ export default async function DashboardPage() {
   const { user } = await requireAuthSession();
 
   return (
-    <div className="min-h-screen pb-16 sm:pb-0 bg-gradient-to-b from-emerald-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-white/70 backdrop-blur p-8">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {user.name}!
-            </h1>
-            <p className="text-gray-600">
-              Ready to manage your fancy plant collection?
-            </p>
-          </div>
-          <LogoutButton className="px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors" />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-emerald-50/70 backdrop-blur p-6">
-            <h3 className="text-lg font-semibold text-emerald-900 mb-2">Plants</h3>
-            <p className="text-emerald-700">Manage your plant collection</p>
-            <div className="mt-4">
-              <span className="text-2xl font-bold text-emerald-600">0</span>
-              <span className="text-emerald-600 ml-1">plants</span>
+    <div className="page">
+      <div className="container">
+        <div className="page-content">
+          {/* Header */}
+          <div className="flex-between" style={{ marginBottom: '24px' }}>
+            <div>
+              <h1 className="text-2xl font-bold text-neutral-900" style={{ marginBottom: '4px' }}>
+                Hey {user.name}! ✨
+              </h1>
+              <p className="text-neutral-600 text-sm">
+                Your plants are looking great today
+              </p>
             </div>
+            <LogoutButton className="btn btn--ghost btn--sm text-neutral-600" />
           </div>
 
-          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-amber-50/70 backdrop-blur p-6">
-            <h3 className="text-lg font-semibold text-amber-900 mb-2">Care Tasks</h3>
-            <p className="text-amber-700">Track care schedules</p>
-            <div className="mt-4">
-              <span className="text-2xl font-bold text-amber-600">0</span>
-              <span className="text-amber-600 ml-1">due today</span>
-            </div>
-          </div>
+          {/* Main Dashboard */}
+          <div className="card card--dreamy">
+            <div className="card-body">
 
-          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-sky-50/70 backdrop-blur p-6">
-            <h3 className="text-lg font-semibold text-sky-900 mb-2">Propagations</h3>
-            <p className="text-sky-700">Monitor propagation progress</p>
-            <div className="mt-4">
-              <span className="text-2xl font-bold text-sky-600">0</span>
-              <span className="text-sky-600 ml-1">active</span>
-            </div>
-          </div>
+              {/* Stats Grid */}
+              <div className="stats-grid">
+                <div className="stat-card card--mint">
+                  <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🌱</div>
+                  <h3 className="text-lg font-semibold text-mint-900">Plants</h3>
+                  <p className="text-mint-700 text-sm" style={{ marginBottom: '12px' }}>Manage your plant collection</p>
+                  <div className="stat-value text-mint-600">0</div>
+                  <div className="stat-label text-mint-600">plants</div>
+                </div>
 
-          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-green-50/70 backdrop-blur p-6">
-            <h3 className="text-lg font-semibold text-green-900 mb-2">Success Rate</h3>
-            <p className="text-green-700">Propagation success</p>
-            <div className="mt-4">
-              <span className="text-2xl font-bold text-green-600">--</span>
-              <span className="text-green-600 ml-1">%</span>
-            </div>
-          </div>
-        </div>
+                <div className="stat-card card--salmon">
+                  <div style={{ fontSize: '2rem', marginBottom: '8px' }}>💧</div>
+                  <h3 className="text-lg font-semibold text-salmon-900">Care Tasks</h3>
+                  <p className="text-salmon-700 text-sm" style={{ marginBottom: '12px' }}>Track care schedules</p>
+                  <div className="stat-value text-salmon-600">0</div>
+                  <div className="stat-label text-salmon-600">due today</div>
+                </div>
 
-        {/* Fertilizer Calendar */}
-        <div className="mt-8">
-          <FertilizerCalendar />
-        </div>
+                <div className="stat-card card--lavender">
+                  <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🌿</div>
+                  <h3 className="text-lg font-semibold text-lavender-900">Propagations</h3>
+                  <p className="text-lavender-700 text-sm" style={{ marginBottom: '12px' }}>Monitor propagation progress</p>
+                  <div className="stat-value text-lavender-600">0</div>
+                  <div className="stat-label text-lavender-600">active</div>
+                </div>
 
-        <div className="mt-8 p-6 bg-gray-50 rounded-xl">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Getting Started</h2>
-          <div className="space-y-3">
-            <div className="flex items-center text-gray-700">
-              <div className="w-6 h-6 bg-primary-200 rounded-full flex items-center justify-center mr-3">
-                <span className="text-primary-800 text-sm font-semibold">1</span>
+                <div className="stat-card card--neutral">
+                  <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📊</div>
+                  <h3 className="text-lg font-semibold text-neutral-900">Success Rate</h3>
+                  <p className="text-neutral-700 text-sm" style={{ marginBottom: '12px' }}>Propagation success</p>
+                  <div className="stat-value text-neutral-600">--</div>
+                  <div className="stat-label text-neutral-600">%</div>
+                </div>
               </div>
-              Add your first plant to start tracking your collection
-            </div>
-            <div className="flex items-center text-gray-700">
-              <div className="w-6 h-6 bg-primary-200 rounded-full flex items-center justify-center mr-3">
-                <span className="text-primary-800 text-sm font-semibold">2</span>
+
+              {/* Fertilizer Calendar */}
+              <div className="section--sm">
+                <FertilizerCalendar />
               </div>
-              Set up care schedules for fertilizing and repotting
-            </div>
-            <div className="flex items-center text-gray-700">
-              <div className="w-6 h-6 bg-primary-200 rounded-full flex items-center justify-center mr-3">
-                <span className="text-primary-800 text-sm font-semibold">3</span>
+
+              {/* Getting Started Card */}
+              <div className="card card--flat" style={{ marginTop: '24px' }}>
+                <div className="card-header">
+                  <div className="flex-center" style={{ marginBottom: '8px' }}>
+                    <span style={{ fontSize: '1.5rem', marginRight: '8px' }}>🌟</span>
+                    <h2 className="text-xl font-semibold text-neutral-900">Getting Started</h2>
+                  </div>
+                  <p className="text-neutral-600 text-sm text-center">Let's help you create your dream plant collection</p>
+                </div>
+                <div className="card-body">
+                  <div className="space-y-4">
+                    <div className="flex items-center text-neutral-700 step-mint">
+                      <div className="step-number-mint">
+                        <span className="text-mint-800 text-sm font-semibold">1</span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-neutral-900">Add your first plant</div>
+                        <div className="text-sm text-neutral-600">Start tracking your collection</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center text-neutral-700 step-salmon">
+                      <div className="step-number-salmon">
+                        <span className="text-salmon-800 text-sm font-semibold">2</span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-neutral-900">Set up care schedules</div>
+                        <div className="text-sm text-neutral-600">Never forget watering or fertilizing</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center text-neutral-700 step-lavender">
+                      <div className="step-number-lavender">
+                        <span className="text-lavender-800 text-sm font-semibold">3</span>
+                      </div>
+                      <div>
+                        <div className="font-medium text-neutral-900">Track propagations</div>
+                        <div className="text-sm text-neutral-600">Monitor your propagation success</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              Start tracking propagations and their progress
             </div>
           </div>
-        </div>
-
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
-            User ID: {user.id} | Email: {user.email}
-          </p>
-        </div>
+          
+          {/* Fertilizer Calendar */}
+          <div className="section--sm">
+            <FertilizerCalendar />
+          </div>
         </div>
       </div>
     </div>

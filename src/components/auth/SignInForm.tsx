@@ -80,62 +80,81 @@ export default function SignInForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-token">
-      {generalError && (
-        <div className="form-error bg-salmon-50 border border-salmon-200 text-salmon-700 px-4 py-3 rounded-token-lg">
-          {generalError}
+    <div className={`${isLoading ? 'form--loading' : ''}`}>
+      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="on" noValidate>
+        {generalError && (
+          <div className="form-validation-summary">
+            <div className="form-validation-summary-title">
+              Sign In Failed
+            </div>
+            <ul className="form-validation-summary-list">
+              <li className="form-validation-summary-item">{generalError}</li>
+            </ul>
+          </div>
+        )}
+
+        <div className="form-group">
+          <label htmlFor="signin-email" className="form-label form-label--required">
+            Email Address
+          </label>
+          <input
+            id="signin-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            value={formData.email}
+            onChange={handleChange}
+            className={`form-input ${errors.email ? 'form-input--error' : ''}`}
+            placeholder="Enter your email address"
+            aria-describedby={errors.email ? 'signin-email-error' : undefined}
+          />
+          {errors.email && (
+            <div id="signin-email-error" className="form-error" role="alert">
+              {errors.email}
+            </div>
+          )}
         </div>
-      )}
 
-      <div className="form-group">
-        <label htmlFor="email" className="form-label form-label--required">
-          Email Address
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={formData.email}
-          onChange={handleChange}
-          className={`form-input ${errors.email ? 'form-input--error' : ''}`}
-          placeholder="Enter your email"
-        />
-        {errors.email && (
-          <div className="form-error">{errors.email}</div>
-        )}
-      </div>
+        <div className="form-group">
+          <label htmlFor="signin-password" className="form-label form-label--required">
+            Password
+          </label>
+          <input
+            id="signin-password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={formData.password}
+            onChange={handleChange}
+            className={`form-input ${errors.password ? 'form-input--error' : ''}`}
+            placeholder="Enter your password"
+            aria-describedby={errors.password ? 'signin-password-error' : undefined}
+          />
+          {errors.password && (
+            <div id="signin-password-error" className="form-error" role="alert">
+              {errors.password}
+            </div>
+          )}
+        </div>
 
-      <div className="form-group">
-        <label htmlFor="password" className="form-label form-label--required">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={formData.password}
-          onChange={handleChange}
-          className={`form-input ${errors.password ? 'form-input--error' : ''}`}
-          placeholder="Enter your password"
-        />
-        {errors.password && (
-          <div className="form-error">{errors.password}</div>
-        )}
-      </div>
-
-      <div className="form-actions form-actions--full">
-        <button
-          type="submit"
-          disabled={isLoading}
-          className={`btn btn--primary btn--full ${isLoading ? 'btn--loading' : ''}`}
-        >
-          {isLoading ? 'Signing in...' : 'Sign In'}
-        </button>
-      </div>
-    </form>
+        <div className="form-actions form-actions--full">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`btn btn--primary btn--full ${isLoading ? 'btn--loading' : ''}`}
+            aria-describedby={isLoading ? 'signin-loading' : undefined}
+          >
+            {isLoading ? 'Signing in...' : 'Sign In'}
+          </button>
+          {isLoading && (
+            <span id="signin-loading" className="sr-only">
+              Please wait while we sign you in
+            </span>
+          )}
+        </div>
+      </form>
+    </div>
   );
 }

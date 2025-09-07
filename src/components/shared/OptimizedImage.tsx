@@ -80,15 +80,15 @@ export function OptimizedImage({
     >
       {/* Loading placeholder */}
       {!isLoaded && !hasError && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-gray-300 border-t-primary rounded-full animate-spin" />
+        <div className="image-placeholder--loading overlay">
+          <div className="spinner" />
         </div>
       )}
 
       {/* Error placeholder */}
       {hasError && (
-        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-          <div className="text-gray-400 text-sm">Failed to load image</div>
+        <div className="image-placeholder--error overlay">
+          <div className="image-placeholder-text">Failed to load image</div>
         </div>
       )}
 
@@ -199,8 +199,8 @@ function LazyGalleryImage({
           quality={70}
         />
       ) : (
-        <div className="w-full h-full bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
-          <div className="text-gray-400 text-xs">Loading...</div>
+        <div className="image-placeholder--loading w-full h-full rounded-lg">
+          <div className="image-placeholder-text text-xs">Loading...</div>
         </div>
       )}
     </div>
