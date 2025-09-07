@@ -59,7 +59,7 @@ export const processedPlantInstanceSchema = z.object({
   cultivar: z.string().optional().nullable(), // New cultivar field
   commonName: z.string().min(1, 'Common name is required'),
   nickname: z.string().min(1, 'Nickname is required'),
-  location: z.string().min(1, 'Location is required'),
+  location: z.string().optional().default('Unknown'),
   lastFertilized: z.date().nullable(),
   fertilizerSchedule: z.string(),
   fertilizerDue: z.date().nullable(),
@@ -74,7 +74,7 @@ export const processedPropagationSchema = z.object({
   cultivar: z.string().optional().nullable(), // New cultivar field
   commonName: z.string().min(1, 'Common name is required'),
   nickname: z.string().min(1, 'Nickname is required'),
-  location: z.string().min(1, 'Location is required'),
+  location: z.string().optional().default('Unknown'),
   dateStarted: z.date(),
   sourceType: z.enum(['internal', 'external']).default('external'), // Default to external for CSV imports
   externalSource: z.enum(['gift', 'trade', 'purchase', 'other']).optional().nullable(),

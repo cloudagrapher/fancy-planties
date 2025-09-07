@@ -9,13 +9,12 @@ import {
   type ImportProgress,
   type ImportConflict,
 } from '@/lib/validation/csv-schemas';
+import { importProgressStore } from '@/lib/db/import-progress';
 import { v4 as uuidv4 } from 'uuid';
 
 export type ImportType = 'plant_taxonomy' | 'plant_instances' | 'propagations';
 
 export class CSVImportService {
-  private activeImports = new Map<string, ImportProgress>();
-
   /**
    * Start a CSV import process
    */
@@ -49,7 +48,7 @@ export class CSVImportService {
       startTime: new Date(),
     };
 
-    this.activeImports.set(importId, progress);
+    importProgressStore.set(importId, progress);
 
     // Start processing asynchronously
     this.processImportAsync(importId, validatedFile.content, importType, fullConfig);
@@ -61,25 +60,25 @@ export class CSVImportService {
    * Get import progress
    */
   getImportProgress(importId: string): ImportProgress | null {
-    return this.activeImports.get(importId) || null;
+    return importProgressStore.get(importId);
   }
 
   /**
    * Get all active imports for a user
    */
   getUserImports(userId: number): ImportProgress[] {
-    return Array.from(this.activeImports.values())
-      .filter(progress => progress.userId === userId);
+    return importProgressStore.getAllForUser(userId);
   }
 
   /**
    * Cancel an import
    */
   cancelImport(importId: string): boolean {
-    const progress = this.activeImports.get(importId);
+    const progress = importProgressStore.get(importId);
     if (progress && progress.status === 'processing') {
       progress.status = 'failed';
       progress.endTime = new Date();
+      importProgressStore.set(importId, progress);
       return true;
     }
     return false;
@@ -92,7 +91,7 @@ export class CSVImportService {
     importId: string,
     resolutions: ConflictResolution[]
   ): Promise<ImportSummary> {
-    const progress = this.activeImports.get(importId);
+    const progress = importProgressStore.get(importId);
     if (!progress) {
       throw new Error('Import not found');
     }
@@ -108,6 +107,7 @@ export class CSVImportService {
     progress.conflicts = progress.conflicts.filter(conflict => 
       !resolutions.some(res => res.conflictId === this.generateConflictId(conflict))
     );
+    importProgressStore.set(importId, progress);
 
     return summary;
   }
@@ -116,7 +116,7 @@ export class CSVImportService {
    * Get suggested resolutions for conflicts
    */
   getSuggestedResolutions(importId: string): ConflictResolution[] {
-    const progress = this.activeImports.get(importId);
+    const progress = importProgressStore.get(importId);
     if (!progress || progress.conflicts.length === 0) {
       return [];
     }
@@ -135,13 +135,23 @@ export class CSVImportService {
    * Clean up completed imports
    */
   cleanupCompletedImports(olderThanHours: number = 24): void {
-    const cutoffTime = new Date(Date.now() - olderThanHours * 60 * 60 * 1000);
-    
-    for (const [importId, progress] of this.activeImports.entries()) {
-      if (progress.endTime && progress.endTime < cutoffTime) {
-        this.activeImports.delete(importId);
+    importProgressStore.cleanup(olderThanHours * 60 * 60 * 1000);
+  }
+
+  /**
+   * Keep completed imports available for at least 1 hour
+   */
+  private scheduleCleanup(importId: string): void {
+    setTimeout(() => {
+      const progress = importProgressStore.get(importId);
+      if (progress && progress.endTime && progress.status !== 'processing') {
+        // Keep for at least 1 hour after completion
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        if (progress.endTime < oneHourAgo) {
+          importProgressStore.delete(importId);
+        }
       }
-    }
+    }, 60 * 60 * 1000); // 1 hour
   }
 
   /**
@@ -207,12 +217,13 @@ export class CSVImportService {
     importType: ImportType,
     config: CSVImportConfig
   ): Promise<void> {
-    const progress = this.activeImports.get(importId);
+    const progress = importProgressStore.get(importId);
     if (!progress) return;
 
     try {
       progress.status = 'processing';
       progress.progress = 10;
+      importProgressStore.set(importId, progress);
 
       const processor = new CSVImportProcessor(config);
       let summary: ImportSummary;
@@ -240,6 +251,7 @@ export class CSVImportService {
       progress.conflicts = summary.conflicts;
       progress.endTime = new Date();
       progress.summary = summary;
+      importProgressStore.set(importId, progress);
 
     } catch (error) {
       progress.status = 'failed';
@@ -250,6 +262,7 @@ export class CSVImportService {
         severity: 'error',
       }];
       progress.endTime = new Date();
+      importProgressStore.set(importId, progress);
     }
   }
 

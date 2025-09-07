@@ -245,17 +245,9 @@ function setupMobileAccessibility(): void {
  * Color scheme detection and handling
  */
 function setupColorSchemeDetection(): void {
-  const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
   const highContrastQuery = window.matchMedia('(prefers-contrast: high)');
 
   function handleColorScheme() {
-    // Dark mode
-    if (darkModeQuery.matches) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-
     // High contrast
     if (highContrastQuery.matches) {
       document.body.classList.add('high-contrast');
@@ -268,7 +260,6 @@ function setupColorSchemeDetection(): void {
   handleColorScheme();
 
   // Listen for changes
-  darkModeQuery.addEventListener('change', handleColorScheme);
   highContrastQuery.addEventListener('change', handleColorScheme);
 }
 
