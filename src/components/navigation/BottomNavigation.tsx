@@ -24,12 +24,6 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
 
   const navigationItems: NavigationItem[] = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: '🏠',
-      href: '/dashboard',
-    },
-    {
       id: 'plants',
       label: 'Plants',
       icon: '🌱',
@@ -43,16 +37,22 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
       badge: careNotificationCount > 0 ? careNotificationCount : undefined,
     },
     {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: '🏠',
+      href: '/dashboard',
+    },
+    {
       id: 'propagations',
       label: 'Propagations',
       icon: '🌿',
       href: '/dashboard/propagations',
     },
     {
-      id: 'profile',
-      label: 'Profile',
-      icon: '👤',
-      href: '/dashboard/profile',
+      id: 'handbook',
+      label: 'Handbook',
+      icon: '📖',
+      href: '/dashboard/handbook',
     },
   ];
 
