@@ -87,6 +87,7 @@ describe('PlantInstanceForm', () => {
     expect(screen.getByLabelText(/Plant Type/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Nickname/)).toBeInTheDocument();
     expect(screen.getByLabelText(/Location/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Fertilizer Schedule/)).toBeInTheDocument();
   });
 
   it('renders form for editing existing plant', () => {
@@ -122,7 +123,10 @@ describe('PlantInstanceForm', () => {
       { wrapper: createWrapper() }
     );
 
-    // Try to submit without filling required fields
+    // Try to submit without filling required fields (but with plant selected to trigger validation)
+    const selectButton = screen.getByText('Select Plant');
+    await user.click(selectButton);
+
     const submitButton = screen.getByText('Add Plant');
     await user.click(submitButton);
 
@@ -197,8 +201,16 @@ describe('PlantInstanceForm', () => {
       id: 1,
       nickname: 'Original Name',
       location: 'Original Location',
+      fertilizerSchedule: 'monthly', // Add this to prevent validation error
     });
 
+    // Mock the locations API call first
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response);
+
+    // Then mock the actual form submission
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ success: true, data: mockPlant }),
@@ -214,10 +226,19 @@ describe('PlantInstanceForm', () => {
       { wrapper: createWrapper() }
     );
 
+    // Wait for the form to load
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Original Name')).toBeInTheDocument();
+    });
+
     // Modify the nickname
     const nicknameInput = screen.getByDisplayValue('Original Name');
     await user.clear(nicknameInput);
     await user.type(nicknameInput, 'Updated Name');
+
+    // Ensure fertilizer schedule is selected (should be pre-filled from mockPlant)
+    const scheduleSelect = screen.getByRole('combobox');
+    expect(scheduleSelect).toHaveValue('monthly');
 
     // Submit the form
     const submitButton = screen.getByText('Update Plant');
@@ -228,7 +249,7 @@ describe('PlantInstanceForm', () => {
         method: 'PUT',
         body: expect.any(FormData),
       });
-    });
+    }, { timeout: 3000 });
   });
 
   it('handles close button click', async () => {

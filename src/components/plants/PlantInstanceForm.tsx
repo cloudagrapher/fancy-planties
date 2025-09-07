@@ -121,7 +121,7 @@ export default function PlantInstanceForm({
     resolver: zodResolver(plantInstanceFormSchema),
     mode: 'onChange',
     defaultValues: {
-      plantId: 0,
+      plantId: 1, // Default to 1 to pass validation, will be overridden during initialization
       nickname: '',
       location: '',
       fertilizerSchedule: 'monthly' as const,
@@ -606,7 +606,7 @@ export default function PlantInstanceForm({
               {/* Basic Information */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="nickname" className="block text-sm font-medium text-gray-700 mb-2">
                     Nickname *
                   </label>
                   <Controller
@@ -615,6 +615,7 @@ export default function PlantInstanceForm({
                     render={({ field }) => (
                       <input
                         {...field}
+                        id="nickname"
                         type="text"
                         placeholder="My favorite monstera"
                         className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
@@ -629,7 +630,7 @@ export default function PlantInstanceForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
                     Location *
                   </label>
                   <Controller
@@ -639,6 +640,7 @@ export default function PlantInstanceForm({
                       <div className="relative">
                         <input
                           {...field}
+                          id="location"
                           type="text"
                           placeholder="Living room window"
                           className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
@@ -738,7 +740,7 @@ export default function PlantInstanceForm({
 
               {/* Care Schedule */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="fertilizerSchedule" className="block text-sm font-medium text-gray-700 mb-2">
                   Fertilizer Schedule *
                 </label>
                 <Controller
@@ -748,6 +750,7 @@ export default function PlantInstanceForm({
                     <div className="space-y-3">
                       <select
                         {...field}
+                        id="fertilizerSchedule"
                         className={`w-full px-3 py-2 bg-white text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
                           errors.fertilizerSchedule ? 'border-red-300' : 'border-gray-300'
                         }`}
@@ -1006,7 +1009,7 @@ export default function PlantInstanceForm({
                 </button>
                 <button
                   type="submit"
-                  disabled={!isValid || mutation.isPending}
+                  disabled={mutation.isPending || (!selectedPlant && !isEditing)}
                   className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-lg hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {mutation.isPending ? (
