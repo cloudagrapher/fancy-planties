@@ -209,7 +209,7 @@ export const careGuides = pgTable('care_guides', {
   }>(),
   
   propagation: jsonb('propagation').$type<{
-    methods?: string[];
+    methods?: string;
     season?: string;
     difficulty?: string;
     tips?: string;
