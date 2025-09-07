@@ -23,6 +23,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null); // Clear any previous error state
       const response = await fetch('/api/care/dashboard');
       if (!response.ok) {
         throw new Error('Failed to load care dashboard');
@@ -46,7 +47,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
         body: JSON.stringify({
           plantInstanceId,
           careType,
-          careDate: new Date(),
+          careDate: new Date().toISOString(),
         }),
       });
 
@@ -64,7 +65,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-6">
+      <div className="animate-pulse space-y-6" role="status" aria-label="Loading care dashboard">
         <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="h-20 bg-gray-200 rounded"></div>
@@ -75,6 +76,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
           <div className="h-16 bg-gray-200 rounded"></div>
           <div className="h-16 bg-gray-200 rounded"></div>
         </div>
+        <span className="sr-only">Loading care dashboard...</span>
       </div>
     );
   }
@@ -110,7 +112,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
   const activePlants = activeTab?.plants || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="care-dashboard">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Plant Care</h1>

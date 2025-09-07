@@ -64,9 +64,9 @@ export default function AdvancedSearchInterface({
       const response = await fetch(`/api/search/suggestions?query=${encodeURIComponent(searchQuery)}&limit=5`);
       if (!response.ok) throw new Error('Failed to fetch suggestions');
       const data = await response.json();
-      return data.data;
+      return data.data || data; // Handle both data.data and direct data response
     },
-    enabled: searchQuery.length >= 2 && showSuggestions,
+    enabled: searchQuery.length >= 2,
     staleTime: 1000 * 30, // 30 seconds
   });
 
@@ -77,7 +77,7 @@ export default function AdvancedSearchInterface({
       const response = await fetch('/api/search/presets');
       if (!response.ok) throw new Error('Failed to fetch presets');
       const data = await response.json();
-      return data.data.presets as SearchPreset[];
+      return (data.data?.presets || data.presets || []) as SearchPreset[];
     },
     enabled: showPresets,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -244,6 +244,11 @@ export default function AdvancedSearchInterface({
     setTimeout(() => setShowSuggestions(false), 200);
   }, []);
 
+  // Call onFiltersChange with initial filters on mount
+  useEffect(() => {
+    onFiltersChange(filters);
+  }, []); // Only run on mount
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -297,6 +302,7 @@ export default function AdvancedSearchInterface({
                 onClick={clearSearch}
                 className="btn btn--ghost btn--icon btn--sm"
                 type="button"
+                aria-label="Clear search"
               >
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -307,7 +313,7 @@ export default function AdvancedSearchInterface({
         </div>
 
         {/* Search Suggestions Dropdown */}
-        {showSuggestions && (suggestions?.suggestions.length > 0 || history?.length > 0) && (
+        {showSuggestions && (suggestions?.suggestions?.length > 0 || history?.length > 0) && (
           <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
             {/* Current Suggestions */}
             {suggestions?.suggestions.length > 0 && (
@@ -386,7 +392,7 @@ export default function AdvancedSearchInterface({
               disabled={isLoading}
               className={`btn btn--sm btn--primary ${isLoading ? 'btn--loading' : ''}`}
             >
-              Search
+              {isLoading ? 'Searching...' : 'Search'}
             </button>
           )}
         </div>

@@ -5,22 +5,28 @@ import { useDropzone } from 'react-dropzone';
 
 interface ImageUploadProps {
   onImagesChange: (files: File[]) => void;
+  onUpload?: (files: File[]) => Promise<string[]>; // Returns URLs of uploaded images
   maxImages?: number;
   maxSizePerImage?: number; // in bytes
   acceptedTypes?: string[];
   className?: string;
+  showUploadProgress?: boolean;
 }
 
 export default function ImageUpload({
   onImagesChange,
+  onUpload,
   maxImages = 6,
   maxSizePerImage = 5 * 1024 * 1024, // 5MB default
   acceptedTypes = ['image/jpeg', 'image/png', 'image/webp'],
   className = '',
+  showUploadProgress = false,
 }: ImageUploadProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Manual click handler for better reliability
@@ -76,6 +82,10 @@ export default function ImageUpload({
           }
         }
       };
+      reader.onerror = () => {
+        newErrors.push(`${file.name}: Failed to read file.`);
+        setErrors(prev => [...prev, ...newErrors]);
+      };
       reader.readAsDataURL(file);
     });
 
@@ -107,12 +117,55 @@ export default function ImageUpload({
     setErrors([]);
   };
 
+  // Upload files
+  const uploadFiles = async () => {
+    if (!onUpload || selectedFiles.length === 0) return;
+
+    setIsUploading(true);
+    setErrors([]);
+
+    try {
+      // Simulate upload progress for each file
+      selectedFiles.forEach((file, index) => {
+        const fileKey = `${file.name}-${index}`;
+        setUploadProgress(prev => ({ ...prev, [fileKey]: 0 }));
+        
+        // Simulate progress
+        const interval = setInterval(() => {
+          setUploadProgress(prev => {
+            const currentProgress = prev[fileKey] || 0;
+            if (currentProgress >= 100) {
+              clearInterval(interval);
+              return prev;
+            }
+            return { ...prev, [fileKey]: Math.min(currentProgress + 10, 100) };
+          });
+        }, 100);
+      });
+
+      const uploadedUrls = await onUpload(selectedFiles);
+      
+      // Clear progress after successful upload
+      setUploadProgress({});
+      
+      // Optionally clear files after upload
+      // setSelectedFiles([]);
+      // setPreviews([]);
+      
+    } catch (error) {
+      setErrors(['Upload failed. Please try again.']);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   // Clear all files
   const clearAll = () => {
     setSelectedFiles([]);
     setPreviews([]);
     onImagesChange([]);
     setErrors([]);
+    setUploadProgress({});
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -196,13 +249,30 @@ export default function ImageUpload({
             <h4 className="text-sm font-medium text-gray-700">
               Selected Images ({selectedFiles.length})
             </h4>
-            <button
-              type="button"
-              onClick={clearAll}
-              className="text-sm text-red-600 hover:text-red-700"
-            >
-              Clear All
-            </button>
+            <div className="flex items-center space-x-2">
+              {showUploadProgress && onUpload && selectedFiles.length > 0 && (
+                <button
+                  type="button"
+                  onClick={uploadFiles}
+                  disabled={isUploading}
+                  className={`px-3 py-1 text-sm rounded ${
+                    isUploading
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-primary-600 text-white hover:bg-primary-700'
+                  }`}
+                >
+                  {isUploading ? 'Uploading...' : 'Upload'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={clearAll}
+                className="text-sm text-red-600 hover:text-red-700"
+                disabled={isUploading}
+              >
+                Clear All
+              </button>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -242,6 +312,16 @@ export default function ImageUpload({
                   </div>
                 )}
                 
+                {/* Upload Progress */}
+                {showUploadProgress && uploadProgress[`${file.name}-${index}`] !== undefined && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="text-white text-center">
+                      <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-1" />
+                      <div className="text-xs">{uploadProgress[`${file.name}-${index}`]}%</div>
+                    </div>
+                  </div>
+                )}
+
                 {/* File Info */}
                 <div className="mt-1 text-xs text-gray-500 truncate">
                   <div className="truncate" title={file.name}>{file.name}</div>

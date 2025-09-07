@@ -84,9 +84,9 @@ export default function SearchResults({
     return highlighted;
   };
 
-  if (isLoading) {
+  if (isLoading && !results) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" data-testid="search-loading">
         {/* Loading skeleton */}
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
