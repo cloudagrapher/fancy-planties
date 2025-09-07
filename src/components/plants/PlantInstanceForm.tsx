@@ -207,7 +207,7 @@ export default function PlantInstanceForm({
 
   // Create/update mutation
   const mutation = useMutation({
-    mutationFn: async (data: PlantInstanceFormData) => {
+    mutationFn: async (data: PlantInstanceFormData & { fertilizerSchedule: string }) => {
       const formData = new FormData();
       
       // Add form fields
@@ -320,13 +320,26 @@ export default function PlantInstanceForm({
     setValue('images', newImages);
   };
 
+  // Convert enum fertilizer schedule to expected format
+  const convertFertilizerSchedule = (schedule: string): string => {
+    const scheduleMap = {
+      'weekly': '7 days',
+      'biweekly': '14 days', 
+      'monthly': '30 days',
+      'bimonthly': '60 days',
+      'quarterly': '90 days'
+    };
+    return scheduleMap[schedule as keyof typeof scheduleMap] || schedule;
+  };
+
   // Handle form submission
   const onSubmit = (data: PlantInstanceFormData) => {
     const submitData = {
       ...data,
+      fertilizerSchedule: convertFertilizerSchedule(data.fertilizerSchedule),
       images: existingImages,
     };
-    mutation.mutate(submitData);
+    mutation.mutate(submitData as any);
   };
 
   // Close modal on escape

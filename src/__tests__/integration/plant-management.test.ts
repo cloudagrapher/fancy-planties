@@ -331,7 +331,7 @@ describe('Plant Management Integration', () => {
     });
 
     it('handles validation errors in the complete flow', async () => {
-      const { plantInstanceCreateSchema } = require('@/lib/validation/plant-schemas');
+      const { plantInstanceCreateSchema } = await import('@/lib/validation/plant-schemas');
       plantInstanceCreateSchema.parse.mockImplementationOnce(() => {
         const error = new Error('Validation failed');
         error.name = 'ZodError';
@@ -359,7 +359,7 @@ describe('Plant Management Integration', () => {
     });
 
     it('handles authentication failures across endpoints', async () => {
-      const { validateRequest } = require('@/lib/auth/server');
+      const { validateRequest } = await import('@/lib/auth/server');
       validateRequest.mockResolvedValueOnce({ user: null, session: null });
 
       const requests = [
