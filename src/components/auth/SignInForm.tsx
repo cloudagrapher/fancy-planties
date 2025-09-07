@@ -80,15 +80,15 @@ export default function SignInForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-token">
       {generalError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="form-error bg-salmon-50 border border-salmon-200 text-salmon-700 px-4 py-3 rounded-token-lg">
           {generalError}
         </div>
       )}
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="form-group">
+        <label htmlFor="email" className="form-label form-label--required">
           Email Address
         </label>
         <input
@@ -99,18 +99,16 @@ export default function SignInForm() {
           required
           value={formData.email}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
-            errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
-          }`}
+          className={`form-input ${errors.email ? 'form-input--error' : ''}`}
           placeholder="Enter your email"
         />
         {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+          <div className="form-error">{errors.email}</div>
         )}
       </div>
 
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="form-group">
+        <label htmlFor="password" className="form-label form-label--required">
           Password
         </label>
         <input
@@ -121,23 +119,23 @@ export default function SignInForm() {
           required
           value={formData.password}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
-            errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
-          }`}
+          className={`form-input ${errors.password ? 'form-input--error' : ''}`}
           placeholder="Enter your password"
         />
         {errors.password && (
-          <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+          <div className="form-error">{errors.password}</div>
         )}
       </div>
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        {isLoading ? 'Signing in...' : 'Sign In'}
-      </button>
+      <div className="form-actions form-actions--full">
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`btn btn--primary btn--full ${isLoading ? 'btn--loading' : ''}`}
+        >
+          {isLoading ? 'Signing in...' : 'Sign In'}
+        </button>
+      </div>
     </form>
   );
 }

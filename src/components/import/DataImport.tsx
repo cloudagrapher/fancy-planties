@@ -150,7 +150,7 @@ export function DataImport({ className = '' }: DataImportProps) {
               </p>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="w-full px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                className="btn btn--primary btn--full"
               >
                 Start CSV Import
               </button>
@@ -171,19 +171,19 @@ export function DataImport({ className = '' }: DataImportProps) {
               <div className="space-y-2">
                 <button
                   onClick={() => downloadTemplate('plant_taxonomy')}
-                  className="w-full px-3 py-2 text-sm bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition-colors"
+                  className="btn btn--sm btn--outline btn--full"
                 >
                   Plant Taxonomy Template
                 </button>
                 <button
                   onClick={() => downloadTemplate('plant_instances')}
-                  className="w-full px-3 py-2 text-sm bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition-colors"
+                  className="btn btn--sm btn--outline btn--full"
                 >
                   Plant Collection Template
                 </button>
                 <button
                   onClick={() => downloadTemplate('propagations')}
-                  className="w-full px-3 py-2 text-sm bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition-colors"
+                  className="btn btn--sm btn--outline btn--full"
                 >
                   Propagations Template
                 </button>
