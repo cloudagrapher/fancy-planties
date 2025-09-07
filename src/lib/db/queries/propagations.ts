@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { eq, and, desc, asc, ilike, or, sql } from 'drizzle-orm';
 import { db } from '../index';
 import { propagations, plants, plantInstances, type Propagation, type NewPropagation } from '../schema';
@@ -93,6 +95,64 @@ export class PropagationQueries {
     } catch (error) {
       console.error('Failed to get propagations by status:', error);
       throw new Error('Failed to get propagations by status');
+    }
+  }
+
+  // Get propagations by source type
+  static async getBySourceType(userId: number, sourceType: 'internal' | 'external'): Promise<(Propagation & { 
+    plant: typeof plants.$inferSelect;
+    parentInstance?: typeof plantInstances.$inferSelect;
+  })[]> {
+    try {
+      const propagationList = await db
+        .select()
+        .from(propagations)
+        .leftJoin(plants, eq(propagations.plantId, plants.id))
+        .leftJoin(plantInstances, eq(propagations.parentInstanceId, plantInstances.id))
+        .where(
+          and(
+            eq(propagations.userId, userId),
+            eq(propagations.sourceType, sourceType)
+          )
+        )
+        .orderBy(desc(propagations.dateStarted));
+
+      return propagationList.map(prop => ({
+        ...prop.propagations,
+        plant: prop.plants!,
+        parentInstance: prop.plant_instances || undefined
+      }));
+    } catch (error) {
+      console.error('Failed to get propagations by source type:', error);
+      throw new Error('Failed to get propagations by source type');
+    }
+  }
+
+  // Get external propagations by source
+  static async getByExternalSource(userId: number, externalSource: 'gift' | 'trade' | 'purchase' | 'other'): Promise<(Propagation & { 
+    plant: typeof plants.$inferSelect;
+  })[]> {
+    try {
+      const propagationList = await db
+        .select()
+        .from(propagations)
+        .leftJoin(plants, eq(propagations.plantId, plants.id))
+        .where(
+          and(
+            eq(propagations.userId, userId),
+            eq(propagations.sourceType, 'external'),
+            eq(propagations.externalSource, externalSource)
+          )
+        )
+        .orderBy(desc(propagations.dateStarted));
+
+      return propagationList.map(prop => ({
+        ...prop.propagations,
+        plant: prop.plants!
+      }));
+    } catch (error) {
+      console.error('Failed to get propagations by external source:', error);
+      throw new Error('Failed to get propagations by external source');
     }
   }
 
@@ -273,7 +333,7 @@ export class PropagationQueries {
   // Delete propagation
   static async delete(id: number): Promise<boolean> {
     try {
-      const result = await db.delete(propagations).where(eq(propagations.id, id));
+      const result = await db.delete(propagations).where(eq(propagations.id, id)).returning();
       return result.length > 0;
     } catch (error) {
       console.error('Failed to delete propagation:', error);
@@ -285,7 +345,10 @@ export class PropagationQueries {
   static async getStats(userId: number): Promise<{
     totalPropagations: number;
     byStatus: Record<string, number>;
+    bySourceType: Record<string, number>;
+    byExternalSource: Record<string, number>;
     successRate: number;
+    successRateBySource: Record<string, number>;
     averageDaysToEstablished: number;
   }> {
     try {
@@ -296,25 +359,54 @@ export class PropagationQueries {
           rooting: sql<number>`count(*) filter (where status = 'rooting')`,
           planted: sql<number>`count(*) filter (where status = 'planted')`,
           established: sql<number>`count(*) filter (where status = 'established')`,
+          internal: sql<number>`count(*) filter (where source_type = 'internal')`,
+          external: sql<number>`count(*) filter (where source_type = 'external')`,
+          gift: sql<number>`count(*) filter (where external_source = 'gift')`,
+          trade: sql<number>`count(*) filter (where external_source = 'trade')`,
+          purchase: sql<number>`count(*) filter (where external_source = 'purchase')`,
+          other: sql<number>`count(*) filter (where external_source = 'other')`,
+          internalEstablished: sql<number>`count(*) filter (where source_type = 'internal' and status = 'established')`,
+          externalEstablished: sql<number>`count(*) filter (where source_type = 'external' and status = 'established')`,
           avgDays: sql<number>`avg(extract(day from (updated_at - date_started))) filter (where status = 'established')`
         })
         .from(propagations)
         .where(eq(propagations.userId, userId));
 
-      const total = stats.totalPropagations;
-      const established = stats.established;
+      const total = Number(stats.totalPropagations);
+      const established = Number(stats.established);
+      const internal = Number(stats.internal);
+      const external = Number(stats.external);
+      const internalEstablished = Number(stats.internalEstablished);
+      const externalEstablished = Number(stats.externalEstablished);
+      
       const successRate = total > 0 ? (established / total) * 100 : 0;
+      const internalSuccessRate = internal > 0 ? (internalEstablished / internal) * 100 : 0;
+      const externalSuccessRate = external > 0 ? (externalEstablished / external) * 100 : 0;
 
       return {
         totalPropagations: total,
         byStatus: {
-          started: stats.started,
-          rooting: stats.rooting,
-          planted: stats.planted,
-          established: stats.established
+          started: Number(stats.started),
+          rooting: Number(stats.rooting),
+          planted: Number(stats.planted),
+          established: established
+        },
+        bySourceType: {
+          internal: internal,
+          external: external
+        },
+        byExternalSource: {
+          gift: Number(stats.gift),
+          trade: Number(stats.trade),
+          purchase: Number(stats.purchase),
+          other: Number(stats.other)
         },
         successRate: Math.round(successRate * 100) / 100,
-        averageDaysToEstablished: Math.round((stats.avgDays || 0) * 100) / 100
+        successRateBySource: {
+          internal: Math.round(internalSuccessRate * 100) / 100,
+          external: Math.round(externalSuccessRate * 100) / 100
+        },
+        averageDaysToEstablished: Math.round((Number(stats.avgDays) || 0) * 100) / 100
       };
     } catch (error) {
       console.error('Failed to get propagation stats:', error);

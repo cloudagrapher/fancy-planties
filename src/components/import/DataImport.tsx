@@ -20,6 +20,42 @@ export function DataImport({ className = '' }: DataImportProps) {
     }
   };
 
+  const downloadTemplate = (type: 'plant_taxonomy' | 'plant_instances' | 'propagations') => {
+    const templates = {
+      plant_taxonomy: {
+        filename: 'plant_taxonomy_template.csv',
+        headers: ['Family', 'Genus', 'Species', 'Cultivar', 'Common Name'],
+        example: ['Araceae', 'Monstera', 'deliciosa', 'Thai Constellation', 'Monstera Deliciosa']
+      },
+      plant_instances: {
+        filename: 'plant_collection_template.csv',
+        headers: ['Family', 'Genus', 'Species', 'Cultivar', 'Common Name', 'Location', 'Last Fertilized', 'Fertilizer Schedule', 'Fertilizer Due', 'Last Repot'],
+        example: ['Araceae', 'Monstera', 'deliciosa', 'Thai Constellation', 'Monstera Deliciosa', 'Living Room', '2024-01-01', 'every 4 weeks', '2024-01-29', '2023-06-15']
+      },
+      propagations: {
+        filename: 'propagations_template.csv',
+        headers: ['Family', 'Genus', 'Species', 'Cultivar', 'Common Name', 'Location', 'Date Started', 'Source', 'Source Details', 'Parent Plant'],
+        example: ['Araceae', 'Monstera', 'deliciosa', 'Thai Constellation', 'Monstera Deliciosa', 'Propagation Station', '2024-01-15', 'gift', 'Gift from Sarah', '']
+      }
+    };
+
+    const template = templates[type];
+    const csvContent = [
+      template.headers.join(','),
+      template.example.join(',')
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', template.filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
@@ -83,15 +119,15 @@ export function DataImport({ className = '' }: DataImportProps) {
                 <ul className="space-y-2 text-sm text-primary-700">
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-primary-400 rounded-full mr-3"></span>
-                    <strong>Plant Taxonomy:</strong> Species information (family, genus, species, common names)
+                    <strong>Plant Taxonomy:</strong> Species information with separate cultivar field support
                   </li>
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-primary-400 rounded-full mr-3"></span>
-                    <strong>Plant Collection:</strong> Your plant instances with care schedules and locations
+                    <strong>Plant Collection:</strong> Your plant instances with enhanced taxonomy and care schedules
                   </li>
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-primary-400 rounded-full mr-3"></span>
-                    <strong>Propagations:</strong> Propagation records with start dates and progress
+                    <strong>Propagations:</strong> Propagation records with external source tracking (gifts, trades, purchases)
                   </li>
                 </ul>
               </div>
@@ -120,24 +156,38 @@ export function DataImport({ className = '' }: DataImportProps) {
               </button>
             </div>
 
-            <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+            <div className="border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="p-2 bg-gray-200 rounded-lg">
-                  <Database className="w-5 h-5 text-gray-500" />
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <FileText className="w-5 h-5 text-green-600" />
                 </div>
-                <h3 className="font-semibold text-gray-500">
-                  Other Import Methods
+                <h3 className="font-semibold text-gray-900">
+                  Download Templates
                 </h3>
               </div>
-              <p className="text-gray-500 mb-4">
-                Additional import methods like JSON, Excel, or API integrations will be available in future updates.
+              <p className="text-gray-600 mb-4">
+                Download CSV templates with the correct column headers and example data to get started quickly.
               </p>
-              <button
-                disabled
-                className="w-full px-4 py-2 bg-gray-300 text-gray-500 rounded-lg cursor-not-allowed"
-              >
-                Coming Soon
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => downloadTemplate('plant_taxonomy')}
+                  className="w-full px-3 py-2 text-sm bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition-colors"
+                >
+                  Plant Taxonomy Template
+                </button>
+                <button
+                  onClick={() => downloadTemplate('plant_instances')}
+                  className="w-full px-3 py-2 text-sm bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition-colors"
+                >
+                  Plant Collection Template
+                </button>
+                <button
+                  onClick={() => downloadTemplate('propagations')}
+                  className="w-full px-3 py-2 text-sm bg-green-50 text-green-700 border border-green-200 rounded hover:bg-green-100 transition-colors"
+                >
+                  Propagations Template
+                </button>
+              </div>
             </div>
           </div>
 
@@ -155,8 +205,10 @@ export function DataImport({ className = '' }: DataImportProps) {
                     <li>Family</li>
                     <li>Genus</li>
                     <li>Species</li>
-                    <li>Common Name/Variety</li>
+                    <li>Common Name</li>
                   </ul>
+                  <p><strong>Optional:</strong> Cultivar</p>
+                  <p className="text-xs italic">Legacy "Common Name/Variety" column still supported</p>
                 </div>
               </div>
               
@@ -165,11 +217,12 @@ export function DataImport({ className = '' }: DataImportProps) {
                 <div className="text-sm text-gray-600 space-y-1">
                   <p><strong>Required columns:</strong></p>
                   <ul className="list-disc list-inside space-y-1 text-xs">
-                    <li>Common Name/Variety</li>
+                    <li>Common Name</li>
                     <li>Location</li>
                     <li>Fertilizer Schedule</li>
                   </ul>
-                  <p><strong>Optional:</strong> Last Fertilized, Last Repot</p>
+                  <p><strong>Optional:</strong> Cultivar, Last Fertilized, Last Repot</p>
+                  <p className="text-xs italic">Legacy "Common Name/Variety" column still supported</p>
                 </div>
               </div>
               
@@ -178,10 +231,12 @@ export function DataImport({ className = '' }: DataImportProps) {
                 <div className="text-sm text-gray-600 space-y-1">
                   <p><strong>Required columns:</strong></p>
                   <ul className="list-disc list-inside space-y-1 text-xs">
-                    <li>Common Name/Variety</li>
+                    <li>Common Name</li>
                     <li>Location</li>
                     <li>Date Started</li>
                   </ul>
+                  <p><strong>Optional:</strong> Cultivar, Source, Source Details, Parent Plant</p>
+                  <p className="text-xs italic">Source auto-detects external propagations (gifts, trades, purchases)</p>
                 </div>
               </div>
             </div>
@@ -202,3 +257,5 @@ export function DataImport({ className = '' }: DataImportProps) {
     </div>
   );
 }
+
+export default DataImport;

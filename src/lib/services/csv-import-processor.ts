@@ -89,6 +89,7 @@ export class CSVImportProcessor {
             family: validatedData.family,
             genus: validatedData.genus,
             species: validatedData.species,
+            cultivar: validatedData.cultivar,
             commonName: validatedData.commonName,
             createdBy: this.config.userId,
             isVerified: false,
@@ -253,8 +254,18 @@ export class CSVImportProcessor {
             continue; // Error already logged
           }
 
-          // Try to find parent instance
-          const parentInstanceId = await this.findParentInstance(validatedData, plantId);
+          // Try to find parent instance for internal propagations
+          let parentInstanceId: number | null = null;
+          if (validatedData.sourceType === 'internal') {
+            parentInstanceId = await this.findParentInstance(validatedData, plantId);
+            if (!parentInstanceId) {
+              this.addWarning(i, `Could not find parent instance for internal propagation: ${validatedData.nickname}`, 'warning');
+              // Convert to external propagation
+              validatedData.sourceType = 'external';
+              validatedData.externalSource = 'other';
+              validatedData.externalSourceDetails = `Originally marked as internal propagation from: ${validatedData.parentPlantName}`;
+            }
+          }
 
           // Create propagation
           await db.insert(propagations).values({
@@ -265,6 +276,9 @@ export class CSVImportProcessor {
             location: validatedData.location,
             dateStarted: validatedData.dateStarted,
             status: 'started',
+            sourceType: validatedData.sourceType,
+            externalSource: validatedData.externalSource,
+            externalSourceDetails: validatedData.externalSourceDetails,
           });
 
           summary.successfulImports++;
@@ -291,11 +305,17 @@ export class CSVImportProcessor {
   // Helper methods for processing different row types
 
   private processPlantTaxonomyRow(rawData: any, rowIndex: number): ProcessedPlantTaxonomy {
+    // Handle both new separate fields and legacy combined field
+    const cultivar = this.cleanField(rawData['Cultivar']) || null;
+    const commonName = this.cleanField(rawData['Common Name']) || 
+                      this.cleanField(rawData['Common Name/Variety']);
+
     return {
       family: this.cleanAndCapitalize(rawData['Family']),
       genus: this.cleanAndCapitalize(rawData['Genus']),
       species: this.cleanField(rawData['Species']).toLowerCase(),
-      commonName: this.cleanField(rawData['Common Name/Variety']),
+      cultivar,
+      commonName,
       rowIndex,
     };
   }
@@ -307,12 +327,18 @@ export class CSVImportProcessor {
                          ScheduleParser.calculateNextDue(lastFertilized, fertilizerSchedule);
     const lastRepot = DateParser.parseDate(rawData['Last Repot']);
 
+    // Handle both new separate fields and legacy combined field
+    const cultivar = this.cleanField(rawData['Cultivar']) || null;
+    const commonName = this.cleanField(rawData['Common Name']) || 
+                      this.cleanField(rawData['Common Name/Variety']);
+
     return {
       family: this.cleanField(rawData['Family']),
       genus: this.cleanField(rawData['Genus']),
       species: this.cleanField(rawData['Species']),
-      commonName: this.cleanField(rawData['Common Name/Variety']),
-      nickname: this.cleanField(rawData['Common Name/Variety']), // Use common name as nickname
+      cultivar,
+      commonName,
+      nickname: commonName, // Use common name as nickname
       location: this.cleanField(rawData['Location']),
       lastFertilized,
       fertilizerSchedule,
@@ -328,11 +354,52 @@ export class CSVImportProcessor {
       throw new Error('Invalid or missing date started');
     }
 
+    // Handle both new separate fields and legacy combined field
+    const cultivar = this.cleanField(rawData['Cultivar']) || null;
+    const commonName = this.cleanField(rawData['Common Name']) || 
+                      this.cleanField(rawData['Common Name/Variety']);
+
+    // Detect external source information
+    const sourceField = this.cleanField(rawData['Source']).toLowerCase();
+    const sourceDetails = this.cleanField(rawData['Source Details']) || null;
+    const parentPlantName = this.cleanField(rawData['Parent Plant']) || null;
+
+    // Determine source type and external source
+    let sourceType: 'internal' | 'external' = 'external'; // Default to external for CSV imports
+    let externalSource: 'gift' | 'trade' | 'purchase' | 'other' | null = null;
+
+    if (parentPlantName) {
+      sourceType = 'internal';
+    } else if (sourceField) {
+      sourceType = 'external';
+      // Map common source terms to our enum values
+      if (sourceField.includes('gift') || sourceField.includes('given')) {
+        externalSource = 'gift';
+      } else if (sourceField.includes('trade') || sourceField.includes('swap') || sourceField.includes('exchange')) {
+        externalSource = 'trade';
+      } else if (sourceField.includes('purchase') || sourceField.includes('bought') || sourceField.includes('buy')) {
+        externalSource = 'purchase';
+      } else {
+        externalSource = 'other';
+      }
+    } else {
+      // No source information provided, default to external/other
+      externalSource = 'other';
+    }
+
     return {
-      commonName: this.cleanField(rawData['Common Name/Variety']),
-      nickname: this.cleanField(rawData['Common Name/Variety']),
+      family: this.cleanField(rawData['Family']),
+      genus: this.cleanField(rawData['Genus']),
+      species: this.cleanField(rawData['Species']),
+      cultivar,
+      commonName,
+      nickname: commonName,
       location: this.cleanField(rawData['Location']),
       dateStarted,
+      sourceType,
+      externalSource,
+      externalSourceDetails: sourceDetails,
+      parentPlantName,
       rowIndex,
     };
   }
@@ -340,15 +407,17 @@ export class CSVImportProcessor {
   // Helper methods for data validation and processing
 
   private isEmptyPlantRow(data: any): boolean {
-    return !data['Family'] && !data['Genus'] && !data['Species'] && !data['Common Name/Variety'];
+    return !data['Family'] && !data['Genus'] && !data['Species'] && 
+           !data['Common Name'] && !data['Common Name/Variety'];
   }
 
   private isEmptyInstanceRow(data: any): boolean {
-    return !data['Common Name/Variety'] && !data['Location'];
+    return !data['Common Name'] && !data['Common Name/Variety'] && !data['Location'];
   }
 
   private isEmptyPropagationRow(data: any): boolean {
-    return !data['Common Name/Variety'] && !data['Location'] && !data['Date Started'];
+    return !data['Common Name'] && !data['Common Name/Variety'] && 
+           !data['Location'] && !data['Date Started'];
   }
 
   private cleanField(value: string): string {

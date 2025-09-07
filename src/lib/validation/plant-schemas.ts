@@ -20,6 +20,12 @@ export const plantTaxonomySchema = z.object({
     .trim()
     .toLowerCase(),
   
+  cultivar: z.string()
+    .max(100, 'Cultivar name too long')
+    .trim()
+    .optional()
+    .nullable(),
+  
   commonName: z.string()
     .min(1, 'Common name is required')
     .max(200, 'Common name too long')
@@ -82,7 +88,7 @@ export const plantFilterSchema = z.object({
 export const fuzzySearchConfigSchema = z.object({
   threshold: z.number().min(0).max(1).default(0.6),
   includeScore: z.boolean().default(true),
-  keys: z.array(z.string()).default(['family', 'genus', 'species', 'commonName']),
+  keys: z.array(z.string()).default(['family', 'genus', 'species', 'cultivar', 'commonName']),
 });
 
 // Plant taxonomy suggestion schema for autocomplete
@@ -91,6 +97,7 @@ export const plantSuggestionSchema = z.object({
   family: z.string(),
   genus: z.string(),
   species: z.string(),
+  cultivar: z.string().optional().nullable(),
   commonName: z.string(),
   isVerified: z.boolean(),
   score: z.number().optional(), // For fuzzy search scoring
@@ -223,6 +230,111 @@ export const bulkPlantInstanceOperationSchema = z.object({
   notes: z.string().max(500, 'Notes too long').optional(),
 });
 
+// Advanced search schemas
+export const multiFieldSearchSchema = z.object({
+  // Text search fields
+  nickname: z.string().optional(),
+  location: z.string().optional(),
+  notes: z.string().optional(),
+  plantName: z.string().optional(),
+  
+  // Plant taxonomy fields
+  family: z.string().optional(),
+  genus: z.string().optional(),
+  species: z.string().optional(),
+  cultivar: z.string().optional(),
+  commonName: z.string().optional(),
+  
+  // Care-related fields
+  fertilizerSchedule: z.string().optional(),
+  
+  // Search logic
+  operator: z.enum(['AND', 'OR']).default('OR'),
+  
+  // Field weights for relevance scoring
+  fieldWeights: z.record(z.string(), z.number().min(0).max(1)).optional(),
+});
+
+export const searchPresetSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, 'Preset name is required').max(100, 'Name too long'),
+  description: z.string().max(500, 'Description too long').optional(),
+  filters: plantInstanceFilterSchema,
+  sortBy: z.enum(['nickname', 'location', 'created_at', 'last_fertilized', 'fertilizer_due', 'care_urgency', 'plant_name']),
+  sortOrder: z.enum(['asc', 'desc']),
+  userId: z.number().int().positive(),
+  isDefault: z.boolean().default(false),
+});
+
+export const searchHistorySchema = z.object({
+  query: z.string().min(1, 'Search query is required'),
+  filters: plantInstanceFilterSchema.partial(),
+  timestamp: z.date().default(() => new Date()),
+  userId: z.number().int().positive(),
+});
+
+export const advancedSearchConfigSchema = z.object({
+  enableFuzzySearch: z.boolean().default(true),
+  fuzzyThreshold: z.number().min(0).max(1).default(0.6),
+  maxSuggestions: z.number().int().min(1).max(20).default(10),
+  searchTimeout: z.number().int().min(1000).max(30000).default(5000),
+  cacheResults: z.boolean().default(true),
+  cacheDuration: z.number().int().min(60000).default(300000), // 5 minutes
+  highlightMatches: z.boolean().default(true),
+  maxHighlights: z.number().int().min(1).max(10).default(3),
+});
+
+export const smartSearchSchema = z.object({
+  query: z.string().min(1, 'Search query is required').max(200, 'Query too long'),
+  userId: z.number().int().positive(),
+  limit: z.number().int().min(1).max(100).default(20),
+  offset: z.number().int().min(0).default(0),
+  autoCorrect: z.boolean().default(true),
+  includeInactive: z.boolean().default(false),
+});
+
+// Enhanced plant instance filter with additional search options
+export const enhancedPlantInstanceFilterSchema = plantInstanceFilterSchema.extend({
+  // Text search
+  searchQuery: z.string().optional(),
+  searchFields: z.array(z.enum(['nickname', 'location', 'notes', 'plant_name'])).optional(),
+  
+  // Advanced filters
+  hasImages: z.boolean().optional(),
+  imageCount: z.object({
+    min: z.number().int().min(0).optional(),
+    max: z.number().int().min(0).optional(),
+  }).optional(),
+  
+  // Care frequency filters
+  fertilizerFrequency: z.object({
+    unit: z.enum(['days', 'weeks', 'months']),
+    min: z.number().int().min(1).optional(),
+    max: z.number().int().min(1).optional(),
+  }).optional(),
+  
+  // Date range presets
+  datePreset: z.enum(['today', 'this_week', 'this_month', 'last_month', 'last_3_months']).optional(),
+  
+  // Sorting options
+  sortBy: z.enum(['nickname', 'location', 'created_at', 'last_fertilized', 'fertilizer_due', 'care_urgency', 'plant_name']).default('created_at'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  
+  // Result options
+  includeStats: z.boolean().default(false),
+  includeFacets: z.boolean().default(false),
+});
+
+// Search suggestion schema
+export const searchSuggestionSchema = z.object({
+  query: z.string().min(1, 'Query is required'),
+  userId: z.number().int().positive(),
+  limit: z.number().int().min(1).max(20).default(5),
+  includeHistory: z.boolean().default(true),
+  includeTaxonomy: z.boolean().default(true),
+  includeInstances: z.boolean().default(true),
+});
+
 // Export types from schemas
 export type PlantTaxonomy = z.infer<typeof plantTaxonomySchema>;
 export type CreatePlant = z.infer<typeof createPlantSchema>;
@@ -241,3 +353,12 @@ export type LogFertilizer = z.infer<typeof logFertilizerSchema>;
 export type LogRepot = z.infer<typeof logRepotSchema>;
 export type PlantInstanceStatus = z.infer<typeof plantInstanceStatusSchema>;
 export type BulkPlantInstanceOperation = z.infer<typeof bulkPlantInstanceOperationSchema>;
+
+// Advanced search types
+export type MultiFieldSearch = z.infer<typeof multiFieldSearchSchema>;
+export type SearchPreset = z.infer<typeof searchPresetSchema>;
+export type SearchHistory = z.infer<typeof searchHistorySchema>;
+export type AdvancedSearchConfig = z.infer<typeof advancedSearchConfigSchema>;
+export type SmartSearch = z.infer<typeof smartSearchSchema>;
+export type EnhancedPlantInstanceFilter = z.infer<typeof enhancedPlantInstanceFilterSchema>;
+export type SearchSuggestion = z.infer<typeof searchSuggestionSchema>;

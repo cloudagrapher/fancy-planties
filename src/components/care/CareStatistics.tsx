@@ -35,46 +35,46 @@ export default function CareStatistics({ statistics }: CareStatisticsProps) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Total Plants */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-emerald-50/70 backdrop-blur p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">Active Plants</p>
-            <p className="text-2xl font-bold text-gray-900">{statistics.totalActivePlants}</p>
+            <p className="text-sm font-medium text-emerald-700">Active Plants</p>
+            <p className="text-2xl font-bold text-emerald-600">{statistics.totalActivePlants}</p>
           </div>
           <div className="text-2xl">🌱</div>
         </div>
       </div>
 
       {/* Care Streak */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-amber-50/70 backdrop-blur p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">Care Streak</p>
-            <p className="text-2xl font-bold text-gray-900">{statistics.careStreakDays}</p>
-            <p className="text-xs text-gray-500">{getStreakMessage(statistics.careStreakDays)}</p>
+            <p className="text-sm font-medium text-amber-700">Care Streak</p>
+            <p className="text-2xl font-bold text-amber-600">{statistics.careStreakDays}</p>
+            <p className="text-xs text-amber-600">{getStreakMessage(statistics.careStreakDays)}</p>
           </div>
           <div className="text-2xl">🔥</div>
         </div>
       </div>
 
       {/* This Week's Care */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-sky-50/70 backdrop-blur p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">This Week</p>
-            <p className="text-2xl font-bold text-gray-900">{statistics.totalCareEventsThisWeek}</p>
-            <p className="text-xs text-gray-500">care events</p>
+            <p className="text-sm font-medium text-sky-700">This Week</p>
+            <p className="text-2xl font-bold text-sky-600">{statistics.totalCareEventsThisWeek}</p>
+            <p className="text-xs text-sky-600">care events</p>
           </div>
           <div className="text-2xl">📅</div>
         </div>
       </div>
 
       {/* Care Consistency */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-green-50/70 backdrop-blur p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-600">Consistency</p>
-            <p className="text-2xl font-bold text-gray-900">{statistics.averageCareConsistency}%</p>
+            <p className="text-sm font-medium text-green-700">Consistency</p>
+            <p className="text-2xl font-bold text-green-600">{statistics.averageCareConsistency}%</p>
             <p className={`text-xs px-2 py-1 rounded-full ${getConsistencyColor(statistics.averageCareConsistency)}`}>
               {getConsistencyLabel(statistics.averageCareConsistency)}
             </p>
@@ -84,7 +84,7 @@ export default function CareStatistics({ statistics }: CareStatisticsProps) {
       </div>
 
       {/* Care Alerts Summary - spans full width on mobile */}
-      <div className="col-span-2 lg:col-span-4 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg border border-primary-200 p-4">
+      <div className="col-span-2 lg:col-span-4 rounded-2xl shadow-sm border border-slate-200/70 bg-gradient-to-r from-primary-50/70 to-secondary-50/70 backdrop-blur p-6">
         <h3 className="text-sm font-semibold text-gray-900 mb-3">Care Alerts Summary</h3>
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">

@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import QueryClientProvider from "@/components/providers/QueryClientProvider";
+import { ServiceWorkerProvider } from "@/components/shared/ServiceWorkerProvider";
+import { NetworkStatus, OfflineBanner } from "@/components/shared/NetworkStatus";
+import { PWAInstallPrompt, StandaloneModeIndicator } from "@/components/shared/PWAInstallPrompt";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -52,9 +55,15 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#a7f3d0" />
       </head>
       <body className="antialiased">
-        <QueryClientProvider>
-          {children}
-        </QueryClientProvider>
+        <ServiceWorkerProvider>
+          <QueryClientProvider>
+            <NetworkStatus />
+            <OfflineBanner />
+            <StandaloneModeIndicator />
+            <PWAInstallPrompt />
+            {children}
+          </QueryClientProvider>
+        </ServiceWorkerProvider>
       </body>
     </html>
   );
