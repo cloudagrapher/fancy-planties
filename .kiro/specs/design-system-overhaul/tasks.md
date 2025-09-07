@@ -6,14 +6,14 @@
   - Add CSS custom properties for colors, shadows, and border radius values
   - _Requirements: 1.1, 1.2, 1.5_
 
-- [x] 2. Create Global Form Component System
+- [ ] 2. Create Global Form Component System
   - Implement comprehensive form styling classes (form-input, form-label, form-error, etc.)
   - Add password manager compatibility with proper autocomplete attributes for auth forms
   - Create form validation states (error, success, loading) with consistent styling
   - Refactor SignInForm and SignUpForm components to use new global form classes
   - _Requirements: 1.3, 1.6, 1.7_
 
-- [-] 3. Build Global Button and Interactive Component System
+- [ ] 3. Build Global Button and Interactive Component System
   - Create comprehensive button system with variants (primary, secondary, tertiary, outline, ghost)
   - Implement button sizes (small, default, large) with proper touch targets (minimum 44px)
   - Add hover states, focus indicators, and loading states for all interactive elements
