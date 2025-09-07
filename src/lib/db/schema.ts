@@ -188,6 +188,7 @@ export const careGuides = pgTable('care_guides', {
   
   soil: jsonb('soil').$type<{
     type?: string;
+    recipe?: string;
     drainage?: string;
     ph?: string;
     tips?: string;
@@ -208,7 +209,7 @@ export const careGuides = pgTable('care_guides', {
   }>(),
   
   propagation: jsonb('propagation').$type<{
-    methods?: string[];
+    methods?: string;
     season?: string;
     difficulty?: string;
     tips?: string;
@@ -221,8 +222,10 @@ export const careGuides = pgTable('care_guides', {
     solutions?: Record<string, string>;
   }>(),
   
+  generalTips: text('general_tips'),
   additionalNotes: text('additional_notes'),
   tags: jsonb('tags').$type<string[]>().default([]).notNull(),
+  images: jsonb('images').$type<string[]>().default([]).notNull(),
   
   // Metadata
   isPublic: boolean('is_public').default(false).notNull(),

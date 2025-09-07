@@ -53,7 +53,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    // Check if request is FormData or JSON
+    const contentType = request.headers.get('content-type');
+    let body: any;
+    
+    if (contentType?.includes('multipart/form-data')) {
+      // Handle FormData (for file uploads)
+      const formData = await request.formData();
+      body = {};
+      
+      // Extract form fields
+      for (const [key, value] of formData.entries()) {
+        if (key.startsWith('imageFiles[') || key.startsWith('existingImages[')) {
+          // Handle image files separately (not implemented yet)
+          continue;
+        }
+        
+        // Convert form values to appropriate types
+        if (key === 'plantId') {
+          body[key] = parseInt(value as string);
+        } else if (key === 'isActive') {
+          body[key] = value === 'true';
+        } else {
+          body[key] = value;
+        }
+      }
+    } else {
+      // Handle JSON
+      body = await request.json();
+    }
     
     // Add user ID to the request body
     const instanceData = {
