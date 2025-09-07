@@ -68,7 +68,7 @@ If you just want to use the app:
 
    ```bash
    # Start PostgreSQL in Docker
-   docker-compose up -d postgres
+   docker compose up -d postgres
    
    # Wait for database to be ready (about 10 seconds)
    ```
@@ -220,13 +220,13 @@ The Care tab organizes tasks by urgency:
 #### Database Connection Errors
 ```bash
 # Check if PostgreSQL is running
-docker-compose ps
+docker compose ps
 
 # Restart database
-docker-compose restart postgres
+docker compose restart postgres
 
 # Check logs
-docker-compose logs postgres
+docker compose logs postgres
 ```
 
 #### Build Errors

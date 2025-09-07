@@ -124,7 +124,7 @@ server {
 npm run deploy:production
 
 # Or manually:
-docker-compose -f docker-compose.prod.yml --env-file .env.production.local up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d --build
 ```
 
 ### 7. Verify Deployment
@@ -137,7 +137,7 @@ npm run deploy:status
 curl https://your-domain.com/api/health
 
 # View logs
-docker-compose -f docker-compose.prod.yml logs -f app
+docker compose -f docker-compose.prod.yml logs -f app
 ```
 
 ## 🔄 Updates and Maintenance
@@ -169,10 +169,10 @@ npm run backup:restore /path/to/backup.sql.gz
 
 ```bash
 # View application logs
-docker-compose -f docker-compose.prod.yml logs -f app
+docker compose -f docker-compose.prod.yml logs -f app
 
 # View nginx logs
-docker-compose -f docker-compose.prod.yml logs -f nginx
+docker compose -f docker-compose.prod.yml logs -f nginx
 
 # Monitor resource usage
 docker stats
@@ -186,26 +186,26 @@ docker stats
 
 ```bash
 # Check container status
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml ps
 
 # Check logs for errors
-docker-compose -f docker-compose.prod.yml logs app
+docker compose -f docker-compose.prod.yml logs app
 
 # Restart services
-docker-compose -f docker-compose.prod.yml restart
+docker compose -f docker-compose.prod.yml restart
 ```
 
 #### Database Connection Issues
 
 ```bash
 # Check database status
-docker-compose -f docker-compose.prod.yml exec postgres pg_isready -U postgres
+docker compose -f docker-compose.prod.yml exec postgres pg_isready -U postgres
 
 # Check database logs
-docker-compose -f docker-compose.prod.yml logs postgres
+docker compose -f docker-compose.prod.yml logs postgres
 
 # Reset database connection
-docker-compose -f docker-compose.prod.yml restart postgres app
+docker compose -f docker-compose.prod.yml restart postgres app
 ```
 
 #### SSL Certificate Issues
@@ -217,7 +217,7 @@ openssl x509 -in nginx/ssl/cert.pem -text -noout
 # Renew Let's Encrypt certificates
 sudo certbot renew
 sudo cp /etc/letsencrypt/live/your-domain.com/* nginx/ssl/
-docker-compose -f docker-compose.prod.yml restart nginx
+docker compose -f docker-compose.prod.yml restart nginx
 ```
 
 ### Performance Optimization
@@ -226,7 +226,7 @@ docker-compose -f docker-compose.prod.yml restart nginx
 
 ```sql
 -- Connect to database
-docker-compose -f docker-compose.prod.yml exec postgres psql -U postgres -d fancy_planties
+docker compose -f docker-compose.prod.yml exec postgres psql -U postgres -d fancy_planties
 
 -- Check slow queries
 SELECT query, mean_exec_time, calls 

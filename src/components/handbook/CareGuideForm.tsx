@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind } from 'lucide-react';
+import { X, Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText } from 'lucide-react';
 
 interface CareGuideFormData {
   taxonomyLevel: 'family' | 'genus' | 'species' | 'cultivar';
@@ -46,7 +46,7 @@ interface CareGuideFormProps {
 }
 
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-2xl shadow-sm border border-slate-200/70 bg-white/70 backdrop-blur p-4 ${className}`}>
+  <div className={`rounded-2xl shadow-sm border border-slate-200/70 bg-white/70 backdrop-blur ${className}`}>
     {children}
   </div>
 );
@@ -250,9 +250,10 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      <div className="relative w-full max-w-2xl h-[90vh] flex flex-col">
         <Card className="h-full flex flex-col">
-          <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-200/50">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-200/50 flex-shrink-0">
             <div className="flex items-center gap-2">
               <Leaf className="h-5 w-5 text-emerald-600" />
               <h2 className="text-xl font-semibold text-slate-800">Create Care Guide</h2>
@@ -265,9 +266,9 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
             </button>
           </div>
           
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
-            <div className="flex-1 overflow-y-auto px-6">
-              <div className="py-4">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+            {/* Scrollable Content Area */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
 
                 {/* Tabs */}
                 <div className="flex gap-2 mb-6">
@@ -295,84 +296,102 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
                   </button>
                 </div>
             {activeTab === 'basic' && (
-              <div className="space-y-4">
-                <Select
-                  label="Taxonomy Level"
-                  value={formData.taxonomyLevel}
-                  onChange={(value) => updateFormData('taxonomyLevel', value)}
-                  options={taxonomyOptions}
-                  required
-                />
+              <div className="space-y-6">
+                {/* Taxonomy Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Leaf className="h-4 w-4 text-emerald-600" />
+                    <h3 className="font-medium text-slate-800">Plant Taxonomy</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <Select
+                      label="Taxonomy Level"
+                      value={formData.taxonomyLevel}
+                      onChange={(value) => updateFormData('taxonomyLevel', value)}
+                      options={taxonomyOptions}
+                      required
+                    />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="Family"
-                    value={formData.family}
-                    onChange={(value) => updateFormData('family', value)}
-                    placeholder="e.g., Araceae"
-                    required
-                  />
-                  <Input
-                    label="Genus"
-                    value={formData.genus}
-                    onChange={(value) => updateFormData('genus', value)}
-                    placeholder="e.g., Monstera"
-                    required={['genus', 'species', 'cultivar'].includes(formData.taxonomyLevel)}
-                  />
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        label="Family"
+                        value={formData.family}
+                        onChange={(value) => updateFormData('family', value)}
+                        placeholder="e.g., Araceae"
+                        required
+                      />
+                      <Input
+                        label="Genus"
+                        value={formData.genus}
+                        onChange={(value) => updateFormData('genus', value)}
+                        placeholder="e.g., Monstera"
+                        required={['genus', 'species', 'cultivar'].includes(formData.taxonomyLevel)}
+                      />
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input
-                    label="Species"
-                    value={formData.species}
-                    onChange={(value) => updateFormData('species', value)}
-                    placeholder="e.g., deliciosa"
-                    required={['species', 'cultivar'].includes(formData.taxonomyLevel)}
-                  />
-                  <Input
-                    label="Cultivar"
-                    value={formData.cultivar}
-                    onChange={(value) => updateFormData('cultivar', value)}
-                    placeholder="e.g., 'Thai Constellation'"
-                    required={formData.taxonomyLevel === 'cultivar'}
-                  />
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        label="Species"
+                        value={formData.species}
+                        onChange={(value) => updateFormData('species', value)}
+                        placeholder="e.g., deliciosa"
+                        required={['species', 'cultivar'].includes(formData.taxonomyLevel)}
+                      />
+                      <Input
+                        label="Cultivar"
+                        value={formData.cultivar}
+                        onChange={(value) => updateFormData('cultivar', value)}
+                        placeholder="e.g., 'Thai Constellation'"
+                        required={formData.taxonomyLevel === 'cultivar'}
+                      />
+                    </div>
 
-                <Input
-                  label="Common Name"
-                  value={formData.commonName}
-                  onChange={(value) => updateFormData('commonName', value)}
-                  placeholder="e.g., Swiss Cheese Plant"
-                />
+                    <Input
+                      label="Common Name"
+                      value={formData.commonName}
+                      onChange={(value) => updateFormData('commonName', value)}
+                      placeholder="e.g., Swiss Cheese Plant"
+                    />
+                  </div>
+                </Card>
 
-                <Input
-                  label="Guide Title"
-                  value={formData.title}
-                  onChange={(value) => updateFormData('title', value)}
-                  placeholder="e.g., Complete Monstera Care Guide"
-                  required
-                />
+                {/* Guide Information Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileText className="h-4 w-4 text-slate-600" />
+                    <h3 className="font-medium text-slate-800">Guide Information</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <Input
+                      label="Guide Title"
+                      value={formData.title}
+                      onChange={(value) => updateFormData('title', value)}
+                      placeholder="e.g., Complete Monstera Care Guide"
+                      required
+                    />
 
-                <TextArea
-                  label="Description"
-                  value={formData.description}
-                  onChange={(value) => updateFormData('description', value)}
-                  placeholder="Brief overview of this care guide..."
-                  rows={3}
-                />
+                    <TextArea
+                      label="Description"
+                      value={formData.description}
+                      onChange={(value) => updateFormData('description', value)}
+                      placeholder="Brief overview of this care guide..."
+                      rows={3}
+                    />
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isPublic"
-                    checked={formData.isPublic}
-                    onChange={(e) => updateFormData('isPublic', e.target.checked)}
-                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                  />
-                  <label htmlFor="isPublic" className="text-sm text-slate-700">
-                    Make this guide public for others to see
-                  </label>
-                </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="isPublic"
+                        checked={formData.isPublic}
+                        onChange={(e) => updateFormData('isPublic', e.target.checked)}
+                        className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      <label htmlFor="isPublic" className="text-sm text-slate-700">
+                        Make this guide public for others to see
+                      </label>
+                    </div>
+                  </div>
+                </Card>
               </div>
             )}
 
@@ -518,12 +537,10 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
                 </Card>
               </div>
             )}
-
-              </div>
             </div>
             
             {/* Form Actions */}
-            <div className="flex items-center justify-end gap-3 p-6 pt-4 border-t border-slate-200/50">
+            <div className="flex items-center justify-end gap-3 p-6 pt-4 border-t border-slate-200/50 flex-shrink-0">
               <Button type="button" variant="ghost" onClick={onClose}>
                 Cancel
               </Button>

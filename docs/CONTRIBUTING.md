@@ -87,7 +87,7 @@ We use labels to categorize issues:
 3. **Start database**:
 
    ```bash
-   docker-compose up -d postgres
+   docker compose up -d postgres
    ```
 
 4. **Run migrations**:

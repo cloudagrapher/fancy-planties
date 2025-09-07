@@ -68,7 +68,7 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
 
    ```bash
    # Start database
-   docker-compose up -d postgres
+   docker compose up -d postgres
    
    # Run database migrations
    npm run db:migrate

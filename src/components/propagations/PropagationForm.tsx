@@ -207,10 +207,11 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
+      <div className="absolute inset-4 bg-white rounded-2xl shadow-xl flex flex-col border border-slate-200/70">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-xl font-semibold text-gray-900">
             {propagation ? 'Edit Propagation' : 'Add New Propagation'}
           </h2>
@@ -223,7 +224,8 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Plant Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -534,8 +536,10 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
             </div>
           )}
 
+          </div>
+          
           {/* Form Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 p-6 pt-4 border-t border-gray-200 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}

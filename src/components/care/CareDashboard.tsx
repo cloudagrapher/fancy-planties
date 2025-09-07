@@ -64,18 +64,16 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="h-20 bg-gray-200 rounded"></div>
-            <div className="h-20 bg-gray-200 rounded"></div>
-          </div>
-          <div className="space-y-3">
-            <div className="h-16 bg-gray-200 rounded"></div>
-            <div className="h-16 bg-gray-200 rounded"></div>
-            <div className="h-16 bg-gray-200 rounded"></div>
-          </div>
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="h-20 bg-gray-200 rounded"></div>
+          <div className="h-20 bg-gray-200 rounded"></div>
+        </div>
+        <div className="space-y-3">
+          <div className="h-16 bg-gray-200 rounded"></div>
+          <div className="h-16 bg-gray-200 rounded"></div>
+          <div className="h-16 bg-gray-200 rounded"></div>
         </div>
       </div>
     );
@@ -83,13 +81,13 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
   if (error) {
     return (
-      <div className="text-center py-8">
+      <div className="rounded-2xl shadow-sm border border-red-200/70 bg-red-50/70 backdrop-blur p-6 text-center">
         <div className="text-red-600 mb-4">⚠️</div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Care Dashboard</h3>
         <p className="text-gray-600 mb-4">{error}</p>
         <button
           onClick={loadDashboardData}
-          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
         >
           Try Again
         </button>
@@ -115,7 +113,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Plant Care</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Plant Care</h1>
         <p className="text-gray-600">Keep your plants healthy and thriving</p>
       </div>
 
@@ -138,7 +136,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
             <button
               key={action.id}
               onClick={() => handleQuickCare(firstPlantId, action.careType)}
-              className={`p-3 rounded-lg text-white font-medium transition-colors ${
+              className={`p-4 rounded-xl text-white font-medium transition-colors shadow-sm ${
                 hasPlants && action.isEnabled ? action.color : 'bg-gray-400 cursor-not-allowed'
               }`}
               disabled={!action.isEnabled || !hasPlants}
@@ -153,16 +151,16 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
       {/* Care Tasks Tabs */}
       <div>
-        <div className="flex space-x-1 mb-4 bg-gray-100 p-1 rounded-lg">
+        <div className="flex space-x-1 mb-4 bg-white/50 p-1 rounded-xl border border-slate-200/70 backdrop-blur">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setSelectedTab(tab.id)}
               className={`
-                flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors relative
+                flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative
                 ${selectedTab === tab.id
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-gray-900 shadow-sm border border-slate-200/70'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
                 }
               `}
             >
@@ -188,7 +186,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
         {/* Care Tasks List */}
         <div className="space-y-3">
           {activePlants.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-white/50 backdrop-blur p-8 text-center">
               <div className="text-4xl mb-4">
                 {selectedTab === 'overdue' ? '✅' :
                  selectedTab === 'today' ? '📅' :

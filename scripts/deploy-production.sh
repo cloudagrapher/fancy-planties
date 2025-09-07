@@ -45,7 +45,7 @@ check_prerequisites() {
     missing_tools+=("docker")
   fi
   
-  if ! command -v docker-compose &> /dev/null; then
+  if ! command -v docker compose &> /dev/null; then
     missing_tools+=("docker-compose")
   fi
   
@@ -113,7 +113,7 @@ deploy_application() {
   export $(grep -v '^#' ".env.${ENVIRONMENT}" | xargs)
   
   # Build and start services
-  docker-compose -f docker-compose.prod.yml --env-file ".env.${ENVIRONMENT}" up -d --build
+  docker compose -f docker-compose.prod.yml --env-file ".env.${ENVIRONMENT}" up -d --build
   
   log_success "Application deployed successfully"
 }
@@ -128,7 +128,7 @@ run_migrations() {
     sleep 10
     
     # Run migrations using the app container
-    docker-compose -f docker-compose.prod.yml exec -T app npm run db:migrate
+    docker compose -f docker-compose.prod.yml exec -T app npm run db:migrate
     
     log_success "Database migrations completed"
   else
@@ -170,12 +170,12 @@ show_status() {
   
   # Show running containers
   log_info "Running containers:"
-  docker-compose -f docker-compose.prod.yml ps
+  docker compose -f docker-compose.prod.yml ps
   echo ""
   
   # Show application logs (last 20 lines)
   log_info "Recent application logs:"
-  docker-compose -f docker-compose.prod.yml logs --tail=20 app
+  docker compose -f docker-compose.prod.yml logs --tail=20 app
   echo ""
   
   # Show resource usage
@@ -188,7 +188,7 @@ rollback() {
   log_warning "Rolling back deployment..."
   
   # Stop current deployment
-  docker-compose -f docker-compose.prod.yml down
+  docker compose -f docker-compose.prod.yml down
   
   # Restore from backup if available
   if [ -f "scripts/restore.sh" ]; then
