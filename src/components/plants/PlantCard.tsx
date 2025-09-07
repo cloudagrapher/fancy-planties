@@ -19,6 +19,7 @@ interface PlantCardProps {
   onSwipeRight?: (plant: EnhancedPlantInstance) => void;
   isSelected?: boolean;
   isSelectionMode?: boolean;
+  isLoading?: boolean;
   className?: string;
 }
 
@@ -34,6 +35,7 @@ export default function PlantCard({
   onSwipeRight,
   isSelected = false,
   isSelectionMode = false,
+  isLoading = false,
   className = '',
 }: PlantCardProps) {
   const [imageError, setImageError] = useState(false);
@@ -126,23 +128,30 @@ export default function PlantCard({
   const getCareStatusDisplay = () => {
     if (!showCareStatus) return null;
 
-    const { careStatus, daysUntilFertilizerDue } = plant;
-    const statusColors = plantInstanceHelpers.getCareStatusColor(careStatus);
-    const urgencyColor = plantInstanceHelpers.getCareUrgencyColor(plant.careUrgency);
+    const { careStatus, daysUntilFertilizerDue, careUrgency } = plant;
+    const urgencyColor = plantInstanceHelpers.getCareUrgencyColor(careUrgency);
+
+    // Determine status text based on care urgency and days until due
+    let statusText = 'Healthy';
+    if (careUrgency === 'critical' || (daysUntilFertilizerDue !== null && daysUntilFertilizerDue < 0)) {
+      statusText = 'Overdue';
+    } else if (careStatus === 'due_today') {
+      statusText = 'Due Today';
+    } else if (careStatus === 'due_soon') {
+      statusText = 'Due Soon';
+    } else if (careStatus === 'unknown') {
+      statusText = 'No Schedule';
+    }
 
     return (
       <div className="flex-between mb-2">
         <div className={`plant-card-status ${
-          careStatus === 'overdue' ? 'plant-card-status--overdue' :
-          careStatus === 'due_today' || careStatus === 'due_soon' ? 'plant-card-status--needs-care' :
+          statusText === 'Overdue' ? 'plant-card-status--overdue' :
+          statusText === 'Due Today' || statusText === 'Due Soon' ? 'plant-card-status--needs-care' :
           'plant-card-status--healthy'
         }`}>
           <div className={`w-2 h-2 rounded-full mr-1 ${urgencyColor}`} />
-          {careStatus === 'overdue' && 'Overdue'}
-          {careStatus === 'due_today' && 'Due Today'}
-          {careStatus === 'due_soon' && 'Due Soon'}
-          {careStatus === 'healthy' && 'Healthy'}
-          {careStatus === 'unknown' && 'No Schedule'}
+          {statusText}
         </div>
         
         {daysUntilFertilizerDue !== null && (
@@ -156,47 +165,75 @@ export default function PlantCard({
 
   // Get quick actions
   const getQuickActions = () => {
-    if (!onCareAction || plant.careStatus === 'healthy') return null;
+    if (!onCareAction) return null;
 
     return (
-      <div className="flex space-x-1 mt-2">
-        {(plant.careStatus === 'overdue' || plant.careStatus === 'due_today' || plant.careStatus === 'due_soon') && (
-          <button
-            onClick={(e) => handleCareAction('fertilize', e)}
-            className="btn btn--sm btn--outline"
-            title="Mark as fertilized"
-          >
-            💧 Feed
-          </button>
-        )}
+      <div className="flex space-x-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={(e) => handleCareAction('fertilize', e)}
+          className="btn btn--sm btn--outline"
+          title="Quick care"
+          aria-label="Quick care"
+        >
+          💧 Care
+        </button>
         <button
           onClick={(e) => handleCareAction('repot', e)}
           className="btn btn--sm btn--secondary"
-          title="Log repotting"
+          title="Edit plant"
+          aria-label="Edit plant"
         >
-          🪴 Repot
+          ✏️ Edit
         </button>
       </div>
     );
   };
 
+  // Show loading state if specified
+  if (isLoading) {
+    return (
+      <div
+        className={`plant-card ${config.container} animate-pulse`}
+        role="status"
+        aria-label="Loading plant card"
+      >
+        <div className={`${config.image} bg-gray-200 rounded-t-lg`} />
+        <div className="plant-card-content">
+          <div className="h-4 bg-gray-200 rounded mb-2" />
+          <div className="h-3 bg-gray-200 rounded mb-1" />
+          <div className="h-3 bg-gray-200 rounded w-3/4" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={swipeRef}
+      role="button"
+      tabIndex={0}
       className={`
-        plant-card ${config.container}
+        plant-card ${config.container} group
         ${isPressed ? 'scale-95' : 'scale-100'}
         ${isSwipeActive ? 'scale-105 shadow-lg' : ''}
         ${isSelected ? 'ring-2 ring-primary-400 shadow-dreamy' : ''}
         ${onSelect ? 'cursor-pointer' : ''}
+        ${plant.isActive === false ? 'opacity-60' : ''}
         ${className}
       `}
       onClick={handlePress}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handlePress();
+        }
+      }}
       onTouchStart={() => setIsPressed(true)}
       onTouchEnd={() => setIsPressed(false)}
       onMouseDown={() => setIsPressed(true)}
       onMouseUp={() => setIsPressed(false)}
       onMouseLeave={() => setIsPressed(false)}
+      aria-label={`Plant card for ${plant.displayName}`}
     >
       {/* Selection indicator */}
       {isSelectionMode && (

@@ -10,7 +10,15 @@ import ImageUpload from '../shared/ImageUpload';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
 
-// Form validation schema
+// Form validation schemas
+const plantTaxonomySchema = z.object({
+  family: z.string().min(1, 'Family is required').max(100, 'Family must be less than 100 characters'),
+  genus: z.string().min(1, 'Genus is required').max(100, 'Genus must be less than 100 characters'),
+  species: z.string().min(1, 'Species is required').max(100, 'Species must be less than 100 characters'),
+  cultivar: z.string().max(100, 'Cultivar must be less than 100 characters').optional().transform(val => val?.trim() || ''),
+  commonName: z.string().min(1, 'Common name is required').max(100, 'Common name must be less than 100 characters'),
+});
+
 const plantInstanceFormSchema = z.object({
   plantId: z.number().min(1, 'Please select a plant type'),
   nickname: z.string()
@@ -38,6 +46,8 @@ const plantInstanceFormSchema = z.object({
     .transform(val => val?.trim() || ''),
   images: z.array(z.string()).max(10, 'Maximum 10 images allowed').optional(),
   isActive: z.boolean().default(true).optional(),
+  // New taxonomy fields (only used when creating new plant)
+  newPlantTaxonomy: plantTaxonomySchema.optional(),
 }).refine(data => {
   // Custom validation: lastFertilized cannot be in the future
   if (data.lastFertilized) {
@@ -65,6 +75,7 @@ const plantInstanceFormSchema = z.object({
 });
 
 type PlantInstanceFormData = z.infer<typeof plantInstanceFormSchema>;
+type PlantTaxonomyFormData = z.infer<typeof plantTaxonomySchema>;
 
 interface PlantInstanceFormProps {
   plantInstance?: EnhancedPlantInstance;
@@ -85,6 +96,15 @@ export default function PlantInstanceForm({
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [locationInput, setLocationInput] = useState('');
   const [isCreatingPlant, setIsCreatingPlant] = useState(false);
+  const [showTaxonomyForm, setShowTaxonomyForm] = useState(false);
+  const [taxonomyData, setTaxonomyData] = useState<PlantTaxonomyFormData>({
+    family: '',
+    genus: '',
+    species: '',
+    cultivar: '',
+    commonName: '',
+  });
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const queryClient = useQueryClient();
   const isEditing = !!plantInstance;
 
@@ -92,7 +112,7 @@ export default function PlantInstanceForm({
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isDirty },
     reset,
     setValue,
     watch,
@@ -110,6 +130,7 @@ export default function PlantInstanceForm({
       notes: '',
       images: [],
       isActive: true,
+      newPlantTaxonomy: undefined,
     },
   });
 
@@ -124,45 +145,37 @@ export default function PlantInstanceForm({
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 
-  // Helper function to parse plant query into taxonomy components
-  const parsePlantQuery = (query: string) => {
-    const parts = query.trim().split(/\s+/);
-    
-    if (parts.length === 1) {
-      // Single word - assume it's common name
-      return {
-        family: 'Unknown',
-        genus: 'Unknown', 
-        species: 'unknown',
-        commonName: query,
-        cultivar: null,
-      };
-    } else if (parts.length === 2) {
-      // Two words - assume Genus species
-      return {
-        family: 'Unknown',
-        genus: parts[0],
-        species: parts[1].toLowerCase(),
-        commonName: query,
-        cultivar: null,
-      };
-    } else {
-      // Three or more words - assume Genus species and remaining as cultivar/common name
-      const genus = parts[0];
-      const species = parts[1].toLowerCase();
-      const remaining = parts.slice(2).join(' ');
-      
-      // Check if remaining looks like a cultivar (in quotes or title case)
-      const cultivar = remaining.match(/^['"](.+)['"]$/) || remaining.match(/^[A-Z][a-z\s]+$/) ? remaining.replace(/['"]/g, '') : null;
-      
-      return {
-        family: 'Unknown',
-        genus,
-        species,
-        commonName: query,
-        cultivar,
-      };
-    }
+  // Handle showing taxonomy form for new plant creation
+  const handleShowTaxonomyForm = (query: string) => {
+    setShowTaxonomyForm(true);
+    setTaxonomyData({
+      family: '',
+      genus: '',
+      species: '',
+      cultivar: '',
+      commonName: query || '',
+    });
+  };
+
+  // Handle taxonomy form submission
+  const handleTaxonomySubmit = (data: PlantTaxonomyFormData) => {
+    setIsCreatingPlant(true);
+    createPlantMutation.mutate({
+      ...data,
+      cultivar: data.cultivar || null,
+    });
+  };
+
+  // Handle canceling taxonomy form
+  const handleCancelTaxonomyForm = () => {
+    setShowTaxonomyForm(false);
+    setTaxonomyData({
+      family: '',
+      genus: '',
+      species: '',
+      cultivar: '',
+      commonName: '',
+    });
   };
 
   // Create new plant mutation
@@ -199,10 +212,12 @@ export default function PlantInstanceForm({
       
       handlePlantSelect(newPlant);
       setIsCreatingPlant(false);
+      setShowTaxonomyForm(false);
     },
     onError: (error) => {
       console.error('Failed to create plant:', error);
       setIsCreatingPlant(false);
+      setShowTaxonomyForm(false);
     },
   });
 
@@ -295,6 +310,14 @@ export default function PlantInstanceForm({
       setSelectedPlant(null);
       setImageFiles([]);
       setExistingImages([]);
+      setShowTaxonomyForm(false);
+      setTaxonomyData({
+        family: '',
+        genus: '',
+        species: '',
+        cultivar: '',
+        commonName: '',
+      });
     }
   }, [isEditing, plantInstance, reset]);
 
@@ -349,11 +372,44 @@ export default function PlantInstanceForm({
     mutation.mutate(submitData as any);
   };
 
+  // Track unsaved changes
+  useEffect(() => {
+    setHasUnsavedChanges(isDirty || imageFiles.length > 0 || showTaxonomyForm);
+  }, [isDirty, imageFiles.length, showTaxonomyForm]);
+
+  // Warn about unsaved changes before page unload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    };
+
+    if (isOpen && hasUnsavedChanges) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isOpen, hasUnsavedChanges]);
+
+  // Handle close with unsaved changes warning
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to close?');
+      if (!confirmed) return;
+    }
+    onClose();
+  };
+
   // Close modal on escape
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        handleClose();
       }
     };
 
@@ -366,7 +422,7 @@ export default function PlantInstanceForm({
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
 
@@ -375,7 +431,7 @@ export default function PlantInstanceForm({
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
-        onClick={onClose}
+        onClick={handleClose}
       />
       
       {/* Modal */}
@@ -387,8 +443,9 @@ export default function PlantInstanceForm({
               {isEditing ? 'Edit Plant' : 'Add New Plant'}
             </h2>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              aria-label="Close form"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -407,12 +464,8 @@ export default function PlantInstanceForm({
                 <PlantTaxonomySelector
                   selectedPlant={selectedPlant}
                   onSelect={handlePlantSelect}
-                  disabled={isCreatingPlant}
-                  onAddNew={(query) => {
-                    setIsCreatingPlant(true);
-                    const plantData = parsePlantQuery(query);
-                    createPlantMutation.mutate(plantData);
-                  }}
+                  disabled={isCreatingPlant || showTaxonomyForm}
+                  onAddNew={handleShowTaxonomyForm}
                 />
                 {isCreatingPlant && (
                   <div className="mt-2 flex items-center text-sm text-primary-600">
@@ -430,6 +483,123 @@ export default function PlantInstanceForm({
                 )}
                 {errors.plantId && (
                   <div className="mt-1 text-sm text-red-600">{errors.plantId.message}</div>
+                )}
+
+                {/* New Plant Taxonomy Form */}
+                {showTaxonomyForm && (
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-semibold text-blue-900">Create New Plant Type</h3>
+                      <button
+                        type="button"
+                        onClick={handleCancelTaxonomyForm}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {/* Common Name */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Common Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={taxonomyData.commonName}
+                          onChange={(e) => setTaxonomyData(prev => ({ ...prev, commonName: e.target.value }))}
+                          placeholder="e.g., Monstera Deliciosa"
+                          className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Family */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Family *
+                          </label>
+                          <input
+                            type="text"
+                            value={taxonomyData.family}
+                            onChange={(e) => setTaxonomyData(prev => ({ ...prev, family: e.target.value }))}
+                            placeholder="e.g., Araceae"
+                            className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+
+                        {/* Genus */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Genus *
+                          </label>
+                          <input
+                            type="text"
+                            value={taxonomyData.genus}
+                            onChange={(e) => setTaxonomyData(prev => ({ ...prev, genus: e.target.value }))}
+                            placeholder="e.g., Monstera"
+                            className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Species */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Species *
+                          </label>
+                          <input
+                            type="text"
+                            value={taxonomyData.species}
+                            onChange={(e) => setTaxonomyData(prev => ({ ...prev, species: e.target.value }))}
+                            placeholder="e.g., deliciosa"
+                            className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+
+                        {/* Cultivar */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Cultivar (optional)
+                          </label>
+                          <input
+                            type="text"
+                            value={taxonomyData.cultivar}
+                            onChange={(e) => setTaxonomyData(prev => ({ ...prev, cultivar: e.target.value }))}
+                            placeholder="e.g., 'Variegata'"
+                            className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end space-x-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={handleCancelTaxonomyForm}
+                          className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-blue-500"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const isValid = taxonomyData.family && taxonomyData.genus && taxonomyData.species && taxonomyData.commonName;
+                            if (isValid) {
+                              handleTaxonomySubmit(taxonomyData);
+                            }
+                          }}
+                          disabled={!taxonomyData.family || !taxonomyData.genus || !taxonomyData.species || !taxonomyData.commonName}
+                          className="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Create Plant Type
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -828,7 +998,7 @@ export default function PlantInstanceForm({
               <div className="flex space-x-3">
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={handleClose}
                   disabled={mutation.isPending}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 disabled:opacity-50 transition-colors"
                 >
