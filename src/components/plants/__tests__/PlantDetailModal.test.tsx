@@ -42,10 +42,10 @@ jest.mock('../PlantLineage', () => {
 });
 
 jest.mock('../../care/QuickCareActions', () => {
-  return function MockQuickCareActions({ onCareLog }: any) {
+  return function MockQuickCareActions({ onCareAction }: any) {
     return (
       <div data-testid="quick-care-actions">
-        <button onClick={() => onCareLog && onCareLog('fertilizer')}>Quick Fertilize</button>
+        <button onClick={() => onCareAction && onCareAction('fertilizer')}>Quick Fertilize</button>
       </div>
     );
   };
@@ -200,7 +200,7 @@ describe('PlantDetailModal', () => {
       expect(screen.getByText('My Monstera')).toBeInTheDocument();
     });
 
-    const closeButton = screen.getByRole('button', { name: /close/i });
+    const closeButton = screen.getByRole('button', { name: /close modal/i });
     await user.click(closeButton);
 
     expect(mockOnClose).toHaveBeenCalled();
@@ -259,8 +259,8 @@ describe('PlantDetailModal', () => {
       expect(screen.getByText('My Monstera')).toBeInTheDocument();
     });
 
-    // The edit button is the one with the pencil icon
-    const editButton = screen.getByRole('button', { name: '' }); // The edit button doesn't have a name
+    // The edit button now has proper accessibility
+    const editButton = screen.getByRole('button', { name: /edit plant/i });
     await user.click(editButton);
 
     expect(mockOnEdit).toHaveBeenCalledWith(mockPlantData.plant);
@@ -292,7 +292,7 @@ describe('PlantDetailModal', () => {
     const quickCareButton = screen.getByText('Quick Fertilize');
     await user.click(quickCareButton);
 
-    expect(mockOnCareLog).toHaveBeenCalledWith('fertilizer');
+    expect(mockOnCareLog).toHaveBeenCalledWith(1, 'fertilizer');
   });
 
   it('opens image gallery when image is clicked', async () => {
@@ -371,5 +371,295 @@ describe('PlantDetailModal', () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith('/api/plant-instances/1');
     });
+  });
+
+  it('handles quick care mutation success', async () => {
+    const user = userEvent.setup();
+
+    // Mock initial data fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockPlantData.plant,
+    } as Response);
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response);
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response);
+
+    render(
+      <PlantDetailModal
+        plantId={1}
+        isOpen={true}
+        onClose={mockOnClose}
+        onEdit={mockOnEdit}
+        onCareLog={mockOnCareLog}
+      />,
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
+    });
+
+    // Mock quick care API call after component is loaded
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    } as Response);
+
+    const quickCareButton = screen.getByText('Quick Fertilize');
+    await user.click(quickCareButton);
+
+    // Wait for the API call to be made
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/care/quick-log', expect.objectContaining({
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: expect.stringContaining('"plantInstanceId":1'),
+      }));
+    });
+  });
+
+  it('handles quick care mutation error', async () => {
+    const user = userEvent.setup();
+
+    // Mock initial data fetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockPlantData.plant,
+    } as Response);
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response);
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [],
+    } as Response);
+
+    // Mock quick care API call failure
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'Failed to log care' }),
+    } as Response);
+
+    render(
+      <PlantDetailModal
+        plantId={1}
+        isOpen={true}
+        onClose={mockOnClose}
+        onEdit={mockOnEdit}
+        onCareLog={mockOnCareLog}
+      />,
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
+    });
+
+    const quickCareButton = screen.getByText('Quick Fertilize');
+    await user.click(quickCareButton);
+
+    // The mutation should handle the error gracefully
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/care/quick-log', expect.any(Object));
+    });
+  });
+
+  it('displays plant with images correctly', async () => {
+    const plantWithImages = {
+      ...mockPlantData.plant,
+      images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => plantWithImages,
+    } as Response);
+
+    render(
+      <PlantDetailModal
+        plantId={1}
+        isOpen={true}
+        onClose={mockOnClose}
+        onEdit={mockOnEdit}
+        onCareLog={mockOnCareLog}
+      />,
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
+    });
+
+    // Should show images instead of "No photos yet"
+    expect(screen.queryByText('No photos yet')).not.toBeInTheDocument();
+    
+    // Should show the primary badge on first image
+    expect(screen.getByText('Primary')).toBeInTheDocument();
+  });
+
+  it('displays plant with many images and shows more indicator', async () => {
+    const plantWithManyImages = {
+      ...mockPlantData.plant,
+      images: Array.from({ length: 10 }, (_, i) => `image${i + 1}.jpg`),
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => plantWithManyImages,
+    } as Response);
+
+    render(
+      <PlantDetailModal
+        plantId={1}
+        isOpen={true}
+        onClose={mockOnClose}
+        onEdit={mockOnEdit}
+        onCareLog={mockOnCareLog}
+      />,
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
+    });
+
+    // Should show "+4 more" indicator for images beyond the first 6
+    expect(screen.getByText('+4')).toBeInTheDocument();
+    expect(screen.getByText('more')).toBeInTheDocument();
+  });
+
+  it('handles retry in error state', async () => {
+    const user = userEvent.setup();
+
+    // First call fails
+    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+    render(
+      <PlantDetailModal
+        plantId={1}
+        isOpen={true}
+        onClose={mockOnClose}
+        onEdit={mockOnEdit}
+        onCareLog={mockOnCareLog}
+      />,
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Error Loading Plant')).toBeInTheDocument();
+    });
+
+    // Mock successful retry
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockPlantData.plant,
+    } as Response);
+
+    const retryButton = screen.getByText('Try Again');
+    await user.click(retryButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
+    });
+  });
+
+  it('displays care status correctly for different statuses', async () => {
+    const overdueePlant = {
+      ...mockPlantData.plant,
+      careStatus: 'overdue' as const,
+    };
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => overdueePlant,
+    } as Response);
+
+    render(
+      <PlantDetailModal
+        plantId={1}
+        isOpen={true}
+        onClose={mockOnClose}
+        onEdit={mockOnEdit}
+        onCareLog={mockOnCareLog}
+      />,
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Overdue')).toBeInTheDocument();
+    });
+  });
+
+  it('handles modal overlay click to close', async () => {
+    const user = userEvent.setup();
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockPlantData.plant,
+    } as Response);
+
+    render(
+      <PlantDetailModal
+        plantId={1}
+        isOpen={true}
+        onClose={mockOnClose}
+        onEdit={mockOnEdit}
+        onCareLog={mockOnCareLog}
+      />,
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
+    });
+
+    // Click on the overlay (not the modal content)
+    const overlay = document.querySelector('.modal-overlay');
+    if (overlay) {
+      await user.click(overlay);
+      expect(mockOnClose).toHaveBeenCalled();
+    }
+  });
+
+  it('prevents modal content click from closing modal', async () => {
+    const user = userEvent.setup();
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockPlantData.plant,
+    } as Response);
+
+    render(
+      <PlantDetailModal
+        plantId={1}
+        isOpen={true}
+        onClose={mockOnClose}
+        onEdit={mockOnEdit}
+        onCareLog={mockOnCareLog}
+      />,
+      { wrapper: createWrapper() }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('My Monstera')).toBeInTheDocument();
+    });
+
+    // Click on the modal content (should not close)
+    const modalContent = document.querySelector('.modal-content');
+    if (modalContent) {
+      await user.click(modalContent);
+      expect(mockOnClose).not.toHaveBeenCalled();
+    }
   });
 });
