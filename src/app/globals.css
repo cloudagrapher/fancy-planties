@@ -3,18 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --background: #fefefe;
-  --foreground: #374151;
-  --surface: #faf9f7;
-  --border: #f3f1ee;
-}
+  /* ==========================================================================
+     COMPREHENSIVE DESIGN TOKEN SYSTEM
+     Mint Green & Salmon Palette for Millennial Women
+     ========================================================================== */
 
-@theme inline {
-  /* ===== COMPREHENSIVE DESIGN TOKEN SYSTEM ===== */
-  
-  /* ===== COLOR PALETTE: MINT GREEN & SALMON ===== */
-  
-  /* Primary: Mint Green (Plant/Growth/Success) */
+  /* PRIMARY: Mint Green (Plant/Growth/Success) */
   --color-mint-50: #f0fdf4;
   --color-mint-100: #d1fae5;
   --color-mint-200: #a7f3d0;  /* Main brand color */
@@ -26,7 +20,7 @@
   --color-mint-800: #065f46;
   --color-mint-900: #064e3b;
   
-  /* Secondary: Salmon/Coral (Care/Love/Warmth) */
+  /* SECONDARY: Salmon/Coral (Care/Love/Warmth) */
   --color-salmon-50: #fff1f2;
   --color-salmon-100: #ffe4e6;
   --color-salmon-200: #fecdd3;
@@ -38,7 +32,7 @@
   --color-salmon-800: #9f1239;
   --color-salmon-900: #881337;
   
-  /* Tertiary: Soft Lavender (Propagation/Growth) */
+  /* TERTIARY: Soft Lavender (Propagation/Growth) */
   --color-lavender-50: #f5f3ff;
   --color-lavender-100: #e0e7ff;
   --color-lavender-200: #c7d2fe;
@@ -50,7 +44,7 @@
   --color-lavender-800: #5b21b6;
   --color-lavender-900: #4c1d95;
   
-  /* Accent: Peachy Pink (Special features) */
+  /* ACCENT: Peachy Pink (Special features) */
   --color-peach-50: #fef7f0;
   --color-peach-100: #feecdc;
   --color-peach-200: #fed7d7;
@@ -59,13 +53,13 @@
   --color-peach-500: #ec4899;
   --color-peach-600: #db2777;
   
-  /* Status Colors (Soft & Friendly) */
+  /* STATUS COLORS (Soft & Friendly) */
   --color-success: var(--color-mint-300);
   --color-warning: #fcd34d;
   --color-error: #fca5a5;
   --color-info: #93c5fd;
   
-  /* Neutrals (Warm & Soft) */
+  /* NEUTRALS (Warm & Soft) */
   --color-neutral-50: #fefefe;
   --color-neutral-100: #faf9f7;
   --color-neutral-200: #f3f1ee;
@@ -77,59 +71,18 @@
   --color-neutral-800: #1f2937;
   --color-neutral-900: #111827;
   
-  /* Semantic Color Mappings */
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-border: var(--border);
-  --color-foreground: var(--foreground);
-  --color-text-secondary: var(--color-neutral-400);
-  --color-text-muted: var(--color-neutral-300);
+  /* SEMANTIC COLOR ALIASES */
+  --color-background: var(--color-neutral-50);
+  --color-surface: var(--color-neutral-100);
+  --color-border: var(--color-neutral-200);
+  --color-foreground: var(--color-neutral-700);
+  --color-text-primary: var(--color-neutral-800);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-muted: var(--color-neutral-400);
   
-  /* Legacy mappings for backward compatibility */
-  --color-primary-50: var(--color-mint-50);
-  --color-primary-100: var(--color-mint-100);
-  --color-primary-200: var(--color-mint-200);
-  --color-primary-300: var(--color-mint-300);
-  --color-primary-400: var(--color-mint-400);
-  --color-primary-500: var(--color-mint-500);
-  --color-primary-600: var(--color-mint-600);
-  --color-primary-700: var(--color-mint-700);
-  --color-primary-800: var(--color-mint-800);
-  --color-primary-900: var(--color-mint-900);
-  --color-primary: var(--color-mint-200);
-  
-  --color-secondary-50: var(--color-salmon-50);
-  --color-secondary-100: var(--color-salmon-100);
-  --color-secondary-200: var(--color-salmon-200);
-  --color-secondary-300: var(--color-salmon-300);
-  --color-secondary-400: var(--color-salmon-400);
-  --color-secondary-500: var(--color-salmon-500);
-  --color-secondary-600: var(--color-salmon-600);
-  --color-secondary-700: var(--color-salmon-700);
-  --color-secondary-800: var(--color-salmon-800);
-  --color-secondary-900: var(--color-salmon-900);
-  --color-secondary: var(--color-salmon-300);
-  
-  --color-tertiary-50: var(--color-lavender-50);
-  --color-tertiary-100: var(--color-lavender-100);
-  --color-tertiary-200: var(--color-lavender-200);
-  --color-tertiary-300: var(--color-lavender-300);
-  --color-tertiary-400: var(--color-lavender-400);
-  --color-tertiary-500: var(--color-lavender-500);
-  --color-tertiary-600: var(--color-lavender-600);
-  --color-tertiary-700: var(--color-lavender-700);
-  --color-tertiary-800: var(--color-lavender-800);
-  --color-tertiary-900: var(--color-lavender-900);
-  --color-tertiary: var(--color-lavender-300);
-  
-  --color-accent-300: var(--color-peach-300);
-  --color-accent-400: var(--color-peach-400);
-  --color-accent-500: var(--color-peach-500);
-  --color-accent: var(--color-peach-400);
-  
-  --color-danger: var(--color-error);
-  
-  /* ===== TYPOGRAPHY SCALE ===== */
+  /* ==========================================================================
+     TYPOGRAPHY SCALE (Mobile-First)
+     ========================================================================== */
   
   /* Font Families */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -145,10 +98,8 @@
   --text-3xl: 1.875rem;  /* 30px - Page titles */
   --text-4xl: 2.25rem;   /* 36px - App title, major headings */
   --text-5xl: 3rem;      /* 48px - Hero text */
-  --text-6xl: 3.75rem;   /* 60px - Display text */
   
   /* Line Heights */
-  --leading-none: 1;
   --leading-tight: 1.25;
   --leading-snug: 1.375;
   --leading-normal: 1.5;
@@ -157,7 +108,6 @@
   
   /* Font Weights */
   --font-thin: 100;
-  --font-extralight: 200;
   --font-light: 300;
   --font-normal: 400;
   --font-medium: 500;
@@ -166,9 +116,10 @@
   --font-extrabold: 800;
   --font-black: 900;
   
-  /* ===== SPACING SYSTEM ===== */
+  /* ==========================================================================
+     SPACING SYSTEM (Base unit: 4px)
+     ========================================================================== */
   
-  /* Base spacing unit: 4px (0.25rem) */
   --space-0: 0;
   --space-px: 1px;
   --space-0-5: 0.125rem;  /* 2px */
@@ -207,50 +158,40 @@
   --space-88: 22rem;      /* 352px */
   --space-96: 24rem;      /* 384px */
   
-  /* Touch targets */
+  /* Touch Targets (Mobile Optimization) */
   --touch-target-min: 44px;        /* iOS minimum */
   --touch-target-comfortable: 48px; /* Preferred size */
-  --touch-target-large: 56px;      /* Large actions */
+  --touch-target-large: 56px;      /* Large buttons */
   
-  /* ===== BORDER RADIUS SYSTEM ===== */
+  /* ==========================================================================
+     BORDER RADIUS & SHADOWS
+     ========================================================================== */
   
+  /* Border Radius */
   --radius-none: 0;
-  --radius-sm: 0.125rem;   /* 2px */
-  --radius-base: 0.25rem;  /* 4px */
-  --radius-md: 0.375rem;   /* 6px */
-  --radius-lg: 0.5rem;     /* 8px */
-  --radius-xl: 0.75rem;    /* 12px */
-  --radius-2xl: 1rem;      /* 16px */
-  --radius-3xl: 1.5rem;    /* 24px */
-  --radius-4xl: 2rem;      /* 32px */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-2xl: 1.25rem;  /* 20px */
+  --radius-3xl: 1.5rem;   /* 24px */
+  --radius-4xl: 2rem;     /* 32px */
   --radius-full: 9999px;
   
-  /* ===== SHADOW SYSTEM (Dreamy & Soft) ===== */
-  
-  /* Basic shadows */
-  --shadow-none: 0 0 #0000;
-  --shadow-sm: 0 1px 2px 0 rgba(167, 243, 208, 0.05);
-  --shadow-base: 0 1px 3px 0 rgba(167, 243, 208, 0.1), 0 1px 2px 0 rgba(253, 164, 175, 0.06);
+  /* Shadows (Dreamy & Soft with Brand Colors) */
+  --shadow-xs: 0 1px 2px 0 rgba(167, 243, 208, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(167, 243, 208, 0.1), 0 1px 2px 0 rgba(253, 164, 175, 0.06);
   --shadow-md: 0 4px 6px -1px rgba(167, 243, 208, 0.1), 0 2px 4px -1px rgba(253, 164, 175, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(167, 243, 208, 0.1), 0 4px 6px -2px rgba(253, 164, 175, 0.05);
   --shadow-xl: 0 20px 25px -5px rgba(167, 243, 208, 0.1), 0 10px 10px -5px rgba(253, 164, 175, 0.04);
   --shadow-2xl: 0 25px 50px -12px rgba(167, 243, 208, 0.25);
-  
-  /* Colored shadows */
-  --shadow-mint: 0 4px 14px 0 rgba(167, 243, 208, 0.39);
-  --shadow-salmon: 0 4px 14px 0 rgba(253, 164, 175, 0.39);
-  --shadow-lavender: 0 4px 14px 0 rgba(196, 181, 253, 0.39);
-  
-  /* Special shadows */
+  --shadow-inner: inset 0 2px 4px 0 rgba(167, 243, 208, 0.06);
   --shadow-dreamy: 0 8px 32px -8px rgba(253, 164, 175, 0.15), 0 0 0 1px rgba(167, 243, 208, 0.05);
-  --shadow-soft: 0 2px 15px -3px rgba(167, 243, 208, 0.1), 0 4px 6px -2px rgba(167, 243, 208, 0.05);
-  --shadow-glow: 0 0 20px rgba(167, 243, 208, 0.4);
+  --shadow-glow: 0 0 20px rgba(167, 243, 208, 0.3);
   
-  /* Inner shadows */
-  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  --shadow-inner-lg: inset 0 4px 8px 0 rgba(0, 0, 0, 0.1);
-  
-  /* ===== RESPONSIVE BREAKPOINTS ===== */
+  /* ==========================================================================
+     RESPONSIVE BREAKPOINTS
+     ========================================================================== */
   
   --breakpoint-xs: 475px;   /* Extra small devices */
   --breakpoint-sm: 640px;   /* Small tablets */
@@ -259,25 +200,17 @@
   --breakpoint-xl: 1280px;  /* Large desktops */
   --breakpoint-2xl: 1536px; /* Extra large */
   
-  /* Container max widths */
-  --container-xs: 475px;
-  --container-sm: 640px;
-  --container-md: 768px;
-  --container-lg: 1024px;
-  --container-xl: 1280px;
-  --container-2xl: 1536px;
+  /* ==========================================================================
+     Z-INDEX SCALE
+     ========================================================================== */
   
-  /* ===== Z-INDEX SCALE ===== */
-  
+  --z-auto: auto;
   --z-0: 0;
   --z-10: 10;
   --z-20: 20;
   --z-30: 30;
   --z-40: 40;
   --z-50: 50;
-  --z-auto: auto;
-  
-  /* Semantic z-index values */
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
@@ -287,8 +220,11 @@
   --z-tooltip: 1070;
   --z-toast: 1080;
   
-  /* ===== ANIMATION DURATIONS ===== */
+  /* ==========================================================================
+     ANIMATION & TRANSITIONS
+     ========================================================================== */
   
+  /* Transition Durations */
   --duration-75: 75ms;
   --duration-100: 100ms;
   --duration-150: 150ms;
@@ -298,8 +234,7 @@
   --duration-700: 700ms;
   --duration-1000: 1000ms;
   
-  /* ===== ANIMATION EASING ===== */
-  
+  /* Transition Timing Functions */
   --ease-linear: linear;
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
@@ -308,11 +243,90 @@
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+@theme inline {
+  /* Tailwind CSS v4 Theme Integration */
+  
+  /* Colors mapped to design tokens */
+  --color-primary: var(--color-mint-200);
+  --color-secondary: var(--color-salmon-300);
+  --color-tertiary: var(--color-lavender-300);
+  --color-accent: var(--color-peach-400);
+  
+  /* Legacy aliases for backward compatibility */
+  --color-primary-50: var(--color-mint-50);
+  --color-primary-100: var(--color-mint-100);
+  --color-primary-200: var(--color-mint-200);
+  --color-primary-300: var(--color-mint-300);
+  --color-primary-400: var(--color-mint-400);
+  --color-primary-500: var(--color-mint-500);
+  --color-primary-600: var(--color-mint-600);
+  --color-primary-700: var(--color-mint-700);
+  --color-primary-800: var(--color-mint-800);
+  --color-primary-900: var(--color-mint-900);
+  
+  --color-secondary-50: var(--color-salmon-50);
+  --color-secondary-100: var(--color-salmon-100);
+  --color-secondary-200: var(--color-salmon-200);
+  --color-secondary-300: var(--color-salmon-300);
+  --color-secondary-400: var(--color-salmon-400);
+  --color-secondary-500: var(--color-salmon-500);
+  --color-secondary-600: var(--color-salmon-600);
+  --color-secondary-700: var(--color-salmon-700);
+  --color-secondary-800: var(--color-salmon-800);
+  --color-secondary-900: var(--color-salmon-900);
+  
+  --color-tertiary-50: var(--color-lavender-50);
+  --color-tertiary-100: var(--color-lavender-100);
+  --color-tertiary-200: var(--color-lavender-200);
+  --color-tertiary-300: var(--color-lavender-300);
+  --color-tertiary-400: var(--color-lavender-400);
+  --color-tertiary-500: var(--color-lavender-500);
+  --color-tertiary-600: var(--color-lavender-600);
+  --color-tertiary-700: var(--color-lavender-700);
+  --color-tertiary-800: var(--color-lavender-800);
+  --color-tertiary-900: var(--color-lavender-900);
+  
+  --color-accent-300: var(--color-peach-300);
+  --color-accent-400: var(--color-peach-400);
+  --color-accent-500: var(--color-peach-500);
+  
+  --color-danger: var(--color-error);
+  
+  /* Background and surface colors */
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --surface: var(--color-surface);
+  --border: var(--color-border);
+}
+
+/* ==========================================================================
+   DARK MODE SUPPORT
+   ========================================================================== */
+
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0f172a;
-    --surface: #1e293b;
-    --foreground: #f1f5f9;
+    /* Dark mode color overrides */
+    --color-background: var(--color-neutral-900);
+    --color-surface: var(--color-neutral-800);
+    --color-border: var(--color-neutral-700);
+    --color-foreground: var(--color-neutral-100);
+    --color-text-primary: var(--color-neutral-50);
+    --color-text-secondary: var(--color-neutral-300);
+    --color-text-muted: var(--color-neutral-500);
+    
+    /* Adjust shadows for dark mode */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --shadow-dreamy: 0 8px 32px -8px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(167, 243, 208, 0.1);
+    
+    /* Legacy aliases for backward compatibility */
+    --background: var(--color-background);
+    --surface: var(--color-surface);
+    --foreground: var(--color-foreground);
   }
 }
 
@@ -420,7 +434,11 @@ select {
   backdrop-filter: blur(4px);
 }
 
-/* Animation for micro-interactions */
+/* ==========================================================================
+   ANIMATIONS & KEYFRAMES USING DESIGN TOKENS
+   ========================================================================== */
+
+/* Pulse animation for loading states */
 @keyframes pulse-soft {
   0%, 100% {
     opacity: 1;
@@ -431,8 +449,126 @@ select {
 }
 
 .animate-pulse-soft {
-  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulse-soft var(--duration-1000) var(--ease-in-out) infinite;
 }
+
+/* Slide animations for modals and drawers */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up var(--duration-300) var(--ease-out) forwards;
+}
+
+.animate-slide-down {
+  animation: slide-down var(--duration-300) var(--ease-out) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in var(--duration-200) var(--ease-out) forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in var(--duration-200) var(--ease-spring) forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200% 100%;
+  animation: shimmer var(--duration-1000) ease-in-out infinite;
+}
+
+/* Hover and focus animations */
+.hover-lift {
+  transition: transform var(--duration-200) var(--ease-out), box-shadow var(--duration-200) var(--ease-out);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-scale {
+  transition: transform var(--duration-200) var(--ease-out);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-soft,
+  .animate-slide-up,
+  .animate-slide-down,
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-shimmer,
+  .hover-lift,
+  .hover-scale {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   UTILITY CLASSES FOR DESIGN TOKENS
+   ========================================================================== */
 
 /* Focus styles for accessibility */
 .focus-ring {
