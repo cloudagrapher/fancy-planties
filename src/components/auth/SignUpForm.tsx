@@ -98,7 +98,7 @@ export default function SignUpForm() {
           required
           value={formData.name}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
+          className={`w-full px-4 py-3 border rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
             errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
           }`}
           placeholder="Enter your full name"
@@ -120,7 +120,7 @@ export default function SignUpForm() {
           required
           value={formData.email}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
+          className={`w-full px-4 py-3 border rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
             errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
           }`}
           placeholder="Enter your email"
@@ -142,7 +142,7 @@ export default function SignUpForm() {
           required
           value={formData.password}
           onChange={handleChange}
-          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
+          className={`w-full px-4 py-3 border rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${
             errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
           }`}
           placeholder="Create a strong password"

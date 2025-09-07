@@ -297,10 +297,10 @@ export default function PlantTaxonomySelector({
           disabled={disabled}
           autoFocus={autoFocus}
           className={`
-            w-full px-4 py-3 text-base text-gray-900 border rounded-lg
+            w-full px-4 py-3 text-base text-gray-900 placeholder-gray-500 border rounded-lg
             focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300
             disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
-            ${selectedPlant ? 'border-primary-300 bg-primary-50' : 'border-gray-300'}
+            ${selectedPlant ? 'border-primary-300 bg-primary-50' : 'border-gray-300 bg-white'}
             ${searchState.isLoading ? 'pr-10' : ''}
           `}
         />

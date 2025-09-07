@@ -5,6 +5,9 @@ export const rawPlantTaxonomyRowSchema = z.object({
   'Family': z.string().optional().default(''),
   'Genus': z.string().optional().default(''),
   'Species': z.string().optional().default(''),
+  'Cultivar': z.string().optional().default(''), // New cultivar field
+  'Common Name': z.string().optional().default(''), // Separated from cultivar
+  // Legacy support for combined field
   'Common Name/Variety': z.string().optional().default(''),
 });
 
@@ -12,6 +15,9 @@ export const rawFertilizerScheduleRowSchema = z.object({
   'Family': z.string().optional().default(''),
   'Genus': z.string().optional().default(''),
   'Species': z.string().optional().default(''),
+  'Cultivar': z.string().optional().default(''), // New cultivar field
+  'Common Name': z.string().optional().default(''), // Separated from cultivar
+  // Legacy support for combined field
   'Common Name/Variety': z.string().optional().default(''),
   'Location': z.string().optional().default(''),
   'Last Fertilized': z.string().optional().default(''),
@@ -21,9 +27,19 @@ export const rawFertilizerScheduleRowSchema = z.object({
 });
 
 export const rawPropagationRowSchema = z.object({
+  'Family': z.string().optional().default(''),
+  'Genus': z.string().optional().default(''),
+  'Species': z.string().optional().default(''),
+  'Cultivar': z.string().optional().default(''), // New cultivar field
+  'Common Name': z.string().optional().default(''), // Separated from cultivar
+  // Legacy support for combined field
   'Common Name/Variety': z.string().optional().default(''),
   'Location': z.string().optional().default(''),
   'Date Started': z.string().optional().default(''),
+  // New fields for external source detection
+  'Source': z.string().optional().default(''), // gift, trade, purchase, etc.
+  'Source Details': z.string().optional().default(''), // Additional details about source
+  'Parent Plant': z.string().optional().default(''), // For internal propagations
 });
 
 // Processed CSV data schemas (after validation and transformation)
@@ -31,6 +47,7 @@ export const processedPlantTaxonomySchema = z.object({
   family: z.string().min(1, 'Family is required'),
   genus: z.string().min(1, 'Genus is required'),
   species: z.string().min(1, 'Species is required'),
+  cultivar: z.string().optional().nullable(), // New cultivar field
   commonName: z.string().min(1, 'Common name is required'),
   rowIndex: z.number().int().min(0),
 });
@@ -39,6 +56,7 @@ export const processedPlantInstanceSchema = z.object({
   family: z.string().optional(),
   genus: z.string().optional(),
   species: z.string().optional(),
+  cultivar: z.string().optional().nullable(), // New cultivar field
   commonName: z.string().min(1, 'Common name is required'),
   nickname: z.string().min(1, 'Nickname is required'),
   location: z.string().min(1, 'Location is required'),
@@ -50,10 +68,18 @@ export const processedPlantInstanceSchema = z.object({
 });
 
 export const processedPropagationSchema = z.object({
+  family: z.string().optional(),
+  genus: z.string().optional(),
+  species: z.string().optional(),
+  cultivar: z.string().optional().nullable(), // New cultivar field
   commonName: z.string().min(1, 'Common name is required'),
   nickname: z.string().min(1, 'Nickname is required'),
   location: z.string().min(1, 'Location is required'),
   dateStarted: z.date(),
+  sourceType: z.enum(['internal', 'external']).default('external'), // Default to external for CSV imports
+  externalSource: z.enum(['gift', 'trade', 'purchase', 'other']).optional().nullable(),
+  externalSourceDetails: z.string().optional().nullable(),
+  parentPlantName: z.string().optional().nullable(), // For matching internal propagations
   rowIndex: z.number().int().min(0),
 });
 
@@ -98,6 +124,7 @@ export const plantMatchSchema = z.object({
     family: z.string(),
     genus: z.string(),
     species: z.string(),
+    cultivar: z.string().optional().nullable(), // New cultivar field
     commonName: z.string(),
   }),
 });

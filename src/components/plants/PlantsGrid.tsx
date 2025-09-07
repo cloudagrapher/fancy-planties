@@ -5,12 +5,19 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import PlantCard from './PlantCard';
 import PlantSearchFilter from './PlantSearchFilter';
 import PlantCardSkeleton from './PlantCardSkeleton';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { PullToRefreshIndicator } from '@/components/shared/PullToRefreshIndicator';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import type { 
   EnhancedPlantInstance, 
   PlantInstanceSearchResult,
-  PlantInstanceSortField 
+  PlantInstanceSortField,
+  AdvancedSearchResult 
 } from '@/lib/types/plant-instance-types';
-import type { PlantInstanceFilter } from '@/lib/validation/plant-schemas';
+import type { 
+  PlantInstanceFilter,
+  EnhancedPlantInstanceFilter 
+} from '@/lib/validation/plant-schemas';
 
 interface PlantsGridProps {
   userId: number;
@@ -19,6 +26,10 @@ interface PlantsGridProps {
   onBulkAction?: (plants: EnhancedPlantInstance[], action: string) => void;
   showSearch?: boolean;
   showFilters?: boolean;
+  showAdvancedSearch?: boolean;
+  showSearchResults?: boolean;
+  showPresets?: boolean;
+  showHistory?: boolean;
   initialFilters?: Partial<PlantInstanceFilter>;
   cardSize?: 'small' | 'medium' | 'large';
   className?: string;
@@ -31,6 +42,10 @@ export default function PlantsGrid({
   onBulkAction,
   showSearch = true,
   showFilters = true,
+  showAdvancedSearch = false,
+  showSearchResults = false,
+  showPresets = false,
+  showHistory = false,
   initialFilters = {},
   cardSize = 'medium',
   className = '',
@@ -48,7 +63,9 @@ export default function PlantsGrid({
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedPlants, setSelectedPlants] = useState<number[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
+  const [useSearchResults, setUseSearchResults] = useState(false);
+  const { triggerHaptic } = useHapticFeedback();
 
   // Fetch plants with infinite query
   const {
@@ -92,14 +109,27 @@ export default function PlantsGrid({
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Flatten all pages into a single array
+  // Flatten all pages into a single array or use search results
   const plants = useMemo(() => {
+    if (useSearchResults && searchResults) {
+      return searchResults.instances;
+    }
     return data?.pages.flatMap(page => page.instances) ?? [];
-  }, [data]);
+  }, [data, searchResults, useSearchResults]);
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
+    setSelectedPlants([]);
+    setIsSelectionMode(false);
+    setUseSearchResults(false);
+    setSearchResults(null);
+  }, []);
+
+  // Handle advanced search results
+  const handleSearchResults = useCallback((results: AdvancedSearchResult) => {
+    setSearchResults(results);
+    setUseSearchResults(true);
     setSelectedPlants([]);
     setIsSelectionMode(false);
   }, []);
@@ -126,6 +156,7 @@ export default function PlantsGrid({
   // Handle plant selection
   const handlePlantSelect = useCallback((plant: EnhancedPlantInstance) => {
     if (isSelectionMode) {
+      triggerHaptic('selection');
       setSelectedPlants(prev => {
         const isSelected = prev.includes(plant.id);
         if (isSelected) {
@@ -137,15 +168,24 @@ export default function PlantsGrid({
     } else if (onPlantSelect) {
       onPlantSelect(plant);
     }
-  }, [isSelectionMode, onPlantSelect]);
+  }, [isSelectionMode, onPlantSelect, triggerHaptic]);
 
-  // Handle long press for selection mode
-  const handleLongPress = useCallback((plant: EnhancedPlantInstance) => {
+  // Handle swipe actions on plant cards
+  const handleSwipeLeft = useCallback((plant: EnhancedPlantInstance) => {
+    // Quick care action on swipe left
+    if (onCareAction) {
+      onCareAction(plant, 'fertilize');
+    }
+  }, [onCareAction]);
+
+  const handleSwipeRight = useCallback((plant: EnhancedPlantInstance) => {
+    // Quick selection on swipe right
     if (!isSelectionMode) {
       setIsSelectionMode(true);
       setSelectedPlants([plant.id]);
+      triggerHaptic('medium');
     }
-  }, [isSelectionMode]);
+  }, [isSelectionMode, triggerHaptic]);
 
   // Handle care actions
   const handleCareAction = useCallback((plant: EnhancedPlantInstance, action: 'fertilize' | 'repot') => {
@@ -162,15 +202,20 @@ export default function PlantsGrid({
     }
   }, [onBulkAction, selectedPlants, plants]);
 
-  // Handle pull to refresh
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    try {
+  // Pull to refresh functionality
+  const {
+    elementRef: pullToRefreshRef,
+    isRefreshing,
+    isPulling,
+    progress,
+    getRefreshIndicatorStyle,
+  } = usePullToRefresh({
+    onRefresh: async () => {
       await refetch();
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [refetch]);
+    },
+    threshold: 80,
+    enabled: true,
+  });
 
   // Handle infinite scroll
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -236,14 +281,20 @@ export default function PlantsGrid({
             onSearch={handleSearch}
             onFilterChange={handleFilterChange}
             onSortChange={handleSortChange}
+            onSearchResults={handleSearchResults}
+            onPlantSelect={onPlantSelect}
             searchQuery={searchQuery}
             filters={filters}
             sortBy={sortBy}
             sortOrder={sortOrder}
             showSearch={showSearch}
             showFilters={showFilters}
+            showAdvancedSearch={showAdvancedSearch}
+            showSearchResults={showSearchResults}
+            showPresets={showPresets}
+            showHistory={showHistory}
             isLoading={isLoading}
-            onRefresh={handleRefresh}
+            onRefresh={() => refetch()}
             isRefreshing={isRefreshing}
           />
         </div>
@@ -295,9 +346,17 @@ export default function PlantsGrid({
 
       {/* Plants Grid */}
       <div 
-        className="flex-1 overflow-auto"
+        ref={pullToRefreshRef}
+        className="flex-1 overflow-auto pull-to-refresh"
         onScroll={handleScroll}
       >
+        {/* Pull to Refresh Indicator */}
+        <PullToRefreshIndicator
+          isVisible={isPulling || isRefreshing}
+          isRefreshing={isRefreshing}
+          progress={progress}
+          style={getRefreshIndicatorStyle()}
+        />
         {isLoading ? (
           <PlantCardSkeleton size={cardSize} count={12} />
         ) : plants.length === 0 ? (
@@ -321,6 +380,8 @@ export default function PlantsGrid({
                 size={cardSize}
                 onSelect={handlePlantSelect}
                 onCareAction={handleCareAction}
+                onSwipeLeft={handleSwipeLeft}
+                onSwipeRight={handleSwipeRight}
                 isSelected={selectedPlants.includes(plant.id)}
                 isSelectionMode={isSelectionMode}
                 showCareStatus={true}

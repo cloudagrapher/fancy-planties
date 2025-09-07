@@ -14,17 +14,17 @@ export class PlantMatcher {
    * Find matching plants for CSV row data
    */
   async findMatches(rowData: Record<string, string>): Promise<PlantMatchResult> {
-    const { family, genus, species, commonName } = this.extractPlantFields(rowData);
+    const { family, genus, species, cultivar, commonName } = this.extractPlantFields(rowData);
     
     // Get all potential matches from database
-    const potentialMatches = await this.getPotentialMatches(family, genus, species, commonName);
+    const potentialMatches = await this.getPotentialMatches(family, genus, species, cultivar, commonName);
     
     // Calculate match scores
     const matches: PlantMatch[] = [];
     
     for (const plant of potentialMatches) {
       const match = this.calculateMatch(
-        { family, genus, species, commonName },
+        { family, genus, species, cultivar, commonName },
         plant
       );
       
@@ -57,7 +57,8 @@ export class PlantMatcher {
       family: this.cleanField(rowData['Family'] || rowData['family'] || ''),
       genus: this.cleanField(rowData['Genus'] || rowData['genus'] || ''),
       species: this.cleanField(rowData['Species'] || rowData['species'] || ''),
-      commonName: this.cleanField(rowData['Common Name/Variety'] || rowData['commonName'] || ''),
+      cultivar: this.cleanField(rowData['Cultivar'] || rowData['cultivar'] || ''),
+      commonName: this.cleanField(rowData['Common Name'] || rowData['Common Name/Variety'] || rowData['commonName'] || ''),
     };
   }
 
@@ -68,12 +69,24 @@ export class PlantMatcher {
     family: string,
     genus: string,
     species: string,
+    cultivar: string,
     commonName: string
   ) {
     const conditions = [];
 
-    // Exact matches first
+    // Exact matches first (including cultivar if provided)
     if (family && genus && species) {
+      if (cultivar) {
+        conditions.push(
+          sql`${plants.family} ILIKE ${`%${family}%`} AND ${plants.genus} ILIKE ${`%${genus}%`} AND ${plants.species} ILIKE ${`%${species}%`} AND ${plants.cultivar} ILIKE ${`%${cultivar}%`}`
+        );
+      } else {
+        conditions.push(
+          sql`${plants.family} ILIKE ${`%${family}%`} AND ${plants.genus} ILIKE ${`%${genus}%`} AND ${plants.species} ILIKE ${`%${species}%`} AND ${plants.cultivar} IS NULL`
+        );
+      }
+      
+      // Also add condition without cultivar constraint for broader matching
       conditions.push(
         sql`${plants.family} ILIKE ${`%${family}%`} AND ${plants.genus} ILIKE ${`%${genus}%`} AND ${plants.species} ILIKE ${`%${species}%`}`
       );
@@ -89,6 +102,11 @@ export class PlantMatcher {
     // Common name match
     if (commonName) {
       conditions.push(ilike(plants.commonName, `%${commonName}%`));
+    }
+
+    // Cultivar match
+    if (cultivar) {
+      conditions.push(ilike(plants.cultivar, `%${cultivar}%`));
     }
 
     // Family and genus match
@@ -113,7 +131,7 @@ export class PlantMatcher {
    * Calculate match confidence between CSV data and database plant
    */
   private calculateMatch(
-    csvData: { family: string; genus: string; species: string; commonName: string },
+    csvData: { family: string; genus: string; species: string; cultivar: string; commonName: string },
     dbPlant: any
   ): PlantMatch {
     const matchedFields: string[] = [];
@@ -150,6 +168,23 @@ export class PlantMatcher {
       }
     }
 
+    // Cultivar match (weight: 1.5)
+    if (csvData.cultivar || dbPlant.cultivar) {
+      maxScore += 1.5;
+      if (csvData.cultivar && dbPlant.cultivar) {
+        const similarity = this.calculateStringSimilarity(csvData.cultivar, dbPlant.cultivar);
+        if (similarity > 0.8) {
+          totalScore += similarity * 1.5;
+          matchedFields.push('cultivar');
+        }
+      } else if (!csvData.cultivar && !dbPlant.cultivar) {
+        // Both null/empty - perfect match
+        totalScore += 1.5;
+        matchedFields.push('cultivar');
+      }
+      // If one has cultivar and other doesn't, no points but still valid match
+    }
+
     // Common name match (weight: 1.5)
     if (csvData.commonName && dbPlant.commonName) {
       maxScore += 1.5;
@@ -171,6 +206,7 @@ export class PlantMatcher {
         family: dbPlant.family,
         genus: dbPlant.genus,
         species: dbPlant.species,
+        cultivar: dbPlant.cultivar,
         commonName: dbPlant.commonName,
       },
     };
@@ -237,7 +273,7 @@ export class PlantMatcher {
     csvData: Record<string, string>,
     userId: number
   ): Promise<{ id: number } | null> {
-    const { family, genus, species, commonName } = this.extractPlantFields(csvData);
+    const { family, genus, species, cultivar, commonName } = this.extractPlantFields(csvData);
 
     // Validate required fields
     if (!family || !genus || !species || !commonName) {
@@ -251,6 +287,7 @@ export class PlantMatcher {
           family,
           genus,
           species,
+          cultivar: cultivar || null,
           commonName,
           createdBy: userId,
           isVerified: false,
@@ -266,7 +303,7 @@ export class PlantMatcher {
           .select({ id: plants.id })
           .from(plants)
           .where(
-            sql`${plants.family} = ${family} AND ${plants.genus} = ${genus} AND ${plants.species} = ${species}`
+            sql`${plants.family} = ${family} AND ${plants.genus} = ${genus} AND ${plants.species} = ${species} AND ${plants.cultivar} ${cultivar ? `= ${cultivar}` : 'IS NULL'}`
           )
           .limit(1);
 

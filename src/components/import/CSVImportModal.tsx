@@ -313,3 +313,5 @@ export function CSVImportModal({
     </div>
   );
 }
+
+export default CSVImportModal;

@@ -90,6 +90,7 @@ export async function getPlantsWithStats(
       family: plants.family,
       genus: plants.genus,
       species: plants.species,
+      cultivar: plants.cultivar,
       commonName: plants.commonName,
       careInstructions: plants.careInstructions,
       defaultImage: plants.defaultImage,
@@ -225,7 +226,7 @@ export async function searchPlants(
           WHEN LOWER(${plants.family}) LIKE ${searchTerm} THEN 40
           ELSE 30
         END
-      `), plants.isVerified.desc(), plants.commonName.asc())
+      `), desc(plants.isVerified), asc(plants.commonName))
     .limit(limit)
     .offset(offset);
 

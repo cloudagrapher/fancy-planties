@@ -2,6 +2,31 @@ import type { PlantInstance, Plant } from '@/lib/db/schema';
 import type { PlantInstanceData, PlantInstanceFilter } from '@/lib/validation/plant-schemas';
 import type { CareStatus, CareUrgency } from './care-types';
 
+// Advanced search result interface
+export interface AdvancedSearchResult extends PlantInstanceSearchResult {
+  // Search metadata
+  searchId: string;
+  searchType: 'basic' | 'advanced' | 'fuzzy' | 'preset';
+  suggestions: string[];
+  relatedSearches: string[];
+  
+  // Performance metrics
+  databaseTime: number;
+  processingTime: number;
+  
+  // Result enhancements
+  highlightedResults?: EnhancedPlantInstance[];
+  facets?: SearchFacets;
+}
+
+// Search facets for filtering
+export interface SearchFacets {
+  locations: Array<{ value: string; count: number }>;
+  plantTypes: Array<{ value: string; count: number; plantId: number }>;
+  careStatus: Array<{ value: string; count: number }>;
+  dateRanges: Array<{ value: string; count: number; range: [Date, Date] }>;
+}
+
 // Enhanced PlantInstance interface with computed properties
 export interface EnhancedPlantInstance extends PlantInstance {
   // Joined plant taxonomy data

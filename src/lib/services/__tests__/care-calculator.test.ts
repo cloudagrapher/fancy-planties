@@ -1,373 +1,370 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
 import { CareCalculator } from '../care-calculator';
-import type { CareHistory, PlantInstance } from '@/lib/db/schema';
+import type { CareSchedule, CareFrequency } from '@/lib/types/care-types';
 
 describe('CareCalculator', () => {
-  let mockPlantInstance: PlantInstance;
-  let mockCareHistory: CareHistory[];
+  let calculator: CareCalculator;
 
   beforeEach(() => {
-    mockPlantInstance = {
-      id: 1,
-      userId: 1,
-      plantId: 1,
-      nickname: 'Test Plant',
-      location: 'Living Room',
-      lastFertilized: new Date('2024-01-01'),
-      fertilizerSchedule: 'monthly',
-      fertilizerDue: new Date('2024-02-01'),
-      lastRepot: new Date('2023-06-01'),
-      notes: null,
-      images: [],
-      isActive: true,
-      createdAt: new Date('2023-01-01'),
-      updatedAt: new Date('2024-01-01'),
-    };
+    calculator = new CareCalculator();
+  });
 
-    mockCareHistory = [
-      {
-        id: 1,
-        userId: 1,
-        plantInstanceId: 1,
+  describe('calculateNextDueDate', () => {
+    it('calculates next due date for weekly schedule', () => {
+      const lastCareDate = new Date('2024-01-01');
+      const schedule: CareSchedule = {
+        frequency: 'weekly',
+        interval: 1,
         careType: 'fertilizer',
-        careDate: new Date('2024-01-01'),
-        notes: null,
-        fertilizerType: 'Liquid fertilizer',
-        potSize: null,
-        soilType: null,
-        images: [],
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-01'),
-      },
-      {
-        id: 2,
-        userId: 1,
-        plantInstanceId: 1,
-        careType: 'water',
-        careDate: new Date('2024-01-05'),
-        notes: null,
-        fertilizerType: null,
-        potSize: null,
-        soilType: null,
-        images: [],
-        createdAt: new Date('2024-01-05'),
-        updatedAt: new Date('2024-01-05'),
-      },
-    ];
+      };
+
+      const nextDue = calculator.calculateNextDueDate(lastCareDate, schedule);
+      const expected = new Date('2024-01-08');
+
+      expect(nextDue).toEqual(expected);
+    });
+
+    it('calculates next due date for bi-weekly schedule', () => {
+      const lastCareDate = new Date('2024-01-01');
+      const schedule: CareSchedule = {
+        frequency: 'weekly',
+        interval: 2,
+        careType: 'fertilizer',
+      };
+
+      const nextDue = calculator.calculateNextDueDate(lastCareDate, schedule);
+      const expected = new Date('2024-01-15');
+
+      expect(nextDue).toEqual(expected);
+    });
+
+    it('calculates next due date for monthly schedule', () => {
+      const lastCareDate = new Date('2024-01-01');
+      const schedule: CareSchedule = {
+        frequency: 'monthly',
+        interval: 1,
+        careType: 'fertilizer',
+      };
+
+      const nextDue = calculator.calculateNextDueDate(lastCareDate, schedule);
+      const expected = new Date('2024-02-01');
+
+      expect(nextDue).toEqual(expected);
+    });
+
+    it('handles end of month dates correctly', () => {
+      const lastCareDate = new Date('2024-01-31');
+      const schedule: CareSchedule = {
+        frequency: 'monthly',
+        interval: 1,
+        careType: 'fertilizer',
+      };
+
+      const nextDue = calculator.calculateNextDueDate(lastCareDate, schedule);
+      // Should handle February having fewer days
+      expect(nextDue.getMonth()).toBe(1); // February (0-indexed)
+    });
+
+    it('calculates next due date for seasonal schedule', () => {
+      const lastCareDate = new Date('2024-01-01');
+      const schedule: CareSchedule = {
+        frequency: 'seasonal',
+        interval: 1,
+        careType: 'repot',
+      };
+
+      const nextDue = calculator.calculateNextDueDate(lastCareDate, schedule);
+      const expected = new Date('2024-04-01'); // 3 months later
+
+      expect(nextDue).toEqual(expected);
+    });
+
+    it('handles custom frequency', () => {
+      const lastCareDate = new Date('2024-01-01');
+      const schedule: CareSchedule = {
+        frequency: 'custom',
+        interval: 10,
+        careType: 'fertilizer',
+        customDays: 10,
+      };
+
+      const nextDue = calculator.calculateNextDueDate(lastCareDate, schedule);
+      const expected = new Date('2024-01-11');
+
+      expect(nextDue).toEqual(expected);
+    });
   });
 
-  describe('calculateNextFertilizerDue', () => {
-    it('should calculate next due date for monthly schedule', () => {
-      const lastFertilized = new Date('2024-01-01');
-      const schedule = 'monthly';
-      
-      const nextDue = CareCalculator.calculateNextFertilizerDue(lastFertilized, schedule);
-      
-      expect(nextDue).toEqual(new Date('2024-01-31'));
+  describe('parseScheduleString', () => {
+    it('parses "2 weeks" correctly', () => {
+      const schedule = calculator.parseScheduleString('2 weeks');
+
+      expect(schedule).toEqual({
+        frequency: 'weekly',
+        interval: 2,
+        careType: 'fertilizer',
+      });
     });
 
-    it('should calculate next due date for weekly schedule', () => {
-      const lastFertilized = new Date('2024-01-01');
-      const schedule = 'weekly';
-      
-      const nextDue = CareCalculator.calculateNextFertilizerDue(lastFertilized, schedule);
-      
-      expect(nextDue).toEqual(new Date('2024-01-08'));
+    it('parses "1 month" correctly', () => {
+      const schedule = calculator.parseScheduleString('1 month');
+
+      expect(schedule).toEqual({
+        frequency: 'monthly',
+        interval: 1,
+        careType: 'fertilizer',
+      });
     });
 
-    it('should calculate next due date for custom schedule', () => {
-      const lastFertilized = new Date('2024-01-01');
-      const schedule = '14'; // 14 days
-      
-      const nextDue = CareCalculator.calculateNextFertilizerDue(lastFertilized, schedule);
-      
-      expect(nextDue).toEqual(new Date('2024-01-15'));
+    it('parses "every 10 days" correctly', () => {
+      const schedule = calculator.parseScheduleString('every 10 days');
+
+      expect(schedule).toEqual({
+        frequency: 'custom',
+        interval: 1,
+        careType: 'fertilizer',
+        customDays: 10,
+      });
     });
 
-    it('should return null if no last fertilized date', () => {
-      const nextDue = CareCalculator.calculateNextFertilizerDue(null, 'monthly');
-      
-      expect(nextDue).toBeNull();
-    });
-  });
+    it('handles invalid schedule strings', () => {
+      const schedule = calculator.parseScheduleString('invalid schedule');
 
-  describe('calculateCareStatus', () => {
-    it('should return overdue for past due date', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-05');
-      
-      const status = CareCalculator.calculateCareStatus(fertilizerDue, currentDate);
-      
-      expect(status).toBe('overdue');
+      expect(schedule).toEqual({
+        frequency: 'monthly',
+        interval: 1,
+        careType: 'fertilizer',
+      });
     });
 
-    it('should return due_today for today', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-01');
-      
-      const status = CareCalculator.calculateCareStatus(fertilizerDue, currentDate);
-      
-      expect(status).toBe('due_today');
-    });
+    it('parses seasonal schedules', () => {
+      const schedule = calculator.parseScheduleString('seasonal');
 
-    it('should return due_soon for within a week', () => {
-      const fertilizerDue = new Date('2024-01-05');
-      const currentDate = new Date('2024-01-01');
-      
-      const status = CareCalculator.calculateCareStatus(fertilizerDue, currentDate);
-      
-      expect(status).toBe('due_soon');
-    });
-
-    it('should return healthy for future dates beyond a week', () => {
-      const fertilizerDue = new Date('2024-01-15');
-      const currentDate = new Date('2024-01-01');
-      
-      const status = CareCalculator.calculateCareStatus(fertilizerDue, currentDate);
-      
-      expect(status).toBe('healthy');
-    });
-
-    it('should return unknown for null due date', () => {
-      const status = CareCalculator.calculateCareStatus(null);
-      
-      expect(status).toBe('unknown');
+      expect(schedule).toEqual({
+        frequency: 'seasonal',
+        interval: 1,
+        careType: 'fertilizer',
+      });
     });
   });
 
   describe('calculateCareUrgency', () => {
-    it('should return critical for severely overdue', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-10'); // 9 days overdue
-      
-      const urgency = CareCalculator.calculateCareUrgency(fertilizerDue, currentDate);
-      
-      expect(urgency).toBe('critical');
+    it('returns "none" for future due dates', () => {
+      const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+      const urgency = calculator.calculateCareUrgency(dueDate);
+
+      expect(urgency).toBe('none');
     });
 
-    it('should return high for overdue within a week', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-05'); // 4 days overdue
-      
-      const urgency = CareCalculator.calculateCareUrgency(fertilizerDue, currentDate);
-      
-      expect(urgency).toBe('high');
-    });
+    it('returns "low" for due today', () => {
+      const dueDate = new Date();
+      const urgency = calculator.calculateCareUrgency(dueDate);
 
-    it('should return medium for due today or tomorrow', () => {
-      const fertilizerDue = new Date('2024-01-02');
-      const currentDate = new Date('2024-01-01'); // due tomorrow
-      
-      const urgency = CareCalculator.calculateCareUrgency(fertilizerDue, currentDate);
-      
-      expect(urgency).toBe('medium');
-    });
-
-    it('should return low for due within a week', () => {
-      const fertilizerDue = new Date('2024-01-05');
-      const currentDate = new Date('2024-01-01'); // due in 4 days
-      
-      const urgency = CareCalculator.calculateCareUrgency(fertilizerDue, currentDate);
-      
       expect(urgency).toBe('low');
     });
 
-    it('should return none for future dates beyond a week', () => {
-      const fertilizerDue = new Date('2024-01-15');
-      const currentDate = new Date('2024-01-01');
-      
-      const urgency = CareCalculator.calculateCareUrgency(fertilizerDue, currentDate);
-      
+    it('returns "medium" for 1-3 days overdue', () => {
+      const dueDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
+      const urgency = calculator.calculateCareUrgency(dueDate);
+
+      expect(urgency).toBe('medium');
+    });
+
+    it('returns "high" for 4-7 days overdue', () => {
+      const dueDate = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000); // 5 days ago
+      const urgency = calculator.calculateCareUrgency(dueDate);
+
+      expect(urgency).toBe('high');
+    });
+
+    it('returns "critical" for more than 7 days overdue', () => {
+      const dueDate = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000); // 10 days ago
+      const urgency = calculator.calculateCareUrgency(dueDate);
+
+      expect(urgency).toBe('critical');
+    });
+
+    it('handles null due dates', () => {
+      const urgency = calculator.calculateCareUrgency(null);
+
       expect(urgency).toBe('none');
     });
   });
 
-  describe('calculateDaysUntilFertilizerDue', () => {
-    it('should return positive days for future due date', () => {
-      const fertilizerDue = new Date('2024-01-05');
-      const currentDate = new Date('2024-01-01');
-      
-      const days = CareCalculator.calculateDaysUntilFertilizerDue(fertilizerDue, currentDate);
-      
-      expect(days).toBe(4);
+  describe('getDaysUntilDue', () => {
+    it('calculates positive days for future dates', () => {
+      const dueDate = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days from now
+      const days = calculator.getDaysUntilDue(dueDate);
+
+      expect(days).toBe(5);
     });
 
-    it('should return negative days for overdue', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-05');
-      
-      const days = CareCalculator.calculateDaysUntilFertilizerDue(fertilizerDue, currentDate);
-      
-      expect(days).toBe(-4);
+    it('calculates negative days for past dates', () => {
+      const dueDate = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000); // 3 days ago
+      const days = calculator.getDaysUntilDue(dueDate);
+
+      expect(days).toBe(-3);
     });
 
-    it('should return 0 for due today', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-01');
-      
-      const days = CareCalculator.calculateDaysUntilFertilizerDue(fertilizerDue, currentDate);
-      
+    it('returns 0 for today', () => {
+      const dueDate = new Date();
+      const days = calculator.getDaysUntilDue(dueDate);
+
       expect(days).toBe(0);
     });
 
-    it('should return null for no due date', () => {
-      const days = CareCalculator.calculateDaysUntilFertilizerDue(null);
-      
+    it('handles null dates', () => {
+      const days = calculator.getDaysUntilDue(null);
+
       expect(days).toBeNull();
     });
   });
 
-  describe('calculatePlantCareStatistics', () => {
-    it('should calculate comprehensive care statistics', () => {
-      const stats = CareCalculator.calculatePlantCareStatistics(mockPlantInstance, mockCareHistory);
-      
-      expect(stats.plantInstanceId).toBe(1);
-      expect(stats.totalCareEvents).toBe(2);
-      expect(stats.careTypeBreakdown.fertilizer).toBe(1);
-      expect(stats.careTypeBreakdown.water).toBe(1);
-      expect(stats.lastCareDate).toEqual(new Date('2024-01-05'));
+  describe('getCareStatus', () => {
+    it('returns "excellent" for consistent care', () => {
+      const careHistory = [
+        { careDate: new Date('2024-01-01'), careType: 'fertilizer' },
+        { careDate: new Date('2024-01-15'), careType: 'fertilizer' },
+        { careDate: new Date('2024-02-01'), careType: 'fertilizer' },
+      ];
+
+      const status = calculator.getCareStatus(careHistory, {
+        frequency: 'weekly',
+        interval: 2,
+        careType: 'fertilizer',
+      });
+
+      expect(status).toBe('excellent');
     });
 
-    it('should handle empty care history', () => {
-      const stats = CareCalculator.calculatePlantCareStatistics(mockPlantInstance, []);
-      
-      expect(stats.totalCareEvents).toBe(0);
-      expect(stats.careConsistencyScore).toBe(0);
-      expect(stats.lastCareDate).toBeNull();
-    });
-  });
+    it('returns "good" for mostly consistent care', () => {
+      const careHistory = [
+        { careDate: new Date('2024-01-01'), careType: 'fertilizer' },
+        { careDate: new Date('2024-01-20'), careType: 'fertilizer' }, // Slightly late
+        { careDate: new Date('2024-02-05'), careType: 'fertilizer' },
+      ];
 
-  describe('calculateCareConsistencyScore', () => {
-    it('should return 0 for no fertilizer events', () => {
-      const score = CareCalculator.calculateCareConsistencyScore(
-        [],
-        'monthly',
-        new Date('2023-01-01')
-      );
-      
-      expect(score).toBe(0);
+      const status = calculator.getCareStatus(careHistory, {
+        frequency: 'weekly',
+        interval: 2,
+        careType: 'fertilizer',
+      });
+
+      expect(status).toBe('good');
     });
 
-    it('should return 100 for new plants with no expected care yet', () => {
-      const recentDate = new Date();
-      recentDate.setDate(recentDate.getDate() - 5); // 5 days ago
-      
-      const score = CareCalculator.calculateCareConsistencyScore(
-        mockCareHistory.filter(c => c.careType === 'fertilizer'),
-        'monthly',
-        recentDate
-      );
-      
-      expect(score).toBe(100);
-    });
-  });
+    it('returns "needs_attention" for inconsistent care', () => {
+      const careHistory = [
+        { careDate: new Date('2024-01-01'), careType: 'fertilizer' },
+        { careDate: new Date('2024-02-15'), careType: 'fertilizer' }, // Very late
+      ];
 
-  describe('needsImmediateAttention', () => {
-    it('should return true for critical urgency', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-10'); // 9 days overdue
-      
-      const needsAttention = CareCalculator.needsImmediateAttention(fertilizerDue, currentDate);
-      
-      expect(needsAttention).toBe(true);
+      const status = calculator.getCareStatus(careHistory, {
+        frequency: 'weekly',
+        interval: 2,
+        careType: 'fertilizer',
+      });
+
+      expect(status).toBe('needs_attention');
     });
 
-    it('should return true for high urgency', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-05'); // 4 days overdue
-      
-      const needsAttention = CareCalculator.needsImmediateAttention(fertilizerDue, currentDate);
-      
-      expect(needsAttention).toBe(true);
+    it('returns "poor" for very inconsistent care', () => {
+      const careHistory = [
+        { careDate: new Date('2023-12-01'), careType: 'fertilizer' }, // Very old
+      ];
+
+      const status = calculator.getCareStatus(careHistory, {
+        frequency: 'weekly',
+        interval: 1,
+        careType: 'fertilizer',
+      });
+
+      expect(status).toBe('poor');
     });
 
-    it('should return false for medium urgency', () => {
-      const fertilizerDue = new Date('2024-01-02');
-      const currentDate = new Date('2024-01-01'); // due tomorrow
-      
-      const needsAttention = CareCalculator.needsImmediateAttention(fertilizerDue, currentDate);
-      
-      expect(needsAttention).toBe(false);
-    });
-  });
+    it('handles empty care history', () => {
+      const status = calculator.getCareStatus([], {
+        frequency: 'weekly',
+        interval: 1,
+        careType: 'fertilizer',
+      });
 
-  describe('getRecommendedCareActions', () => {
-    it('should recommend fertilizer for overdue plants', () => {
-      const overdueInstance = {
-        ...mockPlantInstance,
-        fertilizerDue: new Date('2024-01-01')
-      };
-      const currentDate = new Date('2024-01-05');
-      
-      const recommendations = CareCalculator.getRecommendedCareActions(
-        overdueInstance,
-        mockCareHistory,
-        currentDate
-      );
-      
-      expect(recommendations).toContain('Fertilizer is overdue - apply fertilizer as soon as possible');
-    });
-
-    it('should recommend repotting for old plants', () => {
-      const oldInstance = {
-        ...mockPlantInstance,
-        lastRepot: new Date('2021-01-01') // 3+ years ago
-      };
-      const currentDate = new Date('2024-01-01');
-      
-      const recommendations = CareCalculator.getRecommendedCareActions(
-        oldInstance,
-        mockCareHistory,
-        currentDate
-      );
-      
-      expect(recommendations.some(r => r.includes('repotting'))).toBe(true);
-    });
-
-    it('should recommend inspection for plants without recent inspection', () => {
-      const recommendations = CareCalculator.getRecommendedCareActions(
-        mockPlantInstance,
-        mockCareHistory.filter(c => c.careType !== 'inspect'), // No inspection history
-        new Date('2024-01-01')
-      );
-      
-      expect(recommendations.some(r => r.includes('inspection'))).toBe(true);
+      expect(status).toBe('needs_attention');
     });
   });
 
-  describe('isOverdueWithGracePeriod', () => {
-    it('should return false within grace period', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-03'); // 2 days after due
-      
-      const isOverdue = CareCalculator.isOverdueWithGracePeriod(fertilizerDue, 3, currentDate);
-      
-      expect(isOverdue).toBe(false);
+  describe('calculateCareStreak', () => {
+    it('calculates streak for consistent care', () => {
+      const careHistory = [
+        { careDate: new Date('2024-01-01'), careType: 'fertilizer' },
+        { careDate: new Date('2024-01-08'), careType: 'fertilizer' },
+        { careDate: new Date('2024-01-15'), careType: 'fertilizer' },
+        { careDate: new Date('2024-01-22'), careType: 'fertilizer' },
+      ];
+
+      const streak = calculator.calculateCareStreak(careHistory, {
+        frequency: 'weekly',
+        interval: 1,
+        careType: 'fertilizer',
+      });
+
+      expect(streak).toBe(4);
     });
 
-    it('should return true after grace period', () => {
-      const fertilizerDue = new Date('2024-01-01');
-      const currentDate = new Date('2024-01-05'); // 4 days after due, grace is 3
-      
-      const isOverdue = CareCalculator.isOverdueWithGracePeriod(fertilizerDue, 3, currentDate);
-      
-      expect(isOverdue).toBe(true);
+    it('breaks streak for missed care', () => {
+      const careHistory = [
+        { careDate: new Date('2024-01-01'), careType: 'fertilizer' },
+        { careDate: new Date('2024-01-08'), careType: 'fertilizer' },
+        // Missing 2024-01-15
+        { careDate: new Date('2024-01-22'), careType: 'fertilizer' },
+      ];
+
+      const streak = calculator.calculateCareStreak(careHistory, {
+        frequency: 'weekly',
+        interval: 1,
+        careType: 'fertilizer',
+      });
+
+      expect(streak).toBe(1); // Only the most recent care
+    });
+
+    it('handles empty care history', () => {
+      const streak = calculator.calculateCareStreak([], {
+        frequency: 'weekly',
+        interval: 1,
+        careType: 'fertilizer',
+      });
+
+      expect(streak).toBe(0);
     });
   });
 
-  describe('getNextReminderDate', () => {
-    it('should calculate reminder date before due date', () => {
-      const fertilizerDue = new Date('2024-01-05');
-      
-      const reminderDate = CareCalculator.getNextReminderDate(fertilizerDue, 2);
-      
-      expect(reminderDate).toEqual(new Date('2024-01-03'));
+  describe('getOptimalCareSchedule', () => {
+    it('suggests optimal schedule based on plant type', () => {
+      const schedule = calculator.getOptimalCareSchedule('succulent', 'fertilizer');
+
+      expect(schedule.frequency).toBe('monthly');
+      expect(schedule.interval).toBeGreaterThan(1);
     });
 
-    it('should return null for no due date', () => {
-      const reminderDate = CareCalculator.getNextReminderDate(null, 1);
-      
-      expect(reminderDate).toBeNull();
+    it('suggests different schedule for tropical plants', () => {
+      const schedule = calculator.getOptimalCareSchedule('tropical', 'fertilizer');
+
+      expect(schedule.frequency).toBe('weekly');
+      expect(schedule.interval).toBeLessThanOrEqual(2);
+    });
+
+    it('handles unknown plant types', () => {
+      const schedule = calculator.getOptimalCareSchedule('unknown', 'fertilizer');
+
+      expect(schedule).toBeDefined();
+      expect(schedule.frequency).toBeTruthy();
+    });
+
+    it('suggests different schedules for different care types', () => {
+      const fertilizerSchedule = calculator.getOptimalCareSchedule('tropical', 'fertilizer');
+      const repotSchedule = calculator.getOptimalCareSchedule('tropical', 'repot');
+
+      expect(fertilizerSchedule.frequency).not.toBe(repotSchedule.frequency);
     });
   });
 });

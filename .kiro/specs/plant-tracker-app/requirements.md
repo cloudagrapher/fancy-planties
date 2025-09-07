@@ -24,11 +24,12 @@ The Plant Tracker App is a comprehensive plant management system designed to hel
 
 #### Acceptance Criteria
 
-1. WHEN a user adds a plant species THEN the system SHALL store taxonomy information including family, genus, species, and common name
+1. WHEN a user adds a plant species THEN the system SHALL store taxonomy information including family, genus, species, and cultivar/common name as separate fields
 2. WHEN a user creates a plant instance THEN the system SHALL link it to a plant species and allow custom nickname and location
 3. WHEN a user views their plant collection in the Plants tab THEN the system SHALL display all active plant instances in a mobile-optimized grid layout
-4. WHEN a user searches for plants THEN the system SHALL filter results by species name, nickname, location, or care status
+4. WHEN a user searches for plants THEN the system SHALL filter results by any taxonomy field (family, genus, species, cultivar), nickname, location, or care status
 5. WHEN a user marks a plant as inactive THEN the system SHALL hide it from the main view but retain historical data
+6. WHEN a user enters plant taxonomy THEN the system SHALL provide separate input fields for family, genus, species, and cultivar/common name for precise botanical classification
 
 ### Requirement 3: Care Schedule and History Tracking
 
@@ -44,18 +45,22 @@ The Plant Tracker App is a comprehensive plant management system designed to hel
 6. WHEN a user accesses the Care tab THEN the system SHALL display a dashboard with overdue tasks, upcoming care items, and quick action buttons
 7. WHEN a user views the care dashboard THEN the system SHALL group tasks by urgency (overdue, due today, due this week) with visual indicators
 
-### Requirement 4: Propagation Management
+### Requirement 4: Enhanced Propagation Management
 
-**User Story:** As a plant propagator, I want to track propagation attempts and link them to parent plants, so that I can monitor success rates and maintain plant lineage records.
+**User Story:** As a plant propagator, I want to track propagation attempts from both my existing plants and external sources (gifts, trades, purchases), so that I can monitor success rates and maintain flexible plant lineage records.
 
 #### Acceptance Criteria
 
-1. WHEN a user starts a propagation THEN the system SHALL create a propagation record linked to the parent plant instance
-2. WHEN a user updates propagation status THEN the system SHALL track progress through stages (rooting, planted, established)
-3. WHEN a propagation is successful THEN the system SHALL allow conversion to a full plant instance
-4. WHEN a user views a plant instance THEN the system SHALL display any propagations created from that plant
-5. WHEN a user views propagation history THEN the system SHALL show success rates and timing statistics
-6. WHEN a user accesses the Propagation tab THEN the system SHALL display active propagations organized by status with progress indicators
+1. WHEN a user starts a propagation from an existing plant THEN the system SHALL create a propagation record linked to the parent plant instance
+2. WHEN a user starts a propagation from an external source THEN the system SHALL create a propagation record with external source information (gift, trade, purchase, etc.) and no parent plant link
+3. WHEN a user updates propagation status THEN the system SHALL track progress through stages (rooting, planted, established)
+4. WHEN a propagation is successful THEN the system SHALL allow conversion to a full plant instance
+5. WHEN a user views a plant instance THEN the system SHALL display any propagations created from that plant
+6. WHEN a user views propagation history THEN the system SHALL show success rates and timing statistics for both internal and external propagations
+7. WHEN a user accesses the Propagation tab THEN the system SHALL display active propagations organized by status with progress indicators
+8. WHEN a user edits an existing propagation THEN the system SHALL allow changing the parent plant relationship or external source information
+9. WHEN a user creates a propagation THEN the system SHALL provide options to select from existing plants OR specify external source details
+10. WHEN a user views propagation details THEN the system SHALL clearly indicate whether the propagation came from an owned plant or external source
 
 ### Requirement 5: Image Management
 

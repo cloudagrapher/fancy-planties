@@ -16,6 +16,7 @@ interface FormState {
   family: string;
   genus: string;
   species: string;
+  cultivar: string;
   commonName: string;
   careInstructions: string;
   errors: Record<string, string>;
@@ -34,6 +35,7 @@ export default function PlantTaxonomyForm({
     family: initialData.family || '',
     genus: initialData.genus || '',
     species: initialData.species || '',
+    cultivar: initialData.cultivar || '',
     commonName: initialData.commonName || '',
     careInstructions: initialData.careInstructions || '',
     errors: {},
@@ -48,6 +50,7 @@ export default function PlantTaxonomyForm({
         family: formState.family,
         genus: formState.genus,
         species: formState.species,
+        cultivar: formState.cultivar || undefined,
         commonName: formState.commonName,
         careInstructions: formState.careInstructions || undefined,
       });
@@ -89,6 +92,7 @@ export default function PlantTaxonomyForm({
           family: formState.family,
           genus: formState.genus,
           species: formState.species,
+          cultivar: formState.cultivar || undefined,
           commonName: formState.commonName,
         }),
       });
@@ -129,6 +133,7 @@ export default function PlantTaxonomyForm({
       family: formState.family,
       genus: formState.genus,
       species: formState.species,
+      cultivar: formState.cultivar || undefined,
       commonName: formState.commonName,
       careInstructions: formState.careInstructions || undefined,
       isVerified: false, // New plants are not verified by default
@@ -244,6 +249,30 @@ export default function PlantTaxonomyForm({
               <p className="mt-1 text-sm text-red-600">{formState.errors.species}</p>
             )}
           </div>
+        </div>
+
+        {/* Cultivar */}
+        <div>
+          <label htmlFor="cultivar" className="block text-sm font-medium text-gray-700 mb-1">
+            Cultivar (Optional)
+          </label>
+          <input
+            id="cultivar"
+            type="text"
+            value={formState.cultivar}
+            onChange={(e) => handleTaxonomyFieldChange('cultivar', e.target.value)}
+            placeholder="e.g., 'Thai Constellation', 'Variegata'"
+            className={`
+              w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary-300
+              ${formState.errors.cultivar ? 'border-red-300 focus:ring-red-300' : 'border-gray-300'}
+            `}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Specific cultivar or variety name (if applicable)
+          </p>
+          {formState.errors.cultivar && (
+            <p className="mt-1 text-sm text-red-600">{formState.errors.cultivar}</p>
+          )}
         </div>
 
         {/* Care Instructions */}

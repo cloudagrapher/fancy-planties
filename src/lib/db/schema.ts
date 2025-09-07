@@ -28,6 +28,7 @@ export const plants = pgTable('plants', {
   family: text('family').notNull(),
   genus: text('genus').notNull(),
   species: text('species').notNull(),
+  cultivar: text('cultivar'), // New separate cultivar field
   commonName: text('common_name').notNull(),
   careInstructions: text('care_instructions'),
   defaultImage: text('default_image'),
@@ -40,9 +41,10 @@ export const plants = pgTable('plants', {
   familyIdx: index('plants_family_idx').on(table.family),
   genusIdx: index('plants_genus_idx').on(table.genus),
   speciesIdx: index('plants_species_idx').on(table.species),
+  cultivarIdx: index('plants_cultivar_idx').on(table.cultivar), // New index for cultivar search
   commonNameIdx: index('plants_common_name_idx').on(table.commonName),
-  // Unique constraint for taxonomy combination
-  taxonomyUnique: uniqueIndex('plants_taxonomy_unique').on(table.family, table.genus, table.species),
+  // Unique constraint for taxonomy combination (including cultivar)
+  taxonomyUnique: uniqueIndex('plants_taxonomy_unique').on(table.family, table.genus, table.species, table.cultivar),
   // Index for verified plants
   verifiedIdx: index('plants_verified_idx').on(table.isVerified),
 }));
@@ -78,11 +80,14 @@ export const propagations = pgTable('propagations', {
   id: serial('id').primaryKey(),
   userId: integer('user_id').notNull().references(() => users.id),
   plantId: integer('plant_id').notNull().references(() => plants.id),
-  parentInstanceId: integer('parent_instance_id').references(() => plantInstances.id),
+  parentInstanceId: integer('parent_instance_id').references(() => plantInstances.id), // Now nullable for external sources
   nickname: text('nickname').notNull(),
   location: text('location').notNull(),
   dateStarted: timestamp('date_started').defaultNow().notNull(),
   status: text('status', { enum: ['started', 'rooting', 'planted', 'established'] }).default('started').notNull(),
+  sourceType: text('source_type', { enum: ['internal', 'external'] }).default('internal').notNull(), // New field
+  externalSource: text('external_source', { enum: ['gift', 'trade', 'purchase', 'other'] }), // New field, nullable
+  externalSourceDetails: text('external_source_details'), // New field for additional details
   notes: text('notes'),
   images: jsonb('images').$type<string[]>().default([]).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -93,8 +98,11 @@ export const propagations = pgTable('propagations', {
   plantIdIdx: index('propagations_plant_id_idx').on(table.plantId),
   parentInstanceIdIdx: index('propagations_parent_instance_id_idx').on(table.parentInstanceId),
   statusIdx: index('propagations_status_idx').on(table.status),
+  sourceTypeIdx: index('propagations_source_type_idx').on(table.sourceType), // New index
+  externalSourceIdx: index('propagations_external_source_idx').on(table.externalSource), // New index
   dateStartedIdx: index('propagations_date_started_idx').on(table.dateStarted),
   userStatusIdx: index('propagations_user_status_idx').on(table.userId, table.status),
+  userSourceTypeIdx: index('propagations_user_source_type_idx').on(table.userId, table.sourceType), // New index
 }));
 
 // Care history table for tracking all care activities
@@ -124,6 +132,124 @@ export const careHistory = pgTable('care_history', {
   plantCareDateIdx: index('care_history_plant_care_date_idx').on(table.plantInstanceId, table.careDate),
 }));
 
+// Care guides table for plant care instructions
+export const careGuides = pgTable('care_guides', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id),
+  
+  // Taxonomy level - determines which level this guide applies to
+  taxonomyLevel: text('taxonomy_level', { 
+    enum: ['family', 'genus', 'species', 'cultivar'] 
+  }).notNull(),
+  
+  // Taxonomy identifiers
+  family: text('family'),
+  genus: text('genus'),
+  species: text('species'),
+  cultivar: text('cultivar'),
+  commonName: text('common_name'),
+  
+  // Care guide content
+  title: text('title').notNull(),
+  description: text('description'),
+  
+  // Care categories
+  watering: jsonb('watering').$type<{
+    frequency?: string;
+    method?: string;
+    tips?: string;
+  }>(),
+  
+  fertilizing: jsonb('fertilizing').$type<{
+    frequency?: string;
+    type?: string;
+    schedule?: string;
+    tips?: string;
+  }>(),
+  
+  lighting: jsonb('lighting').$type<{
+    requirements?: string;
+    intensity?: string;
+    duration?: string;
+    tips?: string;
+  }>(),
+  
+  humidity: jsonb('humidity').$type<{
+    requirements?: string;
+    range?: string;
+    tips?: string;
+  }>(),
+  
+  temperature: jsonb('temperature').$type<{
+    range?: string;
+    seasonal?: string;
+    tips?: string;
+  }>(),
+  
+  soil: jsonb('soil').$type<{
+    type?: string;
+    drainage?: string;
+    ph?: string;
+    tips?: string;
+  }>(),
+  
+  repotting: jsonb('repotting').$type<{
+    frequency?: string;
+    season?: string;
+    potSize?: string;
+    tips?: string;
+  }>(),
+  
+  pruning: jsonb('pruning').$type<{
+    frequency?: string;
+    method?: string;
+    season?: string;
+    tips?: string;
+  }>(),
+  
+  propagation: jsonb('propagation').$type<{
+    methods?: string[];
+    season?: string;
+    difficulty?: string;
+    tips?: string;
+  }>(),
+  
+  commonIssues: jsonb('common_issues').$type<{
+    pests?: string[];
+    diseases?: string[];
+    problems?: string[];
+    solutions?: Record<string, string>;
+  }>(),
+  
+  additionalNotes: text('additional_notes'),
+  tags: jsonb('tags').$type<string[]>().default([]).notNull(),
+  
+  // Metadata
+  isPublic: boolean('is_public').default(false).notNull(),
+  isVerified: boolean('is_verified').default(false).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  // Indexes for care guide queries
+  userIdIdx: index('care_guides_user_id_idx').on(table.userId),
+  taxonomyLevelIdx: index('care_guides_taxonomy_level_idx').on(table.taxonomyLevel),
+  familyIdx: index('care_guides_family_idx').on(table.family),
+  genusIdx: index('care_guides_genus_idx').on(table.genus),
+  speciesIdx: index('care_guides_species_idx').on(table.species),
+  cultivarIdx: index('care_guides_cultivar_idx').on(table.cultivar),
+  commonNameIdx: index('care_guides_common_name_idx').on(table.commonName),
+  isPublicIdx: index('care_guides_is_public_idx').on(table.isPublic),
+  isVerifiedIdx: index('care_guides_is_verified_idx').on(table.isVerified),
+  // Composite indexes for taxonomy matching
+  familyGenusIdx: index('care_guides_family_genus_idx').on(table.family, table.genus),
+  genusSpeciesIdx: index('care_guides_genus_species_idx').on(table.genus, table.species),
+  speciesCultivarIdx: index('care_guides_species_cultivar_idx').on(table.species, table.cultivar),
+  // Unique constraint for user + taxonomy combination
+  userTaxonomyUnique: uniqueIndex('care_guides_user_taxonomy_unique').on(
+    table.userId, table.taxonomyLevel, table.family, table.genus, table.species, table.cultivar
+  ),
+}));
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   plantInstances: many(plantInstances),
@@ -131,6 +257,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   sessions: many(sessions),
   createdPlants: many(plants),
   careHistory: many(careHistory),
+  careGuides: many(careGuides),
 }));
 
 export const plantsRelations = relations(plants, ({ many, one }) => ({
@@ -188,6 +315,13 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
   }),
 }));
 
+export const careGuidesRelations = relations(careGuides, ({ one }) => ({
+  user: one(users, {
+    fields: [careGuides.userId],
+    references: [users.id],
+  }),
+}));
+
 // Export types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -201,3 +335,5 @@ export type Propagation = typeof propagations.$inferSelect;
 export type NewPropagation = typeof propagations.$inferInsert;
 export type CareHistory = typeof careHistory.$inferSelect;
 export type NewCareHistory = typeof careHistory.$inferInsert;
+export type CareGuide = typeof careGuides.$inferSelect;
+export type NewCareGuide = typeof careGuides.$inferInsert;

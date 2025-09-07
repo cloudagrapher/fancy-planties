@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import type { CareType } from '@/lib/types/care-types';
 import { careHelpers } from '@/lib/types/care-types';
+import { useOffline } from '@/hooks/useOffline';
+import { useServiceWorker } from '@/lib/utils/service-worker';
 
 interface QuickCareFormProps {
   plantInstanceId?: number;
@@ -17,6 +19,9 @@ export default function QuickCareForm({
   onCancel,
   defaultCareType = 'fertilizer'
 }: QuickCareFormProps) {
+  const { isOnline, addPendingCareEntry } = useOffline();
+  const { registerBackgroundSync } = useServiceWorker();
+  
   const [formData, setFormData] = useState({
     plantInstanceId: plantInstanceId || 0,
     careType: defaultCareType,
@@ -44,21 +49,36 @@ export default function QuickCareForm({
     setError(null);
 
     try {
-      const response = await fetch('/api/care/log', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          careDate: new Date(formData.careDate),
-          plantInstanceId: Number(formData.plantInstanceId),
-        }),
-      });
+      if (isOnline) {
+        // Online: Submit directly to API
+        const response = await fetch('/api/care/log', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...formData,
+            careDate: new Date(formData.careDate),
+            plantInstanceId: Number(formData.plantInstanceId),
+          }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to log care');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to log care');
+        }
+      } else {
+        // Offline: Add to pending queue
+        const pendingId = addPendingCareEntry({
+          plantInstanceId: Number(formData.plantInstanceId),
+          careType: formData.careType as CareType,
+          notes: formData.notes || undefined,
+        });
+
+        // Register for background sync
+        registerBackgroundSync();
+
+        console.log('Care entry queued for sync:', pendingId);
       }
 
       // Reset form
@@ -89,6 +109,20 @@ export default function QuickCareForm({
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
           <p className="text-red-800 text-sm">{error}</p>
+        </div>
+      )}
+
+      {/* Offline Mode Indicator */}
+      {!isOnline && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <p className="text-yellow-800 text-sm">
+              <span className="font-medium">Offline Mode:</span> Care will be logged when you're back online.
+            </p>
+          </div>
         </div>
       )}
 
@@ -235,7 +269,7 @@ export default function QuickCareForm({
           disabled={isSubmitting || !formData.plantInstanceId}
           className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {isSubmitting ? 'Logging...' : 'Log Care'}
+          {isSubmitting ? 'Logging...' : isOnline ? 'Log Care' : 'Queue for Sync'}
         </button>
       </div>
 
