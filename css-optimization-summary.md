@@ -6,7 +6,7 @@
 1. **Loading Spinner System** - Added `.spinner`, `.spinner--sm`, `.spinner--lg`, `.spinner--primary`, etc.
 2. **Badge System** - Added `.badge`, `.badge--notification`, `.badge--status`, `.badge--primary`, etc.
 3. **Image Placeholder System** - Added `.image-placeholder`, `.image-placeholder--loading`, `.image-placeholder--error`
-4. **Loading Overlay System** - Added `.loading-overlay`, `.loading-overlay--dark`, `.loading-overlay--blur`
+4. **Loading Overlay System** - Added `.loading-overlay`, `.loading-overlay--blur` (dark mode variants removed)
 5. **Additional Utilities** - Added aspect ratios, overlays, gradients, interaction states
 
 ### ✅ Phase 2: Component Refactoring (Partial)

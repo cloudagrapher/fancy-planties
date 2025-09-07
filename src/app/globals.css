@@ -1,7 +1,81 @@
 @import "tailwindcss";
-@import "../styles/tokens/colors.css";
 
-/* Legacy variables removed - now using color tokens from colors.css */
+/* Color Design Tokens - Mint Green & Salmon Palette */
+:root {
+  /* PRIMARY: Mint Green (Plant/Growth/Success) */
+  --color-mint-50: #f0fdf4;
+  --color-mint-100: #d1fae5;
+  --color-mint-200: #a7f3d0;  /* Main brand color */
+  --color-mint-300: #6ee7b7;
+  --color-mint-400: #34d399;
+  --color-mint-500: #10b981;
+  --color-mint-600: #059669;
+  --color-mint-700: #047857;
+  --color-mint-800: #065f46;
+  --color-mint-900: #064e3b;
+  
+  /* SECONDARY: Salmon/Coral (Care/Love/Warmth) */
+  --color-salmon-50: #fff1f2;
+  --color-salmon-100: #ffe4e6;
+  --color-salmon-200: #fecdd3;
+  --color-salmon-300: #fda4af;  /* Main secondary color */
+  --color-salmon-400: #fb7185;
+  --color-salmon-500: #f43f5e;
+  --color-salmon-600: #e11d48;
+  --color-salmon-700: #be123c;
+  --color-salmon-800: #9f1239;
+  --color-salmon-900: #881337;
+  
+  /* TERTIARY: Soft Lavender (Propagation/Growth) */
+  --color-lavender-50: #f5f3ff;
+  --color-lavender-100: #e0e7ff;
+  --color-lavender-200: #c7d2fe;
+  --color-lavender-300: #c4b5fd;
+  --color-lavender-400: #a78bfa;
+  --color-lavender-500: #8b5cf6;
+  --color-lavender-600: #7c3aed;
+  --color-lavender-700: #6d28d9;
+  --color-lavender-800: #5b21b6;
+  --color-lavender-900: #4c1d95;
+  
+  /* ACCENT: Peachy Pink (Special features) */
+  --color-peach-50: #fef7f0;
+  --color-peach-100: #feecdc;
+  --color-peach-200: #fed7d7;
+  --color-peach-300: #f9a8d4;
+  --color-peach-400: #f472b6;
+  --color-peach-500: #ec4899;
+  --color-peach-600: #db2777;
+
+  /* STATUS COLORS (Soft & Friendly) */
+  --color-success: var(--color-mint-300);
+  --color-warning: #fcd34d;
+  --color-error: #fca5a5;
+  --color-info: #93c5fd;
+
+  /* NEUTRALS (Warm & Soft) */
+  --color-neutral-50: #fefefe;
+  --color-neutral-100: #faf9f7;
+  --color-neutral-200: #f3f1ee;
+  --color-neutral-300: #e5e3e0;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+  --color-neutral-950: #0c0a09;
+
+  /* SEMANTIC COLOR ALIASES */
+  --color-background: var(--color-neutral-50);
+  --color-surface: var(--color-neutral-100);
+  --color-border: var(--color-neutral-200);
+  --color-foreground: var(--color-neutral-700);
+  --color-text-primary: var(--color-neutral-800);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-muted: var(--color-neutral-400);
+}
+
 
 @theme inline {
   /* Fancy Planties Color Palette */
@@ -117,127 +191,7 @@
   --shadow-dreamy: 0 8px 32px -8px rgba(253, 164, 175, 0.15), 0 0 0 1px rgba(167, 243, 208, 0.05);
 }
 
-/* Dark mode variables now handled in colors.css */
-  
-  .bottom-nav {
-    background-color: var(--color-surface);
-    border-top-color: var(--color-border);
-  }
-  
-  .card,
-  .plant-card,
-  .modal-content {
-    background-color: var(--color-surface);
-    border-color: var(--color-border);
-    color: var(--color-foreground);
-  }
-
-  .card--dreamy {
-    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-neutral-950) 100%);
-    border: none;
-  }
-
-  .card--mint {
-    background: linear-gradient(135deg, #064e3b 0%, #047857 100%);
-    border: 1px solid #059669;
-  }
-
-  .card--salmon {
-    background: linear-gradient(135deg, #881337 0%, #9f1239 100%);
-    border: 1px solid #be123c;
-  }
-
-  .card--lavender {
-    background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
-    border: 1px solid #6d28d9;
-  }
-
-  .card--neutral {
-    background: linear-gradient(135deg, var(--color-neutral-700) 0%, var(--color-neutral-800) 100%);
-    border: 1px solid var(--color-neutral-600);
-  }
-
-  .card--flat {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-  }
-  
-  .form-input,
-  .form-select,
-  .form-textarea {
-    background-color: var(--color-background);
-    border-color: var(--color-border);
-    color: var(--color-foreground);
-  }
-
-  /* Dark mode text colors */
-  .text-neutral-900 { color: var(--color-neutral-50); }
-  .text-neutral-700 { color: var(--color-neutral-300); }
-  .text-neutral-600 { color: var(--color-neutral-400); }
-  .text-neutral-500 { color: var(--color-neutral-500); }
-
-  .text-mint-900 { color: #d1fae5; }
-  .text-mint-700 { color: #a7f3d0; }
-  .text-mint-600 { color: #6ee7b7; }
-
-  .text-salmon-900 { color: #fecdd3; }
-  .text-salmon-700 { color: #fda4af; }
-  .text-salmon-600 { color: #fb7185; }
-
-  .text-lavender-900 { color: #e0e7ff; }
-  .text-lavender-700 { color: #c7d2fe; }
-  .text-lavender-600 { color: #c4b5fd; }
-
-  .text-lavender-800 { color: #c4b5fd; }
-  .text-salmon-800 { color: #fda4af; }
-  .text-mint-800 { color: #a7f3d0; }
-
-  /* Dark mode step styles */
-  .step-mint {
-    background-color: rgba(6, 78, 59, 0.3);
-    border: 1px solid #047857;
-  }
-
-  .step-salmon {
-    background-color: rgba(136, 19, 55, 0.3);
-    border: 1px solid #be123c;
-  }
-
-  .step-lavender {
-    background-color: rgba(76, 29, 149, 0.3);
-    border: 1px solid #6d28d9;
-  }
-
-  .step-number-mint {
-    background-color: var(--color-mint-700);
-  }
-
-  .step-number-salmon {
-    background-color: var(--color-salmon-700);
-  }
-
-  .step-number-lavender {
-    background-color: var(--color-lavender-700);
-  }
-
-  /* Dark mode button styles */
-  .btn--ghost {
-    color: var(--color-foreground);
-  }
-
-  .btn--ghost:hover {
-    background: var(--color-surface);
-  }
-
-  .btn--outline {
-    border-color: var(--color-mint-600);
-    color: var(--color-mint-400);
-  }
-
-  .btn--outline:hover {
-    background: rgba(6, 78, 59, 0.2);
-    border-color: var(--color-mint-500);
-  }
+/* Light mode only - dark mode support removed */
 
 body {
   background: var(--color-background);
@@ -453,6 +407,7 @@ select {
 .btn--outline:hover {
   background: var(--color-mint-50);
   border-color: var(--color-mint-400);
+  color: var(--color-mint-700);
 }
 
 .btn--ghost {
@@ -464,6 +419,7 @@ select {
 
 .btn--ghost:hover {
   background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
   transform: none;
 }
 
@@ -511,6 +467,12 @@ select {
   background: linear-gradient(135deg, #f5f3ff 0%, #e0e7ff 100%);
   border: 1px solid #c7d2fe;
   box-shadow: 0 4px 20px rgba(199, 210, 254, 0.15);
+}
+
+.card--neutral {
+  background: linear-gradient(135deg, var(--color-neutral-100) 0%, var(--color-neutral-50) 100%);
+  border: 1px solid var(--color-neutral-200);
+  box-shadow: 0 4px 20px rgba(229, 227, 224, 0.15);
 }
 
 .card--flat {
@@ -667,7 +629,7 @@ select {
   color: var(--color-text-muted);
 }
 
-/* Form Styles */
+/* Form Styles - Light Mode Only */
 .form-input,
 .form-select,
 .form-textarea {
@@ -676,7 +638,8 @@ select {
   font-size: 16px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  background-color: var(--color-surface);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   transition: all 0.2s;
 }
 
@@ -685,6 +648,7 @@ select {
 .form-textarea:focus {
   outline: none;
   border-color: var(--color-primary-400);
+  background-color: var(--color-surface);
   box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.2);
 }
 
@@ -702,7 +666,7 @@ select {
   margin-top: 4px;
 }
 
-/* Modal Styles */
+/* Modal Styles - Light Mode Only */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -712,15 +676,18 @@ select {
   justify-content: center;
   z-index: 100;
   padding: 16px;
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
   background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .modal-header {
@@ -812,7 +779,7 @@ select {
 .text-neutral-700 { color: var(--color-neutral-700); }
 .text-neutral-900 { color: var(--color-neutral-900); }
 
-/* Getting Started Step Styles */
+/* Getting Started Step Styles - Light Mode Only */
 .step-mint {
   padding: 12px;
   background-color: var(--color-mint-50);
@@ -838,6 +805,8 @@ select {
   width: 32px;
   height: 32px;
   background-color: var(--color-mint-200);
+  color: var(--color-mint-800);
+  font-weight: 600;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -849,6 +818,8 @@ select {
   width: 32px;
   height: 32px;
   background-color: var(--color-salmon-200);
+  color: var(--color-salmon-800);
+  font-weight: 600;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -860,6 +831,8 @@ select {
   width: 32px;
   height: 32px;
   background-color: var(--color-lavender-200);
+  color: var(--color-lavender-800);
+  font-weight: 600;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -908,7 +881,7 @@ select {
   to { transform: rotate(360deg); }
 }
 
-/* Bottom Navigation */
+/* Bottom Navigation - Light Mode Only */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -918,6 +891,7 @@ select {
   background-color: var(--color-surface);
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
 }
 
 .bottom-nav-container {

@@ -83,10 +83,13 @@ export async function POST(request: NextRequest) {
       body = await request.json();
     }
     
-    // Add user ID to the request body
+    // Add user ID to the request body and convert date strings to Date objects
     const instanceData = {
       ...body,
       userId: user.id,
+      // Convert date strings to Date objects if they exist and are not empty
+      lastFertilized: body.lastFertilized && body.lastFertilized !== '' ? new Date(body.lastFertilized) : null,
+      lastRepot: body.lastRepot && body.lastRepot !== '' ? new Date(body.lastRepot) : null,
     };
 
     // Validate the plant instance data
