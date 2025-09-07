@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText } from 'lucide-react';
+import { X, Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, MessageCircle } from 'lucide-react';
+import ImageUpload from '@/components/shared/ImageUpload';
 
 interface CareGuideFormData {
   taxonomyLevel: 'family' | 'genus' | 'species' | 'cultivar';
@@ -12,6 +13,7 @@ interface CareGuideFormData {
   commonName: string;
   title: string;
   description: string;
+  images: File[];
   watering: {
     frequency: string;
     method: string;
@@ -36,6 +38,20 @@ interface CareGuideFormData {
     requirements: string;
     tips: string;
   };
+  soil: {
+    type: string;
+    recipe: string;
+    tips: string;
+  };
+  repotting: {
+    frequency: string;
+    tips: string;
+  };
+  propagation: {
+    methods: string;
+    tips: string;
+  };
+  generalTips: string;
   isPublic: boolean;
 }
 
@@ -185,6 +201,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
     commonName: '',
     title: '',
     description: '',
+    images: [],
     watering: {
       frequency: '',
       method: '',
@@ -209,6 +226,20 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
       requirements: '',
       tips: ''
     },
+    soil: {
+      type: '',
+      recipe: '',
+      tips: ''
+    },
+    repotting: {
+      frequency: '',
+      tips: ''
+    },
+    propagation: {
+      methods: '',
+      tips: ''
+    },
+    generalTips: '',
     isPublic: false
   });
 
@@ -392,6 +423,19 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
                     </div>
                   </div>
                 </Card>
+
+                {/* Photos Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Info className="h-4 w-4 text-slate-600" />
+                    <h3 className="font-medium text-slate-800">Photos</h3>
+                  </div>
+                  <ImageUpload
+                    onImagesChange={(files) => updateFormData('images', files)}
+                    maxImages={6}
+                    className="mt-3"
+                  />
+                </Card>
               </div>
             )}
 
@@ -532,6 +576,98 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
                       onChange={(value) => updateFormData('humidity.tips', value)}
                       placeholder="Humidity management tips..."
                       rows={2}
+                    />
+                  </div>
+                </Card>
+
+                {/* Soil Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Mountain className="h-4 w-4 text-amber-800" />
+                    <h3 className="font-medium text-slate-800">Soil</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <Input
+                      label="Soil Type"
+                      value={formData.soil.type}
+                      onChange={(value) => updateFormData('soil.type', value)}
+                      placeholder="e.g., Well-draining potting mix"
+                    />
+                    <Input
+                      label="Recipe"
+                      value={formData.soil.recipe}
+                      onChange={(value) => updateFormData('soil.recipe', value)}
+                      placeholder="e.g., 1 part peat, 1 part perlite, 1 part bark"
+                    />
+                    <TextArea
+                      label="Tips"
+                      value={formData.soil.tips}
+                      onChange={(value) => updateFormData('soil.tips', value)}
+                      placeholder="Soil preparation and maintenance tips..."
+                      rows={2}
+                    />
+                  </div>
+                </Card>
+
+                {/* Repotting Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <RotateCcw className="h-4 w-4 text-purple-600" />
+                    <h3 className="font-medium text-slate-800">Repotting</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <Input
+                      label="Frequency"
+                      value={formData.repotting.frequency}
+                      onChange={(value) => updateFormData('repotting.frequency', value)}
+                      placeholder="e.g., Every 2-3 years, When root bound"
+                    />
+                    <TextArea
+                      label="Tips"
+                      value={formData.repotting.tips}
+                      onChange={(value) => updateFormData('repotting.tips', value)}
+                      placeholder="Repotting tips and best practices..."
+                      rows={2}
+                    />
+                  </div>
+                </Card>
+
+                {/* Propagation Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sprout className="h-4 w-4 text-green-600" />
+                    <h3 className="font-medium text-slate-800">Propagation</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <Input
+                      label="Method(s)"
+                      value={formData.propagation.methods}
+                      onChange={(value) => updateFormData('propagation.methods', value)}
+                      placeholder="e.g., Stem cuttings, Node cuttings, Division"
+                    />
+                    <TextArea
+                      label="Tips"
+                      value={formData.propagation.tips}
+                      onChange={(value) => updateFormData('propagation.tips', value)}
+                      placeholder="Propagation tips and success strategies..."
+                      rows={2}
+                    />
+                  </div>
+                </Card>
+
+                {/* General Tips Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MessageCircle className="h-4 w-4 text-slate-600" />
+                    <h3 className="font-medium text-slate-800">General Tips</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <TextArea
+                      label="General Tips"
+                      value={formData.generalTips}
+                      onChange={(value) => updateFormData('generalTips', value)}
+                      placeholder="Additional general care tips and advice..."
+                      rows={3}
                     />
                   </div>
                 </Card>
