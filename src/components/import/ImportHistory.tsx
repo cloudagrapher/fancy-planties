@@ -139,7 +139,7 @@ export function ImportHistory({ className = '' }: ImportHistoryProps) {
         </h3>
         <button
           onClick={fetchImports}
-          className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+          className="btn btn--ghost btn--sm"
         >
           Refresh
         </button>
