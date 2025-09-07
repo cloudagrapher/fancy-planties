@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { render, createMockPlantInstance, setupMockFetch, mockApiResponse } from '@/__tests__/utils/test-utils';
+import { render, createMockPlantInstance, setupMockFetch, mockApiResponse } from '@/__tests__/utils/test-helpers';
 import CareDashboard from '../CareDashboard';
 
 describe('CareDashboard', () => {
