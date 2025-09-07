@@ -14,6 +14,7 @@ const CareGuideCreateSchema = z.object({
   commonName: z.string().optional(),
   title: z.string().min(1),
   description: z.string().optional(),
+  images: z.array(z.string()).default([]),
   watering: z.object({
     frequency: z.string().optional(),
     method: z.string().optional(),
@@ -38,6 +39,20 @@ const CareGuideCreateSchema = z.object({
     requirements: z.string().optional(),
     tips: z.string().optional(),
   }).optional(),
+  soil: z.object({
+    type: z.string().optional(),
+    recipe: z.string().optional(),
+    tips: z.string().optional(),
+  }).optional(),
+  repotting: z.object({
+    frequency: z.string().optional(),
+    tips: z.string().optional(),
+  }).optional(),
+  propagation: z.object({
+    methods: z.string().optional(),
+    tips: z.string().optional(),
+  }).optional(),
+  generalTips: z.string().optional(),
   isPublic: z.boolean().default(false),
 });
 
@@ -67,11 +82,16 @@ export async function POST(request: NextRequest) {
       commonName: validatedData.commonName || null,
       title: validatedData.title,
       description: validatedData.description || null,
+      images: validatedData.images,
       watering: validatedData.watering || null,
       fertilizing: validatedData.fertilizing || null,
       lighting: validatedData.lighting || null,
       temperature: validatedData.temperature || null,
       humidity: validatedData.humidity || null,
+      soil: validatedData.soil || null,
+      repotting: validatedData.repotting || null,
+      propagation: validatedData.propagation || null,
+      generalTips: validatedData.generalTips || null,
       isPublic: validatedData.isPublic,
       createdAt: new Date(),
       updatedAt: new Date(),

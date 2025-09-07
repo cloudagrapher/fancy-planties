@@ -54,6 +54,16 @@ export default function PlantTaxonomySelector({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Update search query when selectedPlant changes (for editing)
+  useEffect(() => {
+    if (selectedPlant) {
+      setSearchState(prev => ({
+        ...prev,
+        query: selectedPlant.commonName || '',
+      }));
+    }
+  }, [selectedPlant]);
+
   // Debounced search function
   const debouncedSearch = useCallback(
     debounce(async (query: string) => {
