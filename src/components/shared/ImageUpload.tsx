@@ -23,6 +23,13 @@ export default function ImageUpload({
   const [errors, setErrors] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Manual click handler for better reliability
+  const handleClick = useCallback(() => {
+    if (fileInputRef.current && selectedFiles.length < maxImages) {
+      fileInputRef.current.click();
+    }
+  }, [selectedFiles.length, maxImages]);
+
   // Handle file selection
   const handleFiles = useCallback((files: File[]) => {
     const newErrors: string[] = [];
@@ -142,7 +149,14 @@ export default function ImageUpload({
             ) : (
               <>
                 <p className="text-gray-600">
-                  <span className="font-medium text-primary-600">Click to upload</span> or drag and drop
+                  <button
+                    type="button"
+                    onClick={handleClick}
+                    className="font-medium text-primary-600 hover:text-primary-700 underline focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded"
+                  >
+                    Click to upload
+                  </button>{' '}
+                  or drag and drop
                 </p>
                 <p className="text-sm text-gray-500">
                   JPEG, PNG, or WebP up to {Math.round(maxSizePerImage / (1024 * 1024))}MB each
