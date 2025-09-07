@@ -1,3 +1,6 @@
+/// <reference types="cypress" />
+import '../support/e2e';
+
 describe('Plant Management E2E', () => {
   beforeEach(() => {
     cy.clearTestData();

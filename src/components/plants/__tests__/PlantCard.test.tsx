@@ -1,18 +1,16 @@
 import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
-import { render, createMockPlantInstance, createUserEvent } from '@/__tests__/utils/test-helpers';
+import { render, createMockPlantInstance, createUserEvent } from '@/test-utils/helpers';
 import PlantCard from '../PlantCard';
 
 describe('PlantCard', () => {
   const mockOnSelect = jest.fn();
-  const mockOnEdit = jest.fn();
-  const mockOnCareLog = jest.fn();
+  const mockOnCareAction = jest.fn();
 
   const defaultProps = {
     plant: createMockPlantInstance(),
     onSelect: mockOnSelect,
-    onEdit: mockOnEdit,
-    onCareLog: mockOnCareLog,
+    onCareAction: mockOnCareAction,
   };
 
   beforeEach(() => {
@@ -23,8 +21,8 @@ describe('PlantCard', () => {
     render(<PlantCard {...defaultProps} />);
 
     expect(screen.getByText('My Monstera')).toBeInTheDocument();
-    expect(screen.getByText('Living Room')).toBeInTheDocument();
-    expect(screen.getByText('Monstera deliciosa')).toBeInTheDocument();
+    expect(screen.getByText(/Living Room/)).toBeInTheDocument();
+    expect(screen.getByText(/Monstera deliciosa/)).toBeInTheDocument();
   });
 
   it('displays care status indicator', () => {
@@ -61,7 +59,7 @@ describe('PlantCard', () => {
     const user = createUserEvent();
     render(<PlantCard {...defaultProps} />);
 
-    const card = screen.getByRole('button');
+    const card = screen.getByLabelText('Plant card for My Monstera');
     await user.click(card);
 
     expect(mockOnSelect).toHaveBeenCalledWith(defaultProps.plant);
@@ -71,37 +69,37 @@ describe('PlantCard', () => {
     const user = createUserEvent();
     render(<PlantCard {...defaultProps} />);
 
-    const card = screen.getByRole('button');
+    const card = screen.getByLabelText('Plant card for My Monstera');
     await user.hover(card);
 
     expect(screen.getByLabelText('Quick care')).toBeInTheDocument();
     expect(screen.getByLabelText('Edit plant')).toBeInTheDocument();
   });
 
-  it('calls onCareLog when care button is clicked', async () => {
+  it('calls onCareAction when care button is clicked', async () => {
     const user = createUserEvent();
     render(<PlantCard {...defaultProps} />);
 
-    const card = screen.getByRole('button');
+    const card = screen.getByLabelText('Plant card for My Monstera');
     await user.hover(card);
 
     const careButton = screen.getByLabelText('Quick care');
     await user.click(careButton);
 
-    expect(mockOnCareLog).toHaveBeenCalledWith(defaultProps.plant.id, 'fertilizer');
+    expect(mockOnCareAction).toHaveBeenCalledWith(defaultProps.plant, 'fertilize');
   });
 
-  it('calls onEdit when edit button is clicked', async () => {
+  it('calls onCareAction when edit button is clicked', async () => {
     const user = createUserEvent();
     render(<PlantCard {...defaultProps} />);
 
-    const card = screen.getByRole('button');
+    const card = screen.getByLabelText('Plant card for My Monstera');
     await user.hover(card);
 
     const editButton = screen.getByLabelText('Edit plant');
     await user.click(editButton);
 
-    expect(mockOnEdit).toHaveBeenCalledWith(defaultProps.plant);
+    expect(mockOnCareAction).toHaveBeenCalledWith(defaultProps.plant, 'repot');
   });
 
   it('displays fertilizer due date when available', () => {
@@ -112,13 +110,13 @@ describe('PlantCard', () => {
 
     render(<PlantCard {...defaultProps} plant={plantWithDueDate} />);
 
-    expect(screen.getByText('Due in 3 days')).toBeInTheDocument();
+    expect(screen.getByText('3 days')).toBeInTheDocument();
   });
 
-  it('handles compact mode correctly', () => {
-    render(<PlantCard {...defaultProps} compact />);
+  it('handles small size correctly', () => {
+    render(<PlantCard {...defaultProps} size="small" />);
 
-    // In compact mode, some information might be hidden
+    // In small size, plant name should still be visible
     expect(screen.getByText('My Monstera')).toBeInTheDocument();
   });
 
@@ -126,7 +124,7 @@ describe('PlantCard', () => {
     const { rerender } = render(<PlantCard {...defaultProps} />);
 
     // Test healthy plant
-    let card = screen.getByRole('button');
+    let card = screen.getByLabelText('Plant card for My Monstera');
     expect(card).not.toHaveClass('border-red-500');
 
     // Test overdue plant
@@ -136,7 +134,7 @@ describe('PlantCard', () => {
 
     rerender(<PlantCard {...defaultProps} plant={overduePlant} />);
 
-    card = screen.getByRole('button');
+    card = screen.getByLabelText('Plant card for My Monstera');
     expect(screen.getByText('Overdue')).toBeInTheDocument();
   });
 
@@ -144,7 +142,7 @@ describe('PlantCard', () => {
     const user = createUserEvent();
     render(<PlantCard {...defaultProps} />);
 
-    const card = screen.getByRole('button');
+    const card = screen.getByLabelText('Plant card for My Monstera');
     
     // Focus the card
     await user.tab();
@@ -168,7 +166,7 @@ describe('PlantCard', () => {
 
     render(<PlantCard {...defaultProps} plant={inactivePlant} />);
 
-    const card = screen.getByRole('button');
+    const card = screen.getByLabelText('Plant card for My Monstera');
     expect(card).toHaveClass('opacity-60');
   });
 

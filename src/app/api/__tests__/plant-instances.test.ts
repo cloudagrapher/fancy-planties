@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { GET, POST } from '../plant-instances/route';
-import { createMockPlantInstance, mockDatabaseQueries } from '@/__tests__/utils/test-helpers';
+import { createMockPlantInstance, mockDatabaseQueries } from '@/test-utils/helpers';
 
 // Mock the database queries
 jest.mock('@/lib/db/query-optimization', () => ({
