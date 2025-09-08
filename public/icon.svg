@@ -1,10 +1,66 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="64" fill="#a7f3d0"/>
-  <path d="M256 96C256 96 200 120 200 180C200 220 220 240 256 240C292 240 312 220 312 180C312 120 256 96 256 96Z" fill="#047857"/>
-  <path d="M256 240V416" stroke="#047857" stroke-width="12" stroke-linecap="round"/>
-  <path d="M200 300C200 300 220 280 256 280C292 280 312 300 312 300" stroke="#047857" stroke-width="8" stroke-linecap="round"/>
-  <path d="M220 360C220 360 235 345 256 345C277 345 292 360 292 360" stroke="#047857" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="256" cy="180" r="20" fill="#34d399"/>
-  <circle cx="240" cy="165" r="8" fill="#10b981"/>
-  <circle cx="272" cy="195" r="6" fill="#10b981"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+
+<!-- draw.io SVG with light/dark mode support -->
+<svg xmlns="http://www.w3.org/2000/svg" 
+     xmlns:xlink="http://www.w3.org/1999/xlink" 
+     version="1.1" 
+     width="1100px" 
+     height="1100px" 
+     viewBox="-0.5 -0.5 1100 1100"
+     style="color-scheme: light dark;">
+
+  <!-- Main icon background with rounded corners -->
+  <rect x="0" 
+        y="0" 
+        width="1100" 
+        height="1100" 
+        rx="165" 
+        ry="165" 
+        fill="#a7f3d0" 
+        stroke="none" 
+        style="fill: light-dark(rgb(167, 243, 208), rgb(6, 95, 70));"/>
+
+  <!-- Plant icon SVG -->
+  <svg fill="light-dark(#047857, #d1fae5)"
+       width="720.33" 
+       height="880" 
+       viewBox="3 1 18 22" 
+       xmlns="http://www.w3.org/2000/svg" 
+       x="189.34" 
+       y="109.5">
+    
+    <!-- Plant path data -->
+    <path d="M5.859,8.341a5.876,5.876,0,0,0,5.283.117A9,9,0,0,0,11,10v2H6a1,1,0,0,0-1,1v3a1,1,0,0,0,1,1H7v5a1,1,0,0,0,1,1h8a1,1,0,0,0,1-1V17h1a1,1,0,0,0,1-1V13a1,1,0,0,0-1-1H13V10a7.008,7.008,0,0,1,7-7,1,1,0,0,0,0-2,8.993,8.993,0,0,0-7.642,4.27C11.415,3.55,9.155,1,4,1A1,1,0,0,0,3,2C3,2.187,3.033,6.594,5.859,8.341ZM15,21H9V17h6Zm2-6H7V14H17ZM10.756,6.471c-1.635.677-2.924.736-3.841.172-1.154-.711-1.646-2.383-1.826-3.6C8.8,3.375,10.238,5.366,10.756,6.471Z"/>
+  </svg>
+
 </svg>
+
+<!-- 
+MODIFICATION GUIDE:
+
+1. COLORS TO CHANGE:
+   - Light mode background: #a7f3d0 (mint-200)
+   - Dark mode background: rgb(6, 95, 70) (mint-800)
+   - Plant color: #047857 (mint-700)
+
+2. SIZE ADJUSTMENTS:
+   - Canvas size: width="1100px" height="1100px"
+   - Icon background: width="1100" height="1100"
+   - Corner radius: rx="165" ry="165"
+   - Plant size: width="720.33" height="880"
+   - Plant position: x="189.34" y="109.5"
+
+3. LIGHT/DARK MODE PLANT COLORS:
+   The plant now automatically switches:
+   - Light mode: #047857 (mint-700) - dark green plant
+   - Dark mode: #d1fae5 (mint-100) - light green plant
+   
+   This creates better contrast in both themes!
+
+4. TO MODIFY COLORS:
+   Replace the RGB values in the light-dark() functions:
+   - light-dark(rgb(167, 243, 208), rgb(6, 95, 70))
+   - Change first value for light mode
+   - Change second value for dark mode
+-->

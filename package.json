@@ -28,7 +28,8 @@
     "deploy:status": "./scripts/deploy-production.sh status",
     "deploy:health": "./scripts/deploy-production.sh health",
     "backup:create": "./scripts/backup.sh",
-    "backup:restore": "./scripts/restore.sh"
+    "backup:restore": "./scripts/restore.sh",
+    "db:seed": "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/fancy_planties\" npx tsx scripts/seed-plants.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
@@ -38,6 +39,7 @@
     "@types/pg": "^8.15.5",
     "@types/uuid": "^10.0.0",
     "bcryptjs": "^3.0.2",
+    "csv-parse": "^6.1.0",
     "drizzle-orm": "^0.44.5",
     "fuse.js": "^7.1.0",
     "lodash-es": "^4.17.21",
