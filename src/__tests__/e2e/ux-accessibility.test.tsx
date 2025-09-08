@@ -564,16 +564,26 @@ describe('User Experience and Accessibility Validation', () => {
     test('should provide undo functionality for reversible actions', async () => {
       const { CareDashboard } = await import('@/components/care/CareDashboard');
       
+      // Mock care action API calls
+      global.fetch = jest.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ success: true }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: () => Promise.resolve({ success: true }),
+        });
+
       render(
         <QueryClientProvider client={queryClient}>
           <CareDashboard />
         </QueryClientProvider>
       );
 
-      // Mock care action
-      global.fetch = jest.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ success: true }),
+      // Wait for component to load
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /water/i })).toBeInTheDocument();
       });
 
       // Perform care action
