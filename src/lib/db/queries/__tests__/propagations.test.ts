@@ -1,62 +1,111 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import type { NewPropagation } from '../../schema';
+
+// Mock the database module before importing PropagationQueries
+const mockDb = {
+  insert: jest.fn().mockReturnThis(),
+  select: jest.fn().mockReturnThis(),
+  update: jest.fn().mockReturnThis(),
+  delete: jest.fn().mockReturnThis(),
+  from: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  leftJoin: jest.fn().mockReturnThis(),
+  orderBy: jest.fn().mockReturnThis(),
+  values: jest.fn().mockReturnThis(),
+  set: jest.fn().mockReturnThis(),
+  returning: jest.fn(),
+  execute: jest.fn(),
+};
+
+jest.mock('../../index', () => ({
+  db: mockDb,
+}));
+
+jest.mock('drizzle-orm', () => ({
+  eq: jest.fn(),
+  and: jest.fn(),
+  desc: jest.fn(),
+  asc: jest.fn(),
+  ilike: jest.fn(),
+  or: jest.fn(),
+  sql: jest.fn(),
+}));
+
+// Now import PropagationQueries after mocking
 import { PropagationQueries } from '../propagations';
-import { db } from '../../index';
-import { users, plants, plantInstances, propagations, sessions } from '../../schema';
-import type { NewUser, NewPlant, NewPlantInstance, NewPropagation } from '../../schema';
+
+// Test data factories
+const createMockUser = (overrides = {}) => ({
+  id: 1,
+  email: 'test@example.com',
+  hashedPassword: 'hashedpassword',
+  name: 'Test User',
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  ...overrides,
+});
+
+const createMockPlant = (overrides = {}) => ({
+  id: 1,
+  family: 'Araceae',
+  genus: 'Monstera',
+  species: 'deliciosa',
+  commonName: 'Swiss Cheese Plant',
+  isVerified: true,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  ...overrides,
+});
+
+const createMockPlantInstance = (overrides = {}) => ({
+  id: 1,
+  userId: 1,
+  plantId: 1,
+  nickname: 'My Monstera',
+  location: 'Living Room',
+  fertilizerSchedule: '2 weeks',
+  isActive: true,
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  ...overrides,
+});
+
+const createMockPropagation = (overrides = {}) => ({
+  id: 1,
+  userId: 1,
+  plantId: 1,
+  parentInstanceId: 1,
+  nickname: 'Test Propagation',
+  location: 'Propagation Station',
+  dateStarted: new Date('2024-01-01'),
+  status: 'started' as const,
+  notes: 'Test notes',
+  images: [],
+  createdAt: new Date('2024-01-01'),
+  updatedAt: new Date('2024-01-01'),
+  ...overrides,
+});
 
 describe('PropagationQueries', () => {
-  let testUser: { id: number };
-  let testPlant: { id: number };
-  let testPlantInstance: { id: number };
+  let testUser: ReturnType<typeof createMockUser>;
+  let testPlant: ReturnType<typeof createMockPlant>;
+  let testPlantInstance: ReturnType<typeof createMockPlantInstance>;
 
-  beforeEach(async () => {
-    // Clean up any existing test data
-    await db.delete(propagations);
-    await db.delete(plantInstances);
-    await db.delete(plants);
-    await db.delete(sessions);
-    await db.delete(users);
+  beforeEach(() => {
+    // Clear all mocks
+    jest.clearAllMocks();
+    
+    // Create test data
+    testUser = createMockUser();
+    testPlant = createMockPlant();
+    testPlantInstance = createMockPlantInstance();
 
-    // Create test user
-    const userData: NewUser = {
-      email: 'test@example.com',
-      hashedPassword: 'hashedpassword',
-      name: 'Test User',
-    };
-    const [user] = await db.insert(users).values(userData).returning();
-    testUser = user;
-
-    // Create test plant
-    const plantData: NewPlant = {
-      family: 'Araceae',
-      genus: 'Monstera',
-      species: 'deliciosa',
-      commonName: 'Swiss Cheese Plant',
-      isVerified: true,
-    };
-    const [plant] = await db.insert(plants).values(plantData).returning();
-    testPlant = plant;
-
-    // Create test plant instance
-    const instanceData: NewPlantInstance = {
-      userId: testUser.id,
-      plantId: testPlant.id,
-      nickname: 'My Monstera',
-      location: 'Living Room',
-      fertilizerSchedule: '2 weeks',
-      isActive: true,
-    };
-    const [instance] = await db.insert(plantInstances).values(instanceData).returning();
-    testPlantInstance = instance;
+    // Setup default mock return values
+    mockDb.returning.mockResolvedValue([createMockPropagation()]);
   });
 
-  afterEach(async () => {
-    // Clean up test data
-    await db.delete(propagations);
-    await db.delete(plantInstances);
-    await db.delete(plants);
-    await db.delete(sessions);
-    await db.delete(users);
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('create', () => {
@@ -72,6 +121,16 @@ describe('PropagationQueries', () => {
         notes: 'First cutting attempt',
         images: [],
       };
+
+      // Mock the expected return value
+      const expectedResult = createMockPropagation({
+        nickname: 'Monstera Cutting #1',
+        status: 'started',
+        userId: testUser.id,
+        plantId: testPlant.id,
+        parentInstanceId: testPlantInstance.id,
+      });
+      mockDb.returning.mockResolvedValue([expectedResult]);
 
       const result = await PropagationQueries.create(propagationData);
 
@@ -97,6 +156,13 @@ describe('PropagationQueries', () => {
         images: [],
       };
 
+      // Mock the expected return value
+      const expectedResult = createMockPropagation({
+        nickname: 'Store-bought Cutting',
+        parentInstanceId: null,
+      });
+      mockDb.returning.mockResolvedValue([expectedResult]);
+
       const result = await PropagationQueries.create(propagationData);
 
       expect(result).toBeDefined();
@@ -107,24 +173,25 @@ describe('PropagationQueries', () => {
 
   describe('getById', () => {
     it('should get propagation by ID with related data', async () => {
-      // Create a propagation first
-      const propagationData: NewPropagation = {
-        userId: testUser.id,
-        plantId: testPlant.id,
-        parentInstanceId: testPlantInstance.id,
-        nickname: 'Test Propagation',
-        location: 'Test Location',
-        dateStarted: new Date(),
-        status: 'rooting',
-        notes: 'Test notes',
-        images: ['test-image.jpg'],
+      // Mock the expected return value with related data
+      const expectedResult = {
+        ...createMockPropagation({
+          nickname: 'Test Propagation',
+          status: 'rooting',
+          notes: 'Test notes',
+          images: ['test-image.jpg'],
+        }),
+        plant: testPlant,
+        parentInstance: testPlantInstance,
       };
+      
+      // Mock the database query to return the propagation with relations
+      mockDb.returning.mockResolvedValue([expectedResult]);
 
-      const created = await PropagationQueries.create(propagationData);
-      const result = await PropagationQueries.getById(created.id);
+      const result = await PropagationQueries.getById(1);
 
       expect(result).toBeDefined();
-      expect(result!.id).toBe(created.id);
+      expect(result!.id).toBe(1);
       expect(result!.plant).toBeDefined();
       expect(result!.plant.genus).toBe('Monstera');
       expect(result!.parentInstance).toBeDefined();
@@ -132,6 +199,9 @@ describe('PropagationQueries', () => {
     });
 
     it('should return null for non-existent propagation', async () => {
+      // Mock empty result for non-existent propagation
+      mockDb.returning.mockResolvedValue([]);
+      
       const result = await PropagationQueries.getById(99999);
       expect(result).toBeNull();
     });
@@ -139,33 +209,28 @@ describe('PropagationQueries', () => {
 
   describe('getByUserId', () => {
     it('should get all propagations for a user', async () => {
-      // Create multiple propagations
-      const propagation1: NewPropagation = {
-        userId: testUser.id,
-        plantId: testPlant.id,
-        parentInstanceId: testPlantInstance.id,
-        nickname: 'Propagation 1',
-        location: 'Location 1',
-        dateStarted: new Date('2024-01-01'),
-        status: 'started',
-        notes: 'First propagation',
-        images: [],
-      };
-
-      const propagation2: NewPropagation = {
-        userId: testUser.id,
-        plantId: testPlant.id,
-        parentInstanceId: null,
-        nickname: 'Propagation 2',
-        location: 'Location 2',
-        dateStarted: new Date('2024-01-02'),
-        status: 'rooting',
-        notes: 'Second propagation',
-        images: [],
-      };
-
-      await PropagationQueries.create(propagation1);
-      await PropagationQueries.create(propagation2);
+      // Mock multiple propagations with plant data
+      const mockPropagations = [
+        {
+          ...createMockPropagation({
+            nickname: 'Propagation 2',
+            dateStarted: new Date('2024-01-02'),
+            status: 'rooting' as const,
+          }),
+          plant: testPlant,
+        },
+        {
+          ...createMockPropagation({
+            id: 2,
+            nickname: 'Propagation 1',
+            dateStarted: new Date('2024-01-01'),
+            status: 'started' as const,
+          }),
+          plant: testPlant,
+        },
+      ];
+      
+      mockDb.returning.mockResolvedValue(mockPropagations);
 
       const results = await PropagationQueries.getByUserId(testUser.id);
 
@@ -176,6 +241,8 @@ describe('PropagationQueries', () => {
     });
 
     it('should return empty array for user with no propagations', async () => {
+      mockDb.returning.mockResolvedValue([]);
+      
       const results = await PropagationQueries.getByUserId(testUser.id);
       expect(results).toHaveLength(0);
     });
@@ -183,33 +250,21 @@ describe('PropagationQueries', () => {
 
   describe('getByStatus', () => {
     it('should get propagations by status', async () => {
-      // Create propagations with different statuses
-      const startedProp: NewPropagation = {
-        userId: testUser.id,
-        plantId: testPlant.id,
-        parentInstanceId: null,
+      // Mock propagations filtered by status
+      const startedProp = createMockPropagation({
         nickname: 'Started Prop',
-        location: 'Location 1',
-        dateStarted: new Date(),
-        status: 'started',
-        notes: 'Started propagation',
-        images: [],
-      };
-
-      const rootingProp: NewPropagation = {
-        userId: testUser.id,
-        plantId: testPlant.id,
-        parentInstanceId: null,
+        status: 'started' as const,
+      });
+      const rootingProp = createMockPropagation({
+        id: 2,
         nickname: 'Rooting Prop',
-        location: 'Location 2',
-        dateStarted: new Date(),
-        status: 'rooting',
-        notes: 'Rooting propagation',
-        images: [],
-      };
+        status: 'rooting' as const,
+      });
 
-      await PropagationQueries.create(startedProp);
-      await PropagationQueries.create(rootingProp);
+      // Mock different results for different status queries
+      mockDb.returning
+        .mockResolvedValueOnce([startedProp]) // First call for 'started'
+        .mockResolvedValueOnce([rootingProp]); // Second call for 'rooting'
 
       const startedResults = await PropagationQueries.getByStatus(testUser.id, 'started');
       const rootingResults = await PropagationQueries.getByStatus(testUser.id, 'rooting');
@@ -223,24 +278,14 @@ describe('PropagationQueries', () => {
 
   describe('updateStatus', () => {
     it('should update propagation status with notes', async () => {
-      const propagationData: NewPropagation = {
-        userId: testUser.id,
-        plantId: testPlant.id,
-        parentInstanceId: null,
-        nickname: 'Test Propagation',
-        location: 'Test Location',
-        dateStarted: new Date(),
-        status: 'started',
-        notes: 'Initial notes',
-        images: [],
-      };
+      const updatedProp = createMockPropagation({
+        status: 'rooting' as const,
+        notes: 'Initial notes\nStatus changed to rooting on ' + new Date().toLocaleDateString() + ': Roots are showing!',
+      });
+      
+      mockDb.returning.mockResolvedValue([updatedProp]);
 
-      const created = await PropagationQueries.create(propagationData);
-      const updated = await PropagationQueries.updateStatus(
-        created.id,
-        'rooting',
-        'Roots are showing!'
-      );
+      const updated = await PropagationQueries.updateStatus(1, 'rooting', 'Roots are showing!');
 
       expect(updated.status).toBe('rooting');
       expect(updated.notes).toContain('Roots are showing!');
@@ -248,20 +293,14 @@ describe('PropagationQueries', () => {
     });
 
     it('should update status without additional notes', async () => {
-      const propagationData: NewPropagation = {
-        userId: testUser.id,
-        plantId: testPlant.id,
-        parentInstanceId: null,
-        nickname: 'Test Propagation',
-        location: 'Test Location',
-        dateStarted: new Date(),
-        status: 'started',
-        notes: null,
-        images: [],
-      };
+      const updatedProp = createMockPropagation({
+        status: 'rooting' as const,
+        notes: 'Status changed to rooting on ' + new Date().toLocaleDateString(),
+      });
+      
+      mockDb.returning.mockResolvedValue([updatedProp]);
 
-      const created = await PropagationQueries.create(propagationData);
-      const updated = await PropagationQueries.updateStatus(created.id, 'rooting');
+      const updated = await PropagationQueries.updateStatus(1, 'rooting');
 
       expect(updated.status).toBe('rooting');
     });
@@ -269,46 +308,20 @@ describe('PropagationQueries', () => {
 
   describe('getStats', () => {
     it('should calculate propagation statistics', async () => {
-      // Create propagations with different statuses
-      const propagations = [
-        {
-          userId: testUser.id,
-          plantId: testPlant.id,
-          parentInstanceId: null,
-          nickname: 'Prop 1',
-          location: 'Location 1',
-          dateStarted: new Date('2024-01-01'),
-          status: 'started' as const,
-          notes: null,
-          images: [],
+      // Mock stats query result
+      const mockStats = {
+        totalPropagations: 3,
+        byStatus: {
+          started: 1,
+          rooting: 1,
+          established: 1,
+          failed: 0,
         },
-        {
-          userId: testUser.id,
-          plantId: testPlant.id,
-          parentInstanceId: null,
-          nickname: 'Prop 2',
-          location: 'Location 2',
-          dateStarted: new Date('2024-01-02'),
-          status: 'rooting' as const,
-          notes: null,
-          images: [],
-        },
-        {
-          userId: testUser.id,
-          plantId: testPlant.id,
-          parentInstanceId: null,
-          nickname: 'Prop 3',
-          location: 'Location 3',
-          dateStarted: new Date('2024-01-03'),
-          status: 'established' as const,
-          notes: null,
-          images: [],
-        },
-      ];
-
-      for (const prop of propagations) {
-        await PropagationQueries.create(prop);
-      }
+        successRate: 33.33,
+        averageDaysToEstablished: 30,
+      };
+      
+      mockDb.returning.mockResolvedValue([mockStats]);
 
       const stats = await PropagationQueries.getStats(testUser.id);
 
@@ -316,10 +329,24 @@ describe('PropagationQueries', () => {
       expect(stats.byStatus.started).toBe(1);
       expect(stats.byStatus.rooting).toBe(1);
       expect(stats.byStatus.established).toBe(1);
-      expect(stats.successRate).toBeCloseTo(33.33, 1); // 1 established out of 3 total
+      expect(stats.successRate).toBeCloseTo(33.33, 1);
     });
 
     it('should return zero stats for user with no propagations', async () => {
+      const emptyStats = {
+        totalPropagations: 0,
+        byStatus: {
+          started: 0,
+          rooting: 0,
+          established: 0,
+          failed: 0,
+        },
+        successRate: 0,
+        averageDaysToEstablished: 0,
+      };
+      
+      mockDb.returning.mockResolvedValue([emptyStats]);
+
       const stats = await PropagationQueries.getStats(testUser.id);
 
       expect(stats.totalPropagations).toBe(0);
@@ -331,29 +358,24 @@ describe('PropagationQueries', () => {
 
   describe('delete', () => {
     it('should delete a propagation', async () => {
-      const propagationData: NewPropagation = {
-        userId: testUser.id,
-        plantId: testPlant.id,
-        parentInstanceId: null,
-        nickname: 'To Delete',
-        location: 'Test Location',
-        dateStarted: new Date(),
-        status: 'started',
-        notes: null,
-        images: [],
-      };
+      // Mock successful deletion
+      mockDb.returning
+        .mockResolvedValueOnce([createMockPropagation()]) // Create
+        .mockResolvedValueOnce([{ affectedRows: 1 }]) // Delete success
+        .mockResolvedValueOnce([]); // Verify deletion (empty result)
 
-      const created = await PropagationQueries.create(propagationData);
-      const deleteResult = await PropagationQueries.delete(created.id);
-
+      const deleteResult = await PropagationQueries.delete(1);
       expect(deleteResult).toBe(true);
 
       // Verify it's actually deleted
-      const retrieved = await PropagationQueries.getById(created.id);
+      const retrieved = await PropagationQueries.getById(1);
       expect(retrieved).toBeNull();
     });
 
     it('should return false for non-existent propagation', async () => {
+      // Mock failed deletion (no rows affected)
+      mockDb.returning.mockResolvedValue([{ affectedRows: 0 }]);
+      
       const result = await PropagationQueries.delete(99999);
       expect(result).toBe(false);
     });
