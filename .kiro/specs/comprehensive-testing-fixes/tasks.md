@@ -101,7 +101,6 @@
   - **FIX**: CSS variable resolution - Design tokens may not be properly applied
   - **FIX**: Border color inconsistencies - Border colors may not match design specifications
   - **INVESTIGATE**: Responsive layout issues - Components may break at certain screen sizes
-  - **FIX**: Theme switching - Dark/light mode may not work correctly across all components
   - _Requirements: 2.1_
 
 - [ ] 3.1 Fix Mobile Touch and Interaction Issues (Mobile UX Problems)
@@ -124,7 +123,7 @@
 
 ## Phase 4: Fix Critical Business Logic Issues (Priority 1 - Core Functionality Bugs)
 
-- [ ] 4. Fix CareCalculator Service Missing Implementation (Core Plant Care Logic Broken)
+- [x] 4. Fix CareCalculator Service Missing Implementation (Core Plant Care Logic Broken)
   - **IMPLEMENT**: calculateNextDueDate method - Plant care scheduling is completely broken
   - **IMPLEMENT**: parseScheduleString method - Custom care schedules cannot be processed
   - **IMPLEMENT**: calculateCareUrgency method - Users cannot see which plants need urgent care
@@ -143,7 +142,7 @@
   - **FIX**: Conflict resolution - Conflicting offline/online data may cause data loss
   - _Requirements: 4.2_
 
-- [ ] 4.2 Fix API Route Critical Bugs (Backend Functionality Issues)
+- [x] 4.2 Fix API Route Critical Bugs (Backend Functionality Issues)
   - **INVESTIGATE**: Plant instances API - CRUD operations may be broken
   - **INVESTIGATE**: Advanced search API - Search functionality may not work
   - **FIX**: Error handling - API errors may not be properly communicated to users

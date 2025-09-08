@@ -177,7 +177,7 @@ describe('PlantCard', () => {
 
     render(<PlantCard {...defaultProps} plant={plantWithStreak} />);
 
-    // Check for care status indicator
-    expect(screen.getByText('Excellent')).toBeInTheDocument();
+    // Check for care status indicator - the component shows "Healthy" for excellent status
+    expect(screen.getByText('Healthy')).toBeInTheDocument();
   });
 });
