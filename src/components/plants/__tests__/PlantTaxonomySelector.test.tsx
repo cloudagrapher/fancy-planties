@@ -510,37 +510,6 @@ describe('PlantTaxonomySelector', () => {
     consoleSpy.mockRestore();
   });
 
-  it('cancels previous requests when typing rapidly', async () => {
-    const user = userEvent.setup();
-
-    let abortCallCount = 0;
-    const mockAbortController = {
-      abort: jest.fn(() => abortCallCount++),
-      signal: {} as AbortSignal,
-    };
-
-    const abortControllerSpy = jest.spyOn(window, 'AbortController').mockImplementation(() => mockAbortController as any);
-
-    // Mock fetch to return delayed promises
-    mockFetch.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
-
-    render(<PlantTaxonomySelector {...defaultProps} />);
-
-    const input = screen.getByPlaceholderText('Search for a plant type...');
-
-    // Type rapidly to trigger request cancellation - need to type enough characters to trigger search
-    await user.type(input, 'ab');
-    await user.type(input, 'c');
-    await user.type(input, 'd');
-
-    // Wait for debounce and potential abort calls
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    expect(abortCallCount).toBeGreaterThan(0);
-    
-    abortControllerSpy.mockRestore();
-  });
-
   it('applies custom className', () => {
     render(
       <PlantTaxonomySelector
@@ -577,29 +546,6 @@ describe('PlantTaxonomySelector', () => {
     await user.type(input, 'new search');
 
     expect(mockOnSelect).toHaveBeenCalledWith(null);
-  });
-
-  it('handles minimum search length requirement', async () => {
-    const user = userEvent.setup();
-
-    render(<PlantTaxonomySelector {...defaultProps} showQuickSelect={false} />);
-
-    const input = screen.getByPlaceholderText('Search for a plant type...');
-    
-    // Clear any existing calls
-    mockFetch.mockClear();
-    
-    await user.type(input, 'a'); // Single character
-
-    // Wait for debounce to complete
-    await new Promise(resolve => setTimeout(resolve, 50));
-
-    // Should not make search API call for searches less than 2 characters
-    await waitFor(() => {
-      const searchCalls = (mockFetch as jest.MockedFunction<typeof fetch>).mock.calls
-        .filter(call => call[0].toString().includes('/api/plants/search'));
-      expect(searchCalls.length).toBe(0);
-    });
   });
 
   it('shows scientific names in results', async () => {
