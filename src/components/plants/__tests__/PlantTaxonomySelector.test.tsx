@@ -333,6 +333,12 @@ describe('PlantTaxonomySelector', () => {
   it('handles plant selection', async () => {
     const user = userEvent.setup();
 
+    render(<PlantTaxonomySelector {...defaultProps} />);
+
+    const input = screen.getByPlaceholderText('Search for a plant type...');
+    
+    // Clear the default mock and set specific mock for this search
+    mockFetch.mockClear();
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -342,10 +348,7 @@ describe('PlantTaxonomySelector', () => {
         },
       }),
     } as Response);
-
-    render(<PlantTaxonomySelector {...defaultProps} />);
-
-    const input = screen.getByPlaceholderText('Search for a plant type...');
+    
     await user.type(input, 'monstera');
 
     await waitFor(() => {

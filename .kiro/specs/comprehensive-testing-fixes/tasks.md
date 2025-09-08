@@ -35,3 +35,40 @@
   - Validate that fixed tests would catch real regressions
   - Document any real bugs found and fixed during the process
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
+
+- [ ] 6. Fix component bugs identified during validation
+- [ ] 6.1 Fix PlantTaxonomySelector critical issues
+  - Fix API integration to properly handle search responses
+  - Add missing accessibility attributes (title="Selected plant", role="status")
+  - Implement proper loading spinner with correct ARIA role
+  - Fix search result rendering and dropdown behavior
+  - Add proper error handling for API failures
+  - _Requirements: 7.4_
+
+- [ ] 6.2 Fix AdvancedSearchInterface functionality
+  - Fix search suggestions not appearing during typing
+  - Implement proper loading states that disable buttons correctly
+  - Fix autocomplete dropdown behavior
+  - Add proper error handling for search failures
+  - _Requirements: 7.4_
+
+- [ ] 6.3 Add missing accessibility features across components
+  - Add ARIA labels for loading indicators (role="status")
+  - Add title attributes for interactive elements
+  - Implement proper focus management
+  - Add screen reader friendly text for visual indicators
+  - _Requirements: 7.4_
+
+- [ ] 6.4 Implement proper component state management
+  - Fix loading states that don't properly disable UI elements
+  - Implement consistent error state handling
+  - Add proper feedback for async operations
+  - Fix button disabled states during loading
+  - _Requirements: 7.4_
+
+- [ ] 6.5 Update and validate component tests
+  - Update test mocks to match corrected component behavior
+  - Fix API endpoint mocking to return proper response formats
+  - Validate that all previously failing tests now pass
+  - Ensure tests still catch real regressions after fixes
+  - _Requirements: 7.4_

@@ -3,6 +3,7 @@
  * This file provides examples and templates for different types of tests
  */
 
+import React from 'react';
 import { 
   DatabaseTestManager, 
   getDatabaseTestManager,
@@ -303,7 +304,7 @@ export async function testComponentWithErrorBoundaryExample() {
   // Verify error boundary caught the error
   expect(getByTestId('error-boundary')).toBeInTheDocument();
   expect(caughtError).toBeInstanceOf(Error);
-  expect(caughtError?.message).toBe('Component error for testing');
+  expect((caughtError as Error).message).toBe('Component error for testing');
 }
 
 /**
