@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import { expect, jest } from '@jest/globals';
 import { 
   DatabaseTestManager, 
   getDatabaseTestManager,
@@ -195,7 +196,8 @@ export async function testDatabaseOperationsExample() {
       name: 'Insert User',
       operation: async () => {
         const db = dbManager.getMockDb();
-        return await db.insert('users').values({
+        const { users } = await import('@/db/schema');
+        return await db.insert(users).values({
           email: 'newuser@example.com',
           hashedPassword: 'hashed',
           name: 'New User',
@@ -210,7 +212,8 @@ export async function testDatabaseOperationsExample() {
       name: 'Query Users',
       operation: async () => {
         const db = dbManager.getMockDb();
-        return await db.select().from('users').execute();
+        const { users } = await import('@/db/schema');
+        return await db.select().from(users);
       },
       validate: (result) => {
         expect(Array.isArray(result)).toBe(true);
@@ -221,9 +224,11 @@ export async function testDatabaseOperationsExample() {
       name: 'Update User',
       operation: async () => {
         const db = dbManager.getMockDb();
-        return await db.update('users')
+        const { users } = await import('@/db/schema');
+        const { eq } = await import('drizzle-orm');
+        return await db.update(users)
           .set({ name: 'Updated Name' })
-          .where((user) => user.id === 1)
+          .where(eq(users.id, 1))
           .returning();
       },
       validate: (result) => {
@@ -233,7 +238,7 @@ export async function testDatabaseOperationsExample() {
     },
   ];
 
-  const result = await new IntegrationTestManager().testDatabaseOperations(operations);
+  const result = await dbManager.testDatabaseOperations(operations);
   
   await dbManager.teardown();
   return result;
@@ -304,7 +309,7 @@ export async function testComponentWithErrorBoundaryExample() {
   // Verify error boundary caught the error
   expect(getByTestId('error-boundary')).toBeInTheDocument();
   expect(caughtError).toBeInstanceOf(Error);
-  expect((caughtError as Error).message).toBe('Component error for testing');
+  expect(caughtError!.message).toBe('Component error for testing');
 }
 
 /**
