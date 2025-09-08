@@ -299,7 +299,7 @@ export async function testComponentWithErrorBoundaryExample() {
   });
 
   const { getByTestId } = renderWithTestConfig(
-    <TestComponent />,
+    React.createElement(TestComponent),
     {
       config,
       wrapper: ErrorWrapper,
