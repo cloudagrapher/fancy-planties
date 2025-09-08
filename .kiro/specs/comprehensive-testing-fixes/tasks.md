@@ -37,7 +37,7 @@
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
 - [ ] 6. Fix component bugs identified during validation
-- [ ] 6.1 Fix PlantTaxonomySelector critical issues
+- [x] 6.1 Fix PlantTaxonomySelector critical issues
   - Fix API integration to properly handle search responses
   - Add missing accessibility attributes (title="Selected plant", role="status")
   - Implement proper loading spinner with correct ARIA role

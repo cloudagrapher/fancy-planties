@@ -64,73 +64,94 @@ export default function PlantTaxonomySelector({
     }
   }, [selectedPlant]);
 
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce(async (query: string) => {
-      if (query.length < 2) {
+  // Search function (will be debounced)
+  const performSearch = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setSearchState(prev => ({
+        ...prev,
+        results: [],
+        isLoading: false,
+        hasSearched: false,
+      }));
+      return;
+    }
+
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    abortControllerRef.current = new AbortController();
+
+    try {
+      setSearchState(prev => ({ ...prev, isLoading: true }));
+
+      const response = await fetch(
+        `/api/plants/search?q=${encodeURIComponent(query)}&limit=10`,
+        {
+          signal: abortControllerRef.current.signal,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Handle different response formats
+      let plants: PlantSuggestion[] = [];
+      if (data.success && data.data?.plants) {
+        plants = data.data.plants;
+      } else if (data.data?.plants) {
+        plants = data.data.plants;
+      } else if (data.plants) {
+        plants = data.plants;
+      } else if (Array.isArray(data)) {
+        plants = data;
+      }
+      
+      setSearchState(prev => ({
+        ...prev,
+        results: plants,
+        isLoading: false,
+        hasSearched: true,
+        selectedIndex: -1,
+      }));
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Search error:', error);
         setSearchState(prev => ({
           ...prev,
           results: [],
           isLoading: false,
-          hasSearched: false,
-        }));
-        return;
-      }
-
-      // Cancel previous request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      abortControllerRef.current = new AbortController();
-
-      try {
-        setSearchState(prev => ({ ...prev, isLoading: true }));
-
-        const response = await fetch(
-          `/api/plants/search?q=${encodeURIComponent(query)}&limit=10`,
-          {
-            signal: abortControllerRef.current.signal,
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('Search failed');
-        }
-
-        const data = await response.json();
-        
-        setSearchState(prev => ({
-          ...prev,
-          results: data.data?.plants || [],
-          isLoading: false,
           hasSearched: true,
-          selectedIndex: -1,
         }));
-      } catch (error) {
-        if (error instanceof Error && error.name !== 'AbortError') {
-          console.error('Search error:', error);
-          setSearchState(prev => ({
-            ...prev,
-            results: [],
-            isLoading: false,
-            hasSearched: true,
-          }));
-        }
       }
-    }, 300),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    }
+  }, []);
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce(performSearch, 300),
+    [performSearch]
   );
 
   // Load quick select data on mount
   useEffect(() => {
     if (showQuickSelect) {
       fetch('/api/plants/suggestions?type=quick')
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
         .then(data => {
-          if (data.success && data.data.quickSelect) {
+          if (data.success && data.data?.quickSelect) {
             setQuickSelect(data.data.quickSelect);
+          } else if (data.quickSelect) {
+            setQuickSelect(data.quickSelect);
           }
         })
         .catch(error => console.error('Failed to load quick select:', error));
@@ -150,7 +171,18 @@ export default function PlantTaxonomySelector({
       onSelect(null);
     }
 
-    debouncedSearch(query);
+    // Only search if query is long enough
+    if (query.length >= 2) {
+      debouncedSearch(query);
+    } else {
+      // Clear results for short queries
+      setSearchState(prev => ({
+        ...prev,
+        results: [],
+        isLoading: false,
+        hasSearched: false,
+      }));
+    }
   };
 
   // Handle input focus
@@ -306,6 +338,11 @@ export default function PlantTaxonomySelector({
           placeholder={placeholder}
           disabled={disabled}
           autoFocus={autoFocus}
+          role="combobox"
+          aria-expanded={searchState.showDropdown}
+          aria-haspopup="listbox"
+          aria-autocomplete="list"
+          aria-describedby={selectedPlant ? 'selected-plant-indicator' : undefined}
           className={`
             w-full px-4 py-3 text-base text-gray-900 placeholder-gray-500 border rounded-lg
             focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300
@@ -318,14 +355,24 @@ export default function PlantTaxonomySelector({
         {/* Loading Spinner */}
         {searchState.isLoading && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <div className="animate-spin h-5 w-5 border-2 border-primary-300 border-t-transparent rounded-full"></div>
+            <div 
+              className="animate-spin h-5 w-5 border-2 border-primary-300 border-t-transparent rounded-full"
+              role="status"
+              aria-label="Searching for plants"
+            ></div>
           </div>
         )}
 
         {/* Selected Plant Indicator */}
         {selectedPlant && !searchState.isLoading && (
           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <div className="h-5 w-5 bg-primary-400 rounded-full flex items-center justify-center">
+            <div 
+              id="selected-plant-indicator"
+              className="h-5 w-5 bg-primary-400 rounded-full flex items-center justify-center"
+              title="Selected plant"
+              role="status"
+              aria-label="Plant selected"
+            >
               <svg className="h-3 w-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
@@ -339,6 +386,8 @@ export default function PlantTaxonomySelector({
         <div
           ref={dropdownRef}
           className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto"
+          role="listbox"
+          aria-label="Plant search results"
         >
           {dropdownItems.map((item, index) => {
             if (item.type === 'section-header') {
@@ -346,6 +395,8 @@ export default function PlantTaxonomySelector({
                 <div
                   key={`header-${index}`}
                   className="px-4 py-2 text-sm font-medium text-gray-500 bg-gray-50 border-b border-gray-100"
+                  role="status"
+                  aria-live="polite"
                 >
                   {item.label}
                 </div>
@@ -358,6 +409,8 @@ export default function PlantTaxonomySelector({
                 <button
                   key={`add-new-${index}`}
                   onClick={handleAddNew}
+                  role="option"
+                  aria-selected={isSelected}
                   className={`
                     w-full px-4 py-3 text-left hover:bg-secondary-50 border-b border-gray-100 last:border-b-0
                     flex items-center space-x-3
@@ -389,6 +442,8 @@ export default function PlantTaxonomySelector({
                 <button
                   key={`plant-${index}`}
                   onClick={() => handleSelectPlant(plant)}
+                  role="option"
+                  aria-selected={isSelected}
                   className={`
                     w-full px-4 py-3 text-left hover:bg-primary-50 border-b border-gray-100 last:border-b-0
                     ${isSelected ? 'bg-primary-100' : ''}

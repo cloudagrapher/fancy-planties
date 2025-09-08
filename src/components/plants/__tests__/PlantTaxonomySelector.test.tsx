@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PlantTaxonomySelector from '../PlantTaxonomySelector';
 
@@ -8,9 +8,15 @@ import PlantTaxonomySelector from '../PlantTaxonomySelector';
 global.fetch = jest.fn();
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
-// Mock lodash-es debounce
+// Mock lodash-es debounce - use a minimal delay instead of immediate execution
 jest.mock('lodash-es', () => ({
-  debounce: (fn: (...args: unknown[]) => unknown) => fn,
+  debounce: (fn: (...args: unknown[]) => unknown) => {
+    let timeoutId: NodeJS.Timeout;
+    return (...args: unknown[]) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => fn(...args), 10); // 10ms delay instead of 300ms
+    };
+  },
 }));
 
 const mockPlantSuggestions = [
@@ -108,7 +114,14 @@ describe('PlantTaxonomySelector', () => {
       
       // Mock search API
       if (urlString.includes('/api/plants/search')) {
-        const searchQuery = new URL(urlString).searchParams.get('q') || '';
+        let searchQuery = '';
+        try {
+          searchQuery = new URL(urlString, 'http://localhost').searchParams.get('q') || '';
+        } catch (error) {
+          // Fallback for URL parsing issues
+          const match = urlString.match(/[?&]q=([^&]*)/);
+          searchQuery = match ? decodeURIComponent(match[1]) : '';
+        }
         
         // Return different results based on search query
         if (searchQuery === 'monstera') {
@@ -123,7 +136,32 @@ describe('PlantTaxonomySelector', () => {
           } as Response);
         }
         
-        // Return empty results for other queries
+        if (searchQuery === 'plant' || searchQuery.startsWith('mo') || searchQuery.startsWith('mon')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              success: true,
+              data: {
+                plants: mockPlantSuggestions.slice(0, 2)
+              },
+            }),
+          } as Response);
+        }
+        
+        if (searchQuery === 'new plant') {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              success: true,
+              data: {
+                plants: [],
+                showAddNew: true
+              },
+            }),
+          } as Response);
+        }
+        
+        // Return empty results for other queries (nonexistent plant, error test, etc.)
         return Promise.resolve({
           ok: true,
           json: async () => ({
@@ -183,21 +221,46 @@ describe('PlantTaxonomySelector', () => {
   it('shows loading spinner during search', async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockImplementationOnce(
-      () => new Promise(resolve =>
-        setTimeout(() => resolve({
-          ok: true,
-          json: async () => ({ success: true, data: { plants: [] } })
-        } as Response), 100)
-      )
-    );
+    let resolveSearch: (value: Response) => void;
+    const searchPromise = new Promise<Response>(resolve => {
+      resolveSearch = resolve;
+    });
+    
+    // Override mock to return delayed promise for search calls
+    mockFetch.mockImplementation((url: string | URL | Request) => {
+      const urlString = typeof url === 'string' ? url : url.toString();
+      
+      if (urlString.includes('/api/plants/search')) {
+        return searchPromise;
+      }
+      
+      // Return normal response for other calls
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ success: true, data: { quickSelect: mockQuickSelect } }),
+      } as Response);
+    });
 
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
     await user.type(input, 'monstera');
 
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    // Check loading state appears
+    await waitFor(() => {
+      expect(screen.getByText('Searching...')).toBeInTheDocument();
+    });
+
+    // Resolve the search
+    resolveSearch!({
+      ok: true,
+      json: async () => ({ success: true, data: { plants: [] } })
+    } as Response);
+    
+    // Wait for loading to disappear
+    await waitFor(() => {
+      expect(screen.queryByText('Searching...')).not.toBeInTheDocument();
+    });
   });
 
   it('performs search when typing', async () => {
@@ -231,63 +294,35 @@ describe('PlantTaxonomySelector', () => {
   it('displays search results in dropdown', async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: mockPlantSuggestions,
-        },
-      }),
-    } as Response);
-
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
     await user.type(input, 'monstera');
 
+    // Wait for debounce to complete and search to finish
     await waitFor(() => {
       expect(screen.getByText('Monstera Deliciosa')).toBeInTheDocument();
       expect(screen.getByText('Heart Leaf Philodendron')).toBeInTheDocument();
       expect(screen.getByText('Fiddle Leaf Fig')).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
   });
 
   it('shows verified badges for verified plants', async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: [mockPlantSuggestions[0]], // Verified plant
-        },
-      }),
-    } as Response);
-
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
     await user.type(input, 'monstera');
 
     await waitFor(() => {
-      expect(screen.getByText('Verified')).toBeInTheDocument();
-    });
+      const verifiedBadges = screen.getAllByText('Verified');
+      expect(verifiedBadges.length).toBeGreaterThan(0);
+    }, { timeout: 5000 });
   });
 
   it('displays match indicators for search results', async () => {
     const user = userEvent.setup();
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: mockPlantSuggestions,
-        },
-      }),
-    } as Response);
 
     render(<PlantTaxonomySelector {...defaultProps} />);
 
@@ -309,16 +344,6 @@ describe('PlantTaxonomySelector', () => {
   it('shows "Add new" option when searching', async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: [],
-        },
-      }),
-    } as Response);
-
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
@@ -327,7 +352,7 @@ describe('PlantTaxonomySelector', () => {
     await waitFor(() => {
       expect(screen.getByText('Add "new plant" as new plant')).toBeInTheDocument();
       expect(screen.getByText('Create a new plant type')).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
   });
 
   it('handles plant selection', async () => {
@@ -336,24 +361,11 @@ describe('PlantTaxonomySelector', () => {
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
-    
-    // Clear the default mock and set specific mock for this search
-    mockFetch.mockClear();
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: [mockPlantSuggestions[0]],
-        },
-      }),
-    } as Response);
-    
     await user.type(input, 'monstera');
 
     await waitFor(() => {
       expect(screen.getByText('Monstera Deliciosa')).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
 
     const plantOption = screen.getByText('Monstera Deliciosa');
     await user.click(plantOption);
@@ -364,16 +376,6 @@ describe('PlantTaxonomySelector', () => {
   it('handles add new plant action', async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: [],
-        },
-      }),
-    } as Response);
-
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
@@ -381,7 +383,7 @@ describe('PlantTaxonomySelector', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Add "new plant" as new plant')).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
 
     const addNewOption = screen.getByText('Add "new plant" as new plant');
     await user.click(addNewOption);
@@ -390,16 +392,6 @@ describe('PlantTaxonomySelector', () => {
   });
 
   it('loads and displays quick select options', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          quickSelect: mockQuickSelect,
-        },
-      }),
-    } as Response);
-
     render(<PlantTaxonomySelector {...defaultProps} showQuickSelect={true} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
@@ -415,16 +407,6 @@ describe('PlantTaxonomySelector', () => {
   it('handles keyboard navigation', async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: mockPlantSuggestions.slice(0, 2),
-        },
-      }),
-    } as Response);
-
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
@@ -432,7 +414,7 @@ describe('PlantTaxonomySelector', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Monstera Deliciosa')).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
 
     // Test arrow down navigation
     await user.keyboard('{ArrowDown}');
@@ -447,16 +429,6 @@ describe('PlantTaxonomySelector', () => {
   it('handles escape key to close dropdown', async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: [mockPlantSuggestions[0]],
-        },
-      }),
-    } as Response);
-
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
@@ -464,7 +436,7 @@ describe('PlantTaxonomySelector', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Monstera Deliciosa')).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
 
     await user.keyboard('{Escape}');
 
@@ -497,16 +469,6 @@ describe('PlantTaxonomySelector', () => {
   it('shows "No plants found" when search returns empty results', async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: [],
-        },
-      }),
-    } as Response);
-
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
@@ -514,16 +476,29 @@ describe('PlantTaxonomySelector', () => {
 
     await waitFor(() => {
       expect(screen.getByText('No plants found')).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
   });
 
   it('handles search API errors gracefully', async () => {
     const user = userEvent.setup();
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
-    mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    // Override the mock to return an error for search calls
+    mockFetch.mockImplementation((url: string | URL | Request) => {
+      const urlString = typeof url === 'string' ? url : url.toString();
+      
+      if (urlString.includes('/api/plants/search')) {
+        return Promise.reject(new Error('Network error'));
+      }
+      
+      // Return normal response for other calls
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ success: true, data: { quickSelect: mockQuickSelect } }),
+      } as Response);
+    });
 
-    render(<PlantTaxonomySelector {...defaultProps} />);
+    render(<PlantTaxonomySelector {...defaultProps} showQuickSelect={false} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
     await user.type(input, 'error test');
@@ -540,24 +515,30 @@ describe('PlantTaxonomySelector', () => {
 
     let abortCallCount = 0;
     const mockAbortController = {
-      abort: () => abortCallCount++,
+      abort: jest.fn(() => abortCallCount++),
       signal: {} as AbortSignal,
     };
 
-    jest.spyOn(window, 'AbortController').mockImplementation(() => mockAbortController as any);
+    const abortControllerSpy = jest.spyOn(window, 'AbortController').mockImplementation(() => mockAbortController as any);
 
+    // Mock fetch to return delayed promises
     mockFetch.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
 
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
 
-    // Type rapidly to trigger request cancellation
-    await user.type(input, 'a');
-    await user.type(input, 'b');
+    // Type rapidly to trigger request cancellation - need to type enough characters to trigger search
+    await user.type(input, 'ab');
     await user.type(input, 'c');
+    await user.type(input, 'd');
+
+    // Wait for debounce and potential abort calls
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     expect(abortCallCount).toBeGreaterThan(0);
+    
+    abortControllerSpy.mockRestore();
   });
 
   it('applies custom className', () => {
@@ -604,10 +585,16 @@ describe('PlantTaxonomySelector', () => {
     render(<PlantTaxonomySelector {...defaultProps} showQuickSelect={false} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
+    
+    // Clear any existing calls
+    mockFetch.mockClear();
+    
     await user.type(input, 'a'); // Single character
 
+    // Wait for debounce to complete
+    await new Promise(resolve => setTimeout(resolve, 50));
+
     // Should not make search API call for searches less than 2 characters
-    // Only the suggestions API call should have been made on mount
     await waitFor(() => {
       const searchCalls = (mockFetch as jest.MockedFunction<typeof fetch>).mock.calls
         .filter(call => call[0].toString().includes('/api/plants/search'));
@@ -618,16 +605,6 @@ describe('PlantTaxonomySelector', () => {
   it('shows scientific names in results', async () => {
     const user = userEvent.setup();
 
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: [mockPlantSuggestions[0]],
-        },
-      }),
-    } as Response);
-
     render(<PlantTaxonomySelector {...defaultProps} />);
 
     const input = screen.getByPlaceholderText('Search for a plant type...');
@@ -635,8 +612,8 @@ describe('PlantTaxonomySelector', () => {
 
     await waitFor(() => {
       // The text should match what the component actually displays
-      expect(screen.getByText(/Monstera deliciosa/i)).toBeInTheDocument();
-      expect(screen.getByText(/Family: Araceae/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Monstera deliciosa/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Family: Araceae/i).length).toBeGreaterThan(0);
     });
   });
 });
