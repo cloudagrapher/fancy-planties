@@ -478,14 +478,58 @@ export class CSVImportProcessor {
 
   private async findPlantForPropagation(data: ProcessedPropagation, rowIndex: number): Promise<number | null> {
     const matchResult = await this.plantMatcher.findMatches({
-      'Common Name/Variety': data.commonName,
+      'Family': data.family || '',
+      'Genus': data.genus || '',
+      'Species': data.species || '',
+      'Cultivar': data.cultivar || '',
+      'Common Name': data.commonName,
     });
 
-    if (matchResult.bestMatch && matchResult.confidence > this.config.matchingThreshold) {
+    // Use a lower threshold for propagations since we want to be more permissive
+    const propagationMatchingThreshold = Math.min(0.6, this.config.matchingThreshold);
+    
+    if (matchResult.bestMatch && matchResult.confidence > propagationMatchingThreshold) {
       return matchResult.bestMatch.plantId;
     }
 
-    this.addError(rowIndex, `Could not find plant for propagation: ${data.commonName}`, 'error');
+    // If no match found, try again with just taxonomy (family, genus, species)
+    if (data.family && data.genus && data.species) {
+      const taxonomyMatchResult = await this.plantMatcher.findMatches({
+        'Family': data.family,
+        'Genus': data.genus,
+        'Species': data.species,
+        'Cultivar': data.cultivar || '',
+        'Common Name': '',
+      });
+      
+      if (taxonomyMatchResult.bestMatch && taxonomyMatchResult.confidence > 0.8) {
+        this.addWarning(rowIndex, `Using taxonomy match for propagation: ${data.commonName} -> ${taxonomyMatchResult.bestMatch.plant.commonName}`, 'warning');
+        return taxonomyMatchResult.bestMatch.plantId;
+      }
+    }
+
+    // If we still can't find a match, create a new plant entry for propagations import
+    if (data.family && data.genus && data.species && data.commonName) {
+      try {
+        const newPlant = await db.insert(plants).values({
+          family: data.family,
+          genus: data.genus,
+          species: data.species.toLowerCase(),
+          cultivar: data.cultivar || null,
+          commonName: data.commonName,
+          createdBy: this.config.userId,
+          isVerified: false,
+        }).returning({ id: plants.id });
+
+        this.addWarning(rowIndex, `Created new plant for propagation: ${data.commonName} (${data.genus} ${data.species})`, 'warning');
+        return newPlant[0].id;
+      } catch (error) {
+        this.addError(rowIndex, `Could not create plant for propagation: ${data.commonName} - ${error}`, 'error');
+        return null;
+      }
+    }
+
+    this.addError(rowIndex, `Could not find or create plant for propagation: ${data.commonName} (Family: ${data.family}, Genus: ${data.genus}, Species: ${data.species})`, 'error');
     return null;
   }
 
