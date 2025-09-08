@@ -360,6 +360,7 @@ export default function PlantTaxonomySelector({
               role="status"
               aria-label="Searching for plants"
             ></div>
+            <span className="sr-only">Searching for plants...</span>
           </div>
         )}
 
