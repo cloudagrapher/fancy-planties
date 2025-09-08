@@ -114,8 +114,10 @@ export default function PlantsGrid({
     if (useSearchResults && searchResults) {
       return (searchResults.instances || []).filter(Boolean);
     }
-    return data?.pages.flatMap(page => page.instances).filter(Boolean) ?? [];
-  }, [data, searchResults, useSearchResults]);
+    const result = data?.pages.flatMap(page => page.instances).filter(Boolean) ?? [];
+    console.log('PlantsGrid debug:', { data, pages: data?.pages, result: result.length, isError, isLoading });
+    return result;
+  }, [data, searchResults, useSearchResults, isError, isLoading]);
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
