@@ -354,6 +354,31 @@ docs(api): update authentication documentation
 test(components): add PlantCard component tests
 ```
 
+### CI/CD Skip Instructions
+
+To save CI/CD resources and time when making documentation-only changes, you can skip Docker builds by starting your commit message with specific keywords:
+
+**Skip Keywords:**
+- `[skip ci]` or `[ci skip]` - Standard CI skip patterns
+- `[skip build]` or `[build skip]` - Explicit build skip  
+- `[docs]` - For documentation-only changes
+- `[readme]` - For README updates
+
+**How It Works:**
+- **Two-job structure**: `check-skip` job analyzes commit message, `build-and-push` job only runs if skip condition is false
+- **Clear feedback**: Shows which commit message triggered the skip and lists all available skip keywords
+- **PR validation**: Workflow still runs for pull requests to validate changes, but won't push new Docker images unnecessarily
+
+**Usage Examples:**
+```bash
+git commit -m "[readme] Update development setup instructions"     # Skips build
+git commit -m "[docs] Fix typo in API documentation"              # Skips build  
+git commit -m "[skip build] Minor formatting changes"             # Skips build
+git commit -m "feat(plants): add new search functionality"        # Normal build
+```
+
+This feature helps save CI/CD resources while ensuring all code changes still go through proper validation.
+
 ### Pull Request Process
 
 1. **Push your branch**:
