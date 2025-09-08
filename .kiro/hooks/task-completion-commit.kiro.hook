@@ -11,6 +11,6 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "A task has been marked as complete in a spec file. Please:\n\n1. Read the updated spec file to identify which tasks were completed\n2. Generate a commit message using the completed task list\n3. Stage all changed files in the repository\n4. Create a commit with the task-based message\n5. Push the commit to the remote repository\n\nFollow the version control guidelines in .kiro/steering/version-control.md for commit message format and process."
+    "prompt": "A task has been marked as complete in a spec file. Please:\n\n***IMPORTANT*** only execute this hook if a task was marked as completed. Which means the prefix - [ ] before a task has changed to - [x]\n\n1. Read the updated spec file to identify which tasks were completed\n2. Generate a commit message using the completed task list\n3. Stage all changed files in the repository\n4. Create a commit with the task-based message\n5. Push the commit to the remote repository\n\nFollow the version control guidelines in .kiro/steering/version-control.md for commit message format and process."
   }
 }
