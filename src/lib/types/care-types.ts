@@ -13,6 +13,22 @@ export type CareType =
   | 'inspect'
   | 'other';
 
+// Care frequency enumeration
+export type CareFrequency = 
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'seasonal'
+  | 'custom';
+
+// Care schedule interface for structured scheduling
+export interface CareSchedule {
+  frequency: CareFrequency;
+  interval: number;
+  careType: CareType;
+  customDays?: number; // For custom frequency
+}
+
 // Care status enumeration
 export type CareStatus = 
   | 'healthy'      // No care needed
