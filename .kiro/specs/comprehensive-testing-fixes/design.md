@@ -2,520 +2,334 @@
 
 ## Overview
 
-This design outlines a comprehensive approach to fix all 121 failing tests and establish robust testing practices. The solution addresses test infrastructure issues, component testing problems, service layer validation, and specific database-driven card display issues. The design prioritizes fixing critical infrastructure first, then component-specific issues, and finally implementing enhanced test coverage.
+This design addresses systematic test failures across the plant tracker application by implementing a comprehensive testing infrastructure overhaul. The solution focuses on four key areas: database test mocking, component dependency management, browser API mocking consistency, and test environment isolation. The design ensures all tests can run reliably in CI/CD environments without external dependencies while maintaining realistic test scenarios.
 
 ## Architecture
 
-### Testing Infrastructure Layer
+### Test Infrastructure Layers
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Test Infrastructure                       │
+│                    Test Execution Layer                     │
 ├─────────────────────────────────────────────────────────────┤
-│ • Jest Configuration & Setup                                │
-│ • Browser API Mocking (localStorage, navigator, etc.)      │
-│ • Next.js API Mocking (Request, Response)                  │
-│ • JSDOM Environment Configuration                           │
-│ • CSS-in-JS Testing Support                                │
-└─────────────────────────────────────────────────────────────┘
-                              │
-┌─────────────────────────────────────────────────────────────┐
-│                   Component Testing Layer                   │
+│  Jest Configuration │ Test Environment │ Coverage Reporting │
 ├─────────────────────────────────────────────────────────────┤
-│ • React Testing Library Utilities                          │
-│ • Component Mocking Strategies                             │
-│ • Accessibility Testing Tools                              │
-│ • Visual Regression Testing                                │
-│ • Responsive Design Testing                                │
-└─────────────────────────────────────────────────────────────┘
-                              │
-┌─────────────────────────────────────────────────────────────┐
-│                   Service Testing Layer                     │
+│                   Mock Management Layer                     │
 ├─────────────────────────────────────────────────────────────┤
-│ • Database Query Mocking                                   │
-│ • API Route Testing                                        │
-│ • Business Logic Validation                                │
-│ • Error Handling Testing                                   │
-│ • Integration Testing                                      │
+│ Database Mocks │ Browser API Mocks │ Component Mocks      │
+├─────────────────────────────────────────────────────────────┤
+│                   Test Data Layer                          │
+├─────────────────────────────────────────────────────────────┤
+│ Plant Fixtures │ User Fixtures │ API Response Fixtures    │
+├─────────────────────────────────────────────────────────────┤
+│                 Test Utilities Layer                       │
+├─────────────────────────────────────────────────────────────┤
+│ Render Helpers │ Mock Factories │ Assertion Helpers       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Test Categories and Priority
+### Database Testing Strategy
 
-1. **Critical Infrastructure** (Priority 1)
-   - Jest setup and configuration
-   - Browser API mocking
-   - Next.js compatibility
+Instead of requiring live PostgreSQL connections, implement a multi-tier mocking approach:
 
-2. **Component Tests** (Priority 2)
-   - PlantCard, SearchResults, CareDashboard
-   - All form components (7 forms total)
-   - Form validation and accessibility
-   - Modal and navigation components
+1. **In-Memory Database**: Use SQLite in-memory for integration tests that need real SQL operations
+2. **Query Mocking**: Mock Drizzle ORM queries for unit tests
+3. **Connection Mocking**: Mock database connection for tests that only need to verify query construction
 
-3. **Service Layer Tests** (Priority 3)
-   - CareCalculator implementation
-   - Database statistics services
-   - API route handlers
+### Component Testing Strategy
 
-4. **Integration Tests** (Priority 4)
-   - End-to-end workflows
-   - Component integration
-   - Data flow validation
+Implement comprehensive dependency injection for component tests:
+
+1. **Hook Mocking**: Mock all custom hooks with realistic return values
+2. **API Mocking**: Provide consistent fetch mocks with proper response formatting
+3. **Browser API Mocking**: Mock all browser APIs used by components
+4. **State Management**: Mock React Query and other state management libraries
 
 ## Components and Interfaces
 
-### Test Infrastructure Components
+### Database Mock System
 
-#### Jest Configuration Enhancement
 ```typescript
-// jest.config.js enhancements
-interface JestConfig {
-  testEnvironment: 'jsdom';
-  setupFilesAfterEnv: string[];
-  moduleNameMapping: Record<string, string>;
-  transform: Record<string, string>;
-  collectCoverageFrom: string[];
-  coverageThreshold: {
-    global: {
-      branches: number;
-      functions: number;
-      lines: number;
-      statements: number;
-    };
-  };
+interface DatabaseMockConfig {
+  useInMemory: boolean;
+  mockQueries: boolean;
+  seedData?: TestDataSeed;
+}
+
+interface TestDataSeed {
+  users: TestUser[];
+  plants: TestPlant[];
+  plantInstances: TestPlantInstance[];
+  propagations: TestPropagation[];
+}
+
+class DatabaseTestManager {
+  setup(config: DatabaseMockConfig): Promise<void>;
+  teardown(): Promise<void>;
+  seedTestData(data: TestDataSeed): Promise<void>;
+  clearTestData(): Promise<void>;
 }
 ```
 
-#### Browser API Mocking Service
+### Component Test Utilities
+
+```typescript
+interface ComponentTestConfig {
+  mockUser?: TestUser;
+  mockPlants?: TestPlant[];
+  mockApiResponses?: Record<string, any>;
+  mockHooks?: Record<string, any>;
+}
+
+interface TestRenderOptions extends RenderOptions {
+  config?: ComponentTestConfig;
+  wrapper?: ComponentType<any>;
+}
+
+function renderWithTestConfig(
+  component: ReactElement,
+  options?: TestRenderOptions
+): RenderResult;
+```
+
+### Mock Factory System
+
+```typescript
+interface MockFactory<T> {
+  create(overrides?: Partial<T>): T;
+  createMany(count: number, overrides?: Partial<T>): T[];
+  reset(): void;
+}
+
+class TestDataFactory {
+  users: MockFactory<TestUser>;
+  plants: MockFactory<TestPlant>;
+  plantInstances: MockFactory<TestPlantInstance>;
+  propagations: MockFactory<TestPropagation>;
+  apiResponses: MockFactory<ApiResponse>;
+}
+```
+
+### Browser API Mock Manager
+
 ```typescript
 interface BrowserAPIMocks {
-  setupLocalStorage(): void;
-  setupNavigator(): void;
-  setupMatchMedia(): void;
-  setupIntersectionObserver(): void;
-  setupResizeObserver(): void;
-  setupGetComputedStyle(): void;
-  cleanup(): void;
-}
-```
-
-#### Component Testing Utilities
-```typescript
-interface ComponentTestUtils {
-  renderWithProviders(component: ReactElement, options?: RenderOptions): RenderResult;
-  createMockUser(): UserEvent;
-  mockNextRouter(overrides?: Partial<NextRouter>): void;
-  waitForLoadingToFinish(): Promise<void>;
-  expectAccessibleName(element: HTMLElement, name: string): void;
-}
-```
-
-#### Form Testing Utilities
-```typescript
-interface FormTestUtils {
-  fillForm(formData: Record<string, string>): Promise<void>;
-  submitForm(): Promise<void>;
-  expectValidationError(fieldName: string, errorMessage: string): void;
-  expectFormSubmission(expectedData: Record<string, any>): void;
-  testFormAccessibility(formElement: HTMLElement): void;
-  testKeyboardNavigation(formElement: HTMLElement): Promise<void>;
+  navigator: MockNavigator;
+  performance: MockPerformance;
+  localStorage: MockStorage;
+  sessionStorage: MockStorage;
+  fetch: MockFetch;
 }
 
-interface FormTestSuite {
-  testValidation(): void;
-  testSubmission(): void;
-  testErrorHandling(): void;
-  testAccessibility(): void;
-  testLoadingStates(): void;
-  testKeyboardNavigation(): void;
-}
-```
-
-#### Image Upload Testing Utilities
-```typescript
-interface ImageUploadTestUtils {
-  createMockFile(name: string, size: number, type: string): File;
-  simulateFileSelection(files: File[]): Promise<void>;
-  simulateDragAndDrop(files: File[]): Promise<void>;
-  expectUploadProgress(percentage: number): void;
-  expectImagePreview(src: string): void;
-  expectUploadError(errorMessage: string): void;
-}
-
-interface ImageGalleryTestUtils {
-  expectImageCount(count: number): void;
-  expectImageSrc(index: number, src: string): void;
-  simulateImageClick(index: number): Promise<void>;
-  expectImageAccessibility(index: number): void;
-  testKeyboardNavigation(): Promise<void>;
-}
-```
-
-#### Plant Editing Testing Utilities
-```typescript
-interface PlantEditTestUtils {
-  loadPlantForEditing(plantId: number): Promise<void>;
-  expectFieldValue(fieldName: string, value: string): void;
-  updateField(fieldName: string, newValue: string): Promise<void>;
-  saveChanges(): Promise<void>;
-  cancelChanges(): Promise<void>;
-  expectUnsavedChangesWarning(): void;
-}
-```
-
-### Database Statistics Testing
-
-#### Statistics Service Interface
-```typescript
-interface StatisticsService {
-  getGuideStatistics(userId: number): Promise<GuideStats>;
-  getPropagationStatistics(userId: number): Promise<PropagationStats>;
-  getPlantCareStatistics(userId: number): Promise<PlantCareStats>;
-}
-
-interface GuideStats {
-  totalGuides: number;
-  publicGuides: number;
-  privateGuides: number;
-  mostCommonLevel: string | null;
-}
-
-interface PropagationStats {
-  totalPropagations: number;
-  successRate: number;
-  avgDaysToEstablish: number;
-  activePropagations: number;
-}
-
-interface PlantCareStats {
-  totalPlants: number;
-  careStreak: number;
-  weeklyEvents: number;
-  consistencyPercentage: number;
-  consistencyRating: 'Poor' | 'Good' | 'Excellent';
-}
-```
-
-#### Card Component Testing Interface
-```typescript
-interface CardTestSuite {
-  testZeroStates(): void;
-  testLoadingStates(): void;
-  testErrorStates(): void;
-  testDataFormatting(): void;
-  testAccessibility(): void;
-  testResponsiveLayout(): void;
+class BrowserMockManager {
+  setup(): BrowserAPIMocks;
+  reset(): void;
+  teardown(): void;
 }
 ```
 
 ## Data Models
 
-### Test Data Factories
+### Test Data Structures
 
-#### Form Test Data
 ```typescript
-interface FormTestData {
-  signIn: {
-    validEmail: string;
-    validPassword: string;
-    invalidEmail: string;
-    weakPassword: string;
-  };
-  signUp: {
-    validUser: {
-      email: string;
-      password: string;
-      confirmPassword: string;
-      name: string;
-    };
-    invalidUser: {
-      email: string;
-      password: string;
-      confirmPassword: string;
-    };
-  };
-  plantTaxonomy: {
-    validPlant: {
-      family: string;
-      genus: string;
-      species: string;
-      commonName: string;
-    };
-    invalidPlant: {
-      family: string;
-      genus: string;
-    };
-  };
-  plantInstance: {
-    validInstance: {
-      nickname: string;
-      location: string;
-      acquiredDate: string;
-      careSchedule: object;
-    };
-  };
-  careGuide: {
-    validGuide: {
-      title: string;
-      content: string;
-      isPublic: boolean;
-      difficulty: string;
-    };
-  };
-  quickCare: {
-    validCare: {
-      plantId: number;
-      careType: string;
-      careDate: string;
-      notes: string;
-    };
-  };
-  propagation: {
-    validPropagation: {
-      parentPlantId: number;
-      method: string;
-      startDate: string;
-      notes: string;
-    };
-  };
-  imageUpload: {
-    validImage: File;
-    invalidImage: File;
-    largeImage: File;
-    unsupportedFormat: File;
-  };
-  plantEdit: {
-    existingPlant: {
-      id: number;
-      nickname: string;
-      location: string;
-      notes: string;
-      images: string[];
-    };
-    updatedPlant: {
-      nickname: string;
-      location: string;
-      notes: string;
-    };
-  };
-}
-```
-
-#### Plant Test Data
-```typescript
-interface PlantTestData {
+interface TestUser {
   id: number;
-  nickname: string;
+  email: string;
+  username: string;
+  createdAt: Date;
+  isActive: boolean;
+}
+
+interface TestPlant {
+  id: number;
   scientificName: string;
+  commonName: string;
+  family: string;
+  genus: string;
+  species: string;
+}
+
+interface TestPlantInstance {
+  id: number;
+  userId: number;
+  plantId: number;
+  nickname: string;
   location: string;
-  status: 'healthy' | 'needs_attention' | 'critical';
-  lastCareDate: Date | null;
-  nextCareDate: Date | null;
-  careStreak: number;
-  images: string[];
+  acquiredDate: Date;
+  isActive: boolean;
+  lastWatered?: Date;
+  lastFertilized?: Date;
 }
 
-const createMockPlant = (overrides?: Partial<PlantTestData>): PlantTestData => ({
-  id: 1,
-  nickname: 'My Monstera',
-  scientificName: 'Monstera deliciosa',
-  location: 'Living Room',
-  status: 'healthy',
-  lastCareDate: new Date('2024-01-01'),
-  nextCareDate: new Date('2024-01-08'),
-  careStreak: 5,
-  images: [],
-  ...overrides
-});
-```
-
-#### Care Dashboard Test Data
-```typescript
-interface CareDashboardTestData {
-  statistics: {
-    overdueCount: number;
-    dueTodayCount: number;
-    dueSoonCount: number;
-    totalPlants: number;
-  };
-  overdue: PlantTestData[];
-  dueToday: PlantTestData[];
-  dueSoon: PlantTestData[];
-  recentlyCared: PlantTestData[];
+interface TestPropagation {
+  id: number;
+  userId: number;
+  plantInstanceId?: number;
+  method: string;
+  status: string;
+  startDate: Date;
+  notes?: string;
 }
 ```
 
-### Mock Data Generators
+### Mock Response Schemas
 
-#### Statistics Mock Generator
 ```typescript
-class StatisticsMockGenerator {
-  static generateGuideStats(overrides?: Partial<GuideStats>): GuideStats {
-    return {
-      totalGuides: 0,
-      publicGuides: 0,
-      privateGuides: 0,
-      mostCommonLevel: null,
-      ...overrides
-    };
-  }
+interface MockApiResponse<T = any> {
+  data?: T;
+  error?: string;
+  status: number;
+  headers?: Record<string, string>;
+}
 
-  static generatePropagationStats(overrides?: Partial<PropagationStats>): PropagationStats {
-    return {
-      totalPropagations: 1,
-      successRate: 0,
-      avgDaysToEstablish: 0,
-      activePropagations: 1,
-      ...overrides
-    };
-  }
-
-  static generatePlantCareStats(overrides?: Partial<PlantCareStats>): PlantCareStats {
-    return {
-      totalPlants: 186,
-      careStreak: 0,
-      weeklyEvents: 0,
-      consistencyPercentage: 100,
-      consistencyRating: 'Excellent',
-      ...overrides
-    };
-  }
+interface MockFetchConfig {
+  url: string | RegExp;
+  method?: string;
+  response: MockApiResponse;
+  delay?: number;
 }
 ```
 
 ## Error Handling
 
-### Test Error Categories
+### Database Connection Errors
 
-#### Infrastructure Errors
 ```typescript
-enum TestInfrastructureError {
-  JSDOM_NOT_CONFIGURED = 'jsdom_not_configured',
-  BROWSER_API_NOT_MOCKED = 'browser_api_not_mocked',
-  NEXTJS_API_NOT_AVAILABLE = 'nextjs_api_not_available',
-  CSS_COMPUTED_STYLE_ERROR = 'css_computed_style_error'
+class DatabaseMockError extends Error {
+  constructor(
+    message: string,
+    public readonly operation: string,
+    public readonly originalError?: Error
+  ) {
+    super(`Database mock error in ${operation}: ${message}`);
+  }
 }
 ```
 
-#### Component Test Errors
+### Component Rendering Errors
+
 ```typescript
-enum ComponentTestError {
-  ELEMENT_NOT_FOUND = 'element_not_found',
-  ROLE_NOT_ACCESSIBLE = 'role_not_accessible',
-  ASYNC_OPERATION_TIMEOUT = 'async_operation_timeout',
-  MOCK_NOT_CALLED = 'mock_not_called'
+class ComponentTestError extends Error {
+  constructor(
+    message: string,
+    public readonly component: string,
+    public readonly missingDependency?: string
+  ) {
+    super(`Component test error in ${component}: ${message}`);
+  }
 }
 ```
 
-### Error Recovery Strategies
+### Mock Configuration Errors
 
-#### Graceful Fallbacks
 ```typescript
-interface TestErrorHandler {
-  handleMissingElement(selector: string): HTMLElement | null;
-  handleAsyncTimeout(operation: string): Promise<void>;
-  handleMockFailure(mockName: string): void;
-  retryWithBackoff<T>(operation: () => Promise<T>, maxRetries: number): Promise<T>;
+class MockConfigurationError extends Error {
+  constructor(
+    message: string,
+    public readonly mockType: string,
+    public readonly suggestion?: string
+  ) {
+    super(`Mock configuration error for ${mockType}: ${message}`);
+  }
 }
 ```
 
 ## Testing Strategy
 
-### Phase 1: Infrastructure Fixes
-1. **Jest Setup Enhancement**
-   - Fix jsdom configuration
-   - Add proper browser API mocks
-   - Configure CSS-in-JS support
-   - Set up Next.js compatibility
+### Test Categories and Approaches
 
-2. **Mock Implementation**
-   - localStorage/sessionStorage mocks
-   - navigator API mocks
-   - matchMedia mock
-   - getComputedStyle mock with CSS variable support
+1. **Unit Tests**: Mock all external dependencies, focus on component logic
+2. **Integration Tests**: Use in-memory database, mock browser APIs
+3. **E2E Tests**: Mock external services, use real component interactions
+4. **Performance Tests**: Mock performance APIs with predictable values
+5. **Accessibility Tests**: Mock DOM APIs with ARIA support
+
+### Test Environment Configuration
+
+```typescript
+interface TestEnvironmentConfig {
+  database: {
+    type: 'mock' | 'memory' | 'real';
+    connectionString?: string;
+    seedData?: boolean;
+  };
+  browser: {
+    mockNavigator: boolean;
+    mockPerformance: boolean;
+    mockStorage: boolean;
+  };
+  network: {
+    mockFetch: boolean;
+    defaultResponses: MockFetchConfig[];
+  };
+  cleanup: {
+    resetMocks: boolean;
+    clearStorage: boolean;
+    resetDOM: boolean;
+  };
+}
+```
+
+### Specific Fix Strategies
+
+#### Database Test Fixes
+
+1. **Replace live PostgreSQL**: Implement SQLite in-memory for integration tests
+2. **Mock Drizzle queries**: Create query result mocks for unit tests
+3. **Fix clearImmediate errors**: Polyfill Node.js APIs in Jest environment
+4. **Timeout handling**: Implement proper async/await patterns with timeouts
+
+#### Component Test Fixes
+
+1. **PlantsGrid rendering**: Mock usePlantInstances hook with test data
+2. **Pull-to-refresh functionality**: Mock getRefreshIndicatorStyle function
+3. **API call verification**: Fix fetch mock assertions to match actual call format
+4. **DOM element presence**: Ensure test data renders expected elements
+
+#### Mock Consistency Fixes
+
+1. **Navigator API**: Implement configurable navigator mock with proper cleanup
+2. **Performance API**: Mock performance.now() and related methods consistently
+3. **Storage APIs**: Implement proper localStorage/sessionStorage mocks
+4. **Service Worker**: Mock registration and lifecycle methods
+
+## Implementation Phases
+
+### Phase 1: Core Infrastructure
+- Set up database mocking system
+- Implement test data factories
+- Create browser API mock manager
+- Update Jest configuration
 
 ### Phase 2: Component Test Fixes
-1. **PlantCard Component**
-   - Add proper role attributes
-   - Fix accessibility testing
-   - Implement proper event handling tests
-   - Add loading and error state tests
+- Fix PlantsGrid component tests
+- Resolve pull-to-refresh functionality issues
+- Update API call mocking and assertions
+- Ensure proper DOM element rendering
 
-2. **SearchResults Component**
-   - Fix loading state rendering
-   - Implement proper suggestion testing
-   - Add filter integration tests
-   - Fix async operation handling
+### Phase 3: Integration Test Fixes
+- Replace database connections with mocks
+- Fix timeout and async handling issues
+- Implement proper test data seeding
+- Resolve clearImmediate errors
 
-3. **CareDashboard Component**
-   - Fix data structure handling
-   - Implement proper statistics display tests
-   - Add error boundary testing
-   - Fix pull-to-refresh functionality
+### Phase 4: Test Environment Optimization
+- Implement test isolation and cleanup
+- Optimize test execution speed
+- Add comprehensive error reporting
+- Validate CI/CD compatibility
 
-4. **Form Components (7 Forms)**
-   - **SignInForm & SignUpForm**: Authentication validation, error handling, accessibility
-   - **PlantTaxonomyForm & PlantInstanceForm**: Plant data validation, taxonomy selection, care setup
-   - **CareGuideForm**: Content validation, publishing workflow, rich text handling
-   - **QuickCareForm**: Care logging, date validation, notes handling
-   - **PropagationForm**: Propagation tracking, method selection, progress updates
-   - **Universal Form Testing**: Validation patterns, error display, loading states, keyboard navigation
+### Phase 5: Quality Assurance
+- Run full test suite validation
+- Performance benchmarking
+- Documentation updates
+- Developer experience improvements
 
-5. **Image Upload and Management**
-   - **PlantImageUpload**: File selection, drag-and-drop, validation, preview
-   - **PlantImageGallery**: Display, navigation, optimization, accessibility
-   - **Image Processing**: Resize, compression, format conversion, error handling
-   - **Upload Progress**: Progress indicators, cancellation, retry functionality
+## Success Metrics
 
-6. **Plant Editing Workflows**
-   - **Plant Edit Form**: Load existing data, field updates, validation
-   - **Plant Detail Modal**: View/edit toggle, inline editing, save/cancel
-   - **Bulk Plant Operations**: Multi-select, batch updates, confirmation dialogs
-   - **Plant Deletion**: Confirmation workflows, cascade handling, undo functionality
-
-### Phase 3: Service Layer Implementation
-1. **CareCalculator Service**
-   - Implement all missing methods
-   - Add comprehensive business logic tests
-   - Handle edge cases and error conditions
-   - Add date calculation validation
-
-2. **Statistics Services**
-   - Implement guide statistics calculation
-   - Add propagation success rate calculation
-   - Implement care streak and consistency logic
-   - Add proper error handling for database failures
-
-### Phase 4: Integration and Coverage
-1. **End-to-End Workflows**
-   - Plant management integration
-   - Search and filter integration
-   - Care tracking workflows
-   - Authentication flows
-
-2. **Coverage Enhancement**
-   - Achieve 80%+ coverage for critical components
-   - Add regression tests for fixed bugs
-   - Implement performance testing
-   - Add accessibility compliance testing
-
-## Implementation Approach
-
-### Test-Driven Development Process
-1. **Red Phase**: Write failing tests that capture the expected behavior
-2. **Green Phase**: Implement minimal code to make tests pass
-3. **Refactor Phase**: Improve code quality while maintaining test coverage
-
-### Continuous Integration Integration
-1. **Pre-commit Hooks**: Run tests and linting before commits
-2. **Pull Request Validation**: All tests must pass before merge
-3. **Coverage Reporting**: Track coverage trends over time
-4. **Performance Monitoring**: Track test execution time
-
-### Documentation and Standards
-1. **Test Writing Guidelines**: Consistent patterns and naming
-2. **Mock Strategy Documentation**: When and how to mock dependencies
-3. **Accessibility Testing Standards**: WCAG compliance validation
-4. **Performance Testing Benchmarks**: Acceptable thresholds and metrics
-
-This comprehensive design ensures that all failing tests are systematically addressed while establishing robust testing practices for future development.
+1. **Test Success Rate**: 100% of tests pass consistently
+2. **Execution Time**: Full test suite completes in under 60 seconds
+3. **Isolation**: No test state pollution between runs
+4. **CI Compatibility**: Tests pass in CI environment without modifications
+5. **Developer Experience**: Clear error messages and fast feedback loops
