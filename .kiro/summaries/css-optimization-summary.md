@@ -3,6 +3,7 @@
 ## Completed Optimizations
 
 ### ✅ Phase 1: Added Missing Global Patterns
+
 1. **Loading Spinner System** - Added `.spinner`, `.spinner--sm`, `.spinner--lg`, `.spinner--primary`, etc.
 2. **Badge System** - Added `.badge`, `.badge--notification`, `.badge--status`, `.badge--primary`, etc.
 3. **Image Placeholder System** - Added `.image-placeholder`, `.image-placeholder--loading`, `.image-placeholder--error`
@@ -10,7 +11,9 @@
 5. **Additional Utilities** - Added aspect ratios, overlays, gradients, interaction states
 
 ### ✅ Phase 2: Component Refactoring (Partial)
+
 **Refactored Components:**
+
 1. `ImportProgress.tsx` - Replaced 15+ redundant class combinations with global patterns
 2. `CSVImportModal.tsx` - Replaced modal overlay and content patterns
 3. `SearchPresetManager.tsx` - Replaced modal overlay pattern
@@ -23,7 +26,8 @@
 10. `PlantSearchFilter.tsx` - Replaced badge patterns
 
 **Patterns Replaced:**
-- ❌ `className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"` 
+
+- ❌ `className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"`
 - ✅ `className="modal-overlay"`
 
 - ❌ `className="flex items-center justify-center"`
@@ -38,6 +42,7 @@
 ### 📊 Impact Metrics
 
 **Before Optimization:**
+
 - 64 components with className patterns
 - ~25+ instances of `flex items-center justify-center`
 - 8+ instances of modal overlay patterns
@@ -45,6 +50,7 @@
 - 10+ badge pattern variations
 
 **After Optimization:**
+
 - Reduced redundant patterns by ~60% in refactored components
 - Standardized modal overlays across 7 components
 - Unified spinner patterns across 4 components
@@ -52,6 +58,7 @@
 - Added 20+ new global utility classes
 
 **Estimated Bundle Size Reduction:**
+
 - Before: ~3,658 lines in globals.css + scattered component styles
 - After: ~4,200 lines in globals.css (organized) - net reduction in total CSS due to eliminated redundancy
 - Component-specific CSS reduced by ~40% in refactored files
@@ -59,7 +66,9 @@
 ## Remaining Work
 
 ### 🔄 Phase 3: Complete Component Refactoring
+
 **Still Need to Refactor:**
+
 1. `PlantCard.tsx` - Replace size configurations with global classes
 2. `PlantDetailModal.tsx` - Replace image placeholder patterns
 3. `PlantLineage.tsx` - Replace flex center patterns
@@ -74,6 +83,7 @@
 **Estimated Additional Reduction:** ~25% more redundancy can be eliminated
 
 ### 🗂️ Phase 4: CSS Organization (Recommended)
+
 1. **Split globals.css into modules:**
    - `src/styles/tokens/` - Design tokens
    - `src/styles/base/` - Reset and base styles  
@@ -81,6 +91,7 @@
    - `src/styles/utilities/` - Utility classes
 
 2. **Import structure in globals.css:**
+
    ```css
    @import './tokens/colors.css';
    @import './tokens/spacing.css';

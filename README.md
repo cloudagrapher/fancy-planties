@@ -133,6 +133,26 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
    - Navigate to [http://localhost:3000](http://localhost:3000)
    - Create an account and start adding plants!
 
+### CI/CD Skip Instructions
+
+To save CI/CD resources when making documentation-only changes, you can skip builds by starting your commit message with specific keywords:
+
+**Skip Keywords:**
+- `[skip ci]` or `[ci skip]` - Standard CI skip patterns
+- `[skip build]` or `[build skip]` - Explicit build skip
+- `[docs]` - For documentation-only changes
+- `[readme]` - For README updates
+
+**Usage Examples:**
+```bash
+git commit -m "[readme] Update development setup instructions"
+git commit -m "[docs] Fix typo in API documentation" 
+git commit -m "[skip build] Minor formatting changes"
+git commit -m "Add new plant feature"  # Normal build
+```
+
+The workflow will still run for pull requests to validate changes, but won't push new Docker images unnecessarily.
+
 ### Production Deployment
 
 See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for comprehensive deployment instructions.
