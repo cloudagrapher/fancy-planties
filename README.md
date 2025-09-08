@@ -79,8 +79,15 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
    # Start only the database (uses port 5433 to avoid conflicts)
    docker compose -f docker-compose.dev.yml up -d postgres
    
+   # Generate migration files from schema (first time only)
+   npm run db:generate
+   
    # Run database migrations
-   npm run db:migrate
+   # Note: Explicitly set DATABASE_URL since .env.local isn't loaded by drizzle-kit
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/fancy_planties" npm run db:migrate
+   
+   # Seed database with plant taxonomy data (optional but recommended)
+   npm run db:seed
    
    # Start development server locally
    npm run dev

@@ -14,13 +14,13 @@ jest.mock('../PlantCard', () => {
         <div>Care Status: {plant.careStatus}</div>
         {isSelected && <div data-testid="selected-indicator">Selected</div>}
         {isSelectionMode && <div data-testid="selection-mode">Selection Mode</div>}
-        <button 
+        <button
           onClick={() => onSelect(plant)}
           data-testid={`select-plant-${plant.id}`}
         >
           Select Plant
         </button>
-        <button 
+        <button
           onClick={() => onCareAction(plant, 'fertilize')}
           data-testid={`care-action-${plant.id}`}
         >
@@ -32,11 +32,11 @@ jest.mock('../PlantCard', () => {
 });
 
 jest.mock('../PlantSearchFilter', () => {
-  return function MockPlantSearchFilter({ 
-    onSearch, 
-    onFilterChange, 
-    onSortChange, 
-    onAdvancedSearch 
+  return function MockPlantSearchFilter({
+    onSearch,
+    onFilterChange,
+    onSortChange,
+    onAdvancedSearch
   }: any) {
     return (
       <div data-testid="plant-search-filter">
@@ -45,19 +45,19 @@ jest.mock('../PlantSearchFilter', () => {
           onChange={(e) => onSearch(e.target.value)}
           data-testid="search-input"
         />
-        <button 
+        <button
           onClick={() => onFilterChange({ overdueOnly: true })}
           data-testid="overdue-filter"
         >
           Show Overdue Only
         </button>
-        <button 
+        <button
           onClick={() => onSortChange('created_at', 'desc')}
           data-testid="sort-button"
         >
           Sort by Date
         </button>
-        <button 
+        <button
           onClick={() => onAdvancedSearch({ query: 'test' })}
           data-testid="advanced-search"
         >
@@ -231,7 +231,7 @@ describe('PlantsGrid', () => {
 
   it('handles search functionality', async () => {
     const user = userEvent.setup();
-    
+
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => mockPlantsResponse,
@@ -426,7 +426,7 @@ describe('PlantsGrid', () => {
     Object.defineProperty(window, 'innerHeight', { value: 800 });
     Object.defineProperty(document.documentElement, 'scrollTop', { value: 1000 });
     Object.defineProperty(document.documentElement, 'scrollHeight', { value: 1200 });
-    
+
     window.dispatchEvent(scrollEvent);
 
     await waitFor(() => {
@@ -441,7 +441,7 @@ describe('PlantsGrid', () => {
     } as Response);
 
     const { rerender } = render(
-      <PlantsGrid {...defaultProps} cardSize="small" />, 
+      <PlantsGrid {...defaultProps} cardSize="small" />,
       { wrapper: createWrapper() }
     );
 
@@ -468,7 +468,7 @@ describe('PlantsGrid', () => {
     } as Response);
 
     render(
-      <PlantsGrid {...defaultProps} initialFilters={initialFilters} />, 
+      <PlantsGrid {...defaultProps} initialFilters={initialFilters} />,
       { wrapper: createWrapper() }
     );
 

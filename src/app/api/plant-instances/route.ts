@@ -39,10 +39,7 @@ export async function GET(request: NextRequest) {
     // Get plant instances with filters
     const result = await PlantInstanceQueries.getWithFilters(validatedFilters);
     
-    return NextResponse.json({
-      success: true,
-      data: result
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Failed to get plant instances:', error);
     return NextResponse.json(
