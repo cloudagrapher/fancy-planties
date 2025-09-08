@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import { parse } from 'csv-parse/sync';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { pgTable, serial, text, timestamp, boolean } from 'drizzle-orm/pg-core';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 import postgres from 'postgres';
 
 // Define the plants table schema directly (avoiding server-only imports)
@@ -104,7 +104,7 @@ async function seedPlants() {
               eq(plants.species, plantData.species),
               plantData.cultivar 
                 ? eq(plants.cultivar, plantData.cultivar)
-                : eq(plants.cultivar, null)
+                : isNull(plants.cultivar)
             )
           )
           .limit(1);
