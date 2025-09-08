@@ -15,21 +15,132 @@ if (typeof global.process === 'undefined') {
   };
 }
 
-// Mock Next.js modules - these will be handled by moduleNameMapper
-// but we keep these for any direct imports
-jest.mock('next/navigation', () => require('./src/test-utils/nextjs-mocks.ts'));
-jest.mock('next/image', () => require('./src/test-utils/nextjs-mocks.ts').Image);
+// Mock Next.js navigation
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+    prefetch: jest.fn(),
+    pathname: '/dashboard/plants',
+    query: {},
+    asPath: '/dashboard/plants',
+    route: '/dashboard/plants',
+    events: {
+      on: jest.fn(),
+      off: jest.fn(),
+      emit: jest.fn(),
+    },
+  }),
+  usePathname: () => '/dashboard/plants',
+  useSearchParams: () => {
+    const searchParams = new URLSearchParams();
+    return {
+      get: (key) => searchParams.get(key),
+      getAll: (key) => searchParams.getAll(key),
+      has: (key) => searchParams.has(key),
+      keys: () => searchParams.keys(),
+      values: () => searchParams.values(),
+      entries: () => searchParams.entries(),
+      forEach: (callback) => searchParams.forEach(callback),
+      toString: () => searchParams.toString(),
+    };
+  },
+  useParams: () => ({}),
+}));
+
+// Mock Next.js Image
+jest.mock('next/image', () => {
+  const React = require('react');
+  return React.forwardRef((props, ref) => {
+    const { src, alt, width, height, fill, priority, placeholder, blurDataURL, sizes, quality, loader, onLoad, onError, ...rest } = props;
+    return React.createElement('img', { ref, src, alt, ...rest });
+  });
+});
 
 // Mock Next.js server-side modules for API route testing
-jest.mock('next/server', () => ({
-  NextRequest: require('./src/test-utils/nextjs-mocks.ts').NextRequest,
-  NextResponse: require('./src/test-utils/nextjs-mocks.ts').NextResponse,
-}));
+jest.mock('next/server', () => {
+  class MockNextRequest extends Request {
+    constructor(input, init) {
+      super(input, init);
+      this.nextUrl = new URL(input instanceof Request ? input.url : input.toString());
+    }
+    
+    static from(request) {
+      return new MockNextRequest(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body: request.body,
+      });
+    }
+  }
 
-jest.mock('next/headers', () => ({
-  headers: require('./src/test-utils/nextjs-mocks.ts').headers,
-  cookies: require('./src/test-utils/nextjs-mocks.ts').cookies,
-}));
+  class MockNextResponse extends Response {
+    static json(object, init) {
+      return new MockNextResponse(JSON.stringify(object), {
+        ...init,
+        headers: {
+          'content-type': 'application/json',
+          ...init?.headers,
+        },
+      });
+    }
+
+    static redirect(url, init) {
+      return new MockNextResponse(null, {
+        ...init,
+        status: init?.status || 302,
+        headers: {
+          location: url.toString(),
+          ...init?.headers,
+        },
+      });
+    }
+  }
+
+  return {
+    NextRequest: MockNextRequest,
+    NextResponse: MockNextResponse,
+  };
+});
+
+jest.mock('next/headers', () => {
+  const mockHeaders = () => {
+    const headerMap = new Map([
+      ['user-agent', 'Mozilla/5.0 (Test Environment)'],
+      ['accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'],
+      ['accept-language', 'en-US,en;q=0.5'],
+    ]);
+
+    return {
+      get: (key) => headerMap.get(key.toLowerCase()) || null,
+      has: (key) => headerMap.has(key.toLowerCase()),
+      keys: () => Array.from(headerMap.keys()),
+      values: () => Array.from(headerMap.values()),
+      entries: () => Array.from(headerMap.entries()),
+      forEach: (callback) => headerMap.forEach(callback),
+    };
+  };
+
+  const mockCookies = () => {
+    const cookieMap = new Map();
+    return {
+      get: (key) => ({ name: key, value: cookieMap.get(key) || '' }),
+      set: (key, value) => cookieMap.set(key, value),
+      delete: (key) => cookieMap.delete(key),
+      has: (key) => cookieMap.has(key),
+      getAll: () => Array.from(cookieMap.entries()).map(([name, value]) => ({ name, value })),
+      clear: () => cookieMap.clear(),
+    };
+  };
+
+  return {
+    headers: mockHeaders,
+    cookies: mockCookies,
+  };
+});
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
@@ -305,6 +416,38 @@ jest.mock('@/app/dashboard/DashboardClient', () => {
   return { 
     default: mocks.DashboardClient,
     DashboardClient: mocks.DashboardClient
+  };
+});
+
+jest.mock('@/components/care/CareHistoryTimeline', () => {
+  const mocks = require('./src/test-utils/component-mocks.tsx');
+  return { 
+    default: mocks.CareHistoryTimeline,
+    CareHistoryTimeline: mocks.CareHistoryTimeline
+  };
+});
+
+jest.mock('@/components/shared/PerformanceMonitor', () => {
+  const mocks = require('./src/test-utils/component-mocks.tsx');
+  return { 
+    default: mocks.PerformanceMonitor,
+    PerformanceMonitor: mocks.PerformanceMonitor
+  };
+});
+
+jest.mock('@/components/shared/OfflineManager', () => {
+  const mocks = require('./src/test-utils/component-mocks.tsx');
+  return { 
+    default: mocks.OfflineManager,
+    OfflineManager: mocks.OfflineManager
+  };
+});
+
+jest.mock('@/components/auth/UserProvider', () => {
+  const mocks = require('./src/test-utils/component-mocks.tsx');
+  return { 
+    default: mocks.UserProvider,
+    UserProvider: mocks.UserProvider
   };
 });
 
