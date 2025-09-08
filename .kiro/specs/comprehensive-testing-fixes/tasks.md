@@ -66,9 +66,34 @@
   - Fix button disabled states during loading
   - _Requirements: 7.4_
 
-- [ ] 6.5 Update and validate component tests
+- [ ] 6.5 Fix specialized test suites infrastructure issues
+  - Install missing dependencies (jest-axe for accessibility tests)
+  - Fix lodash-es module transformation issues in Jest configuration
+  - Fix component import issues in E2E tests (undefined component imports)
+  - Add proper mocking for Next.js Request/Response objects
+  - Fix CSS file loading in test environment for performance tests
+  - _Requirements: 7.4_
+
+- [ ] 6.6 Fix E2E and integration test issues
+  - Fix component import failures (PlantsGrid, CareDashboard, etc.)
+  - Implement proper error boundary testing patterns
+  - Fix performance monitoring and resource cleanup tests
+  - Add proper mocking for localStorage, performance APIs
+  - Fix offline functionality and data persistence tests
+  - _Requirements: 7.4_
+
+- [ ] 6.7 Fix accessibility and design system test issues
+  - Fix ARIA validation and screen reader announcement cleanup
+  - Fix color contrast calculation edge cases
+  - Fix reduced motion animation disabling tests
+  - Fix form label association validation
+  - Add proper cleanup for DOM manipulation tests
+  - _Requirements: 7.4_
+
+- [ ] 6.8 Update and validate all component tests
   - Update test mocks to match corrected component behavior
   - Fix API endpoint mocking to return proper response formats
   - Validate that all previously failing tests now pass
   - Ensure tests still catch real regressions after fixes
+  - Run full test suite to confirm 100% success rate
   - _Requirements: 7.4_
