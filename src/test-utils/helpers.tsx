@@ -34,6 +34,12 @@ const customRender = (
 export * from '@testing-library/react';
 export { customRender as render };
 
+// Export new test infrastructure
+export * from './database-test-manager';
+export * from './realistic-test-data';
+export * from './component-test-helpers';
+export * from './integration-test-utilities';
+
 // Test data factories
 export const createMockPlant = (overrides: Partial<Plant> = {}): Plant => ({
   id: 1,
