@@ -3,6 +3,18 @@
 
 import '@testing-library/jest-dom';
 
+// Add Node.js polyfills for Jest environment
+global.setImmediate = global.setImmediate || ((fn, ...args) => setTimeout(fn, 0, ...args));
+global.clearImmediate = global.clearImmediate || ((id) => clearTimeout(id));
+
+// Add process polyfill if not available
+if (typeof global.process === 'undefined') {
+  global.process = {
+    env: { NODE_ENV: 'test' },
+    nextTick: (fn) => setTimeout(fn, 0),
+  };
+}
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
