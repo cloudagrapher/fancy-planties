@@ -597,13 +597,41 @@ select {
   border: 1px solid var(--color-border);
   border-radius: 12px;
   overflow: hidden;
-  transition: all 0.2s;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -ms-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
   cursor: pointer;
+  position: relative;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .plant-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  -webkit-transform: translateY(-4px); /* Safari */
+  -moz-transform: translateY(-4px); /* Firefox */
+  -ms-transform: translateY(-4px); /* IE */
+  transform: translateY(-4px);
+  border-color: var(--color-primary-300);
+}
+
+/* Ensure consistent behavior across browsers */
+.plant-card:focus {
+  outline: 2px solid var(--color-primary-400);
+  outline-offset: 2px;
+}
+
+.plant-card:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Fix for Safari and Firefox scaling issues */
+.plant-card * {
+  box-sizing: border-box;
 }
 
 .plant-card-image {
@@ -627,6 +655,69 @@ select {
 .plant-card-subtitle {
   font-size: 12px;
   color: var(--color-text-muted);
+}
+
+/* Plant card status indicators */
+.plant-card-status {
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plant-card-status--healthy {
+  background-color: var(--color-success-100);
+  color: var(--color-success-700);
+}
+
+.plant-card-status--needs-care {
+  background-color: var(--color-warning-100);
+  color: var(--color-warning-700);
+}
+
+.plant-card-status--overdue {
+  background-color: var(--color-error-100);
+  color: var(--color-error-700);
+}
+
+/* Quick action buttons - ensure they're visible on hover */
+.plant-card .group-hover\:opacity-100 {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.plant-card:hover .group-hover\:opacity-100 {
+  opacity: 1 !important;
+}
+
+/* Ensure buttons are accessible on touch devices */
+@media (hover: none) {
+  .plant-card .group-hover\:opacity-100 {
+    opacity: 1;
+  }
+}
+
+/* Fix for button styling in plant cards */
+.plant-card .btn--sm {
+  padding: 4px 8px;
+  font-size: 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+  min-height: auto;
+  height: auto;
+}
+
+/* Override button transforms in plant cards to prevent layout issues */
+.plant-card .btn:hover {
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.plant-card .btn:active {
+  transform: none;
 }
 
 /* Form Styles - Light Mode Only */
@@ -710,21 +801,64 @@ select {
 
 /* Grid Layout */
 .grid-plants {
+  display: -ms-grid; /* IE 10-11 */
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 16px; /* Fallback for older browsers */
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  -ms-grid-columns: 1fr 16px 1fr 16px 1fr; /* IE 10-11 fallback */
+  justify-items: center;
+  -webkit-box-align: center; /* Safari */
+  -ms-flex-align: center; /* IE 10-11 */
+  align-items: start;
 }
 
-@media (min-width: 768px) {
+/* Fallback for older browsers */
+@supports not (grid-template-columns: repeat(auto-fill, minmax(160px, 1fr))) {
   .grid-plants {
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+  
+  .grid-plants > * {
+    flex: 0 0 160px;
   }
 }
 
-@media (min-width: 1024px) {
+/* Responsive grid for different screen sizes */
+@media (max-width: 480px) {
   .grid-plants {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
   }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .grid-plants {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .grid-plants {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+}
+
+@media (min-width: 1025px) {
+  .grid-plants {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+/* Add responsive grid class */
+.grid-responsive {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  justify-items: center;
 }
 
 /* Layout Utilities */

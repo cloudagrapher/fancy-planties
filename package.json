@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:docker": "CYPRESS_INSTALL_BINARY=0 next build",
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
