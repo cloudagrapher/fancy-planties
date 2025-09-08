@@ -487,10 +487,12 @@ describe('PlantsGrid', () => {
   it('handles pull to refresh', async () => {
     const mockUsePullToRefresh = require('@/hooks/usePullToRefresh').usePullToRefresh;
     mockUsePullToRefresh.mockReturnValue({
+      elementRef: { current: null },
       isPulling: true,
       pullDistance: 50,
-      canRefresh: true,
+      progress: 0.5,
       isRefreshing: false,
+      getRefreshIndicatorStyle: jest.fn(() => ({ opacity: 0.5, transform: 'scale(0.8)' })),
     });
 
     mockFetch.mockResolvedValue({
