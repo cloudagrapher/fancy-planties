@@ -112,9 +112,9 @@ export default function PlantsGrid({
   // Flatten all pages into a single array or use search results
   const plants = useMemo(() => {
     if (useSearchResults && searchResults) {
-      return searchResults.instances;
+      return (searchResults.instances || []).filter(Boolean);
     }
-    return data?.pages.flatMap(page => page.instances) ?? [];
+    return data?.pages.flatMap(page => page.instances).filter(Boolean) ?? [];
   }, [data, searchResults, useSearchResults]);
 
   // Handle search
