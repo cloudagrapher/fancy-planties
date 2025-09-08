@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { createPlantInstanceSchema, plantInstanceFilterSchema } from '@/lib/validation/plant-schemas';
 import { validateRequest } from '@/lib/auth/server';
@@ -8,7 +9,10 @@ export async function GET(request: NextRequest) {
   try {
     const { user } = await validateRequest();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ 
+        success: false,
+        error: 'Unauthorized' 
+      }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -35,11 +39,17 @@ export async function GET(request: NextRequest) {
     // Get plant instances with filters
     const result = await PlantInstanceQueries.getWithFilters(validatedFilters);
     
-    return NextResponse.json(result);
+    return NextResponse.json({
+      success: true,
+      data: result
+    });
   } catch (error) {
     console.error('Failed to get plant instances:', error);
     return NextResponse.json(
-      { error: 'Failed to get plant instances' },
+      { 
+        success: false,
+        error: 'Internal server error' 
+      },
       { status: 500 }
     );
   }
@@ -50,7 +60,10 @@ export async function POST(request: NextRequest) {
   try {
     const { user } = await validateRequest();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ 
+        success: false,
+        error: 'Unauthorized' 
+      }, { status: 401 });
     }
 
     // Check if request is FormData or JSON
@@ -80,7 +93,26 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Handle JSON
-      body = await request.json();
+      try {
+        body = await request.json();
+        if (!body || Object.keys(body).length === 0) {
+          return NextResponse.json(
+            { 
+              success: false,
+              error: 'Request body is required' 
+            },
+            { status: 400 }
+          );
+        }
+      } catch (jsonError) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: 'Invalid JSON in request body' 
+          },
+          { status: 400 }
+        );
+      }
     }
     
     // Add user ID to the request body and convert date strings to Date objects
@@ -93,7 +125,29 @@ export async function POST(request: NextRequest) {
     };
 
     // Validate the plant instance data
-    const validatedData = createPlantInstanceSchema.parse(instanceData);
+    let validatedData;
+    try {
+      validatedData = createPlantInstanceSchema.parse(instanceData);
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: 'Validation failed',
+            details: validationError.issues
+          },
+          { status: 400 }
+        );
+      }
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'Validation failed',
+          details: validationError instanceof Error ? validationError.message : 'Invalid data'
+        },
+        { status: 400 }
+      );
+    }
     
     // Calculate initial fertilizer due date if schedule is provided
     if (validatedData.fertilizerSchedule && !validatedData.fertilizerDue) {
@@ -126,19 +180,29 @@ export async function POST(request: NextRequest) {
     // Get the enhanced plant instance with plant data
     const enhancedInstance = await PlantInstanceQueries.getEnhancedById(plantInstance.id);
     
-    return NextResponse.json(enhancedInstance, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      data: enhancedInstance
+    }, { status: 201 });
   } catch (error) {
     console.error('Failed to create plant instance:', error);
     
     if (error instanceof Error && error.message.includes('validation')) {
       return NextResponse.json(
-        { error: 'Invalid plant instance data', details: error.message },
+        { 
+          success: false,
+          error: 'Invalid plant instance data', 
+          details: error.message 
+        },
         { status: 400 }
       );
     }
     
     return NextResponse.json(
-      { error: 'Failed to create plant instance' },
+      { 
+        success: false,
+        error: 'Failed to create plant instance' 
+      },
       { status: 500 }
     );
   }
