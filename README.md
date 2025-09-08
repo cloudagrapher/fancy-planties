@@ -5,30 +5,35 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
 ## ✨ Features
 
 ### 🌿 Plant Management
+
 - **Plant Collection**: Organize your plants with detailed taxonomy (family, genus, species, cultivar)
 - **Plant Instances**: Track individual plants with custom nicknames, locations, and care history
 - **Smart Search**: Fuzzy search across all plant data with autocomplete suggestions
 - **Image Gallery**: Upload and manage multiple photos per plant with Base64 storage
 
 ### 📅 Care Tracking
+
 - **Care Dashboard**: Visual overview of overdue, due today, and upcoming care tasks
 - **Fertilizer Scheduling**: Automated scheduling with customizable intervals
 - **Care History**: Complete timeline of all care activities
 - **Quick Actions**: Fast care logging with one-tap actions
 
 ### 🌱 Propagation Management
+
 - **Flexible Sources**: Track propagations from your plants OR external sources (gifts, trades, purchases)
 - **Status Tracking**: Monitor progress through rooting, planting, and establishment stages
 - **Success Analytics**: View propagation success rates and timing statistics
 - **Plant Conversion**: Convert successful propagations to full plant instances
 
 ### 📱 Mobile-Native Experience
+
 - **Bottom Navigation**: Native app-like navigation with Plants, Care, Propagation, and Profile tabs
 - **PWA Features**: Install as native app with offline support and push notifications
 - **Touch Optimized**: Swipe gestures, haptic feedback, and thumb-friendly design
 - **Responsive Design**: Seamless experience across mobile, tablet, and desktop
 
 ### 📊 Data Management
+
 - **CSV Import/Export**: Bulk import existing plant data from spreadsheets
 - **User Authentication**: Secure account system with data segregation
 - **Offline Support**: View and log care activities without internet connection
@@ -38,7 +43,7 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
 
 ### Prerequisites
 
-- Node.js 20+ 
+- Node.js 20+
 - Docker and Docker Compose
 - Git
 
@@ -64,20 +69,67 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
    # Edit .env.local with your configuration
    ```
 
-4. **Start development environment**
+4. **Choose your development approach:**
+
+   #### Option A: Local Development (Recommended)
+
+   Run the app locally with containerized database:
 
    ```bash
-   # Start database
-   docker compose up -d postgres
+   # Start only the database (uses port 5433 to avoid conflicts)
+   docker compose -f docker-compose.dev.yml up -d postgres
    
    # Run database migrations
    npm run db:migrate
    
-   # Start development server
+   # Start development server locally
    npm run dev
    ```
 
-5. **Open the application**
+   #### Option B: Fully Containerized Development
+
+   Run both app and database in containers:
+
+   ```bash
+   # Start entire development environment
+   docker compose -f docker-compose.dev.yml up
+   
+   # Or run in background
+   docker compose -f docker-compose.dev.yml up -d
+   ```
+
+   #### Option C: Production-like Environment
+
+   Test with production configuration:
+
+   ```bash
+   # Requires .env file with production variables
+   docker compose -f docker-compose.prod.yml up -d
+   ```
+
+5. **Available Docker Compose Files:**
+   - `docker-compose.dev.yml` - Development environment (database on port 5433)
+   - `docker-compose.prod.yml` - Production environment with migrations
+   - `docker-compose.yml` - Default production setup
+   - `docker-compose.watchtower.yml` - Production with auto-updates
+
+6. **Managing Docker Environments:**
+
+   ```bash
+   # Stop development environment
+   docker compose -f docker-compose.dev.yml down
+   
+   # Stop and remove volumes (clears database data)
+   docker compose -f docker-compose.dev.yml down -v
+   
+   # View logs
+   docker compose -f docker-compose.dev.yml logs -f
+   
+   # Restart specific service
+   docker compose -f docker-compose.dev.yml restart postgres
+   ```
+
+7. **Open the application**
    - Navigate to [http://localhost:3000](http://localhost:3000)
    - Create an account and start adding plants!
 
@@ -108,18 +160,21 @@ See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for comprehensive deployment instructi
 ## 📱 Mobile App Installation
 
 ### iOS (Safari)
+
 1. Open the app in Safari
 2. Tap the Share button
 3. Select "Add to Home Screen"
 4. Tap "Add" to install
 
 ### Android (Chrome)
+
 1. Open the app in Chrome
 2. Tap the menu (three dots)
 3. Select "Add to Home screen"
 4. Tap "Add" to install
 
 ### Desktop (Chrome/Edge)
+
 1. Look for the install icon in the address bar
 2. Click "Install Fancy Planties"
 3. The app will open in its own window
