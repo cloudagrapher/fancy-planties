@@ -50,7 +50,7 @@ services:
 
   app:
     # Use the pre-built image from GitHub Container Registry
-    image: ghcr.io/cloudagrapher/fancy-planties:main
+    image: ghcr.io/cloudagrapher/fancy-planties:latest
     container_name: fancy-planties-app-prod
     restart: unless-stopped
     ports:
