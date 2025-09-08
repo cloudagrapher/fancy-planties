@@ -1,0 +1,23 @@
+{
+  "enabled": true,
+  "name": "Run Tests on Changes",
+  "description": "Automatically runs the test suite whenever files are modified to ensure all tests pass before continuing development",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "src/**/*.js",
+      "src/**/*.jsx",
+      "package.json",
+      "jest.config.js",
+      "jest.setup.js",
+      "tsconfig.json"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Files have been changed in the repository. Please run the test suite using `npm test` to ensure all tests are passing. If any tests fail, please analyze the failures and provide guidance on how to fix them. Make sure to check both unit tests and integration tests."
+  }
+}
