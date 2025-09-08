@@ -268,11 +268,20 @@ export default function PlantInstanceForm({
       queryClient.invalidateQueries({ queryKey: ['plant-detail'] });
       queryClient.invalidateQueries({ queryKey: ['care-dashboard'] });
       
+      // Reset form state
+      reset();
+      setImageFiles([]);
+      setExistingImages([]);
+      setSelectedPlant(null);
+      setShowTaxonomyForm(false);
+      setHasUnsavedChanges(false);
+      
       if (onSuccess) {
         onSuccess(data);
+      } else {
+        // Only call onClose if no onSuccess callback provided
+        onClose();
       }
-      
-      onClose();
     },
   });
 

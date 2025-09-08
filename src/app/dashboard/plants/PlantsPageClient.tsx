@@ -49,9 +49,8 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   const handleFormSuccess = (plant: EnhancedPlantInstance) => {
     setIsFormModalOpen(false);
     setEditingPlant(null);
-    // Optionally open the detail modal for the new/updated plant
-    setSelectedPlant(plant);
-    setIsDetailModalOpen(true);
+    // Don't automatically open detail modal - let user decide
+    // This prevents the white line issue from modal conflicts
   };
 
   return (
@@ -67,7 +66,7 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
                   <h1 className="text-3xl font-bold text-neutral-900">My Plants</h1>
                   <p className="text-neutral-600 mt-2">Manage your plant collection</p>
                 </div>
-                
+
                 <button
                   onClick={handleAddPlant}
                   className="btn btn--primary"
