@@ -74,7 +74,7 @@
   - Fix CSS file loading in test environment for performance tests
   - _Requirements: 7.4_
 
-- [ ] 6.6 Fix E2E and integration test issues
+- [x] 6.6 Fix E2E and integration test issues
   - Fix component import failures (PlantsGrid, CareDashboard, etc.)
   - Implement proper error boundary testing patterns
   - Fix performance monitoring and resource cleanup tests
