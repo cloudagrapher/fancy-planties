@@ -137,7 +137,8 @@ export default function QuickCareForm({
               key={type.value}
               type="button"
               onClick={() => handleInputChange('careType', type.value)}
-              className={`btn ${formData.careType === type.value ? 'btn--primary' : 'btn--outline'} flex-col h-auto py-3`}
+              disabled={isSubmitting}
+              className={`btn ${formData.careType === type.value ? 'btn--primary' : 'btn--outline'} flex-col h-auto py-3 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <span className="text-lg mb-1">{type.icon}</span>
               <span className="text-xs font-medium">{type.label}</span>
@@ -157,7 +158,8 @@ export default function QuickCareForm({
           value={formData.careDate}
           onChange={(e) => handleInputChange('careDate', e.target.value)}
           max={new Date().toISOString().split('T')[0]} // Can't be in the future
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          disabled={isSubmitting}
+          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${isSubmitting ? 'bg-gray-50 cursor-not-allowed' : ''}`}
           required
         />
       </div>
@@ -174,7 +176,8 @@ export default function QuickCareForm({
             value={formData.fertilizerType}
             onChange={(e) => handleInputChange('fertilizerType', e.target.value)}
             placeholder="e.g., Liquid fertilizer, Slow-release pellets"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            disabled={isSubmitting}
+            className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${isSubmitting ? 'bg-gray-50 cursor-not-allowed' : ''}`}
           />
         </div>
       )}
@@ -191,7 +194,8 @@ export default function QuickCareForm({
               value={formData.potSize}
               onChange={(e) => handleInputChange('potSize', e.target.value)}
               placeholder="e.g., 6 inch, 15cm"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              disabled={isSubmitting}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${isSubmitting ? 'bg-gray-50 cursor-not-allowed' : ''}`}
             />
           </div>
           <div>
@@ -204,7 +208,8 @@ export default function QuickCareForm({
               value={formData.soilType}
               onChange={(e) => handleInputChange('soilType', e.target.value)}
               placeholder="e.g., Potting mix, Cactus soil"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              disabled={isSubmitting}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${isSubmitting ? 'bg-gray-50 cursor-not-allowed' : ''}`}
             />
           </div>
         </div>
@@ -221,7 +226,8 @@ export default function QuickCareForm({
           onChange={(e) => handleInputChange('notes', e.target.value)}
           placeholder="Any additional observations or notes..."
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+          disabled={isSubmitting}
+          className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none ${isSubmitting ? 'bg-gray-50 cursor-not-allowed' : ''}`}
         />
       </div>
 
@@ -235,7 +241,8 @@ export default function QuickCareForm({
             id="plantInstanceId"
             value={formData.plantInstanceId}
             onChange={(e) => handleInputChange('plantInstanceId', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            disabled={isSubmitting}
+            className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${isSubmitting ? 'bg-gray-50 cursor-not-allowed' : ''}`}
             required
           >
             <option value="">Select a plant...</option>
@@ -253,7 +260,8 @@ export default function QuickCareForm({
           <button
             type="button"
             onClick={onCancel}
-            className="btn btn--outline btn--full"
+            disabled={isSubmitting}
+            className={`btn btn--outline btn--full ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Cancel
           </button>

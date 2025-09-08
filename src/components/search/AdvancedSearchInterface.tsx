@@ -461,9 +461,19 @@ export default function AdvancedSearchInterface({
             className={`btn btn--sm ${showAdvanced ? 'btn--primary' : 'btn--outline'} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             aria-expanded={showAdvanced}
             aria-controls="advanced-search-panel"
-            title={showAdvanced ? 'Hide advanced search options' : 'Show advanced search options'}
+            title={isLoading ? 'Please wait...' : (showAdvanced ? 'Hide advanced search options' : 'Show advanced search options')}
           >
-            Advanced
+            {isLoading ? (
+              <span className="flex items-center">
+                <svg className="animate-spin h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Loading...
+              </span>
+            ) : (
+              'Advanced'
+            )}
           </button>
 
           {/* Search Presets */}
@@ -472,9 +482,9 @@ export default function AdvancedSearchInterface({
               value={selectedPreset || ''}
               onChange={(e) => e.target.value ? handlePresetSelect(e.target.value) : setSelectedPreset(null)}
               disabled={isLoading}
-              className={`px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 ${isLoading ? 'opacity-50 cursor-not-allowed bg-gray-50' : ''}`}
               aria-label="Select saved search preset"
-              title="Choose from your saved search presets"
+              title={isLoading ? 'Please wait...' : 'Choose from your saved search presets'}
             >
               <option value="">Saved Searches</option>
               {presets.map((preset) => (
@@ -545,7 +555,8 @@ export default function AdvancedSearchInterface({
                 placeholder="Enter location..."
                 value={filters.location || ''}
                 onChange={(e) => handleFilterChange('location', e.target.value || undefined)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-primary-500 focus:border-primary-500"
+                disabled={isLoading}
+                className={`block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-primary-500 focus:border-primary-500 ${isLoading ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               />
             </div>
 
@@ -568,7 +579,8 @@ export default function AdvancedSearchInterface({
                     handleFilterChange('dueSoonDays', undefined);
                   }
                 }}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-primary-500 focus:border-primary-500"
+                disabled={isLoading}
+                className={`block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-primary-500 focus:border-primary-500 ${isLoading ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               >
                 <option value="">All plants</option>
                 <option value="overdue">Overdue care</option>
@@ -584,7 +596,8 @@ export default function AdvancedSearchInterface({
               <select
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange('sortBy', e.target.value as PlantInstanceSortField)}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-primary-500 focus:border-primary-500"
+                disabled={isLoading}
+                className={`block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-primary-500 focus:border-primary-500 ${isLoading ? 'bg-gray-50 cursor-not-allowed' : ''}`}
               >
                 <option value="created_at">Date Added</option>
                 <option value="nickname">Name</option>
@@ -600,24 +613,26 @@ export default function AdvancedSearchInterface({
           {/* Sort Order */}
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-700">Sort order:</span>
-            <label className="flex items-center">
+            <label className={`flex items-center ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
               <input
                 type="radio"
                 name="sortOrder"
                 value="desc"
                 checked={filters.sortOrder === 'desc'}
                 onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
+                disabled={isLoading}
                 className="mr-2"
               />
               <span className="text-sm">Newest first</span>
             </label>
-            <label className="flex items-center">
+            <label className={`flex items-center ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
               <input
                 type="radio"
                 name="sortOrder"
                 value="asc"
                 checked={filters.sortOrder === 'asc'}
                 onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
+                disabled={isLoading}
                 className="mr-2"
               />
               <span className="text-sm">Oldest first</span>
