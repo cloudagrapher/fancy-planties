@@ -159,14 +159,22 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
           <div className="flex items-start space-x-4 flex-1">
             {/* Propagation image */}
             <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-              {propagation.images && propagation.images.length > 0 ? (
-                <Image
-                  src={propagation.images[0]}
-                  alt={propagation.nickname}
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
-                />
+              {propagation.images && Array.isArray(propagation.images) && propagation.images.length > 0 ? (
+                propagation.images[0].startsWith('data:') ? (
+                  <img
+                    src={propagation.images[0]}
+                    alt={propagation.nickname}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={propagation.images[0]}
+                    alt={propagation.nickname}
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-cover"
+                  />
+                )
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">
                   <StatusIcon className="w-6 h-6" />
