@@ -140,7 +140,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           </span>
           {plant.fertilizerDue && (
             <span>
-              Next due: {plant.fertilizerDue.toLocaleDateString()}
+              Next due: {new Date(plant.fertilizerDue).toLocaleDateString()}
             </span>
           )}
         </div>
