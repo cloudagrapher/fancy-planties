@@ -42,6 +42,16 @@ const customJestConfig = {
   transformIgnorePatterns: [
     'node_modules/(?!(lucide-react|@tanstack/react-query)/)',
   ],
+  // Use fake timers for better test control
+  fakeTimers: {
+    enableGlobally: false, // Don't enable globally, let tests opt-in
+  },
+  // Clear mocks between tests
+  clearMocks: true,
+  restoreMocks: true,
+  // Improve error reporting
+  verbose: false,
+  errorOnDeprecated: true,
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
