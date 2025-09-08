@@ -89,17 +89,64 @@ describe('PlantTaxonomySelector', () => {
     jest.clearAllMocks();
     mockFetch.mockClear();
     
-    // Default mock for any fetch calls during component initialization
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          plants: [],
-          quickSelect: { recent: [], popular: [], verified: [] }
-        },
-      }),
-    } as Response);
+    // Mock fetch to handle different API endpoints
+    mockFetch.mockImplementation((url: string | URL | Request) => {
+      const urlString = typeof url === 'string' ? url : url.toString();
+      
+      // Mock quick select API
+      if (urlString.includes('/api/plants/suggestions?type=quick')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            success: true,
+            data: {
+              quickSelect: mockQuickSelect
+            },
+          }),
+        } as Response);
+      }
+      
+      // Mock search API
+      if (urlString.includes('/api/plants/search')) {
+        const searchQuery = new URL(urlString).searchParams.get('q') || '';
+        
+        // Return different results based on search query
+        if (searchQuery === 'monstera') {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ({
+              success: true,
+              data: {
+                plants: mockPlantSuggestions
+              },
+            }),
+          } as Response);
+        }
+        
+        // Return empty results for other queries
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({
+            success: true,
+            data: {
+              plants: []
+            },
+          }),
+        } as Response);
+      }
+      
+      // Default fallback
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: {
+            plants: [],
+            quickSelect: { recent: [], popular: [], verified: [] }
+          },
+        }),
+      } as Response);
+    });
   });
 
   it('renders input field with placeholder', () => {

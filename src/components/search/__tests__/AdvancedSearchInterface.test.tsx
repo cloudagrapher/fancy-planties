@@ -137,9 +137,9 @@ describe('AdvancedSearchInterface', () => {
       );
     });
 
-    // Check if suggestions dropdown appears
+    // Check if suggestion items appear
     await waitFor(() => {
-      expect(screen.queryByText('Suggestions')).toBeInTheDocument();
+      expect(screen.queryByText('monstera deliciosa')).toBeInTheDocument();
     }, { timeout: 2000 });
   });
 
