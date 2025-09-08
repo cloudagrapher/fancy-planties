@@ -336,7 +336,7 @@ export default function PlantTaxonomySelector({
           onBlur={handleInputBlur}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          disabled={disabled}
+          disabled={disabled || searchState.isLoading}
           autoFocus={autoFocus}
           role="combobox"
           aria-expanded={searchState.showDropdown}
@@ -348,7 +348,7 @@ export default function PlantTaxonomySelector({
             focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300
             disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
             ${selectedPlant ? 'border-primary-300 bg-primary-50' : 'border-gray-300 bg-white'}
-            ${searchState.isLoading ? 'pr-10' : ''}
+            ${searchState.isLoading ? 'pr-10 bg-gray-50' : ''}
           `}
         />
         

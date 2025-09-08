@@ -186,7 +186,9 @@ export function CSVImportModal({
           </h2>
           <button
             onClick={handleClose}
-            className="modal-close"
+            disabled={isLoading}
+            className={`modal-close ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title={isLoading ? 'Please wait...' : 'Close'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -276,7 +278,8 @@ export function CSVImportModal({
                   if (step === 'upload-file') setStep('select-type');
                   else if (step === 'preview') setStep('upload-file');
                 }}
-                className="btn btn--outline"
+                disabled={isLoading}
+                className={`btn btn--outline ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Back
               </button>
@@ -302,7 +305,8 @@ export function CSVImportModal({
             ) : (
               <button
                 onClick={handleClose}
-                className="btn btn--outline"
+                disabled={isLoading}
+                className={`btn btn--outline ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 Cancel
               </button>

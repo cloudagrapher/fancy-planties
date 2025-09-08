@@ -555,13 +555,13 @@ describe('User Experience and Accessibility Validation', () => {
       );
 
       // Mock file upload
-      const fileInput = screen.getByLabelText(/choose file|upload/i);
+      const fileInput = screen.getByLabelText(/choose file/i);
       const file = new File(['test,data'], 'test.csv', { type: 'text/csv' });
 
       await user.upload(fileInput, file);
 
       // Should show progress indicator
-      expect(screen.getByRole('progressbar') || screen.getByText(/progress|uploading/i)).toBeInTheDocument();
+      expect(screen.getByRole('progressbar')).toBeInTheDocument();
     });
 
     test('should provide contextual help and tooltips', async () => {
@@ -605,12 +605,12 @@ describe('User Experience and Accessibility Validation', () => {
 
       // Should show confirmation dialog
       await waitFor(() => {
-        expect(screen.getByText(/confirm|are you sure|delete/i)).toBeInTheDocument();
+        expect(screen.getByText(/are you sure/i)).toBeInTheDocument();
       });
 
       // Should have cancel and confirm options
       expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /delete|confirm/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /confirm/i })).toBeInTheDocument();
     });
 
     test('should provide undo functionality for reversible actions', async () => {
@@ -629,7 +629,7 @@ describe('User Experience and Accessibility Validation', () => {
       });
 
       // Perform care action
-      const careButton = screen.getByRole('button', { name: /water|fertilize/i });
+      const careButton = screen.getByRole('button', { name: /water/i });
       await user.click(careButton);
 
       // Should show undo option
