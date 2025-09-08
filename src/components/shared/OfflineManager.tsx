@@ -14,8 +14,6 @@ export function OfflineManager() {
     isSyncing,
     cacheOfflineData,
     syncPendingEntries,
-    checkStorageQuota,
-    cleanupOldCache,
   } = useOffline();
 
   // Cache data when app loads and user is online
@@ -25,28 +23,6 @@ export function OfflineManager() {
     }
   }, [isOnline, cacheOfflineData]);
 
-  // Periodic storage quota check and cleanup
-  useEffect(() => {
-    const checkStorage = async () => {
-      const quota = await checkStorageQuota();
-      
-      // If storage is getting full, clean up old cache
-      if (quota.percentUsed > 75) {
-        cleanupOldCache(24 * 3); // Clean cache older than 3 days
-      }
-      
-      // If still very full, clean more aggressively
-      if (quota.percentUsed > 90) {
-        cleanupOldCache(24); // Clean cache older than 1 day
-      }
-    };
-
-    // Check storage on mount and then every 5 minutes
-    checkStorage();
-    const interval = setInterval(checkStorage, 5 * 60 * 1000);
-
-    return () => clearInterval(interval);
-  }, [checkStorageQuota, cleanupOldCache]);
 
   // Auto-sync pending entries when coming back online
   useEffect(() => {
