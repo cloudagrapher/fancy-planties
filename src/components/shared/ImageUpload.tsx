@@ -206,6 +206,8 @@ export default function ImageUpload({
                     type="button"
                     onClick={handleClick}
                     className="font-medium text-primary-600 hover:text-primary-700 underline focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded"
+                    aria-label="Click to select images for upload"
+                    title="Select images to upload"
                   >
                     Click to upload
                   </button>{' '}
@@ -260,8 +262,16 @@ export default function ImageUpload({
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-primary-600 text-white hover:bg-primary-700'
                   }`}
+                  aria-label={isUploading ? 'Uploading images' : 'Upload selected images'}
+                  title={isUploading ? 'Uploading images...' : 'Upload selected images'}
                 >
-                  {isUploading ? 'Uploading...' : 'Upload'}
+                  {isUploading ? (
+                    <>
+                      <span role="status" aria-live="polite">Uploading...</span>
+                    </>
+                  ) : (
+                    'Upload'
+                  )}
                 </button>
               )}
               <button
@@ -269,6 +279,8 @@ export default function ImageUpload({
                 onClick={clearAll}
                 className="text-sm text-red-600 hover:text-red-700"
                 disabled={isUploading}
+                aria-label="Clear all selected images"
+                title="Remove all selected images"
               >
                 Clear All
               </button>
@@ -288,7 +300,12 @@ export default function ImageUpload({
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500" />
+                      <div 
+                        className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-500"
+                        role="status"
+                        aria-label="Loading image preview"
+                      />
+                      <span className="sr-only">Loading image preview...</span>
                     </div>
                   )}
                 </div>
@@ -299,6 +316,7 @@ export default function ImageUpload({
                   onClick={() => removeFile(index)}
                   className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                   title="Remove image"
+                  aria-label={`Remove image ${index + 1}`}
                 >
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
