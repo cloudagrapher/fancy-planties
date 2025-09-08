@@ -8,11 +8,14 @@ import { expect, jest } from '@jest/globals';
 import { 
   DatabaseTestManager, 
   getDatabaseTestManager,
+  TestDataSeed,
+} from './database-test-manager';
+import {
   TestDatasetFactory,
   TestUserFactory,
   TestPlantFactory,
   TestPlantInstanceFactory,
-} from './database-test-manager';
+} from './realistic-test-data';
 import { renderWithTestConfig } from './component-test-helpers';
 import { IntegrationTestManager, getIntegrationTestManager, TestScenarios } from './integration-test-utilities';
 
@@ -96,7 +99,7 @@ export async function testPlantManagementWorkflowExample() {
     {
       ...TestScenarios.plantManagement.listPlants(),
       handler: getPlantInstances,
-      validate: (result) => {
+      validate: (result: any) => {
         expect(result.data.data.instances).toHaveLength(1);
         expect(result.data.data.instances[0].nickname).toBe('Test Monstera');
       },
@@ -196,14 +199,14 @@ export async function testDatabaseOperationsExample() {
       name: 'Insert User',
       operation: async () => {
         const db = dbManager.getMockDb();
-        const { users } = await import('@/db/schema');
+        const { users } = await import('@/lib/db/schema');
         return await db.insert(users).values({
           email: 'newuser@example.com',
           hashedPassword: 'hashed',
           name: 'New User',
         }).returning();
       },
-      validate: (result) => {
+      validate: (result: any) => {
         expect(result).toHaveLength(1);
         expect(result[0].email).toBe('newuser@example.com');
       },
@@ -212,10 +215,10 @@ export async function testDatabaseOperationsExample() {
       name: 'Query Users',
       operation: async () => {
         const db = dbManager.getMockDb();
-        const { users } = await import('@/db/schema');
+        const { users } = await import('@/lib/db/schema');
         return await db.select().from(users);
       },
-      validate: (result) => {
+      validate: (result: any) => {
         expect(Array.isArray(result)).toBe(true);
         expect(result.length).toBeGreaterThan(0);
       },
@@ -224,21 +227,22 @@ export async function testDatabaseOperationsExample() {
       name: 'Update User',
       operation: async () => {
         const db = dbManager.getMockDb();
-        const { users } = await import('@/db/schema');
+        const { users } = await import('@/lib/db/schema');
         const { eq } = await import('drizzle-orm');
         return await db.update(users)
           .set({ name: 'Updated Name' })
           .where(eq(users.id, 1))
           .returning();
       },
-      validate: (result) => {
+      validate: (result: any) => {
         expect(result).toHaveLength(1);
         expect(result[0].name).toBe('Updated Name');
       },
     },
   ];
 
-  const result = await dbManager.testDatabaseOperations(operations);
+  const integrationManager = getIntegrationTestManager();
+  const result = await integrationManager.testDatabaseOperations(operations);
   
   await dbManager.teardown();
   return result;
@@ -307,7 +311,7 @@ export async function testComponentWithErrorBoundaryExample() {
   );
 
   // Verify error boundary caught the error
-  expect(getByTestId('error-boundary')).toBeInTheDocument();
+  expect(getByTestId('error-boundary')).toBeTruthy();
   expect(caughtError).toBeInstanceOf(Error);
   expect(caughtError!.message).toBe('Component error for testing');
 }
@@ -325,7 +329,7 @@ export class TestSuiteTemplate {
   }
 
   async setupSuite(options: {
-    seedData?: any;
+    seedData?: TestDataSeed;
     mockAuth?: boolean;
     enableRealValidation?: boolean;
   } = {}) {
@@ -367,7 +371,7 @@ export function createTestSuite(
   suiteName: string,
   tests: (template: TestSuiteTemplate) => void,
   options: {
-    seedData?: any;
+    seedData?: TestDataSeed;
     mockAuth?: boolean;
     enableRealValidation?: boolean;
   } = {}
