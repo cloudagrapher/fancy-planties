@@ -3,8 +3,12 @@ import { GET, POST } from '../plant-instances/route';
 import { createMockPlantInstance, mockDatabaseQueries } from '@/test-utils/helpers';
 
 // Mock the database queries
-jest.mock('@/lib/db/query-optimization', () => ({
-  optimizedPlantQueries: mockDatabaseQueries(),
+jest.mock('@/lib/db/queries/plant-instances', () => ({
+  PlantInstanceQueries: {
+    getWithFilters: jest.fn(),
+    create: jest.fn(),
+    getEnhancedById: jest.fn(),
+  },
 }));
 
 // Mock authentication
@@ -17,16 +21,16 @@ jest.mock('@/lib/auth/server', () => ({
 
 // Mock validation
 jest.mock('@/lib/validation/plant-schemas', () => ({
-  enhancedPlantInstanceFilterSchema: {
+  plantInstanceFilterSchema: {
     parse: jest.fn((data) => data),
   },
-  plantInstanceCreateSchema: {
+  createPlantInstanceSchema: {
     parse: jest.fn((data) => data),
   },
 }));
 
 describe('/api/plant-instances', () => {
-  const mockQueries = mockDatabaseQueries();
+  const { PlantInstanceQueries } = require('@/lib/db/queries/plant-instances');
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -39,7 +43,13 @@ describe('/api/plant-instances', () => {
         createMockPlantInstance({ id: 2, nickname: 'Plant 2' }),
       ];
 
-      mockQueries.getUserActivePlants.mockResolvedValueOnce(mockPlants);
+      PlantInstanceQueries.getWithFilters.mockResolvedValueOnce({
+        instances: mockPlants,
+        totalCount: 2,
+        hasMore: false,
+        searchTime: 10,
+        filters: {}
+      });
 
       const request = new NextRequest('http://localhost:3000/api/plant-instances');
       const response = await GET(request);
@@ -56,31 +66,61 @@ describe('/api/plant-instances', () => {
         createMockPlantInstance({ nickname: 'Monstera' }),
       ];
 
-      mockQueries.searchPlants.mockResolvedValueOnce(mockPlants);
+      PlantInstanceQueries.getWithFilters.mockResolvedValueOnce({
+        instances: mockPlants,
+        totalCount: 1,
+        hasMore: false,
+        searchTime: 10,
+        filters: {}
+      });
 
       const request = new NextRequest('http://localhost:3000/api/plant-instances?search=monstera');
       const response = await GET(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(mockQueries.searchPlants).toHaveBeenCalledWith(1, 'monstera', 20);
+      expect(PlantInstanceQueries.getWithFilters).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 1,
+          limit: 20,
+          offset: 0
+        })
+      );
     });
 
     it('handles pagination parameters', async () => {
       const mockPlants = [createMockPlantInstance()];
 
-      mockQueries.getUserActivePlants.mockResolvedValueOnce(mockPlants);
+      PlantInstanceQueries.getWithFilters.mockResolvedValueOnce({
+        instances: mockPlants,
+        totalCount: 1,
+        hasMore: false,
+        searchTime: 10,
+        filters: {}
+      });
 
       const request = new NextRequest('http://localhost:3000/api/plant-instances?limit=10&offset=20');
       const response = await GET(request);
 
-      expect(mockQueries.getUserActivePlants).toHaveBeenCalledWith(1, 10, 20);
+      expect(PlantInstanceQueries.getWithFilters).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 1,
+          limit: 10,
+          offset: 20
+        })
+      );
     });
 
     it('handles location filter', async () => {
       const mockPlants = [createMockPlantInstance({ location: 'Living Room' })];
 
-      mockQueries.getUserActivePlants.mockResolvedValueOnce(mockPlants);
+      PlantInstanceQueries.getWithFilters.mockResolvedValueOnce({
+        instances: mockPlants,
+        totalCount: 1,
+        hasMore: false,
+        searchTime: 10,
+        filters: {}
+      });
 
       const request = new NextRequest('http://localhost:3000/api/plant-instances?location=Living%20Room');
       const response = await GET(request);
@@ -104,7 +144,7 @@ describe('/api/plant-instances', () => {
     });
 
     it('handles database errors gracefully', async () => {
-      mockQueries.getUserActivePlants.mockRejectedValueOnce(new Error('Database error'));
+      PlantInstanceQueries.getWithFilters.mockRejectedValueOnce(new Error('Database error'));
 
       const request = new NextRequest('http://localhost:3000/api/plant-instances');
       const response = await GET(request);
@@ -128,16 +168,8 @@ describe('/api/plant-instances', () => {
     it('creates plant instance successfully', async () => {
       const mockCreatedPlant = createMockPlantInstance(validPlantData);
 
-      // Mock database insert
-      const mockDb = {
-        insert: jest.fn().mockReturnValue({
-          values: jest.fn().mockReturnValue({
-            returning: jest.fn().mockResolvedValue([mockCreatedPlant]),
-          }),
-        }),
-      };
-
-      jest.doMock('@/lib/db', () => ({ db: mockDb }));
+      PlantInstanceQueries.create.mockResolvedValueOnce(mockCreatedPlant);
+      PlantInstanceQueries.getEnhancedById.mockResolvedValueOnce(mockCreatedPlant);
 
       const request = new NextRequest('http://localhost:3000/api/plant-instances', {
         method: 'POST',
@@ -154,8 +186,8 @@ describe('/api/plant-instances', () => {
     });
 
     it('validates request body', async () => {
-      const { plantInstanceCreateSchema } = require('@/lib/validation/plant-schemas');
-      plantInstanceCreateSchema.parse.mockImplementationOnce(() => {
+      const { createPlantInstanceSchema } = require('@/lib/validation/plant-schemas');
+      createPlantInstanceSchema.parse.mockImplementationOnce(() => {
         throw new Error('Validation failed');
       });
 
@@ -219,15 +251,7 @@ describe('/api/plant-instances', () => {
     });
 
     it('handles database constraint violations', async () => {
-      const mockDb = {
-        insert: jest.fn().mockReturnValue({
-          values: jest.fn().mockReturnValue({
-            returning: jest.fn().mockRejectedValue(new Error('Unique constraint violation')),
-          }),
-        }),
-      };
-
-      jest.doMock('@/lib/db', () => ({ db: mockDb }));
+      PlantInstanceQueries.create.mockRejectedValueOnce(new Error('Unique constraint violation'));
 
       const request = new NextRequest('http://localhost:3000/api/plant-instances', {
         method: 'POST',
@@ -254,15 +278,8 @@ describe('/api/plant-instances', () => {
         fertilizerDue: new Date('2024-01-15'), // 2 weeks after last fertilized
       });
 
-      const mockDb = {
-        insert: jest.fn().mockReturnValue({
-          values: jest.fn().mockReturnValue({
-            returning: jest.fn().mockResolvedValue([mockCreatedPlant]),
-          }),
-        }),
-      };
-
-      jest.doMock('@/lib/db', () => ({ db: mockDb }));
+      PlantInstanceQueries.create.mockResolvedValueOnce(mockCreatedPlant);
+      PlantInstanceQueries.getEnhancedById.mockResolvedValueOnce(mockCreatedPlant);
 
       const request = new NextRequest('http://localhost:3000/api/plant-instances', {
         method: 'POST',

@@ -42,23 +42,30 @@ global.ResizeObserver = class ResizeObserver {
   disconnect() {}
 };
 
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
+// Mock matchMedia (only in browser environment)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
+}
 
-// Mock navigator APIs with proper cleanup strategy
+// Mock navigator APIs with proper cleanup strategy (only in browser environment)
 const mockNavigatorAPIs = () => {
+  // Only mock navigator if it exists (browser environment)
+  if (typeof navigator === 'undefined') {
+    return;
+  }
+  
   // Store original values for cleanup
   const originalNavigator = { ...navigator };
   
@@ -98,12 +105,14 @@ const mockNavigatorAPIs = () => {
     },
   };
 
-  // Replace the global navigator
-  Object.defineProperty(window, 'navigator', {
-    value: mockNavigator,
-    writable: true,
-    configurable: true,
-  });
+  // Replace the global navigator (only in browser environment)
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, 'navigator', {
+      value: mockNavigator,
+      writable: true,
+      configurable: true,
+    });
+  }
 
   return mockNavigator;
 };
@@ -111,20 +120,23 @@ const mockNavigatorAPIs = () => {
 // Initialize navigator mocks
 const mockedNavigator = mockNavigatorAPIs();
 
-// Mock performance.now
-Object.defineProperty(window, 'performance', {
-  writable: true,
-  value: {
-    now: jest.fn(() => Date.now()),
-    mark: jest.fn(),
-    measure: jest.fn(),
-    getEntriesByType: jest.fn(() => []),
-    getEntriesByName: jest.fn(() => []),
-  },
-});
+// Mock performance.now (only in browser environment)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'performance', {
+    writable: true,
+    value: {
+      now: jest.fn(() => Date.now()),
+      mark: jest.fn(),
+      measure: jest.fn(),
+      getEntriesByType: jest.fn(() => []),
+      getEntriesByName: jest.fn(() => []),
+    },
+  });
+}
 
-// Mock getComputedStyle with CSS variable support
-Object.defineProperty(window, 'getComputedStyle', {
+// Mock getComputedStyle with CSS variable support (only in browser environment)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'getComputedStyle', {
   value: jest.fn((element, pseudoElement) => {
     // CSS variable mappings for design system
     const cssVariables = {
@@ -315,7 +327,8 @@ Object.defineProperty(window, 'getComputedStyle', {
 
     return computedStyle;
   }),
-});
+  });
+}
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -323,7 +336,13 @@ global.fetch = jest.fn();
 // Mock Next.js Request and Response for API route testing
 global.Request = class MockRequest {
   constructor(input, init = {}) {
-    this.url = typeof input === 'string' ? input : input.url;
+    // Use Object.defineProperty to avoid conflicts with NextRequest
+    Object.defineProperty(this, 'url', {
+      value: typeof input === 'string' ? input : input.url,
+      writable: false,
+      configurable: true
+    });
+    
     this.method = init.method || 'GET';
     this.headers = new Map(Object.entries(init.headers || {}));
     this.body = init.body || null;
@@ -432,16 +451,18 @@ const createStorageMock = () => {
   };
 };
 
-// Apply storage mocks
-Object.defineProperty(window, 'localStorage', {
-  value: createStorageMock(),
-  writable: true,
-});
+// Apply storage mocks (only in browser environment)
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', {
+    value: createStorageMock(),
+    writable: true,
+  });
 
-Object.defineProperty(window, 'sessionStorage', {
-  value: createStorageMock(),
-  writable: true,
-});
+  Object.defineProperty(window, 'sessionStorage', {
+    value: createStorageMock(),
+    writable: true,
+  });
+}
 
 // Setup test environment
 beforeEach(() => {
@@ -453,16 +474,18 @@ beforeEach(() => {
     global.fetch.mockClear();
   }
   
-  // Reset DOM
-  document.body.innerHTML = '';
+  // Reset DOM (only in browser environment)
+  if (typeof document !== 'undefined') {
+    document.body.innerHTML = '';
+  }
   
-  // Reset localStorage
-  if (localStorage.clear) {
+  // Reset localStorage (only in browser environment)
+  if (typeof localStorage !== 'undefined' && localStorage.clear) {
     localStorage.clear();
   }
   
-  // Reset sessionStorage
-  if (sessionStorage.clear) {
+  // Reset sessionStorage (only in browser environment)
+  if (typeof sessionStorage !== 'undefined' && sessionStorage.clear) {
     sessionStorage.clear();
   }
   
