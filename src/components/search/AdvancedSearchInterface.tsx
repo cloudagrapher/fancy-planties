@@ -37,6 +37,7 @@ export default function AdvancedSearchInterface({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isPendingSearch, setIsPendingSearch] = useState(false);
   
   const searchInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -56,7 +57,7 @@ export default function AdvancedSearchInterface({
   );
 
   // Search suggestions query
-  const { data: suggestions } = useQuery({
+  const { data: suggestions, isLoading: suggestionsLoading, error: suggestionsError } = useQuery({
     queryKey: ['search-suggestions', searchQuery],
     queryFn: async () => {
       if (searchQuery.length < 2) return { suggestions: [] };
@@ -66,7 +67,7 @@ export default function AdvancedSearchInterface({
       const data = await response.json();
       return data.data || data; // Handle both data.data and direct data response
     },
-    enabled: searchQuery.length >= 2,
+    enabled: searchQuery.length >= 2 && showSuggestions,
     staleTime: 1000 * 30, // 30 seconds
   });
 
@@ -84,15 +85,15 @@ export default function AdvancedSearchInterface({
   });
 
   // Search history query
-  const { data: history } = useQuery({
+  const { data: history, error: historyError } = useQuery({
     queryKey: ['search-history'],
     queryFn: async () => {
       const response = await fetch('/api/search/history?limit=5');
       if (!response.ok) throw new Error('Failed to fetch history');
       const data = await response.json();
-      return data.data.history;
+      return data.data?.history || [];
     },
-    enabled: showHistory,
+    enabled: showHistory && showSuggestions,
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
@@ -115,7 +116,12 @@ export default function AdvancedSearchInterface({
       return data.data as AdvancedSearchResult;
     },
     onSuccess: (result) => {
+      setIsPendingSearch(false);
       onResults(result);
+    },
+    onError: (error) => {
+      setIsPendingSearch(false);
+      console.error('Smart search failed:', error);
     },
   });
 
@@ -141,7 +147,12 @@ export default function AdvancedSearchInterface({
       return data.data as AdvancedSearchResult;
     },
     onSuccess: (result) => {
+      setIsPendingSearch(false);
       onResults(result);
+    },
+    onError: (error) => {
+      setIsPendingSearch(false);
+      console.error('Advanced search failed:', error);
     },
   });
 
@@ -149,19 +160,31 @@ export default function AdvancedSearchInterface({
   const handleSearchInput = useCallback((value: string) => {
     setSearchQuery(value);
     
+    // Show suggestions if we have enough characters or history
+    if (value.length >= 2 || (showHistory && history?.length > 0)) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+    
     // Clear existing timeout
     if (searchTimeout) {
       clearTimeout(searchTimeout);
+      setIsPendingSearch(false);
     }
     
     // Set new timeout for search
-    if (value.trim()) {
+    if (value.trim() && value.length >= 2) {
+      setIsPendingSearch(true);
       const timeout = setTimeout(() => {
         smartSearchMutation.mutate(value.trim());
+        // Don't set isPendingSearch to false here, let the mutation handle it
       }, 300);
       setSearchTimeout(timeout);
+    } else {
+      setIsPendingSearch(false);
     }
-  }, [smartSearchMutation, searchTimeout]);
+  }, [smartSearchMutation, searchTimeout, showHistory, history?.length]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((key: keyof EnhancedPlantInstanceFilter, value: any) => {
@@ -236,8 +259,10 @@ export default function AdvancedSearchInterface({
 
   // Focus management
   const handleInputFocus = useCallback(() => {
-    setShowSuggestions(true);
-  }, []);
+    if (searchQuery.length >= 2 || (showHistory && history?.length > 0)) {
+      setShowSuggestions(true);
+    }
+  }, [searchQuery.length, showHistory, history?.length]);
 
   const handleInputBlur = useCallback(() => {
     // Delay hiding suggestions to allow for clicks
@@ -249,6 +274,15 @@ export default function AdvancedSearchInterface({
     onFiltersChange(filters);
   }, []); // Only run on mount
 
+  // Show suggestions when query changes and meets criteria
+  useEffect(() => {
+    if (searchQuery.length >= 2 || (showHistory && history?.length > 0)) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [searchQuery, showHistory, history?.length]);
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -258,7 +292,7 @@ export default function AdvancedSearchInterface({
     };
   }, [searchTimeout]);
 
-  const isLoading = smartSearchMutation.isPending || advancedSearchMutation.isPending;
+  const isLoading = smartSearchMutation.isPending || advancedSearchMutation.isPending || isPendingSearch;
 
   return (
     <div className="space-y-3">
@@ -313,44 +347,92 @@ export default function AdvancedSearchInterface({
         </div>
 
         {/* Search Suggestions Dropdown */}
-        {showSuggestions && (suggestions?.suggestions?.length > 0 || history?.length > 0) && (
+        {showSuggestions && (
           <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
-            {/* Current Suggestions */}
-            {suggestions?.suggestions.length > 0 && (
-              <div className="p-2">
-                <div className="text-xs font-medium text-gray-500 mb-2">Suggestions</div>
-                {suggestions.suggestions.map((suggestion: string, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSuggestionSelect(suggestion)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded flex items-center"
-                  >
-                    <svg className="h-4 w-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                    </svg>
-                    {suggestion}
-                  </button>
-                ))}
+            {/* Loading State */}
+            {suggestionsLoading && searchQuery.length >= 2 ? (
+              <div className="p-4 text-center text-sm text-gray-500">
+                <div className="flex items-center justify-center">
+                  <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading suggestions...
+                </div>
               </div>
-            )}
+            ) : suggestionsError && searchQuery.length >= 2 ? (
+              /* Error State */
+              <div className="p-4 text-center text-sm text-red-500">
+                Failed to load suggestions
+              </div>
+            ) : (
+              <>
+                {/* Current Suggestions */}
+                {suggestions?.suggestions?.length > 0 && (
+                  <div className="p-2">
+                    <div className="text-xs font-medium text-gray-500 mb-2">Suggestions</div>
+                    {suggestions.suggestions.map((suggestion: string, index: number) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionSelect(suggestion)}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded flex items-center"
+                      >
+                        <svg className="h-4 w-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                        </svg>
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-            {/* Search History */}
-            {showHistory && history?.length > 0 && (
-              <div className="p-2 border-t border-gray-100">
-                <div className="text-xs font-medium text-gray-500 mb-2">Recent Searches</div>
-                {history.slice(0, 3).map((entry: any, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSuggestionSelect(entry.query)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded flex items-center"
-                  >
-                    <svg className="h-4 w-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                    </svg>
-                    {entry.query}
-                  </button>
-                ))}
-              </div>
+                {/* Search History */}
+                {showHistory && history?.length > 0 && (
+                  <div className={`p-2 ${suggestions?.suggestions?.length > 0 ? 'border-t border-gray-100' : ''}`}>
+                    <div className="text-xs font-medium text-gray-500 mb-2">Recent Searches</div>
+                    {history.slice(0, 3).map((entry: any, index: number) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionSelect(entry.query)}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded flex items-center"
+                      >
+                        <svg className="h-4 w-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                        </svg>
+                        {entry.query}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* No Results */}
+                {searchQuery.length >= 2 && 
+                 !suggestions?.suggestions?.length && 
+                 (!showHistory || !history?.length) && (
+                  <div className="p-4 text-center text-sm text-gray-500">
+                    No suggestions found
+                  </div>
+                )}
+
+                {/* Show history only when no search query */}
+                {searchQuery.length < 2 && showHistory && history?.length > 0 && (
+                  <div className="p-2">
+                    <div className="text-xs font-medium text-gray-500 mb-2">Recent Searches</div>
+                    {history.slice(0, 3).map((entry: any, index: number) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionSelect(entry.query)}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 rounded flex items-center"
+                      >
+                        <svg className="h-4 w-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                        </svg>
+                        {entry.query}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
@@ -362,7 +444,8 @@ export default function AdvancedSearchInterface({
           {/* Advanced Search Toggle */}
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`btn btn--sm ${showAdvanced ? 'btn--primary' : 'btn--outline'}`}
+            disabled={isLoading}
+            className={`btn btn--sm ${showAdvanced ? 'btn--primary' : 'btn--outline'} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Advanced
           </button>
@@ -372,7 +455,8 @@ export default function AdvancedSearchInterface({
             <select
               value={selectedPreset || ''}
               onChange={(e) => e.target.value ? handlePresetSelect(e.target.value) : setSelectedPreset(null)}
-              className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500"
+              disabled={isLoading}
+              className={`px-3 py-1 text-sm border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <option value="">Saved Searches</option>
               {presets.map((preset) => (
@@ -391,8 +475,20 @@ export default function AdvancedSearchInterface({
               onClick={handleAdvancedSearch}
               disabled={isLoading}
               className={`btn btn--sm btn--primary ${isLoading ? 'btn--loading' : ''}`}
+              aria-label={isLoading ? 'Searching...' : 'Search'}
+              data-testid="search-button"
             >
-              {isLoading ? 'Searching...' : 'Search'}
+              {isLoading ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Searching...
+                </span>
+              ) : (
+                'Search'
+              )}
             </button>
           )}
         </div>

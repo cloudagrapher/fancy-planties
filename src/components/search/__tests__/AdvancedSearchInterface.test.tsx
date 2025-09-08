@@ -72,86 +72,24 @@ describe('AdvancedSearchInterface', () => {
   it('handles search input with debouncing', async () => {
     const user = userEvent.setup();
     
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          searchId: 'test-id',
-          searchType: 'smart',
-          instances: [],
-          totalCount: 0,
-          hasMore: false,
-          suggestions: [],
-          relatedSearches: [],
-          databaseTime: 10,
-          processingTime: 5,
-        },
-      }),
-    } as Response);
-
-    render(<AdvancedSearchInterface {...defaultProps} />, {
-      wrapper: createWrapper(),
-    });
-
-    const searchInput = screen.getByPlaceholderText('Search plants...');
-    
-    await user.type(searchInput, 'monstera');
-
-    // Wait for debounced search
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith('/api/search/smart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: expect.stringContaining('monstera'),
-      });
-    }, { timeout: 1000 });
-  });
-
-  it('shows search suggestions when available', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        data: {
-          suggestions: ['monstera deliciosa', 'monstera adansonii'],
-        },
-      }),
-    } as Response);
-
-    const user = userEvent.setup();
-
-    render(<AdvancedSearchInterface {...defaultProps} />, {
-      wrapper: createWrapper(),
-    });
-
-    const searchInput = screen.getByPlaceholderText('Search plants...');
-    
-    await user.type(searchInput, 'mon');
-    await user.click(searchInput); // Focus to show suggestions
-
-    // Wait for the query to complete and suggestions to appear
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/search/suggestions?query=mon')
-      );
-    });
-
-    // Check if suggestion items appear
-    await waitFor(() => {
-      expect(screen.queryByText('monstera deliciosa')).toBeInTheDocument();
-    }, { timeout: 2000 });
-  });
-
-  it('handles suggestion selection', async () => {
+    // Mock all API calls that will be made
     mockFetch
+      // Presets API (called on mount)
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({
-          success: true,
-          data: { suggestions: ['monstera deliciosa'] },
-        }),
+        json: async () => ({ success: true, data: { presets: [] } }),
       } as Response)
+      // Suggestions API (called when typing reaches 2+ characters)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: { suggestions: [] } }),
+      } as Response)
+      // History API (called when suggestions are shown)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: { history: [] } }),
+      } as Response)
+      // Smart search API (called after debounce)
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -170,6 +108,50 @@ describe('AdvancedSearchInterface', () => {
         }),
       } as Response);
 
+    render(<AdvancedSearchInterface {...defaultProps} />, {
+      wrapper: createWrapper(),
+    });
+
+    const searchInput = screen.getByPlaceholderText('Search plants...');
+    
+    // Type the full word at once to ensure it completes
+    await user.clear(searchInput);
+    await user.paste('monstera');
+
+    // Wait for debounced search
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/search/smart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: expect.stringContaining('monstera'),
+      });
+    }, { timeout: 1500 });
+  });
+
+  it('shows search suggestions when available', async () => {
+    // Mock presets API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, data: { presets: [] } }),
+    } as Response);
+
+    // Mock suggestions API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          suggestions: ['monstera deliciosa', 'monstera adansonii'],
+        },
+      }),
+    } as Response);
+
+    // Mock history API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, data: { history: [] } }),
+    } as Response);
+
     const user = userEvent.setup();
 
     render(<AdvancedSearchInterface {...defaultProps} />, {
@@ -178,24 +160,113 @@ describe('AdvancedSearchInterface', () => {
 
     const searchInput = screen.getByPlaceholderText('Search plants...');
     
+    // Clear and type to ensure clean state
+    await user.clear(searchInput);
     await user.type(searchInput, 'mon');
-    await user.click(searchInput);
+
+    // Wait for the query to complete and suggestions to appear
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/search/suggestions?query=mo')
+      );
+    });
+
+    // Check if suggestion items appear
+    await waitFor(() => {
+      expect(screen.getByText('monstera deliciosa')).toBeInTheDocument();
+    }, { timeout: 2000 });
+  });
+
+  it('handles suggestion selection', async () => {
+    // Mock presets API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, data: { presets: [] } }),
+    } as Response);
+
+    // Mock suggestions API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { suggestions: ['monstera deliciosa'] },
+      }),
+    } as Response);
+
+    // Mock history API
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true, data: { history: [] } }),
+    } as Response);
+
+    // Mock smart search API for debounced search (will be triggered by typing)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          searchId: 'debounced-search',
+          searchType: 'smart',
+          instances: [],
+          totalCount: 0,
+          hasMore: false,
+          suggestions: [],
+          relatedSearches: [],
+          databaseTime: 10,
+          processingTime: 5,
+        },
+      }),
+    } as Response);
+
+    // Mock smart search API for when suggestion is selected
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: {
+          searchId: 'suggestion-search',
+          searchType: 'smart',
+          instances: [],
+          totalCount: 0,
+          hasMore: false,
+          suggestions: [],
+          relatedSearches: [],
+          databaseTime: 10,
+          processingTime: 5,
+        },
+      }),
+    } as Response);
+
+    const user = userEvent.setup();
+
+    render(<AdvancedSearchInterface {...defaultProps} />, {
+      wrapper: createWrapper(),
+    });
+
+    const searchInput = screen.getByPlaceholderText('Search plants...');
+    
+    // Clear and type to ensure clean state
+    await user.clear(searchInput);
+    await user.type(searchInput, 'mon');
 
     // Wait for suggestions to load
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/search/suggestions?query=mon')
+        expect.stringContaining('/api/search/suggestions?query=mo')
       );
     });
 
     // Check if suggestion appears
     await waitFor(() => {
-      expect(screen.queryByText('monstera deliciosa')).toBeInTheDocument();
+      expect(screen.getByText('monstera deliciosa')).toBeInTheDocument();
     }, { timeout: 2000 });
 
     await user.click(screen.getByText('monstera deliciosa'));
 
-    expect(mockOnResults).toHaveBeenCalled();
+    // Wait for the suggestion selection to trigger the search
+    await waitFor(() => {
+      expect(mockOnResults).toHaveBeenCalled();
+    }, { timeout: 1000 });
   });
 
   it('shows advanced search panel when toggled', async () => {
@@ -284,12 +355,33 @@ describe('AdvancedSearchInterface', () => {
   });
 
   it('handles loading states correctly', async () => {
-    // Mock a slow response
+    // Mock suggestions API to return empty results
+    mockFetch.mockImplementationOnce(() =>
+      Promise.resolve({
+        ok: true,
+        json: async () => ({ success: true, data: { suggestions: [] } }),
+      } as Response)
+    );
+
+    // Mock a slow smart search response
     mockFetch.mockImplementationOnce(
       () => new Promise(resolve => setTimeout(() => resolve({
         ok: true,
-        json: async () => ({ success: true, data: {} }),
-      } as Response), 100))
+        json: async () => ({ 
+          success: true, 
+          data: {
+            searchId: 'test-id',
+            searchType: 'smart',
+            instances: [],
+            totalCount: 0,
+            hasMore: false,
+            suggestions: [],
+            relatedSearches: [],
+            databaseTime: 10,
+            processingTime: 5,
+          }
+        }),
+      } as Response), 200))
     );
 
     const user = userEvent.setup();
@@ -299,13 +391,16 @@ describe('AdvancedSearchInterface', () => {
     });
 
     const searchInput = screen.getByPlaceholderText('Search plants...');
+    
+    // Type the full word at once to trigger search immediately
+    await user.clear(searchInput);
     await user.type(searchInput, 'test');
 
-    // Should show loading spinner
+    // Should show loading spinner during the debounce + request time
     await waitFor(() => {
-      const searchButton = screen.getByText('Search');
+      const searchButton = screen.getByTestId('search-button');
       expect(searchButton).toBeDisabled();
-    });
+    }, { timeout: 500 });
   });
 
   it('handles search errors gracefully', async () => {

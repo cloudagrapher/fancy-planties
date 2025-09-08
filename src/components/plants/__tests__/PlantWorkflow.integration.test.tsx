@@ -1,19 +1,99 @@
+import '@testing-library/jest-dom';
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createMockPlantInstance } from '@/test-utils/helpers';
+
+// Mock lodash-es to avoid ES module issues
+jest.mock('lodash-es', () => ({
+  debounce: (fn: (...args: unknown[]) => unknown) => {
+    let timeoutId: NodeJS.Timeout;
+    return (...args: unknown[]) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => fn(...args), 10);
+    };
+  },
+}));
 
 // Import the actual components for integration testing
 import PlantsGrid from '../PlantsGrid';
 import PlantDetailModal from '../PlantDetailModal';
 import PlantInstanceForm from '../PlantInstanceForm';
 
+// Mock helper function to create plant instances
+interface MockPlantInstance {
+  id: number;
+  nickname: string;
+  displayName: string;
+  location: string;
+  acquisitionDate: string;
+  status: string;
+  isActive: boolean;
+  plant: {
+    id: number;
+    commonName: string;
+    genus: string;
+    species: string;
+    family: string;
+    isVerified: boolean;
+  };
+  careSchedule: {
+    watering: { frequency: number; lastCare: string | null };
+    fertilizing: { frequency: number; lastCare: string | null };
+  };
+  careStatus: string;
+  daysUntilFertilizerDue: number | null;
+  daysSinceLastFertilized: number | null;
+  daysSinceLastRepot: number | null;
+  primaryImage: string | null;
+  careUrgency: string;
+  images: unknown[];
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const createMockPlantInstance = (overrides: Partial<MockPlantInstance> = {}): MockPlantInstance => ({
+  id: 1,
+  nickname: 'Test Plant',
+  displayName: 'Test Plant',
+  location: 'Living Room',
+  acquisitionDate: new Date().toISOString(),
+  status: 'healthy',
+  isActive: true,
+  plant: {
+    id: 1,
+    commonName: 'Test Plant',
+    genus: 'Test',
+    species: 'testicus',
+    family: 'Testaceae',
+    isVerified: true,
+  },
+  careSchedule: {
+    watering: { frequency: 7, lastCare: null },
+    fertilizing: { frequency: 30, lastCare: null },
+  },
+  careStatus: 'healthy',
+  daysUntilFertilizerDue: 15,
+  daysSinceLastFertilized: 15,
+  daysSinceLastRepot: null,
+  primaryImage: null,
+  careUrgency: 'low',
+  images: [],
+  notes: '',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  ...overrides,
+});
+
 // Mock Next.js Image component
 jest.mock('next/image', () => {
-  return function MockImage({ src, alt, ...props }: any) {
+  const MockImage = ({ src, alt, ...props }: { src: string; alt: string;[key: string]: unknown }) => {
+    // eslint-disable-next-line @next/next/no-img-element
     return <img src={src} alt={alt} {...props} />;
   };
+  MockImage.displayName = 'MockImage';
+  return MockImage;
 });
 
 // Mock some child components that aren't the focus of integration testing
@@ -36,23 +116,27 @@ jest.mock('../PlantLineage', () => {
 });
 
 jest.mock('../../care/QuickCareActions', () => {
-  return function MockQuickCareActions({ onCareAction }: any) {
+  const MockQuickCareActions = ({ onCareAction }: { onCareAction?: (action: string) => void }) => {
     return (
       <div data-testid="quick-care-actions">
         <button onClick={() => onCareAction && onCareAction('fertilizer')}>Quick Fertilize</button>
       </div>
     );
   };
+  MockQuickCareActions.displayName = 'MockQuickCareActions';
+  return MockQuickCareActions;
 });
 
 jest.mock('../PlantImageGallery', () => {
-  return function MockPlantImageGallery({ isOpen, onClose }: any) {
+  const MockPlantImageGallery = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     return isOpen ? (
       <div data-testid="plant-image-gallery">
         <button onClick={onClose}>Close Gallery</button>
       </div>
     ) : null;
   };
+  MockPlantImageGallery.displayName = 'MockPlantImageGallery';
+  return MockPlantImageGallery;
 });
 
 // Mock hooks
@@ -85,36 +169,43 @@ const createWrapper = () => {
     },
   });
 
-  return ({ children }: { children: React.ReactNode }) => (
+  const TestWrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>
       {children}
     </QueryClientProvider>
   );
+
+  TestWrapper.displayName = 'TestWrapper';
+  return TestWrapper;
 };
 
 describe('Plant Workflow Integration Tests', () => {
   const mockPlants = [
-    createMockPlantInstance({ 
-      id: 1, 
-      nickname: 'My Monstera', 
-      plant: { 
-        id: 1, 
-        commonName: 'Monstera Deliciosa', 
-        genus: 'Monstera', 
+    createMockPlantInstance({
+      id: 1,
+      nickname: 'My Monstera',
+      displayName: 'My Monstera',
+      plant: {
+        id: 1,
+        commonName: 'Monstera Deliciosa',
+        genus: 'Monstera',
         species: 'deliciosa',
-        family: 'Araceae'
-      } 
+        family: 'Araceae',
+        isVerified: true,
+      }
     }),
-    createMockPlantInstance({ 
-      id: 2, 
-      nickname: 'Phil the Philodendron', 
-      plant: { 
-        id: 2, 
-        commonName: 'Heart Leaf Philodendron', 
-        genus: 'Philodendron', 
+    createMockPlantInstance({
+      id: 2,
+      nickname: 'Phil the Philodendron',
+      displayName: 'Phil the Philodendron',
+      plant: {
+        id: 2,
+        commonName: 'Heart Leaf Philodendron',
+        genus: 'Philodendron',
         species: 'hederaceum',
-        family: 'Araceae'
-      } 
+        family: 'Araceae',
+        isVerified: true,
+      }
     }),
   ];
 
@@ -144,17 +235,51 @@ describe('Plant Workflow Integration Tests', () => {
     it('opens plant detail modal when clicking on a plant card', async () => {
       const user = userEvent.setup();
 
-      // Mock initial grid data
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockPlantsResponse,
-      } as Response);
+      // Mock fetch to handle different API endpoints
+      mockFetch.mockImplementation((url: string | URL | Request) => {
+        const urlString = typeof url === 'string' ? url : url.toString();
 
-      // Mock locations API
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ['Living Room', 'Kitchen'],
-      } as Response);
+        if (urlString.includes('/api/plant-instances') && !urlString.includes('search')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => mockPlantsResponse.data,
+          } as Response);
+        }
+
+        if (urlString.includes('/api/user-locations')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => ['Living Room', 'Kitchen'],
+          } as Response);
+        }
+
+        if (urlString.includes('/api/plant-instances/1')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => mockPlants[0],
+          } as Response);
+        }
+
+        if (urlString.includes('/api/care-history')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => [],
+          } as Response);
+        }
+
+        if (urlString.includes('/api/propagations')) {
+          return Promise.resolve({
+            ok: true,
+            json: async () => [],
+          } as Response);
+        }
+
+        // Default fallback
+        return Promise.resolve({
+          ok: true,
+          json: async () => ({}),
+        } as Response);
+      });
 
       const TestComponent = () => {
         const [selectedPlantId, setSelectedPlantId] = React.useState<number | null>(null);
@@ -181,8 +306,8 @@ describe('Plant Workflow Integration Tests', () => {
                 plantId={selectedPlantId}
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onEdit={() => {}}
-                onCareLog={() => {}}
+                onEdit={() => { }}
+                onCareLog={() => { }}
               />
             )}
           </>
@@ -213,7 +338,7 @@ describe('Plant Workflow Integration Tests', () => {
       } as Response);
 
       // Click on the plant card
-      const plantCard = screen.getByText('My Monstera');
+      const plantCard = screen.getByLabelText('Plant card for My Monstera');
       await user.click(plantCard);
 
       // Modal should open and show plant details
@@ -379,7 +504,6 @@ describe('Plant Workflow Integration Tests', () => {
       const familyInput = screen.getByPlaceholderText('e.g., Araceae');
       const genusInput = screen.getByPlaceholderText('e.g., Monstera');
       const speciesInput = screen.getByPlaceholderText('e.g., deliciosa');
-      const commonNameInput = screen.getByDisplayValue('rare plant');
 
       await user.type(familyInput, 'Rare Family');
       await user.type(genusInput, 'Rare Genus');
@@ -507,12 +631,12 @@ describe('Plant Workflow Integration Tests', () => {
         const [selectedPlantId, setSelectedPlantId] = React.useState<number | null>(null);
         const [isModalOpen, setIsModalOpen] = React.useState(false);
 
-        const handlePlantSelect = (plant: any) => {
+        const handlePlantSelect = (plant: unknown) => {
           setSelectedPlantId(plant.id);
           setIsModalOpen(true);
         };
 
-        const handleCareLog = (plantId: number, action: string) => {
+        const handleCareLog = (_plantId: number, _action: string) => {
           // Mock care logging
         };
 
@@ -528,7 +652,7 @@ describe('Plant Workflow Integration Tests', () => {
                 plantId={selectedPlantId}
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                onEdit={() => {}}
+                onEdit={() => { }}
                 onCareLog={handleCareLog}
               />
             )}
@@ -619,7 +743,7 @@ describe('Plant Workflow Integration Tests', () => {
           userId={1}
           showSearch={true}
           showFilters={true}
-          onPlantSelect={() => {}}
+          onPlantSelect={() => { }}
         />,
         { wrapper: createWrapper() }
       );
