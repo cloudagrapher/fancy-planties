@@ -257,14 +257,23 @@ export default function PlantCard({
       {/* Plant Image */}
       <div className={`plant-card-image ${config.image} relative bg-gradient-to-br from-primary-50 to-secondary-50`}>
         {plant.primaryImage && !imageError ? (
-          <Image
-            src={plant.primaryImage}
-            alt={plant.displayName}
-            fill
-            className="object-cover"
-            onError={() => setImageError(true)}
-            sizes={`(max-width: 768px) ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}, ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}`}
-          />
+          plant.primaryImage.startsWith('data:') ? (
+            <img
+              src={plant.primaryImage}
+              alt={plant.displayName}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <Image
+              src={plant.primaryImage}
+              alt={plant.displayName}
+              fill
+              className="object-cover"
+              onError={() => setImageError(true)}
+              sizes={`(max-width: 768px) ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}, ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}`}
+            />
+          )
         ) : (
           <div className="w-full h-full flex-center">
             <div className="text-4xl opacity-30">🌱</div>
