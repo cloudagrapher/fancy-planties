@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   return withRateLimit(request, async (req) => {
     try {
       const body = await req.json();
-      
+
       // Validate input
       const validation = validateInput(signInSchema, body);
       if (!validation.success) {
@@ -17,22 +17,22 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      
+
       const { email, password } = validation.data;
-      
+
       // Attempt to sign in
       const result = await signIn(email, password);
-      
+
       if (!result) {
         return NextResponse.json(
           { error: 'Invalid email or password' },
           { status: 401 }
         );
       }
-      
+
       // Set session cookie
       await setSessionCookie(result.session.id);
-      
+
       return NextResponse.json({
         success: true,
         user: {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
           name: result.user.name,
         },
       });
-      
+
     } catch (error) {
       console.error('Sign in error:', error);
       return NextResponse.json(
