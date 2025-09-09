@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateRequest } from '@/lib/auth/server';
 import { db } from '@/lib/db';
 import { plantInstances, propagations } from '@/lib/db/schema';
-import { eq, and, sql, isNull, isNotNull, lte, inArray } from 'drizzle-orm';
+import { eq, and, sql, inArray } from 'drizzle-orm';
+
+export interface FertilizerEvent {
+  id: string;
+  plantName: string;
+  plantId: string;
+  date: string;
+  type: 'fertilize';
+}
 
 export interface DashboardStats {
   totalPlants: number;
@@ -12,6 +20,7 @@ export interface DashboardStats {
   activePropagations: number;
   successfulPropagations: number;
   propagationSuccessRate: number;
+  fertilizerEvents: FertilizerEvent[];
 }
 
 // GET /api/dashboard - Get dashboard statistics
@@ -70,7 +79,8 @@ export async function GET(request: NextRequest) {
       totalPropagations: propagationStats?.totalPropagations || 0,
       activePropagations: propagationStats?.activePropagations || 0,
       successfulPropagations: successfulCount,
-      propagationSuccessRate
+      propagationSuccessRate,
+      fertilizerEvents: []
     };
     
     return NextResponse.json(dashboardStats);

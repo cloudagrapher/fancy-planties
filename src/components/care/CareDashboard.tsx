@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CareDashboardData } from '@/lib/types/care-types';
 import CareTaskCard from './CareTaskCard';
 import QuickCareActions from './QuickCareActions';
@@ -11,32 +12,31 @@ interface CareDashboardProps {
 }
 
 export default function CareDashboard({ userId }: CareDashboardProps) {
-  const [dashboardData, setDashboardData] = useState<CareDashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'overdue' | 'today' | 'soon' | 'recent'>('overdue');
   const [quickCareLoading, setQuickCareLoading] = useState<number | null>(null);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [userId]);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      setError(null); // Clear any previous error state
-      const response = await fetch('/api/care/dashboard');
+  // Use React Query for dashboard data
+  const { data: dashboardData, isLoading: loading, error } = useQuery({
+    queryKey: ['care-dashboard'],
+    queryFn: async (): Promise<CareDashboardData> => {
+      const response = await fetch('/api/care/dashboard', {
+        // Prevent browser caching
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to load care dashboard');
       }
-      const data = await response.json();
-      setDashboardData(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.json();
+    },
+    staleTime: 0, // Always consider data stale
+    gcTime: 0, // Don't keep old data in cache
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+  });
 
   const handleQuickCare = async (plantInstanceId: number, careType: string) => {
     try {
@@ -57,11 +57,75 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
         throw new Error('Failed to log care');
       }
 
-      // Reload dashboard data
-      await loadDashboardData();
+      // Invalidate and refetch dashboard data
+      await queryClient.invalidateQueries({ 
+        queryKey: ['care-dashboard'],
+        refetchType: 'active'
+      });
+      // Also remove from cache entirely and refetch
+      queryClient.removeQueries({ queryKey: ['care-dashboard'] });
+      await queryClient.refetchQueries({ queryKey: ['care-dashboard'] });
     } catch (err) {
       console.error('Error logging quick care:', err);
-      setError(err instanceof Error ? err.message : 'Failed to log care');
+      // Could show a toast notification here instead
+    } finally {
+      setQuickCareLoading(null);
+    }
+  };
+
+  const handleBulkQuickCare = async (careType: string) => {
+    if (!dashboardData) return;
+    
+    // Get plants that need this type of care based on urgency
+    const plantsNeedingCare = [
+      ...dashboardData.overdue,
+      ...dashboardData.dueToday,
+      ...(careType !== 'fertilizer' ? dashboardData.dueSoon : []) // Be less aggressive for fertilizer
+    ];
+
+    if (plantsNeedingCare.length === 0) {
+      console.log('No plants currently need this type of care');
+      return;
+    }
+
+    try {
+      setQuickCareLoading(-1); // Use -1 to indicate bulk operation
+      
+      // Log care for multiple plants
+      const promises = plantsNeedingCare.slice(0, 10).map(plant => // Limit to first 10 plants
+        fetch('/api/care/quick-log', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            plantInstanceId: plant.id,
+            careType,
+            careDate: new Date().toISOString(),
+          }),
+        })
+      );
+
+      const results = await Promise.allSettled(promises);
+      const successCount = results.filter(r => r.status === 'fulfilled').length;
+      const failureCount = results.length - successCount;
+
+      if (successCount > 0) {
+        // Show success message
+        console.log(`Successfully logged ${careType} for ${successCount} plants${failureCount > 0 ? `, ${failureCount} failed` : ''}`);
+        await queryClient.invalidateQueries({ 
+          queryKey: ['care-dashboard'],
+          refetchType: 'active'
+        });
+        // Also remove from cache entirely and refetch
+        queryClient.removeQueries({ queryKey: ['care-dashboard'] });
+        await queryClient.refetchQueries({ queryKey: ['care-dashboard'] });
+      } else {
+        throw new Error('Failed to log care for any plants');
+      }
+    } catch (err) {
+      console.error('Error with bulk care:', err);
+      // Could show a toast notification here instead
     } finally {
       setQuickCareLoading(null);
     }
@@ -90,9 +154,9 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       <div className="rounded-2xl shadow-sm border border-red-200/70 bg-red-50/70 backdrop-blur p-6 text-center">
         <div className="text-red-600 mb-4">⚠️</div>
         <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Care Dashboard</h3>
-        <p className="text-gray-600 mb-4">{error}</p>
+        <p className="text-gray-600 mb-4">{error instanceof Error ? error.message : 'Failed to load dashboard'}</p>
         <button
-          onClick={loadDashboardData}
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['care-dashboard'] })}
           disabled={loading}
           className={`px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
@@ -130,31 +194,30 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {dashboardData.quickActions.map((action) => {
-          const hasPlants = dashboardData.statistics.totalActivePlants > 0;
-          const firstPlantId = hasPlants ? (
-            dashboardData.overdue[0]?.id ||
-            dashboardData.dueToday[0]?.id ||
-            dashboardData.dueSoon[0]?.id ||
-            dashboardData.recentlyCared[0]?.id ||
-            0
-          ) : 0;
+          const hasPlants = dashboardData?.statistics?.totalActivePlants > 0;
+          const plantsNeedingCare = dashboardData ? [
+            ...dashboardData.overdue,
+            ...dashboardData.dueToday,
+            ...(action.careType !== 'fertilizer' ? dashboardData.dueSoon : [])
+          ].length : 0;
           
           return (
             <button
               key={action.id}
-              onClick={() => handleQuickCare(firstPlantId, action.careType)}
+              onClick={() => handleBulkQuickCare(action.careType)}
               className={`p-4 rounded-xl text-white font-medium transition-colors shadow-sm ${
-                hasPlants && action.isEnabled && quickCareLoading !== firstPlantId ? action.color : 'bg-gray-400 cursor-not-allowed'
+                hasPlants && plantsNeedingCare > 0 && action.isEnabled && quickCareLoading !== -1 ? action.color : 'bg-gray-400 cursor-not-allowed'
               }`}
-              disabled={!action.isEnabled || !hasPlants || quickCareLoading === firstPlantId || loading}
+              disabled={!action.isEnabled || !hasPlants || plantsNeedingCare === 0 || quickCareLoading === -1 || loading}
               title={
                 loading ? 'Loading...' :
-                quickCareLoading === firstPlantId ? 'Logging care...' :
-                !hasPlants ? 'Add plants to use quick care actions' : 
-                action.description
+                quickCareLoading === -1 ? 'Logging care for multiple plants...' :
+                !hasPlants ? 'Add plants to use quick care actions' :
+                plantsNeedingCare === 0 ? 'No plants currently need this care' :
+                `${action.description} for ${plantsNeedingCare} plants`
               }
             >
-              {quickCareLoading === firstPlantId ? (
+              {quickCareLoading === -1 ? (
                 <>
                   <div className="text-lg mb-1">
                     <svg className="animate-spin h-5 w-5 mx-auto" fill="none" viewBox="0 0 24 24">

@@ -31,7 +31,17 @@ const plantInstanceFormSchema = z.object({
     .max(100, 'Location must be less than 100 characters')
     .trim()
     .refine(val => val.length > 0, 'Location cannot be empty'),
-  fertilizerSchedule: z.enum(['weekly', 'biweekly', 'monthly', 'bimonthly', 'quarterly'], {
+  fertilizerSchedule: z.enum([
+    'weekly', 
+    'biweekly', 
+    'every_2_4_weeks',
+    'every_3_4_weeks', 
+    'every_4_weeks',
+    'every_4_6_weeks',
+    'every_6_8_weeks',
+    'bimonthly', 
+    'quarterly'
+  ], {
     message: 'Please select a fertilizer schedule'
   }),
   lastFertilized: z.string()
@@ -124,7 +134,7 @@ export default function PlantInstanceForm({
       plantId: 1, // Default to 1 to pass validation, will be overridden during initialization
       nickname: '',
       location: '',
-      fertilizerSchedule: 'monthly' as const,
+      fertilizerSchedule: 'every_4_weeks' as const,
       lastFertilized: '',
       lastRepot: '',
       notes: '',
@@ -196,8 +206,13 @@ export default function PlantInstanceForm({
 
       return response.json();
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['plants'] });
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ 
+        queryKey: ['plants'],
+        refetchType: 'active'
+      });
+      queryClient.removeQueries({ queryKey: ['plants'] });
+      await queryClient.refetchQueries({ queryKey: ['plants'] });
       
       // Set the newly created plant as selected
       const newPlant: PlantSuggestion = {
@@ -263,10 +278,23 @@ export default function PlantInstanceForm({
 
       return response.json();
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['plant-instances'] });
-      queryClient.invalidateQueries({ queryKey: ['plant-detail'] });
-      queryClient.invalidateQueries({ queryKey: ['care-dashboard'] });
+    onSuccess: async (data) => {
+      // Triple invalidation approach for aggressive cache clearing
+      const queryKeysToInvalidate = [
+        ['plant-instances'],
+        ['plant-detail'],
+        ['care-dashboard'],
+        ['plants']
+      ];
+
+      for (const queryKey of queryKeysToInvalidate) {
+        await queryClient.invalidateQueries({ 
+          queryKey,
+          refetchType: 'active'
+        });
+        queryClient.removeQueries({ queryKey });
+        await queryClient.refetchQueries({ queryKey });
+      }
       
       // Reset form state
       reset();
@@ -288,11 +316,13 @@ export default function PlantInstanceForm({
   // Initialize form when editing
   useEffect(() => {
     if (isEditing && plantInstance) {
+      const convertedSchedule = convertDatabaseScheduleToForm(plantInstance.fertilizerSchedule);
+      console.log('Setting form with fertilizer schedule:', convertedSchedule);
       reset({
         plantId: plantInstance.plantId,
         nickname: plantInstance.nickname,
         location: plantInstance.location,
-        fertilizerSchedule: plantInstance.fertilizerSchedule as any,
+        fertilizerSchedule: convertedSchedule as any,
         lastFertilized: plantInstance.lastFertilized 
           ? new Date(plantInstance.lastFertilized).toISOString().split('T')[0]
           : '',
@@ -363,12 +393,49 @@ export default function PlantInstanceForm({
   const convertFertilizerSchedule = (schedule: string): string => {
     const scheduleMap = {
       'weekly': '1 week',
-      'biweekly': '2 weeks', 
-      'monthly': '1 month',
+      'biweekly': 'every 2 weeks', 
+      'every_2_4_weeks': 'every 2-4 weeks',
+      'every_3_4_weeks': 'every 3-4 weeks',
+      'every_4_weeks': 'every 4 weeks',
+      'every_4_6_weeks': 'every 4-6 weeks',
+      'every_6_8_weeks': 'every 6-8 weeks',
       'bimonthly': '2 months',
       'quarterly': '3 months'
     };
     return scheduleMap[schedule as keyof typeof scheduleMap] || schedule;
+  };
+
+  // Convert database fertilizer schedule back to form enum
+  const convertDatabaseScheduleToForm = (schedule: string): string => {
+    console.log('Converting database schedule:', schedule);
+    if (!schedule) return 'every_4_weeks';
+    
+    const reverseMap = {
+      // Exact matches for new format
+      'every 2 weeks': 'biweekly',
+      'every 2-3 weeks': 'biweekly',      // Close to biweekly
+      'every 2-4 weeks': 'every_2_4_weeks',
+      'every 3-4 weeks': 'every_3_4_weeks', 
+      'every 4 weeks': 'every_4_weeks',
+      'every 4-6 weeks': 'every_4_6_weeks',
+      'every 6-8 weeks': 'every_6_8_weeks',
+      'every 17 weeks': 'quarterly',      // Long interval
+      // Legacy formats
+      '1 week': 'weekly',
+      '2 weeks': 'biweekly', 
+      '1 month': 'every_4_weeks',         // 1 month ≈ 4 weeks
+      '2 months': 'bimonthly',
+      '3 months': 'quarterly',
+      'weekly': 'weekly',
+      'biweekly': 'biweekly',
+      'monthly': 'every_4_weeks', 
+      'bimonthly': 'bimonthly',
+      'quarterly': 'quarterly',
+    };
+    
+    const result = reverseMap[schedule as keyof typeof reverseMap] || 'every_4_weeks';
+    console.log('Converted to:', result);
+    return result;
   };
 
   // Handle form submission
@@ -765,9 +832,13 @@ export default function PlantInstanceForm({
                         }`}
                       >
                         <option value="weekly">Weekly (every 7 days) - High maintenance</option>
-                        <option value="biweekly">Bi-weekly (every 14 days) - Regular care</option>
-                        <option value="monthly">Monthly (every 30 days) - Standard schedule</option>
-                        <option value="bimonthly">Bi-monthly (every 60 days) - Low maintenance</option>
+                        <option value="biweekly">Every 2 weeks - Regular care</option>
+                        <option value="every_2_4_weeks">Every 2-4 weeks - Variable schedule</option>
+                        <option value="every_3_4_weeks">Every 3-4 weeks - Moderate care</option>
+                        <option value="every_4_weeks">Every 4 weeks - Standard monthly</option>
+                        <option value="every_4_6_weeks">Every 4-6 weeks - Extended care</option>
+                        <option value="every_6_8_weeks">Every 6-8 weeks - Low maintenance</option>
+                        <option value="bimonthly">Bi-monthly (every 60 days) - Very low maintenance</option>
                         <option value="quarterly">Quarterly (every 90 days) - Minimal care</option>
                       </select>
                       
@@ -784,7 +855,11 @@ export default function PlantInstanceForm({
                                 const scheduleMap = {
                                   weekly: 7,
                                   biweekly: 14,
-                                  monthly: 30,
+                                  every_2_4_weeks: 21,    // Average of 2-4 weeks
+                                  every_3_4_weeks: 24,    // Average of 3-4 weeks  
+                                  every_4_weeks: 28,      // 4 weeks
+                                  every_4_6_weeks: 35,    // Average of 4-6 weeks
+                                  every_6_8_weeks: 49,    // Average of 6-8 weeks
                                   bimonthly: 60,
                                   quarterly: 90
                                 };

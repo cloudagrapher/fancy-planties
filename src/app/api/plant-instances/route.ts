@@ -72,22 +72,46 @@ export async function POST(request: NextRequest) {
       const formData = await request.formData();
       body = {};
       
+      // Helper function to convert file to base64
+      const fileToBase64 = async (file: File): Promise<string> => {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const base64 = buffer.toString('base64');
+        return `data:${file.type};base64,${base64}`;
+      };
+
+      const imageFiles: File[] = [];
+      const existingImages: string[] = [];
+      
       // Extract form fields
       for (const [key, value] of formData.entries()) {
-        if (key.startsWith('imageFiles[') || key.startsWith('existingImages[')) {
-          // Handle image files separately (not implemented yet)
-          continue;
-        }
-        
-        // Convert form values to appropriate types
-        if (key === 'plantId') {
-          body[key] = parseInt(value as string);
-        } else if (key === 'isActive') {
-          body[key] = value === 'true';
+        if (key.startsWith('imageFiles[')) {
+          // Handle new image files
+          if (value instanceof File) {
+            imageFiles.push(value);
+          }
+        } else if (key.startsWith('existingImages[')) {
+          // Handle existing images
+          existingImages.push(value as string);
         } else {
-          body[key] = value;
+          // Convert form values to appropriate types
+          if (key === 'plantId') {
+            body[key] = parseInt(value as string);
+          } else if (key === 'isActive') {
+            body[key] = value === 'true';
+          } else {
+            body[key] = value;
+          }
         }
       }
+
+      // Convert new image files to base64
+      const newImageBase64s = await Promise.all(
+        imageFiles.map(file => fileToBase64(file))
+      );
+
+      // Combine existing images with new images
+      body.images = [...existingImages, ...newImageBase64s];
     } else {
       // Handle JSON
       try {

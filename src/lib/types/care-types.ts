@@ -255,12 +255,30 @@ export const careHelpers = {
 
   // Parse fertilizer schedule to days
   parseFertilizerSchedule: (schedule: string): number => {
+    if (!schedule) return 30;
+    
     const scheduleMap: Record<string, number> = {
+      // Legacy formats
       'weekly': 7,
       'biweekly': 14,
       'monthly': 30,
       'bimonthly': 60,
-      'quarterly': 90
+      'quarterly': 90,
+      // Week-based formats
+      '1 week': 7,
+      '2 weeks': 14,
+      '1 month': 30,
+      '2 months': 60,
+      '3 months': 90,
+      // Your actual database formats
+      'every 2 weeks': 14,
+      'every 2-3 weeks': 18,        // Average of 2-3 weeks
+      'every 2-4 weeks': 21,        // Average of 2-4 weeks  
+      'every 3-4 weeks': 24,        // Average of 3-4 weeks
+      'every 4 weeks': 28,          // 4 weeks
+      'every 4-6 weeks': 35,        // Average of 4-6 weeks
+      'every 6-8 weeks': 49,        // Average of 6-8 weeks
+      'every 17 weeks': 119,        // 17 weeks
     };
 
     // Check if it's a predefined schedule
