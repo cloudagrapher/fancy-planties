@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
                 searchParams.get('isPublic') === 'false' ? false : undefined,
     });
 
-    let query = db.select().from(careGuides);
+    const query = db.select().from(careGuides);
     
     const conditions = [eq(careGuides.userId, user.id)];
 

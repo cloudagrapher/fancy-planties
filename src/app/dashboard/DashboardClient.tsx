@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import FertilizerCalendar from '@/components/calendar/FertilizerCalendar';
-import type { DashboardStats } from '@/app/api/dashboard/route';
+import type { DashboardStats, FertilizerEvent } from '@/app/api/dashboard/route';
 
 interface DashboardClientProps {
   user: {
@@ -33,7 +33,8 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     totalPropagations: 0,
     activePropagations: 0,
     successfulPropagations: 0,
-    propagationSuccessRate: 0
+    propagationSuccessRate: 0,
+    fertilizerEvents: []
   };
 
   return (
@@ -110,7 +111,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
 
               {/* Fertilizer Calendar */}
               <div className="section--sm">
-                <FertilizerCalendar />
+                <FertilizerCalendar events={displayStats.fertilizerEvents} />
               </div>
 
               {/* Getting Started Card */}

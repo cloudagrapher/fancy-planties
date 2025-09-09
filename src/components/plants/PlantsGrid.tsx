@@ -106,7 +106,10 @@ export default function PlantsGrid({
     getNextPageParam: (lastPage) => {
       return lastPage.hasMore ? lastPage.filters.offset + lastPage.filters.limit : undefined;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 30, // 30 seconds (more responsive to changes)
+    gcTime: 1000 * 60 * 5, // Keep cached data for 5 minutes
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   // Flatten all pages into a single array or use search results

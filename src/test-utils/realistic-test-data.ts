@@ -371,7 +371,7 @@ export class TestCareHistoryFactory {
     const careDate = new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000); // Random date within last 90 days
     
     // Add type-specific data
-    let typeSpecificData: Partial<TestCareHistory> = {};
+    const typeSpecificData: Partial<TestCareHistory> = {};
     
     if (careType === 'fertilizer') {
       typeSpecificData.fertilizerType = CARE_DATA.fertilizerTypes[Math.floor(Math.random() * CARE_DATA.fertilizerTypes.length)];
@@ -434,7 +434,7 @@ export class TestCareGuideFactory {
     const genus = genera[Math.floor(Math.random() * genera.length)];
     const species = REALISTIC_PLANT_FAMILIES[family as keyof typeof REALISTIC_PLANT_FAMILIES].genera[genus as keyof typeof REALISTIC_PLANT_FAMILIES[keyof typeof REALISTIC_PLANT_FAMILIES]['genera']][0];
     
-    let taxonomyData: Partial<TestCareGuide> = { family };
+    const taxonomyData: Partial<TestCareGuide> = { family };
     if (taxonomyLevel !== 'family') {
       taxonomyData.genus = genus;
     }
