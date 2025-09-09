@@ -68,51 +68,66 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Handle FormData for file uploads
-    const formData = await request.formData();
+    // Check if request is FormData or JSON
+    const contentType = request.headers.get('content-type');
+    let body: any;
     
-    // Helper function to convert file to base64
-    const fileToBase64 = async (file: File): Promise<string> => {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const base64 = buffer.toString('base64');
-      return `data:${file.type};base64,${base64}`;
-    };
+    if (contentType?.includes('multipart/form-data')) {
+      // Handle FormData for file uploads
+      const formData = await request.formData();
+      
+      // Helper function to convert file to base64
+      const fileToBase64 = async (file: File): Promise<string> => {
+        const bytes = await file.arrayBuffer();
+        const buffer = Buffer.from(bytes);
+        const base64 = buffer.toString('base64');
+        return `data:${file.type};base64,${base64}`;
+      };
 
-    // Extract form fields
-    const body: any = {};
-    const imageFiles: File[] = [];
-    
-    for (const [key, value] of formData.entries()) {
-      if (key.startsWith('existingImages[')) {
-        // Handle existing images array
-        if (!body.existingImages) body.existingImages = [];
-        body.existingImages.push(value);
-      } else if (key.startsWith('imageFiles[')) {
-        // Handle new image files
-        if (value instanceof File) {
-          imageFiles.push(value);
+      // Extract form fields
+      body = {};
+      const imageFiles: File[] = [];
+      const existingImages: string[] = [];
+      
+      for (const [key, value] of formData.entries()) {
+        if (key.startsWith('existingImages[')) {
+          // Handle existing images array
+          existingImages.push(value as string);
+        } else if (key.startsWith('imageFiles[')) {
+          // Handle new image files
+          if (value instanceof File) {
+            imageFiles.push(value);
+          }
+        } else {
+          // Handle regular form fields
+          if (key === 'plantId') {
+            body[key] = parseInt(value as string);
+          } else if (key === 'isActive') {
+            body[key] = value === 'true';
+          } else {
+            body[key] = value;
+          }
         }
-      } else {
-        // Handle regular form fields
-        body[key] = value;
+      }
+
+      // Convert new image files to base64
+      const newImageBase64s = await Promise.all(
+        imageFiles.map(file => fileToBase64(file))
+      );
+
+      // Combine existing images with new images
+      body.images = [...existingImages, ...newImageBase64s];
+    } else {
+      // Handle JSON
+      try {
+        body = await request.json();
+      } catch (jsonError) {
+        return NextResponse.json(
+          { error: 'Invalid request format' },
+          { status: 400 }
+        );
       }
     }
-
-    // Convert new image files to base64
-    const newImageBase64s = await Promise.all(
-      imageFiles.map(file => fileToBase64(file))
-    );
-
-    // Combine existing images with new images
-    const allImages = [...(body.existingImages || []), ...newImageBase64s];
-    
-    // Convert string values to appropriate types
-    if (body.plantId) body.plantId = parseInt(body.plantId);
-    if (body.isActive) body.isActive = body.isActive === 'true';
-    
-    // Set the combined images array
-    body.images = allImages;
     
     // Convert date strings to Date objects if they exist and are not empty
     const processedBody = {

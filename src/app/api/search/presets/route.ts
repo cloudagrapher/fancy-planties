@@ -5,7 +5,7 @@ import { advancedSearchService } from '@/lib/services/advanced-search';
 import { searchPresetSchema } from '@/lib/validation/plant-schemas';
 
 // GET /api/search/presets - Get user's search presets
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { user } = await validateRequest();
     if (!user) {

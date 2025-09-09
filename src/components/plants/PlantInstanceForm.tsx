@@ -92,6 +92,7 @@ interface PlantInstanceFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (plantInstance: EnhancedPlantInstance) => void;
+  userId: number;
 }
 
 export default function PlantInstanceForm({
@@ -99,6 +100,7 @@ export default function PlantInstanceForm({
   isOpen,
   onClose,
   onSuccess,
+  userId,
 }: PlantInstanceFormProps) {
   const [selectedPlant, setSelectedPlant] = useState<PlantSuggestion | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -115,6 +117,7 @@ export default function PlantInstanceForm({
     commonName: '',
   });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [newNoteInput, setNewNoteInput] = useState('');
   const queryClient = useQueryClient();
   const isEditing = !!plantInstance;
 
@@ -146,9 +149,9 @@ export default function PlantInstanceForm({
 
   // Fetch user locations for autocomplete
   const { data: userLocations } = useQuery({
-    queryKey: ['user-locations'],
+    queryKey: ['user-locations', userId],
     queryFn: async () => {
-      const response = await fetch('/api/plant-instances/locations');
+      const response = await fetch(`/api/plant-instances/locations?userId=${userId}`);
       if (!response.ok) throw new Error('Failed to fetch locations');
       return response.json() as Promise<string[]>;
     },
@@ -273,6 +276,7 @@ export default function PlantInstanceForm({
 
       if (!response.ok) {
         const error = await response.json();
+        console.error('API Error Response:', error);
         throw new Error(error.message || 'Failed to save plant instance');
       }
 
@@ -281,9 +285,9 @@ export default function PlantInstanceForm({
     onSuccess: async (data) => {
       // Triple invalidation approach for aggressive cache clearing
       const queryKeysToInvalidate = [
-        ['plant-instances'],
+        ['plant-instances', userId],
         ['plant-detail'],
-        ['care-dashboard'],
+        ['care-dashboard', userId],
         ['plants']
       ];
 
@@ -392,13 +396,13 @@ export default function PlantInstanceForm({
   // Convert enum fertilizer schedule to expected format
   const convertFertilizerSchedule = (schedule: string): string => {
     const scheduleMap = {
-      'weekly': '1 week',
-      'biweekly': 'every 2 weeks', 
-      'every_2_4_weeks': 'every 2-4 weeks',
-      'every_3_4_weeks': 'every 3-4 weeks',
-      'every_4_weeks': 'every 4 weeks',
-      'every_4_6_weeks': 'every 4-6 weeks',
-      'every_6_8_weeks': 'every 6-8 weeks',
+      'weekly': '7 days',
+      'biweekly': '2 weeks', 
+      'every_2_4_weeks': '3 weeks', // Average of 2-4 weeks
+      'every_3_4_weeks': '4 weeks', // Average of 3-4 weeks
+      'every_4_weeks': '4 weeks',
+      'every_4_6_weeks': '5 weeks', // Average of 4-6 weeks
+      'every_6_8_weeks': '7 weeks', // Average of 6-8 weeks
       'bimonthly': '2 months',
       'quarterly': '3 months'
     };
@@ -411,24 +415,25 @@ export default function PlantInstanceForm({
     if (!schedule) return 'every_4_weeks';
     
     const reverseMap = {
-      // Exact matches for new format
+      // New format matches (what we send to API)
+      '7 days': 'weekly',
+      '2 weeks': 'biweekly',
+      '3 weeks': 'every_2_4_weeks',
+      '4 weeks': 'every_4_weeks',
+      '5 weeks': 'every_4_6_weeks',
+      '7 weeks': 'every_6_8_weeks',
+      '2 months': 'bimonthly',
+      '3 months': 'quarterly',
+      // Legacy formats that might exist in database
+      '1 week': 'weekly',
       'every 2 weeks': 'biweekly',
-      'every 2-3 weeks': 'biweekly',      // Close to biweekly
       'every 2-4 weeks': 'every_2_4_weeks',
       'every 3-4 weeks': 'every_3_4_weeks', 
       'every 4 weeks': 'every_4_weeks',
       'every 4-6 weeks': 'every_4_6_weeks',
       'every 6-8 weeks': 'every_6_8_weeks',
-      'every 17 weeks': 'quarterly',      // Long interval
-      // Legacy formats
-      '1 week': 'weekly',
-      '2 weeks': 'biweekly', 
-      '1 month': 'every_4_weeks',         // 1 month ≈ 4 weeks
-      '2 months': 'bimonthly',
-      '3 months': 'quarterly',
-      'weekly': 'weekly',
-      'biweekly': 'biweekly',
-      'monthly': 'every_4_weeks', 
+      '1 month': 'every_4_weeks',
+      'monthly': 'every_4_weeks',
       'bimonthly': 'bimonthly',
       'quarterly': 'quarterly',
     };
@@ -445,6 +450,9 @@ export default function PlantInstanceForm({
       fertilizerSchedule: convertFertilizerSchedule(data.fertilizerSchedule),
       images: existingImages,
     };
+    console.log('Form submission data:', submitData);
+    console.log('Original fertilizer schedule:', data.fertilizerSchedule);
+    console.log('Converted fertilizer schedule:', convertFertilizerSchedule(data.fertilizerSchedule));
     mutation.mutate(submitData as any);
   };
 
@@ -852,6 +860,7 @@ export default function PlantInstanceForm({
                             <span className="text-primary-800">
                               {(() => {
                                 const lastFert = new Date(watch('lastFertilized') || '');
+                                const currentSchedule = watch('fertilizerSchedule');
                                 const scheduleMap = {
                                   weekly: 7,
                                   biweekly: 14,
@@ -863,7 +872,7 @@ export default function PlantInstanceForm({
                                   bimonthly: 60,
                                   quarterly: 90
                                 };
-                                const days = scheduleMap[field.value as keyof typeof scheduleMap];
+                                const days = scheduleMap[currentSchedule as keyof typeof scheduleMap];
                                 const nextDue = new Date(lastFert);
                                 nextDue.setDate(nextDue.getDate() + days);
                                 return `Next fertilizer due: ${nextDue.toLocaleDateString()}`;
@@ -923,25 +932,81 @@ export default function PlantInstanceForm({
                 </div>
               </div>
 
-              {/* Notes */}
+              {/* Notes & Observations */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Notes
+                  Notes & Observations
                 </label>
+                
+                {/* Existing Notes History */}
+                {watch('notes') && watch('notes').trim() && (
+                  <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Previous Notes:</h4>
+                    <div className="text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto">
+                      {watch('notes')}
+                    </div>
+                  </div>
+                )}
+                
+                {/* New Note Input */}
+                <div className="space-y-2">
+                  <textarea
+                    value={newNoteInput}
+                    onChange={(e) => setNewNoteInput(e.target.value)}
+                    rows={3}
+                    placeholder="Add a new observation or note..."
+                    className="w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                        e.preventDefault();
+                        const newNote = newNoteInput.trim();
+                        if (newNote) {
+                          const timestamp = new Date().toLocaleDateString();
+                          const existingNotes = watch('notes') || '';
+                          const updatedNotes = existingNotes 
+                            ? `${existingNotes}\n\n[${timestamp}] ${newNote}`
+                            : `[${timestamp}] ${newNote}`;
+                          setValue('notes', updatedNotes);
+                          setNewNoteInput(''); // Clear the input
+                        }
+                      }
+                    }}
+                  />
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-500">
+                      Press Cmd/Ctrl + Enter to add note
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newNote = newNoteInput.trim();
+                        if (newNote) {
+                          const timestamp = new Date().toLocaleDateString();
+                          const existingNotes = watch('notes') || '';
+                          const updatedNotes = existingNotes 
+                            ? `${existingNotes}\n\n[${timestamp}] ${newNote}`
+                            : `[${timestamp}] ${newNote}`;
+                          setValue('notes', updatedNotes);
+                          setNewNoteInput(''); // Clear the input
+                        }
+                      }}
+                      disabled={!newNoteInput.trim()}
+                      className="px-3 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add Note
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Hidden field for form submission */}
                 <Controller
                   name="notes"
                   control={control}
                   render={({ field }) => (
-                    <textarea
-                      {...field}
-                      rows={3}
-                      placeholder="Any special care instructions or observations..."
-                      className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none ${
-                        errors.notes ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                    />
+                    <input type="hidden" {...field} />
                   )}
                 />
+                
                 {errors.notes && (
                   <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>
                 )}
