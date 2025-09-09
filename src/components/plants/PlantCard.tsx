@@ -173,17 +173,17 @@ export default function PlantCard({
           onClick={(e) => handleCareAction('fertilize', e)}
           className="btn btn--sm btn--outline"
           title="Quick care"
-          aria-label="Quick care"
+          aria-label={`Quick care for ${plant.displayName}`}
         >
-          💧 Care
+          <span aria-hidden="true">💧</span> Care
         </button>
         <button
           onClick={(e) => handleCareAction('repot', e)}
           className="btn btn--sm btn--secondary"
           title="Edit plant"
-          aria-label="Edit plant"
+          aria-label={`Edit ${plant.displayName}`}
         >
-          ✏️ Edit
+          <span aria-hidden="true">✏️</span> Edit
         </button>
       </div>
     );
@@ -283,7 +283,12 @@ export default function PlantCard({
         {/* Care urgency indicator */}
         {showCareStatus && plant.careUrgency !== 'none' && (
           <div className="absolute top-2 left-2">
-            <div className={`w-3 h-3 rounded-full ${plantInstanceHelpers.getCareUrgencyColor(plant.careUrgency)}`} />
+            <div 
+              className={`w-3 h-3 rounded-full ${plantInstanceHelpers.getCareUrgencyColor(plant.careUrgency)}`}
+              role="status"
+              aria-label={`Care urgency: ${plant.careUrgency}`}
+              title={`Care urgency: ${plant.careUrgency}`}
+            />
           </div>
         )}
       </div>

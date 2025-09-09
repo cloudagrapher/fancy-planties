@@ -7,7 +7,7 @@
   - Add clearImmediate polyfill and fix Node.js compatibility issues in Jest
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 2. Investigate and fix PlantsGrid component issues
+- [x] 2. Investigate and fix PlantsGrid component issues
   - Analyze why plant cards aren't rendering (empty state vs missing data vs broken hooks)
   - Fix the missing getRefreshIndicatorStyle function in the actual component code
   - Investigate if usePlantInstances hook has real data fetching issues
@@ -15,23 +15,85 @@
   - Update tests to match corrected component behavior
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 3. Fix Jest environment and mock setup issues
+- [x] 3. Fix Jest environment and mock setup issues
   - Add missing Node.js polyfills (clearImmediate, etc.) to Jest setup
   - Fix navigator API mocking that's causing test instability
   - Investigate if mock failures indicate real browser API usage issues
   - Ensure proper test cleanup to prevent state pollution
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 4.1, 4.2_
 
-- [ ] 4. Create robust test infrastructure
+- [x] 4. Create robust test infrastructure
   - Build database test utilities that work without live PostgreSQL
   - Create realistic test data that matches actual application data structures
   - Implement component test helpers that properly mock dependencies
   - Add test utilities that catch real integration issues
   - _Requirements: 8.1, 8.2, 8.3, 4.3, 4.4_
 
-- [ ] 5. Validate fixes and ensure test reliability
+- [x] 5. Validate fixes and ensure test reliability
   - Run tests to verify both code fixes and test improvements work
   - Ensure tests are actually testing real functionality, not just mocks
   - Validate that fixed tests would catch real regressions
   - Document any real bugs found and fixed during the process
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
+
+- [ ] 6. Fix component bugs identified during validation
+- [x] 6.1 Fix PlantTaxonomySelector critical issues
+  - Fix API integration to properly handle search responses
+  - Add missing accessibility attributes (title="Selected plant", role="status")
+  - Implement proper loading spinner with correct ARIA role
+  - Fix search result rendering and dropdown behavior
+  - Add proper error handling for API failures
+  - _Requirements: 7.4_
+
+- [x] 6.2 Fix AdvancedSearchInterface functionality
+  - Fix search suggestions not appearing during typing
+  - Implement proper loading states that disable buttons correctly
+  - Fix autocomplete dropdown behavior
+  - Add proper error handling for search failures
+  - _Requirements: 7.4_
+
+- [x] 6.3 Add missing accessibility features across components
+  - Add ARIA labels for loading indicators (role="status")
+  - Add title attributes for interactive elements
+  - Implement proper focus management
+  - Add screen reader friendly text for visual indicators
+  - _Requirements: 7.4_
+
+- [x] 6.4 Implement proper component state management
+  - Fix loading states that don't properly disable UI elements
+  - Implement consistent error state handling
+  - Add proper feedback for async operations
+  - Fix button disabled states during loading
+  - _Requirements: 7.4_
+
+- [x] 6.5 Fix specialized test suites infrastructure issues
+  - Install missing dependencies (jest-axe for accessibility tests)
+  - Fix lodash-es module transformation issues in Jest configuration
+  - Fix component import issues in E2E tests (undefined component imports)
+  - Add proper mocking for Next.js Request/Response objects
+  - Fix CSS file loading in test environment for performance tests
+  - _Requirements: 7.4_
+
+- [x] 6.6 Fix E2E and integration test issues
+  - Fix component import failures (PlantsGrid, CareDashboard, etc.)
+  - Implement proper error boundary testing patterns
+  - Fix performance monitoring and resource cleanup tests
+  - Add proper mocking for localStorage, performance APIs
+  - Fix offline functionality and data persistence tests
+  - _Requirements: 7.4_
+
+- [ ] 6.7 Fix accessibility and design system test issues
+  - Fix ARIA validation and screen reader announcement cleanup
+  - Fix color contrast calculation edge cases
+  - Fix reduced motion animation disabling tests
+  - Fix form label association validation
+  - Add proper cleanup for DOM manipulation tests
+  - _Requirements: 7.4_
+
+- [ ] 6.8 Update and validate all component tests
+  - Update test mocks to match corrected component behavior
+  - Fix API endpoint mocking to return proper response formats
+  - Validate that all previously failing tests now pass
+  - Ensure tests still catch real regressions after fixes
+  - Run full test suite to confirm 100% success rate
+  - _Requirements: 7.4_

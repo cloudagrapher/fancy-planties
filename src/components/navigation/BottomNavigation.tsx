@@ -83,13 +83,19 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
             `}
             onTouchStart={() => handleNavPress(item.id)}
             onMouseDown={() => handleNavPress(item.id)}
+            aria-label={`Navigate to ${item.label}${item.badge ? ` (${item.badge} notifications)` : ''}`}
+            title={`Navigate to ${item.label}${item.badge ? ` (${item.badge} notifications)` : ''}`}
           >
             <div className="relative">
-              <span className="bottom-nav-icon">
+              <span className="bottom-nav-icon" aria-hidden="true">
                 {item.icon}
               </span>
               {item.badge && (
-                <span className="bottom-nav-badge">
+                <span 
+                  className="bottom-nav-badge"
+                  role="status"
+                  aria-label={`${item.badge} notifications`}
+                >
                   {item.badge > 99 ? '99+' : item.badge}
                 </span>
               )}

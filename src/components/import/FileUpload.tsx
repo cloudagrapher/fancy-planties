@@ -118,6 +118,8 @@ export function FileUpload({
             accept={acceptedTypes.join(',')}
             onChange={handleInputChange}
             className="hidden"
+            aria-label="Select CSV file to upload"
+            title="Select CSV file to upload"
           />
           
           <div className="flex flex-col items-center space-y-4">
@@ -162,6 +164,8 @@ export function FileUpload({
             <button
               onClick={handleRemoveFile}
               className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Remove selected file"
+              title="Remove selected file"
             >
               <X className="w-5 h-5 text-gray-400" />
             </button>

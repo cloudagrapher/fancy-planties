@@ -108,8 +108,13 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
             disabled={isLoading}
             className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Quick fertilize"
+            aria-label={`Quick fertilize ${plant.displayName}`}
           >
-            {isLoading ? '...' : '🌱'}
+            {isLoading ? (
+              <span role="status" aria-label="Processing">...</span>
+            ) : (
+              <span aria-hidden="true">🌱</span>
+            )}
           </button>
           
           <button
@@ -117,8 +122,13 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
             disabled={isLoading}
             className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Quick water"
+            aria-label={`Quick water ${plant.displayName}`}
           >
-            {isLoading ? '...' : '💧'}
+            {isLoading ? (
+              <span role="status" aria-label="Processing">...</span>
+            ) : (
+              <span aria-hidden="true">💧</span>
+            )}
           </button>
           
           <button
@@ -126,8 +136,13 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
             disabled={isLoading}
             className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             title="Quick inspect"
+            aria-label={`Quick inspect ${plant.displayName}`}
           >
-            {isLoading ? '...' : '🔍'}
+            {isLoading ? (
+              <span role="status" aria-label="Processing">...</span>
+            ) : (
+              <span aria-hidden="true">🔍</span>
+            )}
           </button>
         </div>
       </div>
