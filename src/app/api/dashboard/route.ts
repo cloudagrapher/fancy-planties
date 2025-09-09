@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateRequest } from '@/lib/auth/server';
 import { db } from '@/lib/db';
-import { plantInstances, propagations } from '@/lib/db/schema';
-import { eq, and, sql, isNull, isNotNull, lte, inArray } from 'drizzle-orm';
+import { plantInstances, propagations, plants } from '@/lib/db/schema';
+import { eq, and, sql, isNull, isNotNull, lte, inArray, gte } from 'drizzle-orm';
+
+export interface FertilizerEvent {
+  id: string;
+  plantName: string;
+  plantId: string;
+  date: string;
+  type: 'fertilize';
+}
 
 export interface DashboardStats {
   totalPlants: number;
@@ -12,6 +20,7 @@ export interface DashboardStats {
   activePropagations: number;
   successfulPropagations: number;
   propagationSuccessRate: number;
+  fertilizerEvents: FertilizerEvent[];
 }
 
 // GET /api/dashboard - Get dashboard statistics
@@ -25,6 +34,13 @@ export async function GET(request: NextRequest) {
     const userId = user.id;
     const today = new Date();
     today.setHours(23, 59, 59, 999); // End of today
+    
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0); // Beginning of today
+    
+    const next30Days = new Date();
+    next30Days.setDate(next30Days.getDate() + 30);
+    next30Days.setHours(23, 59, 59, 999);
 
     // Get plant statistics
     const [plantStats] = await db
@@ -63,6 +79,35 @@ export async function GET(request: NextRequest) {
     const successfulCount = propagationStats?.successfulPropagations || 0;
     const propagationSuccessRate = completedCount > 0 ? Math.round((successfulCount / completedCount) * 100) : 0;
 
+    // Get fertilizer events for the next 30 days (including overdue)
+    const fertilizerData = await db
+      .select({
+        id: plantInstances.id,
+        nickname: plantInstances.nickname,
+        fertilizerDue: plantInstances.fertilizerDue,
+        commonName: plants.commonName
+      })
+      .from(plantInstances)
+      .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+      .where(
+        and(
+          eq(plantInstances.userId, userId),
+          eq(plantInstances.isActive, true),
+          isNotNull(plantInstances.fertilizerDue),
+          lte(plantInstances.fertilizerDue, next30Days.toISOString())
+        )
+      )
+      .orderBy(plantInstances.fertilizerDue);
+
+    // Convert to fertilizer events
+    const fertilizerEvents: FertilizerEvent[] = fertilizerData.map(plant => ({
+      id: `fertilize-${plant.id}`,
+      plantName: plant.nickname || plant.commonName || 'Unknown Plant',
+      plantId: plant.id.toString(),
+      date: plant.fertilizerDue ? new Date(plant.fertilizerDue).toISOString().split('T')[0] : '',
+      type: 'fertilize' as const
+    }));
+
     const dashboardStats: DashboardStats = {
       totalPlants: plantStats?.totalPlants || 0,
       activePlants: plantStats?.activePlants || 0,
@@ -70,7 +115,8 @@ export async function GET(request: NextRequest) {
       totalPropagations: propagationStats?.totalPropagations || 0,
       activePropagations: propagationStats?.activePropagations || 0,
       successfulPropagations: successfulCount,
-      propagationSuccessRate
+      propagationSuccessRate,
+      fertilizerEvents
     };
     
     return NextResponse.json(dashboardStats);

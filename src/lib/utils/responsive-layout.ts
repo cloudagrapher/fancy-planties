@@ -262,7 +262,7 @@ export function optimizeScrolling(): void {
  * Handle keyboard visibility on mobile
  */
 export function handleMobileKeyboard(): void {
-  let initialViewportHeight = window.innerHeight;
+  const initialViewportHeight = window.innerHeight;
   
   const handleResize = () => {
     const currentHeight = window.innerHeight;
