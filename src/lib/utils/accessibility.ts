@@ -168,9 +168,15 @@ export class ScreenReader {
     
     document.body.appendChild(announcement);
     
-    // Remove after announcement
+    // Remove after announcement with proper error handling
     setTimeout(() => {
-      document.body.removeChild(announcement);
+      try {
+        if (announcement.parentNode === document.body) {
+          document.body.removeChild(announcement);
+        }
+      } catch (error) {
+        // Silently handle case where element was already removed
+      }
     }, 1000);
   }
   
@@ -251,7 +257,12 @@ export function validateARIA(element: HTMLElement): string[] {
   
   // Interactive elements should have accessible names
   if (element.matches('button, input, select, textarea, [role="button"], [role="link"]')) {
-    if (!ariaLabel && !ariaLabelledBy && !element.textContent?.trim()) {
+    const hasAccessibleName = ariaLabel || 
+                             ariaLabelledBy || 
+                             element.textContent?.trim() ||
+                             (element.tagName === 'INPUT' && hasAssociatedLabel(element as HTMLInputElement));
+    
+    if (!hasAccessibleName) {
       errors.push('Interactive element missing accessible name');
     }
   }
@@ -262,6 +273,17 @@ export function validateARIA(element: HTMLElement): string[] {
   }
   
   return errors;
+}
+
+/**
+ * Check if input has an associated label
+ */
+function hasAssociatedLabel(input: HTMLInputElement): boolean {
+  if (!input.id) return false;
+  
+  // Check for label with for attribute
+  const label = document.querySelector(`label[for="${input.id}"]`);
+  return !!label;
 }
 
 /**

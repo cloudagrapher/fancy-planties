@@ -88,13 +88,14 @@ export default function SearchResults({
     return (
       <div className="space-y-4" data-testid="search-loading">
         {/* Loading skeleton */}
-        <div className="animate-pulse">
+        <div className="animate-pulse" role="status" aria-label="Loading search results">
           <div className="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-gray-200 rounded-lg h-48"></div>
             ))}
           </div>
+          <span className="sr-only">Loading search results...</span>
         </div>
       </div>
     );
@@ -155,6 +156,8 @@ export default function SearchResults({
             <button
               onClick={clearFacets}
               className="btn btn--ghost btn--sm"
+              title="Clear all active filters"
+              aria-label={`Clear all ${activeFacetCount} active filters`}
             >
               Clear filters ({activeFacetCount})
             </button>
@@ -292,8 +295,16 @@ export default function SearchResults({
             onClick={onLoadMore}
             disabled={isLoading}
             className={`btn btn--primary ${isLoading ? 'btn--loading' : ''}`}
+            aria-label={isLoading ? 'Loading more results' : 'Load more search results'}
+            title={isLoading ? 'Loading more results...' : 'Load more search results'}
           >
-            {isLoading ? 'Loading...' : 'Load More'}
+            {isLoading ? (
+              <>
+                <span role="status" aria-live="polite">Loading...</span>
+              </>
+            ) : (
+              'Load More'
+            )}
           </button>
         </div>
       )}

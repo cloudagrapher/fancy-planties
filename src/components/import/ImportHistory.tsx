@@ -103,8 +103,12 @@ export function ImportHistory({ className = '' }: ImportHistoryProps) {
   if (loading) {
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-        <span className="ml-2 text-gray-600">Loading import history...</span>
+        <div 
+          className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"
+          role="status"
+          aria-label="Loading import history"
+        ></div>
+        <span className="ml-2 text-gray-600" aria-live="polite">Loading import history...</span>
       </div>
     );
   }
@@ -140,6 +144,8 @@ export function ImportHistory({ className = '' }: ImportHistoryProps) {
         <button
           onClick={fetchImports}
           className="btn btn--ghost btn--sm"
+          title="Refresh import history"
+          aria-label="Refresh import history"
         >
           Refresh
         </button>
@@ -234,7 +240,11 @@ export function ImportHistory({ className = '' }: ImportHistoryProps) {
 
               {/* Actions menu */}
               <div className="relative">
-                <button className="p-1 hover:bg-gray-100 rounded-full">
+                <button 
+                  className="p-1 hover:bg-gray-100 rounded-full"
+                  title="More actions"
+                  aria-label="More actions for this import"
+                >
                   <MoreVertical className="w-4 h-4 text-gray-400" />
                 </button>
                 {/* TODO: Add dropdown menu for actions like view details, download report, etc. */}
