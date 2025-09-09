@@ -43,22 +43,22 @@ export default function PlantCard({
   const [isSwipeActive, setIsSwipeActive] = useState(false);
   const { triggerHaptic } = useHapticFeedback();
 
-  // Size configurations with consistent dimensions
+  // Size configurations with flexible dimensions
   const sizeConfig = {
     small: {
-      container: 'w-full max-w-[140px] h-40',
+      container: 'w-full max-w-[140px] min-h-40',
       image: 'h-20',
       text: 'text-xs',
       title: 'text-sm',
     },
     medium: {
-      container: 'w-full max-w-[160px] h-48',
+      container: 'w-full max-w-[160px] min-h-48',
       image: 'h-24',
       text: 'text-xs',
       title: 'text-sm',
     },
     large: {
-      container: 'w-full max-w-[200px] h-56',
+      container: 'w-full max-w-[200px] min-h-56',
       image: 'h-32',
       text: 'text-sm',
       title: 'text-base',

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+// import { useQuery } from '@tanstack/react-query';
 import { PlantsGrid, PlantDetailModal, PlantInstanceForm } from '@/components/plants';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 
@@ -46,7 +46,7 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   };
 
   // Handle form success
-  const handleFormSuccess = (plant: EnhancedPlantInstance) => {
+  const handleFormSuccess = () => {
     setIsFormModalOpen(false);
     setEditingPlant(null);
     // Don't automatically open detail modal - let user decide
@@ -126,6 +126,7 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
           setEditingPlant(null);
         }}
         onSuccess={handleFormSuccess}
+        userId={userId}
       />
     </div>
   );

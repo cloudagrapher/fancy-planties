@@ -195,7 +195,7 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
       {monthEvents.length > 0 && (
         <div className="mt-4 pt-4 border-t border-slate-200/70">
           <h4 className="text-sm font-medium text-slate-700 mb-2">
-            This Month's Schedule ({monthEvents.length} plants)
+            This Month&apos;s Schedule ({monthEvents.length} plants)
           </h4>
           <div className="space-y-1 max-h-32 overflow-y-auto">
             {monthEvents
