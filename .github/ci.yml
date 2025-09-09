@@ -1,0 +1,75 @@
+name: CI Tests
+
+on:
+  # push:
+  #   branches: [ main, develop ]
+  # pull_request:
+  #   branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies (without Cypress binary)
+      run: CYPRESS_INSTALL_BINARY=0 npm ci
+    
+    - name: Run TypeScript check
+      run: npx tsc --noEmit
+    
+    - name: Run unit tests
+      run: npm run test:ci
+    
+    - name: Run build test
+      run: npm run build:docker
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v3
+      if: matrix.node-version == 20
+      with:
+        file: ./coverage/lcov.info
+        fail_ci_if_error: false
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+    
+    - name: Install dependencies (with Cypress)
+      run: npm ci
+    
+    - name: Build application
+      run: npm run build
+    
+    - name: Start application
+      run: npm start &
+      
+    - name: Wait for application
+      run: npx wait-on http://localhost:3000
+    
+    - name: Run Cypress tests
+      run: npm run test:e2e
+      env:
+        CYPRESS_baseUrl: http://localhost:3000
