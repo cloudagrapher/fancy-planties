@@ -343,10 +343,12 @@ export class CareHistoryQueries {
       .from(plantInstances)
       .leftJoin(plants, eq(plantInstances.plantId, plants.id))
       .where(
-        and(
-          eq(plantInstances.userId, userId),
-          includeInactive ? undefined : eq(plantInstances.isActive, true)
-        )
+        includeInactive 
+          ? eq(plantInstances.userId, userId)
+          : and(
+              eq(plantInstances.userId, userId),
+              eq(plantInstances.isActive, true)
+            )
       );
 
     // Get recent care history for statistics

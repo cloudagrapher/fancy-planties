@@ -71,27 +71,48 @@ export async function PUT(
     // Handle FormData for file uploads
     const formData = await request.formData();
     
+    // Helper function to convert file to base64
+    const fileToBase64 = async (file: File): Promise<string> => {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const base64 = buffer.toString('base64');
+      return `data:${file.type};base64,${base64}`;
+    };
+
     // Extract form fields
     const body: any = {};
+    const imageFiles: File[] = [];
+    
     for (const [key, value] of formData.entries()) {
       if (key.startsWith('existingImages[')) {
         // Handle existing images array
         if (!body.existingImages) body.existingImages = [];
         body.existingImages.push(value);
       } else if (key.startsWith('imageFiles[')) {
-        // Handle new image files (for future implementation)
-        if (!body.imageFiles) body.imageFiles = [];
-        body.imageFiles.push(value);
+        // Handle new image files
+        if (value instanceof File) {
+          imageFiles.push(value);
+        }
       } else {
         // Handle regular form fields
         body[key] = value;
       }
     }
+
+    // Convert new image files to base64
+    const newImageBase64s = await Promise.all(
+      imageFiles.map(file => fileToBase64(file))
+    );
+
+    // Combine existing images with new images
+    const allImages = [...(body.existingImages || []), ...newImageBase64s];
     
     // Convert string values to appropriate types
     if (body.plantId) body.plantId = parseInt(body.plantId);
     if (body.isActive) body.isActive = body.isActive === 'true';
-    if (body.existingImages) body.images = body.existingImages;
+    
+    // Set the combined images array
+    body.images = allImages;
     
     // Convert date strings to Date objects if they exist and are not empty
     const processedBody = {
