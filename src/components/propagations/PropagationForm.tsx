@@ -70,13 +70,16 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
 
   const fetchParentInstances = async (plantId: number) => {
     try {
-      const response = await fetch(`/api/plant-instances?plantId=${plantId}&activeOnly=true`);
+      const response = await fetch(`/api/plant-instances?plantId=${plantId}&isActive=true`);
       if (response.ok) {
-        const instances = await response.json();
+        const result = await response.json();
+        // Extract instances from the API response structure
+        const instances = result.instances || result || [];
         setParentInstances(instances);
       }
     } catch (error) {
       console.error('Error fetching parent instances:', error);
+      setParentInstances([]);
     }
   };
 
@@ -209,10 +212,10 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
   return (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
-      <div className="absolute inset-4 bg-white rounded-2xl shadow-xl flex flex-col border border-slate-200/70">
+      <div className="absolute inset-2 sm:inset-8 bg-white rounded-2xl shadow-xl flex flex-col border border-slate-200/70 max-h-[95vh]">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-lg font-semibold text-gray-900">
             {propagation ? 'Edit Propagation' : 'Add New Propagation'}
           </h2>
           <button
@@ -225,10 +228,10 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {/* Plant Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Plant Type *
             </label>
             <PlantTaxonomySelector
@@ -252,11 +255,11 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
 
           {/* Source Type Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Propagation Source *
             </label>
-            <div className="grid grid-cols-2 gap-4">
-              <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
                 <input
                   type="radio"
                   name="sourceType"
@@ -269,15 +272,15 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                     externalSource: null,
                     externalSourceDetails: '',
                   }))}
-                  className="mr-3 text-primary-600"
+                  className="mr-2 text-primary-600"
                 />
                 <div>
-                  <div className="font-medium text-gray-900">From My Plants</div>
-                  <div className="text-sm text-gray-500">Propagated from one of your existing plants</div>
+                  <div className="font-medium text-gray-900 text-sm">From My Plants</div>
+                  <div className="text-xs text-gray-500">Propagated from one of your existing plants</div>
                 </div>
               </label>
               
-              <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
                 <input
                   type="radio"
                   name="sourceType"
@@ -290,11 +293,11 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                     externalSource: null,
                     externalSourceDetails: '',
                   }))}
-                  className="mr-3 text-primary-600"
+                  className="mr-2 text-primary-600"
                 />
                 <div>
-                  <div className="font-medium text-gray-900">External Source</div>
-                  <div className="text-sm text-gray-500">Gift, trade, purchase, or other source</div>
+                  <div className="font-medium text-gray-900 text-sm">External Source</div>
+                  <div className="text-xs text-gray-500">Gift, trade, purchase, or other source</div>
                 </div>
               </label>
             </div>
@@ -303,7 +306,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
           {/* Parent Plant Instance - Only for Internal */}
           {formData.sourceType === 'internal' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Parent Plant *
               </label>
               {parentInstances.length > 0 ? (
@@ -325,7 +328,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                   ))}
                 </select>
               ) : (
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-800">
                     No existing plants of this type found. You'll need to add a plant instance first, or select "External Source" instead.
                   </p>
@@ -339,9 +342,9 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
 
           {/* External Source Details - Only for External */}
           {formData.sourceType === 'external' && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Source Type *
                 </label>
                 <select
@@ -366,7 +369,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Source Details (Optional)
                 </label>
                 <textarea
@@ -381,9 +384,9 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
           )}
 
           {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Nickname *
               </label>
               <input
@@ -399,7 +402,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Location *
               </label>
               <input
@@ -416,9 +419,9 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
           </div>
 
           {/* Date and Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Date Started *
               </label>
               <input
@@ -433,7 +436,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Status
               </label>
               <select
@@ -454,13 +457,13 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Notes
             </label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              rows={3}
+              rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Add any notes about the propagation method, progress, or observations..."
             />
@@ -468,28 +471,28 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
 
           {/* Images */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Images
             </label>
             
             {/* Existing Images */}
             {formData.images.length > 0 && (
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-4 gap-2 mb-3">
                 {formData.images.map((image, index) => (
                   <div key={index} className="relative group">
                     <Image
                       src={image}
                       alt={`Propagation image ${index + 1}`}
-                      width={120}
-                      height={120}
-                      className="w-full h-24 object-cover rounded-lg"
+                      width={80}
+                      height={80}
+                      className="w-full h-16 object-cover rounded-lg"
                     />
                     <button
                       type="button"
                       onClick={() => handleImageRemove(index)}
                       className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-2 h-2" />
                     </button>
                   </div>
                 ))}
@@ -497,7 +500,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
             )}
 
             {/* Image Upload */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-400 transition-colors">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary-400 transition-colors">
               <input
                 type="file"
                 accept="image/*"
@@ -518,11 +521,11 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                 id="image-upload"
               />
               <label htmlFor="image-upload" className="cursor-pointer">
-                <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                <Upload className="w-6 h-6 text-gray-400 mx-auto mb-1" />
                 <p className="text-sm text-gray-600">
-                  Click to upload or drag and drop images
+                  Click to upload images
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500">
                   PNG, JPG up to 5MB each
                 </p>
               </label>
@@ -531,7 +534,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
 
           {/* Submit Error */}
           {errors.submit && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-2 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-600">{errors.submit}</p>
             </div>
           )}
@@ -539,7 +542,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
           </div>
           
           {/* Form Actions */}
-          <div className="flex justify-end space-x-3 p-6 pt-4 border-t border-gray-200 flex-shrink-0">
+          <div className="flex justify-end space-x-3 px-6 py-4 border-t border-gray-200 flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
