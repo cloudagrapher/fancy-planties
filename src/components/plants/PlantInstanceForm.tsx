@@ -378,10 +378,8 @@ export default function PlantInstanceForm({
   // Handle image changes
   const handleImageChange = (files: File[]) => {
     setImageFiles(files);
-    // Update form validation by setting total image count
-    const totalImages = existingImages.length + files.length;
-    setValue('images', [...existingImages, ...Array(files.length).fill('pending')]);
-    // Trigger validation for all fields to ensure form is valid
+    // Don't update form's images field - keep existingImages separate
+    // Just trigger validation to ensure form is valid
     trigger();
   };
 
@@ -389,8 +387,8 @@ export default function PlantInstanceForm({
   const handleRemoveExistingImage = (index: number) => {
     const newImages = existingImages.filter((_, i) => i !== index);
     setExistingImages(newImages);
-    setValue('images', [...newImages, ...Array(imageFiles.length).fill('pending')]);
-    trigger('images');
+    // Don't update form's images field - keep existingImages separate
+    trigger();
   };
 
   // Convert enum fertilizer schedule to expected format
@@ -448,9 +446,10 @@ export default function PlantInstanceForm({
     const submitData = {
       ...data,
       fertilizerSchedule: convertFertilizerSchedule(data.fertilizerSchedule),
-      images: existingImages,
+      images: existingImages, // Always use current existingImages state
     };
     console.log('Form submission data:', submitData);
+    console.log('Existing images being submitted:', existingImages);
     console.log('Original fertilizer schedule:', data.fertilizerSchedule);
     console.log('Converted fertilizer schedule:', convertFertilizerSchedule(data.fertilizerSchedule));
     mutation.mutate(submitData as any);
