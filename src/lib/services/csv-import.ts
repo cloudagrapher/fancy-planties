@@ -131,10 +131,11 @@ export class DateParser {
   }
 
   private static parseEstimatedDate(dateStr: string): Date | null {
-    const match = dateStr.match(/^(\d{1,2})\/(\d{2,4})$/);
-    if (match) {
-      const month = parseInt(match[1], 10) - 1; // Month is 0-indexed
-      let year = parseInt(match[2], 10);
+    // Handle MM/YY format (like "4/25")
+    const monthYearMatch = dateStr.match(/^(\d{1,2})\/(\d{2,4})$/);
+    if (monthYearMatch) {
+      const month = parseInt(monthYearMatch[1], 10) - 1; // Month is 0-indexed
+      let year = parseInt(monthYearMatch[2], 10);
       
       // Handle 2-digit years
       if (year < 100) {
@@ -143,6 +144,22 @@ export class DateParser {
       
       return new Date(year, month, 15); // Use 15th of the month for estimates
     }
+
+    // Handle MM/DD/YY format even with "est" prefix
+    const fullDateMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if (fullDateMatch) {
+      const month = parseInt(fullDateMatch[1], 10) - 1;
+      const day = parseInt(fullDateMatch[2], 10);
+      let year = parseInt(fullDateMatch[3], 10);
+      
+      // Handle 2-digit years
+      if (year < 100) {
+        year += year < 50 ? 2000 : 1900;
+      }
+      
+      return new Date(year, month, day);
+    }
+
     return null;
   }
 
