@@ -95,6 +95,7 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
                   className="bottom-nav-badge"
                   role="status"
                   aria-label={`${item.badge} notifications`}
+                  suppressHydrationWarning
                 >
                   {item.badge > 99 ? '99+' : item.badge}
                 </span>

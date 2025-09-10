@@ -28,7 +28,7 @@ function TestGrid() {
           {mockPlants.map((plant) => (
             <div
               key={plant.id}
-              className="plant-card w-full max-w-[160px] h-48"
+              className="plant-card w-full max-w-[160px] h-100"
             >
               <div className="plant-card-image h-24 bg-gradient-to-br from-green-100 to-blue-100 flex items-center justify-center">
                 <span className="text-4xl">🌱</span>
