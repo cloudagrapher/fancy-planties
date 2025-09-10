@@ -361,4 +361,46 @@ Before writing tests:
 5. ✅ **Async handling** - Properly await async operations
 6. ✅ **State isolation** - No shared state between tests
 
+## Jest Command Line Usage
+
+### Running Specific Tests
+
+```bash
+# ✅ CORRECT - Use --testPathPatterns (with 's')
+npm test -- --testPathPatterns=email-service.test.ts --run
+npm test -- --testPathPatterns="auth.*test" --run
+
+# ❌ WRONG - Old deprecated syntax
+npm test -- --testPathPattern=email-service.test.ts --run  # Will show deprecation warning
+```
+
+### Common Jest CLI Options
+
+```bash
+# Run specific test file
+npm test -- --testPathPatterns=filename.test.ts
+
+# Run tests matching pattern
+npm test -- --testPathPatterns="auth|email"
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Run tests in specific directory
+npm test -- --testPathPatterns="src/lib"
+
+# Run single test by name
+npm test -- --testNamePattern="should handle errors"
+```
+
+### Jest Configuration Notes
+
+- `--testPathPattern` was deprecated in favor of `--testPathPatterns`
+- Always use the plural form to avoid deprecation warnings
+- Use quotes around patterns with special characters
+- The `--run` flag prevents watch mode in CI environments
+
 This ensures reliable, maintainable test suites.
