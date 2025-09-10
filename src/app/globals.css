@@ -430,6 +430,16 @@ select {
   border-radius: 8px;
 }
 
+.btn--icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 10px;
+}
+
 /* Card Styles */
 .card {
   background-color: var(--color-surface);
@@ -781,14 +791,48 @@ select {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+.modal-content--large {
+  max-width: 800px;
+}
+
 .modal-header {
   padding: 20px;
   border-bottom: 1px solid var(--color-border);
 }
 
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--color-neutral-500);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-neutral-900);
+  margin: 0;
+}
+
 .modal-body {
   padding: 20px;
   overflow-y: auto;
+}
+
+.modal-body--no-padding {
+  padding: 0;
 }
 
 .modal-footer {
@@ -797,6 +841,86 @@ select {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
+}
+
+/* Modal Tabs */
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
+  padding: 0 4px;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-neutral-600);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  border-radius: 12px 12px 0 0;
+  margin: 4px 2px 0 2px;
+}
+
+.tab:hover {
+  color: var(--color-primary-700);
+  background: var(--color-primary-50);
+  transform: translateY(-1px);
+}
+
+.tab--active {
+  color: var(--color-primary-800);
+  background: linear-gradient(135deg, var(--color-primary-100), var(--color-primary-50));
+  border: 1px solid var(--color-primary-200);
+  border-bottom: 1px solid var(--color-surface);
+  font-weight: 600;
+  z-index: 1;
+}
+
+.tab--active::before {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary-400);
+  border-radius: 2px 2px 0 0;
+}
+
+.tab .tab-emoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.tab .tab-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 640px) {
+  .tab {
+    font-size: 12px;
+    padding: 14px 8px;
+    gap: 6px;
+  }
+  
+  .tab .tab-emoji {
+    font-size: 14px;
+  }
+  
+  .tab .tab-label {
+    display: none;
+  }
 }
 
 /* Grid Layout */
