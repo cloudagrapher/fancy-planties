@@ -100,7 +100,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           <button
             onClick={() => handleQuickCare('fertilizer')}
             disabled={isLoading}
-            className="flex-1 px-2 py-2 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation max-w-0 min-w-0"
+            className="flex-1 px-2 py-2 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation"
             title="Quick fertilize"
             aria-label={`Quick fertilize ${plant.displayName}`}
           >
@@ -114,7 +114,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           <button
             onClick={() => handleQuickCare('water')}
             disabled={isLoading}
-            className="flex-1 px-2 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation max-w-0 min-w-0"
+            className="flex-1 px-2 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation"
             title="Quick water"
             aria-label={`Quick water ${plant.displayName}`}
           >
@@ -128,7 +128,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           <button
             onClick={() => handleQuickCare('inspect')}
             disabled={isLoading}
-            className="flex-1 px-2 py-2 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation max-w-0 min-w-0"
+            className="flex-1 px-2 py-2 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation"
             title="Quick inspect"
             aria-label={`Quick inspect ${plant.displayName}`}
           >
