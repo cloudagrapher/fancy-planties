@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CareDashboardData } from '@/lib/types/care-types';
 import CareTaskCard from './CareTaskCard';
-import QuickCareActions from './QuickCareActions';
+// import QuickCareActions from './QuickCareActions';
 import CareStatistics from './CareStatistics';
 
 interface CareDashboardProps {
@@ -18,9 +18,9 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
   // Use React Query for dashboard data
   const { data: dashboardData, isLoading: loading, error } = useQuery({
-    queryKey: ['care-dashboard'],
+    queryKey: ['care-dashboard', userId],
     queryFn: async (): Promise<CareDashboardData> => {
-      const response = await fetch('/api/care/dashboard', {
+      const response = await fetch(`/api/care/dashboard?userId=${userId}`, {
         // Prevent browser caching
         cache: 'no-store',
         headers: {
@@ -50,6 +50,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
           plantInstanceId,
           careType,
           careDate: new Date().toISOString(),
+          userId,
         }),
       });
 
@@ -59,12 +60,12 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
       // Invalidate and refetch dashboard data
       await queryClient.invalidateQueries({ 
-        queryKey: ['care-dashboard'],
+        queryKey: ['care-dashboard', userId],
         refetchType: 'active'
       });
       // Also remove from cache entirely and refetch
-      queryClient.removeQueries({ queryKey: ['care-dashboard'] });
-      await queryClient.refetchQueries({ queryKey: ['care-dashboard'] });
+      queryClient.removeQueries({ queryKey: ['care-dashboard', userId] });
+      await queryClient.refetchQueries({ queryKey: ['care-dashboard', userId] });
     } catch (err) {
       console.error('Error logging quick care:', err);
       // Could show a toast notification here instead
@@ -102,6 +103,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
             plantInstanceId: plant.id,
             careType,
             careDate: new Date().toISOString(),
+            userId,
           }),
         })
       );
@@ -114,12 +116,12 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
         // Show success message
         console.log(`Successfully logged ${careType} for ${successCount} plants${failureCount > 0 ? `, ${failureCount} failed` : ''}`);
         await queryClient.invalidateQueries({ 
-          queryKey: ['care-dashboard'],
+          queryKey: ['care-dashboard', userId],
           refetchType: 'active'
         });
         // Also remove from cache entirely and refetch
-        queryClient.removeQueries({ queryKey: ['care-dashboard'] });
-        await queryClient.refetchQueries({ queryKey: ['care-dashboard'] });
+        queryClient.removeQueries({ queryKey: ['care-dashboard', userId] });
+        await queryClient.refetchQueries({ queryKey: ['care-dashboard', userId] });
       } else {
         throw new Error('Failed to log care for any plants');
       }
@@ -156,7 +158,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
         <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Care Dashboard</h3>
         <p className="text-gray-600 mb-4">{error instanceof Error ? error.message : 'Failed to load dashboard'}</p>
         <button
-          onClick={() => queryClient.invalidateQueries({ queryKey: ['care-dashboard'] })}
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['care-dashboard', userId] })}
           disabled={loading}
           className={`px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
