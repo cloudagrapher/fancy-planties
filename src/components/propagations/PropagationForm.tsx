@@ -230,10 +230,13 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
           {/* Plant Selection */}
-          <div>
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Plant Type *
             </label>
+            <p className="text-xs text-gray-600 mb-2">
+              First, search for the type of plant you want to propagate
+            </p>
             <PlantTaxonomySelector
               selectedPlant={selectedPlant ? {
                 id: selectedPlant.id,
@@ -246,62 +249,70 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
               } : null}
               onSelect={handlePlantSelect}
               onAddNew={handleAddNewPlant}
-              placeholder="Search for plant type..."
+              placeholder="e.g., Global Green Pothos, Monstera Deliciosa..."
+              autoFocus={true}
             />
             {errors.plantId && (
               <p className="mt-1 text-sm text-red-600">{errors.plantId}</p>
             )}
+            {selectedPlant && (
+              <p className="mt-1 text-xs text-green-600">
+                ✓ Selected: {selectedPlant.commonName}
+              </p>
+            )}
           </div>
 
-          {/* Source Type Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Propagation Source *
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
-                <input
-                  type="radio"
-                  name="sourceType"
-                  value="internal"
-                  checked={formData.sourceType === 'internal'}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    sourceType: e.target.value as 'internal' | 'external',
-                    parentInstanceId: null, // Reset selections when changing type
-                    externalSource: null,
-                    externalSourceDetails: '',
-                  }))}
-                  className="mr-2 text-primary-600"
-                />
-                <div>
-                  <div className="font-medium text-gray-900 text-sm">From My Plants</div>
-                  <div className="text-xs text-gray-500">Propagated from one of your existing plants</div>
-                </div>
+          {/* Source Type Selection - Only show after plant type is selected */}
+          {formData.plantId && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Propagation Source *
               </label>
-              
-              <label className="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
-                <input
-                  type="radio"
-                  name="sourceType"
-                  value="external"
-                  checked={formData.sourceType === 'external'}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    sourceType: e.target.value as 'internal' | 'external',
-                    parentInstanceId: null, // Reset selections when changing type
-                    externalSource: null,
-                    externalSourceDetails: '',
-                  }))}
-                  className="mr-2 text-primary-600"
-                />
-                <div>
-                  <div className="font-medium text-gray-900 text-sm">External Source</div>
-                  <div className="text-xs text-gray-500">Gift, trade, purchase, or other source</div>
-                </div>
-              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="sourceType"
+                    value="internal"
+                    checked={formData.sourceType === 'internal'}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      sourceType: e.target.value as 'internal' | 'external',
+                      parentInstanceId: null, // Reset selections when changing type
+                      externalSource: null,
+                      externalSourceDetails: '',
+                    }))}
+                    className="mr-2 text-primary-600"
+                  />
+                  <div>
+                    <div className="font-medium text-gray-900 text-sm">From My Plants</div>
+                    <div className="text-xs text-gray-500">Propagated from one of your existing plants</div>
+                  </div>
+                </label>
+                
+                <label className="flex items-center p-2 border rounded-lg cursor-pointer hover:bg-gray-50">
+                  <input
+                    type="radio"
+                    name="sourceType"
+                    value="external"
+                    checked={formData.sourceType === 'external'}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      sourceType: e.target.value as 'internal' | 'external',
+                      parentInstanceId: null, // Reset selections when changing type
+                      externalSource: null,
+                      externalSourceDetails: '',
+                    }))}
+                    className="mr-2 text-primary-600"
+                  />
+                  <div>
+                    <div className="font-medium text-gray-900 text-sm">External Source</div>
+                    <div className="text-xs text-gray-500">Gift, trade, purchase, or other source</div>
+                  </div>
+                </label>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Parent Plant Instance - Only for Internal */}
           {formData.sourceType === 'internal' && (
@@ -309,24 +320,37 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Parent Plant *
               </label>
-              {parentInstances.length > 0 ? (
-                <select
-                  value={formData.parentInstanceId || ''}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    parentInstanceId: e.target.value ? parseInt(e.target.value) : null
-                  }))}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
-                    errors.parentInstanceId ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                >
-                  <option value="">Select parent plant</option>
-                  {parentInstances.map((instance) => (
-                    <option key={instance.id} value={instance.id}>
-                      {instance.nickname} - {instance.location}
-                    </option>
-                  ))}
-                </select>
+              
+              {/* Only show parent plant selection if a plant type is selected */}
+              {!formData.plantId ? (
+                <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    Please select a plant type above first to see available parent plants.
+                  </p>
+                </div>
+              ) : parentInstances.length > 0 ? (
+                <div className="space-y-2">
+                  <select
+                    value={formData.parentInstanceId || ''}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      parentInstanceId: e.target.value ? parseInt(e.target.value) : null
+                    }))}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                      errors.parentInstanceId ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="">Select parent plant</option>
+                    {parentInstances.map((instance) => (
+                      <option key={instance.id} value={instance.id}>
+                        {instance.nickname} - {instance.location}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500">
+                    Choose which of your existing plants to propagate from
+                  </p>
+                </div>
               ) : (
                 <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-800">
@@ -383,154 +407,162 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
             </div>
           )}
 
-          {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nickname *
-              </label>
-              <input
-                type="text"
-                value={formData.nickname}
-                onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="e.g., Monstera Cutting #1"
-              />
-              {errors.nickname && (
-                <p className="mt-1 text-sm text-red-600">{errors.nickname}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Location *
-              </label>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                placeholder="e.g., Propagation Station, Kitchen Window"
-              />
-              {errors.location && (
-                <p className="mt-1 text-sm text-red-600">{errors.location}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Date and Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date Started *
-              </label>
-              <input
-                type="date"
-                value={formData.dateStarted}
-                onChange={(e) => setFormData(prev => ({ ...prev, dateStarted: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              />
-              {errors.dateStarted && (
-                <p className="mt-1 text-sm text-red-600">{errors.dateStarted}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  status: e.target.value as FormData['status']
-                }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="started">Started</option>
-                <option value="rooting">Rooting</option>
-                <option value="planted">Planted</option>
-                <option value="established">Established</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes
-            </label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              placeholder="Add any notes about the propagation method, progress, or observations..."
-            />
-          </div>
-
-          {/* Images */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Images
-            </label>
-            
-            {/* Existing Images */}
-            {formData.images.length > 0 && (
-              <div className="grid grid-cols-4 gap-2 mb-3">
-                {formData.images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <Image
-                      src={image}
-                      alt={`Propagation image ${index + 1}`}
-                      width={80}
-                      height={80}
-                      className="w-full h-16 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleImageRemove(index)}
-                      className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="w-2 h-2" />
-                    </button>
-                  </div>
-                ))}
+          {/* Basic Information - Only show after source type is selected */}
+          {formData.plantId && formData.sourceType && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nickname *
+                </label>
+                <input
+                  type="text"
+                  value={formData.nickname}
+                  onChange={(e) => setFormData(prev => ({ ...prev, nickname: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="e.g., Monstera Cutting #1"
+                />
+                {errors.nickname && (
+                  <p className="mt-1 text-sm text-red-600">{errors.nickname}</p>
+                )}
               </div>
-            )}
 
-            {/* Image Upload */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary-400 transition-colors">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => {
-                  const files = Array.from(e.target.files || []);
-                  files.forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      if (event.target?.result) {
-                        handleImageUpload(event.target.result as string);
-                      }
-                    };
-                    reader.readAsDataURL(file);
-                  });
-                }}
-                className="hidden"
-                id="image-upload"
-              />
-              <label htmlFor="image-upload" className="cursor-pointer">
-                <Upload className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                <p className="text-sm text-gray-600">
-                  Click to upload images
-                </p>
-                <p className="text-xs text-gray-500">
-                  PNG, JPG up to 5MB each
-                </p>
-              </label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Location *
+                </label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  placeholder="e.g., Propagation Station, Kitchen Window"
+                />
+                {errors.location && (
+                  <p className="mt-1 text-sm text-red-600">{errors.location}</p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Date and Status - Only show after source type is selected */}
+          {formData.plantId && formData.sourceType && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date Started *
+                </label>
+                <input
+                  type="date"
+                  value={formData.dateStarted}
+                  onChange={(e) => setFormData(prev => ({ ...prev, dateStarted: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+                {errors.dateStarted && (
+                  <p className="mt-1 text-sm text-red-600">{errors.dateStarted}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    status: e.target.value as FormData['status']
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                >
+                  <option value="started">Started</option>
+                  <option value="rooting">Rooting</option>
+                  <option value="planted">Planted</option>
+                  <option value="established">Established</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Notes - Only show after source type is selected */}
+          {formData.plantId && formData.sourceType && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Notes
+              </label>
+              <textarea
+                value={formData.notes}
+                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                placeholder="Add any notes about the propagation method, progress, or observations..."
+              />
+            </div>
+          )}
+
+          {/* Images - Only show after source type is selected */}
+          {formData.plantId && formData.sourceType && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Images
+              </label>
+              
+              {/* Existing Images */}
+              {formData.images.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 mb-3">
+                  {formData.images.map((image, index) => (
+                    <div key={index} className="relative group">
+                      <Image
+                        src={image}
+                        alt={`Propagation image ${index + 1}`}
+                        width={80}
+                        height={80}
+                        className="w-full h-16 object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleImageRemove(index)}
+                        className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="w-2 h-2" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Image Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary-400 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files || []);
+                    files.forEach(file => {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        if (event.target?.result) {
+                          handleImageUpload(event.target.result as string);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    });
+                  }}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label htmlFor="image-upload" className="cursor-pointer">
+                  <Upload className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                  <p className="text-sm text-gray-600">
+                    Click to upload images
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    PNG, JPG up to 5MB each
+                  </p>
+                </label>
+              </div>
+            </div>
+          )}
 
           {/* Submit Error */}
           {errors.submit && (

@@ -15,7 +15,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Health check endpoint with performance metrics
 - Complete documentation suite (API, deployment, contributing, architecture)
 
-## [0.1.0] - 2024-01-22
+### Enhanced
+- **CSV Import for Propagations**: Enhanced CSV import functionality with improved form UX
+  - Better validation and error handling for propagation data imports
+  - Improved user experience during import process
+- **Plant Instances**: Implemented infinite scrolling for plant instances to improve performance with large collections
+
+### Fixed
+- **Mobile Responsive Design**: Applied comprehensive mobile optimizations to care page similar to propagation page improvements
+  - Implemented dual layout system (mobile/desktop) for CareTaskCard component
+  - Added touch-friendly interactions with proper button sizing (36px minimum height)
+  - Optimized quick actions grid with better spacing and responsive breakpoints
+  - Improved tab system with horizontal scrolling and shortened labels for mobile
+  - Enhanced text handling with truncation and responsive sizing
+  - Fixed overflow issues preventing buttons from being cut off on mobile viewports
+  - Enhanced responsive design for plant search and propagation cards
+- **Handbook Image Upload**: Fixed validation error in care guide creation where File objects were being sent instead of Base64 strings
+  - Added proper File-to-Base64 conversion in form submission handler
+  - Ensures compatibility with JSONB images field in database schema
+  - Resolves "Invalid input: expected string, received object" validation errors
+
+## [0.1.0] - 2025-09-07
 
 ### Added
 - Initial release of Fancy Planties PWA
@@ -90,7 +110,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database query optimization with proper indexing
 - Bundle size optimization under 250KB gzipped
 
-## [0.0.1] - 2024-01-01
+## [0.0.1] - 2025-09-06
 
 ### Added
 - Initial project setup
