@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
       query,
       userId: user.id,
       activeOnly: searchParams.get('activeOnly') !== 'false', // Default to true
-      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 20,
-      offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0,
+      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 20,
+      offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!, 10) : 0,
     };
 
     // Validate search parameters

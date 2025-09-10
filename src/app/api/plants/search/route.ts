@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const searchData = {
       query: searchParams.get('q') || searchParams.get('query') || '',
-      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 20,
-      offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0,
+      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 20,
+      offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!, 10) : 0,
       includeUnverified: searchParams.get('includeUnverified') !== 'false',
       familyFilter: searchParams.get('family') || undefined,
       genusFilter: searchParams.get('genus') || undefined,

@@ -14,7 +14,7 @@ export async function GET(
     }
 
     const resolvedParams = await params;
-    const plantInstanceId = parseInt(resolvedParams.plantInstanceId);
+    const plantInstanceId = parseInt(resolvedParams.plantInstanceId, 10);
     if (isNaN(plantInstanceId)) {
       return NextResponse.json({ error: 'Invalid plant instance ID' }, { status: 400 });
     }
@@ -24,8 +24,8 @@ export async function GET(
     const careType = searchParams.get('careType') || undefined;
     const startDate = searchParams.get('startDate') ? new Date(searchParams.get('startDate')!) : undefined;
     const endDate = searchParams.get('endDate') ? new Date(searchParams.get('endDate')!) : undefined;
-    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50;
-    const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0;
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 50;
+    const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!, 10) : 0;
     const sortBy = searchParams.get('sortBy') as 'care_date' | 'care_type' | 'created_at' || 'care_date';
     const sortOrder = searchParams.get('sortOrder') as 'asc' | 'desc' || 'desc';
 

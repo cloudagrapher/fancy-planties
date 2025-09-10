@@ -24,9 +24,9 @@ export async function GET(request: NextRequest) {
       family: searchParams.get('family') || undefined,
       genus: searchParams.get('genus') || undefined,
       isVerified: searchParams.get('isVerified') ? searchParams.get('isVerified') === 'true' : undefined,
-      createdBy: searchParams.get('createdBy') ? parseInt(searchParams.get('createdBy')!) : undefined,
-      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 20,
-      offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0,
+      createdBy: searchParams.get('createdBy') ? parseInt(searchParams.get('createdBy')!, 10) : undefined,
+      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 20,
+      offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!, 10) : 0,
     };
 
     const validatedFilter = plantFilterSchema.parse(filterParams);

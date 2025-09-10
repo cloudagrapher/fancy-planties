@@ -23,7 +23,7 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const propagationId = parseInt(id);
+    const propagationId = parseInt(id, 10);
     if (isNaN(propagationId)) {
       return NextResponse.json({ error: 'Invalid propagation ID' }, { status: 400 });
     }

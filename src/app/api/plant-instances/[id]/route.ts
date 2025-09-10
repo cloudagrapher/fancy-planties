@@ -15,7 +15,7 @@ export async function GET(
     }
 
     const resolvedParams = await params;
-    const id = parseInt(resolvedParams.id);
+    const id = parseInt(resolvedParams.id, 10);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid plant instance ID' }, { status: 400 });
     }
@@ -53,7 +53,7 @@ export async function PUT(
     }
 
     const resolvedParams = await params;
-    const id = parseInt(resolvedParams.id);
+    const id = parseInt(resolvedParams.id, 10);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid plant instance ID' }, { status: 400 });
     }
@@ -101,7 +101,7 @@ export async function PUT(
         } else {
           // Handle regular form fields
           if (key === 'plantId') {
-            body[key] = parseInt(value as string);
+            body[key] = parseInt(value as string, 10);
           } else if (key === 'isActive') {
             body[key] = value === 'true';
           } else {
@@ -182,7 +182,7 @@ export async function DELETE(
     }
 
     const resolvedParams = await params;
-    const id = parseInt(resolvedParams.id);
+    const id = parseInt(resolvedParams.id, 10);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid plant instance ID' }, { status: 400 });
     }

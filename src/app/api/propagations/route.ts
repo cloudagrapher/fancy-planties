@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       );
     } else if (parentInstanceId) {
       // Get propagations from a specific parent plant
-      propagations = await PropagationQueries.getByParentInstance(parseInt(parentInstanceId));
+      propagations = await PropagationQueries.getByParentInstance(parseInt(parentInstanceId, 10));
     } else {
       // Get all propagations for user
       propagations = await PropagationQueries.getByUserId(user.id);
