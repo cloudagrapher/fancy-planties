@@ -1,5 +1,6 @@
 import { requireAuthSession } from '@/lib/auth/server';
 import { DataImport } from '@/components/import/DataImport';
+import LogoutButton from '@/components/auth/LogoutButton';
 import { User, Database, FileText, Download, Upload } from 'lucide-react';
 
 export default async function ProfilePage() {
@@ -52,6 +53,11 @@ export default async function ProfilePage() {
                     })}
                   </p>
                 </div>
+              </div>
+              <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
+                <LogoutButton className="btn btn--danger btn--sm">
+                  Sign Out of Account
+                </LogoutButton>
               </div>
             </div>
           </div>
