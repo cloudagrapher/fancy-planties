@@ -458,8 +458,9 @@ describe('Care Tracking Integration Tests', () => {
       // Assert - Verify limit indicator is shown
       expect(screen.getByText(/showing 5 of 15 care events/i)).toBeInTheDocument();
     });
-  });  des
-cribe('Care Statistics Calculation and Display', () => {
+  });
+
+describe('Care Statistics Calculation and Display', () => {
     it('should fetch and display care dashboard statistics', async () => {
       // Arrange
       const dashboardData = {

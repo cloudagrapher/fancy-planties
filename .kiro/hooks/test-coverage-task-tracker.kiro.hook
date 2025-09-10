@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "Test Coverage & Task Tracker",
+  "description": "Monitors source file changes to generate test coverage and tracks spec file task completions to automatically commit and push changes with task-based commit messages",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "src/**/*.js",
+      "src/**/*.jsx",
+      "**/*.spec.md",
+      "**/*.spec.txt"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file has been modified. Please analyze the change and execute the appropriate workflow:\n\n**FOR SOURCE FILE CHANGES (src/**/*.{ts,tsx,js,jsx}):**\n1. Analyze the changed file to identify new or modified functions and methods\n2. Check if corresponding tests exist in the appropriate test directory (__tests__ folders or .test/.spec files)\n3. Evaluate current test coverage for the modified code\n4. If coverage is missing or insufficient:\n   - Generate comprehensive test cases for new/modified functions\n   - Include unit tests, integration tests, and edge cases as appropriate\n   - Follow the existing test patterns and use the test utilities in src/test-utils/\n5. Run the test suite to verify all tests pass\n6. Update coverage reports and highlight any coverage gaps\n7. Provide a summary of:\n   - What was tested\n   - Coverage percentage changes\n   - Any remaining coverage gaps\n   - Recommendations for additional testing\n\n**FOR SPEC FILE CHANGES (*.spec.md, *.spec.txt):**\n***IMPORTANT*** Only execute this workflow if a task was marked as completed (prefix changed from - [ ] to - [x]):\n1. Read the updated spec file to identify which tasks were completed\n2. Generate a commit message using the completed task list\n3. Stage all changed files in the repository\n4. Create a commit with the task-based message\n5. Push the commit to the remote repository\n\nFollow the version control guidelines in .kiro/steering/version-control.md for commit message format and process. Focus on maintaining high code quality and comprehensive test coverage across the codebase."
+  }
+}
