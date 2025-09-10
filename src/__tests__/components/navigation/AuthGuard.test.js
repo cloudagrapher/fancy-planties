@@ -21,7 +21,7 @@ jest.mock('@/lib/auth/server', () => ({
 
 // Import the mocked function
 import { requireAuthSession } from '@/lib/auth/server';
-const mockRequireAuthSession = requireAuthSession as jest.MockedFunction<typeof requireAuthSession>;
+const mockRequireAuthSession = requireAuthSession;
 
 describe('AuthGuard', () => {
   const TestComponent = () => <div data-testid="protected-content">Protected Content</div>;

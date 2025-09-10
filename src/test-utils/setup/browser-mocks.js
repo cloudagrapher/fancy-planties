@@ -84,17 +84,31 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Mock performance
+// Mock performance - provides incrementing timestamps for reliable performance measurements
+let performanceCounter = 0;
+const mockPerformance = {
+  now: jest.fn(() => {
+    performanceCounter += Math.random() * 10 + 1; // Add 1-11ms each call for realistic timing
+    return performanceCounter;
+  }),
+  mark: jest.fn(),
+  measure: jest.fn(),
+  getEntriesByType: jest.fn(() => []),
+  getEntriesByName: jest.fn(() => []),
+};
+
 if (typeof window !== 'undefined') {
   Object.defineProperty(window, 'performance', {
     writable: true,
-    value: {
-      now: jest.fn(() => Date.now()),
-      mark: jest.fn(),
-      measure: jest.fn(),
-      getEntriesByType: jest.fn(() => []),
-      getEntriesByName: jest.fn(() => []),
-    },
+    value: mockPerformance,
+  });
+}
+
+if (typeof global !== 'undefined') {
+  Object.defineProperty(global, 'performance', {
+    writable: true,
+    value: mockPerformance,
+    configurable: true,
   });
 }
 

@@ -47,10 +47,12 @@ const customJestConfig = {
   },
   coverageReporters: ['text', 'lcov', 'html'],
   testTimeout: 15000,
-  maxWorkers: 1, // Run tests serially for better isolation
+  // Optimize parallel execution with proper isolation
+  maxWorkers: process.env.CI ? 2 : '50%', // Use 2 workers in CI, 50% of cores locally
+  workerIdleMemoryLimit: '512MB', // Prevent memory leaks in workers
   // Transform node_modules that use ES modules
   transformIgnorePatterns: [
-    'node_modules/(?!(lodash-es|lucide-react|@tanstack/react-query|@hookform|fuse\\.js|oslo|@hookform/resolvers)/)',
+    'node_modules/(?!(lodash-es|lucide-react|@tanstack/react-query|@hookform|fuse\\.js|oslo|@oslo|@lucia-auth|@hookform/resolvers)/)',
   ],
   // Improve test isolation
   resetMocks: true,
@@ -63,6 +65,27 @@ const customJestConfig = {
   // Handle async operations better
   detectOpenHandles: true,
   forceExit: true,
+  
+  // Performance optimizations
+  cache: true,
+  cacheDirectory: '<rootDir>/.jest-cache',
+  
+  // Improved test execution
+  bail: process.env.CI ? 1 : 0, // Stop on first failure in CI
+  passWithNoTests: true,
+  
+  // Performance monitoring
+  reporters: [
+    'default',
+    ['jest-junit', {
+      outputDirectory: 'coverage',
+      outputName: 'junit.xml',
+      classNameTemplate: '{classname}',
+      titleTemplate: '{title}',
+      ancestorSeparator: ' › ',
+      usePathForSuiteName: true,
+    }],
+  ],
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
