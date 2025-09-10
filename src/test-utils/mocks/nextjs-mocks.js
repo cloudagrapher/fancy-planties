@@ -44,10 +44,21 @@ const imageMock = (() => {
 })();
 
 const serverMock = {
-  NextRequest: class MockNextRequest extends Request {
-    constructor(input, init) {
-      super(input, init);
-      this.nextUrl = new URL(input instanceof Request ? input.url : input.toString());
+  NextRequest: class MockNextRequest {
+    constructor(input, init = {}) {
+      this.url = input instanceof MockNextRequest ? input.url : input.toString();
+      this.method = init.method || 'GET';
+      this.headers = new Headers(init.headers || {});
+      this.body = init.body || null;
+      this.nextUrl = new URL(this.url);
+    }
+    
+    async json() {
+      return this.body ? JSON.parse(this.body) : {};
+    }
+    
+    async text() {
+      return this.body ? this.body.toString() : '';
     }
     
     static from(request) {
@@ -59,8 +70,16 @@ const serverMock = {
     }
   },
 
-  NextResponse: class MockNextResponse extends Response {
-    static json(object, init) {
+  NextResponse: class MockNextResponse {
+    constructor(body, init = {}) {
+      this.body = body;
+      this.status = init.status || 200;
+      this.statusText = init.statusText || 'OK';
+      this.headers = new Headers(init.headers || {});
+      this.ok = this.status >= 200 && this.status < 300;
+    }
+    
+    static json(object, init = {}) {
       return new MockNextResponse(JSON.stringify(object), {
         ...init,
         headers: {
@@ -70,7 +89,7 @@ const serverMock = {
       });
     }
 
-    static redirect(url, init) {
+    static redirect(url, init = {}) {
       return new MockNextResponse(null, {
         ...init,
         status: init?.status || 302,
@@ -79,6 +98,14 @@ const serverMock = {
           ...init?.headers,
         },
       });
+    }
+    
+    async json() {
+      return JSON.parse(this.body);
+    }
+    
+    async text() {
+      return this.body;
     }
   }
 };

@@ -50,7 +50,7 @@ const customJestConfig = {
   maxWorkers: 1, // Run tests serially for better isolation
   // Transform node_modules that use ES modules
   transformIgnorePatterns: [
-    'node_modules/(?!(lodash-es|lucide-react|@tanstack/react-query|@hookform|fuse\\.js)/)',
+    'node_modules/(?!(lodash-es|lucide-react|@tanstack/react-query|@hookform|fuse\\.js|oslo|@hookform/resolvers)/)',
   ],
   // Improve test isolation
   resetMocks: true,

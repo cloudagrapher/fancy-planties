@@ -50,26 +50,26 @@
   - Implement selective mocking utilities for specific test needs
   - _Requirements: 3.4, 5.1, 5.3_
 
-- [ ] 4. Implement core integration tests for critical workflows
-- [ ] 4.1 Create authentication flow integration tests
+- [x] 4. Implement core integration tests for critical workflows
+- [x] 4.1 Create authentication flow integration tests
   - Test complete signup workflow from form submission to authenticated state
   - Test login workflow with session persistence
   - Test logout and session cleanup
   - _Requirements: 6.1, 2.1, 2.2_
 
-- [ ] 4.2 Build plant management integration tests
+- [x] 4.2 Build plant management integration tests
   - Test plant creation workflow from form to database
   - Test plant editing and updating workflows
   - Test plant deletion with proper cleanup
   - _Requirements: 6.2, 2.1, 2.2_
 
-- [ ] 4.3 Implement care tracking integration tests
+- [x] 4.3 Implement care tracking integration tests
   - Test care record creation and logging workflow
   - Test care history viewing and filtering
   - Test care statistics calculation and display
   - _Requirements: 6.3, 2.1, 2.2_
 
-- [ ] 4.4 Create data import integration tests
+- [x] 4.4 Create data import integration tests
   - Test CSV file upload and parsing workflow
   - Test data validation and error handling during import
   - Test successful import completion and data persistence
