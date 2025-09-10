@@ -938,7 +938,7 @@ export default function PlantInstanceForm({
                 </label>
                 
                 {/* Existing Notes History */}
-                {watch('notes') && watch('notes').trim() && (
+                {watch('notes') && watch('notes')?.trim() && (
                   <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Previous Notes:</h4>
                     <div className="text-sm text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto">
