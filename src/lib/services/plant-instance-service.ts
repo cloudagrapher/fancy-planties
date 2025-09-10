@@ -43,13 +43,13 @@ export class PlantInstanceService {
           
           switch (unit.toLowerCase()) {
             case 'day':
-              dueDate.setDate(dueDate.getDate() + parseInt(amount));
+              dueDate.setDate(dueDate.getDate() + parseInt(amount, 10));
               break;
             case 'week':
-              dueDate.setDate(dueDate.getDate() + (parseInt(amount) * 7));
+              dueDate.setDate(dueDate.getDate() + (parseInt(amount, 10) * 7));
               break;
             case 'month':
-              dueDate.setMonth(dueDate.getMonth() + parseInt(amount));
+              dueDate.setMonth(dueDate.getMonth() + parseInt(amount, 10));
               break;
           }
           
@@ -117,13 +117,13 @@ export class PlantInstanceService {
           
           switch (unit.toLowerCase()) {
             case 'day':
-              dueDate.setDate(dueDate.getDate() + parseInt(amount));
+              dueDate.setDate(dueDate.getDate() + parseInt(amount, 10));
               break;
             case 'week':
-              dueDate.setDate(dueDate.getDate() + (parseInt(amount) * 7));
+              dueDate.setDate(dueDate.getDate() + (parseInt(amount, 10) * 7));
               break;
             case 'month':
-              dueDate.setMonth(dueDate.getMonth() + parseInt(amount));
+              dueDate.setMonth(dueDate.getMonth() + parseInt(amount, 10));
               break;
           }
           
@@ -470,13 +470,13 @@ export class PlantInstanceService {
     
     switch (unit.toLowerCase()) {
       case 'day':
-        dueDate.setDate(dueDate.getDate() + parseInt(amount));
+        dueDate.setDate(dueDate.getDate() + parseInt(amount, 10));
         break;
       case 'week':
-        dueDate.setDate(dueDate.getDate() + (parseInt(amount) * 7));
+        dueDate.setDate(dueDate.getDate() + (parseInt(amount, 10) * 7));
         break;
       case 'month':
-        dueDate.setMonth(dueDate.getMonth() + parseInt(amount));
+        dueDate.setMonth(dueDate.getMonth() + parseInt(amount, 10));
         break;
     }
     

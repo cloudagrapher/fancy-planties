@@ -121,7 +121,7 @@ export class DateParser {
 
     // Try parsing as a year only (for propagations)
     if (/^\d{4}$/.test(trimmed)) {
-      const year = parseInt(trimmed);
+      const year = parseInt(trimmed, 10);
       return new Date(year, 0, 1); // January 1st of that year
     }
 
@@ -133,8 +133,8 @@ export class DateParser {
   private static parseEstimatedDate(dateStr: string): Date | null {
     const match = dateStr.match(/^(\d{1,2})\/(\d{2,4})$/);
     if (match) {
-      const month = parseInt(match[1]) - 1; // Month is 0-indexed
-      let year = parseInt(match[2]);
+      const month = parseInt(match[1], 10) - 1; // Month is 0-indexed
+      let year = parseInt(match[2], 10);
       
       // Handle 2-digit years
       if (year < 100) {
@@ -149,15 +149,15 @@ export class DateParser {
   private static createDateFromMatch(match: RegExpMatchArray, format: RegExp): Date | null {
     if (format.source.includes('(\\d{4})')) {
       // YYYY-MM-DD format
-      const year = parseInt(match[1]);
-      const month = parseInt(match[2]) - 1;
-      const day = parseInt(match[3]);
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1;
+      const day = parseInt(match[3], 10);
       return new Date(year, month, day);
     } else {
       // MM/DD/YY or MM-DD-YY format
-      const month = parseInt(match[1]) - 1;
-      const day = parseInt(match[2]);
-      let year = parseInt(match[3]);
+      const month = parseInt(match[1], 10) - 1;
+      const day = parseInt(match[2], 10);
+      let year = parseInt(match[3], 10);
       
       // Handle 2-digit years
       if (year < 100) {
@@ -228,12 +228,12 @@ export class ScheduleParser {
       if (match) {
         if (match[2]) {
           // Range like "4-6 weeks" - use the middle value
-          const min = parseInt(match[1]);
-          const max = parseInt(match[2]);
+          const min = parseInt(match[1], 10);
+          const max = parseInt(match[2], 10);
           return Math.round((min + max) / 2);
         } else {
           // Single value like "4 weeks"
-          return parseInt(match[1]);
+          return parseInt(match[1], 10);
         }
       }
     }

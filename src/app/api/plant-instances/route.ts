@@ -21,16 +21,16 @@ export async function GET(request: NextRequest) {
     const filterParams = {
       userId: user.id,
       location: searchParams.get('location') || undefined,
-      plantId: searchParams.get('plantId') ? parseInt(searchParams.get('plantId')!) : undefined,
+      plantId: searchParams.get('plantId') ? parseInt(searchParams.get('plantId')!, 10) : undefined,
       isActive: searchParams.get('isActive') ? searchParams.get('isActive') === 'true' : undefined,
       overdueOnly: searchParams.get('overdueOnly') === 'true',
-      dueSoonDays: searchParams.get('dueSoonDays') ? parseInt(searchParams.get('dueSoonDays')!) : undefined,
+      dueSoonDays: searchParams.get('dueSoonDays') ? parseInt(searchParams.get('dueSoonDays')!, 10) : undefined,
       createdAfter: searchParams.get('createdAfter') ? new Date(searchParams.get('createdAfter')!) : undefined,
       createdBefore: searchParams.get('createdBefore') ? new Date(searchParams.get('createdBefore')!) : undefined,
       lastFertilizedAfter: searchParams.get('lastFertilizedAfter') ? new Date(searchParams.get('lastFertilizedAfter')!) : undefined,
       lastFertilizedBefore: searchParams.get('lastFertilizedBefore') ? new Date(searchParams.get('lastFertilizedBefore')!) : undefined,
-      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 20,
-      offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0,
+      limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 20,
+      offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!, 10) : 0,
     };
 
     // Validate filter parameters
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
         } else {
           // Convert form values to appropriate types
           if (key === 'plantId') {
-            body[key] = parseInt(value as string);
+            body[key] = parseInt(value as string, 10);
           } else if (key === 'isActive') {
             body[key] = value === 'true';
           } else {
@@ -181,13 +181,13 @@ export async function POST(request: NextRequest) {
         
         switch (unit.toLowerCase()) {
           case 'day':
-            dueDate.setDate(dueDate.getDate() + parseInt(amount));
+            dueDate.setDate(dueDate.getDate() + parseInt(amount, 10));
             break;
           case 'week':
-            dueDate.setDate(dueDate.getDate() + (parseInt(amount) * 7));
+            dueDate.setDate(dueDate.getDate() + (parseInt(amount, 10) * 7));
             break;
           case 'month':
-            dueDate.setMonth(dueDate.getMonth() + parseInt(amount));
+            dueDate.setMonth(dueDate.getMonth() + parseInt(amount, 10));
             break;
         }
         

@@ -32,12 +32,11 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   // Handle care actions
   const handleCareAction = (plant: EnhancedPlantInstance, action: 'fertilize' | 'repot') => {
     // This will be handled by the quick care system
-    console.log(`Care action: ${action} for plant ${plant.id}`);
   };
 
   // Handle bulk actions
   const handleBulkAction = (plants: EnhancedPlantInstance[], action: string) => {
-    console.log(`Bulk action: ${action} for ${plants.length} plants`);
+    // Bulk action logic will be implemented here
   };
 
   // Handle add new plant
@@ -52,7 +51,7 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
     setEditingPlant(null);
     
     // Force a grid refresh to ensure immediate updates
-    console.log('Form success, forcing grid refresh...');
+    // Form success, forcing grid refresh
     await queryClient.invalidateQueries({ 
       queryKey: ['plant-instances', userId],
       refetchType: 'all'
@@ -121,7 +120,7 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
           }}
           onEdit={handlePlantEdit}
           onCareLog={(plantId, careType) => {
-            console.log(`Care logged: ${careType} for plant ${plantId}`);
+            // Care logged successfully
           }}
         />
       )}
