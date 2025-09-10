@@ -104,6 +104,7 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
 
   const handlePropagationUpdate = () => {
     fetchData(); // Refresh data after updates
+    setShowAddForm(false); // Close the form modal
   };
 
   if (loading) {

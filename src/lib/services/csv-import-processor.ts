@@ -259,11 +259,17 @@ export class CSVImportProcessor {
           if (validatedData.sourceType === 'internal') {
             parentInstanceId = await this.findParentInstance(validatedData, plantId);
             if (!parentInstanceId) {
-              this.addWarning(i, `Could not find parent instance for internal propagation: ${validatedData.nickname}`, 'warning');
+              const parentInfo = validatedData.parentPlantName ? `"${validatedData.parentPlantName}"` : 'unspecified parent';
+              this.addWarning(i, `Could not find parent plant ${parentInfo} for internal propagation: ${validatedData.nickname}. Converting to external propagation.`, 'warning');
               // Convert to external propagation
               validatedData.sourceType = 'external';
               validatedData.externalSource = 'other';
-              validatedData.externalSourceDetails = `Originally marked as internal propagation from: ${validatedData.parentPlantName}`;
+              validatedData.externalSourceDetails = `Originally marked as internal propagation from: ${validatedData.parentPlantName || 'unknown parent'}`;
+            } else {
+              // Log successful parent plant matching
+              if (validatedData.parentPlantName) {
+                this.addWarning(i, `Successfully matched parent plant "${validatedData.parentPlantName}" for propagation: ${validatedData.nickname}`, 'warning');
+              }
             }
           }
 
@@ -534,6 +540,43 @@ export class CSVImportProcessor {
   }
 
   private async findParentInstance(data: ProcessedPropagation, plantId: number): Promise<number | null> {
+    // If we have a parent plant name from CSV, try to find it by nickname first
+    if (data.parentPlantName) {
+      const instancesByNickname = await db
+        .select({ 
+          id: plantInstances.id, 
+          nickname: plantInstances.nickname,
+          plantId: plantInstances.plantId
+        })
+        .from(plantInstances)
+        .where(
+          and(
+            eq(plantInstances.userId, this.config.userId),
+            eq(plantInstances.isActive, true)
+          )
+        );
+
+      // Try exact nickname match first
+      const exactMatch = instancesByNickname.find(instance => 
+        instance.nickname.toLowerCase() === data.parentPlantName!.toLowerCase()
+      );
+      
+      if (exactMatch) {
+        return exactMatch.id;
+      }
+
+      // Try partial nickname match
+      const partialMatch = instancesByNickname.find(instance => 
+        instance.nickname.toLowerCase().includes(data.parentPlantName!.toLowerCase()) ||
+        data.parentPlantName!.toLowerCase().includes(instance.nickname.toLowerCase())
+      );
+      
+      if (partialMatch) {
+        return partialMatch.id;
+      }
+    }
+
+    // Fallback: Find any instance of the same plant type
     const instances = await db
       .select({ id: plantInstances.id })
       .from(plantInstances)
