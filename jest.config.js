@@ -7,25 +7,26 @@ const createJestConfig = nextJest({
 
 // Add any custom config to be passed to Jest
 const customJestConfig = {
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js', 'jest-axe/extend-expect'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'jsdom',
   testMatch: [
     '**/__tests__/**/*.(ts|tsx|js)',
     '**/*.(test|spec).(ts|tsx|js)'
   ],
+  testPathIgnorePatterns: [
+    '<rootDir>/.next/',
+    '<rootDir>/node_modules/',
+    '<rootDir>/coverage/',
+    '<rootDir>/cypress/',
+  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    // Mock CSS modules and static assets
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': 'identity-obj-proxy',
-    // Mock Next.js specific modules
-    '^next/image$': '<rootDir>/src/test-utils/nextjs-mocks.ts',
-    '^next/navigation$': '<rootDir>/src/test-utils/nextjs-mocks.ts',
-    '^next/server$': '<rootDir>/src/test-utils/nextjs-mocks.ts',
-    '^next/headers$': '<rootDir>/src/test-utils/nextjs-mocks.ts',
   },
   testEnvironmentOptions: {
     customExportConditions: [''],
+    url: 'http://localhost:3000',
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -34,32 +35,34 @@ const customJestConfig = {
     '!src/**/__tests__/**',
     '!src/**/*.test.{ts,tsx}',
     '!src/**/*.spec.{ts,tsx}',
+    '!src/test-utils/**',
   ],
   coverageThreshold: {
     global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70,
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
     },
   },
   coverageReporters: ['text', 'lcov', 'html'],
-  testTimeout: 10000,
-  maxWorkers: '50%',
+  testTimeout: 15000,
+  maxWorkers: 1, // Run tests serially for better isolation
   // Transform node_modules that use ES modules
   transformIgnorePatterns: [
     'node_modules/(?!(lodash-es|lucide-react|@tanstack/react-query|@hookform|fuse\\.js)/)',
   ],
-  // Use fake timers for better test control
-  fakeTimers: {
-    enableGlobally: false, // Don't enable globally, let tests opt-in
-  },
-  // Clear mocks between tests
+  // Improve test isolation
+  resetMocks: true,
   clearMocks: true,
   restoreMocks: true,
   // Improve error reporting
   verbose: false,
   errorOnDeprecated: true,
+  // Ensure proper test isolation
+  // Handle async operations better
+  detectOpenHandles: true,
+  forceExit: true,
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
