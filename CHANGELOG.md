@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Health check endpoint with performance metrics
 - Complete documentation suite (API, deployment, contributing, architecture)
 
+### Enhanced
+- **CSV Import for Propagations**: Enhanced CSV import functionality with improved form UX
+  - Better validation and error handling for propagation data imports
+  - Improved user experience during import process
+- **Plant Instances**: Implemented infinite scrolling for plant instances to improve performance with large collections
+
 ### Fixed
 - **Mobile Responsive Design**: Applied comprehensive mobile optimizations to care page similar to propagation page improvements
   - Implemented dual layout system (mobile/desktop) for CareTaskCard component
@@ -23,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved tab system with horizontal scrolling and shortened labels for mobile
   - Enhanced text handling with truncation and responsive sizing
   - Fixed overflow issues preventing buttons from being cut off on mobile viewports
+  - Enhanced responsive design for plant search and propagation cards
 - **Handbook Image Upload**: Fixed validation error in care guide creation where File objects were being sent instead of Base64 strings
   - Added proper File-to-Base64 conversion in form submission handler
   - Ensures compatibility with JSONB images field in database schema
