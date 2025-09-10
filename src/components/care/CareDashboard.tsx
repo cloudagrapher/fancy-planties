@@ -186,15 +186,15 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     <div className="space-y-6" data-testid="care-dashboard">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Plant Care</h1>
-        <p className="text-gray-600">Keep your plants healthy and thriving</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Plant Care</h1>
+        <p className="text-sm sm:text-base text-gray-600">Keep your plants healthy and thriving</p>
       </div>
 
       {/* Statistics */}
       <CareStatistics statistics={dashboardData.statistics} />
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-6">
         {dashboardData.quickActions.map((action) => {
           const hasPlants = dashboardData?.statistics?.totalActivePlants > 0;
           const plantsNeedingCare = dashboardData ? [
@@ -207,7 +207,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
             <button
               key={action.id}
               onClick={() => handleBulkQuickCare(action.careType)}
-              className={`p-4 rounded-xl text-white font-medium transition-colors shadow-sm ${
+              className={`p-3 sm:p-4 rounded-xl text-white font-medium transition-colors shadow-sm touch-manipulation ${
                 hasPlants && plantsNeedingCare > 0 && action.isEnabled && quickCareLoading !== -1 ? action.color : 'bg-gray-400 cursor-not-allowed'
               }`}
               disabled={!action.isEnabled || !hasPlants || plantsNeedingCare === 0 || quickCareLoading === -1 || loading}
@@ -231,8 +231,8 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
                 </>
               ) : (
                 <>
-                  <div className="text-lg mb-1">{action.icon}</div>
-                  <div className="text-sm">{action.label}</div>
+                  <div className="text-base sm:text-lg mb-1">{action.icon}</div>
+                  <div className="text-xs sm:text-sm">{action.label}</div>
                 </>
               )}
             </button>
@@ -242,14 +242,14 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
       {/* Care Tasks Tabs */}
       <div>
-        <div className="flex space-x-1 mb-4 bg-white/50 p-1 rounded-xl border border-slate-200/70 backdrop-blur">
+        <div className="flex space-x-1 mb-4 bg-white/50 p-1 rounded-xl border border-slate-200/70 backdrop-blur overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setSelectedTab(tab.id)}
               disabled={loading}
               className={`
-                flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative
+                flex-1 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap touch-manipulation min-w-fit
                 ${selectedTab === tab.id
                   ? 'bg-white text-gray-900 shadow-sm border border-slate-200/70'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
@@ -257,10 +257,15 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
                 ${loading ? 'opacity-50 cursor-not-allowed' : ''}
               `}
             >
-              {tab.label}
+              <span className="sm:hidden">
+                {tab.id === 'overdue' ? 'Overdue' :
+                 tab.id === 'today' ? 'Today' :
+                 tab.id === 'soon' ? 'Soon' : 'Recent'}
+              </span>
+              <span className="hidden sm:inline">{tab.label}</span>
               {tab.count > 0 && (
                 <span className={`
-                  ml-2 px-2 py-0.5 rounded-full text-xs font-medium
+                  ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 rounded-full text-xs font-medium
                   ${selectedTab === tab.id
                     ? tab.id === 'overdue' ? 'bg-red-100 text-red-800' :
                       tab.id === 'today' ? 'bg-amber-100 text-amber-800' :

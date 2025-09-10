@@ -58,9 +58,10 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
   const statusInfo = getCareStatusInfo();
 
   return (
-    <div className={`rounded-lg border p-4 ${statusInfo.color} transition-all hover:shadow-md`}>
-      <div className="flex items-start justify-between">
-        <div className="flex items-start space-x-3 flex-1">
+    <div className={`rounded-lg border p-3 sm:p-4 ${statusInfo.color} transition-all hover:shadow-md`}>
+      {/* Mobile Layout */}
+      <div className="sm:hidden">
+        <div className="flex items-start space-x-3 mb-3">
           {/* Plant Image */}
           <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
             {plant.primaryImage ? (
@@ -76,37 +77,30 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
             )}
           </div>
 
-          {/* Plant Info */}
+          {/* Plant Info - Mobile */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-1">
-              <h3 className="font-medium text-gray-900 truncate">{plant.displayName}</h3>
+              <h3 className="font-medium text-gray-900 truncate text-sm">{plant.displayName}</h3>
               {showUrgency && (
-                <div className={`w-2 h-2 rounded-full ${statusInfo.urgencyColor}`} />
+                <div className={`w-2 h-2 rounded-full ${statusInfo.urgencyColor} flex-shrink-0`} />
               )}
             </div>
             
-            <p className="text-sm text-gray-600 mb-1">{plant.plant.commonName}</p>
-            <p className="text-sm text-gray-500">{plant.location}</p>
-            
-            <div className="flex items-center space-x-4 mt-2 text-xs">
-              <span className={`font-medium ${statusInfo.textColor}`}>
+            <p className="text-xs text-gray-600 mb-1 truncate">{plant.plant.commonName}</p>
+            <div className="flex items-center gap-2 text-xs">
+              <span className={`font-medium ${statusInfo.textColor} truncate`}>
                 {statusInfo.message}
               </span>
-              {plant.daysSinceLastFertilized !== null && (
-                <span className="text-gray-500">
-                  Last fertilized {plant.daysSinceLastFertilized} days ago
-                </span>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex space-x-2 ml-4">
+        {/* Mobile Actions Row */}
+        <div className="flex gap-2">
           <button
             onClick={() => handleQuickCare('fertilizer')}
             disabled={isLoading}
-            className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-2 py-2 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation"
             title="Quick fertilize"
             aria-label={`Quick fertilize ${plant.displayName}`}
           >
@@ -120,7 +114,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           <button
             onClick={() => handleQuickCare('water')}
             disabled={isLoading}
-            className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-2 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation"
             title="Quick water"
             aria-label={`Quick water ${plant.displayName}`}
           >
@@ -134,7 +128,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           <button
             onClick={() => handleQuickCare('inspect')}
             disabled={isLoading}
-            className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 px-2 py-2 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation"
             title="Quick inspect"
             aria-label={`Quick inspect ${plant.displayName}`}
           >
@@ -147,14 +141,105 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
         </div>
       </div>
 
+      {/* Desktop Layout */}
+      <div className="hidden sm:block">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start space-x-3 flex-1">
+            {/* Plant Image */}
+            <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
+              {plant.primaryImage ? (
+                <img
+                  src={plant.primaryImage}
+                  alt={plant.displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  🌱
+                </div>
+              )}
+            </div>
+
+            {/* Plant Info - Desktop */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-2 mb-1">
+                <h3 className="font-medium text-gray-900 truncate">{plant.displayName}</h3>
+                {showUrgency && (
+                  <div className={`w-2 h-2 rounded-full ${statusInfo.urgencyColor}`} />
+                )}
+              </div>
+              
+              <p className="text-sm text-gray-600 mb-1">{plant.plant.commonName}</p>
+              <p className="text-sm text-gray-500">{plant.location}</p>
+              
+              <div className="flex items-center space-x-4 mt-2 text-xs">
+                <span className={`font-medium ${statusInfo.textColor}`}>
+                  {statusInfo.message}
+                </span>
+                {plant.daysSinceLastFertilized !== null && (
+                  <span className="text-gray-500">
+                    Last fertilized {plant.daysSinceLastFertilized} days ago
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Quick Actions */}
+          <div className="flex space-x-2 ml-4">
+            <button
+              onClick={() => handleQuickCare('fertilizer')}
+              disabled={isLoading}
+              className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Quick fertilize"
+              aria-label={`Quick fertilize ${plant.displayName}`}
+            >
+              {isLoading ? (
+                <span role="status" aria-label="Processing">...</span>
+              ) : (
+                <span aria-hidden="true">🌱</span>
+              )}
+            </button>
+            
+            <button
+              onClick={() => handleQuickCare('water')}
+              disabled={isLoading}
+              className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Quick water"
+              aria-label={`Quick water ${plant.displayName}`}
+            >
+              {isLoading ? (
+                <span role="status" aria-label="Processing">...</span>
+              ) : (
+                <span aria-hidden="true">💧</span>
+              )}
+            </button>
+            
+            <button
+              onClick={() => handleQuickCare('inspect')}
+              disabled={isLoading}
+              className="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Quick inspect"
+              aria-label={`Quick inspect ${plant.displayName}`}
+            >
+              {isLoading ? (
+                <span role="status" aria-label="Processing">...</span>
+              ) : (
+                <span aria-hidden="true">🔍</span>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Care Schedule Info */}
       <div className="mt-3 pt-3 border-t border-gray-200">
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 text-xs text-gray-500">
+          <span className="truncate">
             Schedule: {careHelpers.parseFertilizerSchedule(plant.fertilizerSchedule)} days
           </span>
           {plant.fertilizerDue && (
-            <span>
+            <span className="truncate sm:text-right">
               Next due: {new Date(plant.fertilizerDue).toLocaleDateString()}
             </span>
           )}
