@@ -283,22 +283,36 @@ export default function PlantInstanceForm({
       return response.json();
     },
     onSuccess: async (data) => {
-      // Triple invalidation approach for aggressive cache clearing
-      const queryKeysToInvalidate = [
-        ['plant-instances', userId],
+      // Comprehensive cache clearing for immediate grid updates
+      console.log('Plant instance saved, invalidating caches...');
+      
+      // Invalidate all plant-instances queries regardless of filters
+      await queryClient.invalidateQueries({ 
+        queryKey: ['plant-instances'],
+        refetchType: 'all'
+      });
+      
+      // Force refetch specific user queries
+      await queryClient.refetchQueries({ 
+        queryKey: ['plant-instances', userId],
+        type: 'all'
+      });
+      
+      // Additional cache clearing for related data
+      const additionalQueryKeys = [
         ['plant-detail'],
         ['care-dashboard', userId],
         ['plants']
       ];
 
-      for (const queryKey of queryKeysToInvalidate) {
+      for (const queryKey of additionalQueryKeys) {
         await queryClient.invalidateQueries({ 
           queryKey,
           refetchType: 'active'
         });
-        queryClient.removeQueries({ queryKey });
-        await queryClient.refetchQueries({ queryKey });
       }
+      
+      console.log('Cache invalidation complete');
       
       // Reset form state
       reset();
@@ -388,6 +402,21 @@ export default function PlantInstanceForm({
     const newImages = existingImages.filter((_, i) => i !== index);
     setExistingImages(newImages);
     // Don't update form's images field - keep existingImages separate
+    trigger();
+  };
+
+  // Handle setting primary image (move image to index 0)
+  const handleSetPrimaryImage = (index: number) => {
+    if (index === 0) return; // Already primary
+    
+    const newImages = [...existingImages];
+    const selectedImage = newImages[index];
+    
+    // Remove the selected image and add it to the beginning
+    newImages.splice(index, 1);
+    newImages.unshift(selectedImage);
+    
+    setExistingImages(newImages);
     trigger();
   };
 
@@ -1029,19 +1058,38 @@ export default function PlantInstanceForm({
                             alt={`Plant photo ${index + 1}`}
                             className="w-full aspect-square object-cover rounded-lg"
                           />
+                          
+                          {/* Delete Button */}
                           <button
                             type="button"
                             onClick={() => handleRemoveExistingImage(index)}
                             className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Remove image"
+                            aria-label={`Remove image ${index + 1}`}
                           >
                             <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                             </svg>
                           </button>
+                          
+                          {/* Primary Badge */}
                           {index === 0 && (
-                            <div className="absolute bottom-1 left-1 bg-primary-500 text-white text-xs px-1 rounded">
+                            <div className="absolute bottom-1 left-1 bg-primary-500 text-white text-xs px-1 py-0.5 rounded">
                               Primary
                             </div>
+                          )}
+                          
+                          {/* Set as Primary Button (for non-primary images) */}
+                          {index !== 0 && (
+                            <button
+                              type="button"
+                              onClick={() => handleSetPrimaryImage(index)}
+                              className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Set as primary image"
+                              aria-label={`Set image ${index + 1} as primary`}
+                            >
+                              Set Primary
+                            </button>
                           )}
                         </div>
                       ))}

@@ -330,6 +330,38 @@ export default function ImageUpload({
                   </div>
                 )}
                 
+                {/* Set as Primary Button (for non-primary images) */}
+                {index !== 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      // Move this image to the front
+                      const newFiles = [...selectedFiles];
+                      const newPreviews = [...previews];
+                      
+                      const selectedFile = newFiles[index];
+                      const selectedPreview = newPreviews[index];
+                      
+                      // Remove from current position
+                      newFiles.splice(index, 1);
+                      newPreviews.splice(index, 1);
+                      
+                      // Add to front
+                      newFiles.unshift(selectedFile);
+                      newPreviews.unshift(selectedPreview);
+                      
+                      setSelectedFiles(newFiles);
+                      setPreviews(newPreviews);
+                      onImagesChange(newFiles);
+                    }}
+                    className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Set as primary image"
+                    aria-label={`Set image ${index + 1} as primary`}
+                  >
+                    Set Primary
+                  </button>
+                )}
+                
                 {/* Upload Progress */}
                 {showUploadProgress && uploadProgress[`${file.name}-${index}`] !== undefined && (
                   <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
