@@ -263,7 +263,33 @@ describe('PlantCard', () => {
 - **Unit tests**: All utility functions and components
 - **Integration tests**: API routes and database operations
 - **E2E tests**: Critical user flows
-- **Minimum coverage**: 80% for new code
+- **Minimum coverage**: 80% for new code across branches, functions, lines, and statements
+
+#### Test Performance
+
+Our test suite is optimized for fast execution:
+
+- **Parallel Execution**: Automatically uses 50% of CPU cores locally, 2 workers in CI
+- **Memory Management**: 512MB worker memory limit prevents memory leaks
+- **Test Isolation**: Proper cleanup between tests ensures reliable results
+- **Fast Feedback**: Tests fail fast in CI environments to save time
+- **Caching**: Jest cache enabled for faster subsequent test runs
+
+#### Running Tests Efficiently
+
+```bash
+# Run tests with optimal performance
+npm test                    # Parallel execution with caching
+
+# Watch mode for development (recommended)
+npm run test:watch         # Runs only changed tests
+
+# Full test suite with coverage
+npm run test:coverage      # Generates detailed coverage reports
+
+# CI-optimized test run
+CI=true npm test          # Uses 2 workers, fails fast
+```
 
 ### API Guidelines
 
