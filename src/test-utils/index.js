@@ -5,6 +5,8 @@ export * from './setup';
 export * from './factories';
 export * from './helpers';
 export * from './mocks';
+export * from './performance';
+export * from './debugging';
 
 // Common test patterns and utilities
 export const TEST_CONSTANTS = {

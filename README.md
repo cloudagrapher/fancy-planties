@@ -208,7 +208,7 @@ See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for comprehensive deployment instructi
 
 ## 🧪 Testing
 
-Our comprehensive testing suite includes unit tests, integration tests, and end-to-end tests with optimized parallel execution for faster development cycles.
+Our comprehensive testing suite includes unit tests, integration tests, and end-to-end tests with optimized parallel execution for faster development cycles. The testing approach focuses on user workflows and behavior rather than implementation details.
 
 ### Test Execution
 
@@ -229,6 +229,21 @@ npm run test:coverage
 npm run test:watch
 ```
 
+### Testing Architecture
+
+Our testing strategy follows a hierarchical approach:
+
+- **Integration Tests (60%)**: Complete user workflows and end-to-end functionality
+- **Component Tests (30%)**: User interactions, form validation, and error handling
+- **Utility Tests (10%)**: Helper functions, edge cases, and performance scenarios
+
+### Key Testing Principles
+
+- **Client/Server Separation**: Server components are tested through integration tests and API endpoints, not direct rendering
+- **User-Focused**: Tests simulate real user interactions rather than testing implementation details
+- **Reliable Patterns**: Consistent test utilities and factories ensure maintainable, non-flaky tests
+- **Performance Optimized**: Parallel execution and proper cleanup for fast feedback cycles
+
 ### Test Performance Optimization
 
 The test suite is configured for optimal performance:
@@ -244,6 +259,12 @@ The test suite is configured for optimal performance:
 - **Minimum Coverage**: 80% across branches, functions, lines, and statements
 - **Coverage Reports**: Available in text, LCOV, and HTML formats
 - **Coverage Location**: `./coverage/` directory with detailed HTML reports
+
+### Testing Documentation
+
+- **[Testing Guide](./docs/TESTING_GUIDE.md)**: Comprehensive patterns and best practices
+- **[Quick Reference](./docs/TESTING_QUICK_REFERENCE.md)**: Common commands and templates
+- **[Test Maintenance](./docs/TEST_MAINTENANCE.md)**: Debugging and maintenance procedures
 
 ## 📊 Available Scripts
 
