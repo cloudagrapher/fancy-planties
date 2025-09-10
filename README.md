@@ -82,7 +82,7 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
    # Generate migration files from schema (first time only)
    npm run db:generate
    
-   # Run database migrations
+   # Run database migrations (automatically applies all pending migrations)
    # Note: Explicitly set DATABASE_URL since .env.local isn't loaded by drizzle-kit
    DATABASE_URL="postgresql://postgres:postgres@localhost:5433/fancy_planties" npm run db:migrate
    
@@ -276,8 +276,11 @@ The test suite is configured for optimal performance:
 | `npm run start` | Start production server |
 | `npm test` | Run unit tests |
 | `npm run test:e2e` | Run end-to-end tests |
-| `npm run db:migrate` | Run database migrations |
+| `npm run db:migrate` | Run database migrations (auto-applies all pending) |
+| `npm run db:generate` | Generate migration files from schema changes |
 | `npm run db:studio` | Open Drizzle Studio |
+| `npm run db:status` | Check migration status and database health |
+| `npm run db:seed` | Seed database with initial plant taxonomy data |
 | `npm run deploy:production` | Deploy to production |
 | `npm run backup:create` | Create database backup |
 

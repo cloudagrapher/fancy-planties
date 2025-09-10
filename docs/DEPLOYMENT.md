@@ -120,12 +120,18 @@ server {
 ### 6. Deploy the Application
 
 ```bash
-# Deploy to production
+# Deploy to production (includes automatic database migrations)
 npm run deploy:production
 
 # Or manually:
 docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d --build
 ```
+
+**Note**: The deployment process now includes automatic database migration application. The system will:
+- Automatically detect and apply any pending Drizzle migration files from the `/drizzle` directory
+- Track applied migrations to prevent duplicate execution
+- Apply Row-Level Security (RLS) policies for data isolation
+- Perform database health checks to ensure proper setup
 
 ### 7. Verify Deployment
 
@@ -155,7 +161,27 @@ npm run backup:create
 npm run deploy:production
 ```
 
-### Database Backups
+### Database Management
+
+#### Database Migrations
+
+The enhanced migration system provides comprehensive database management:
+
+```bash
+# Check migration status
+npm run db:status
+
+# Apply pending migrations manually
+npm run db:migrate
+
+# Check database health
+npm run db:health
+
+# View applied migrations
+npm run db:migrations:list
+```
+
+#### Database Backups
 
 ```bash
 # Create manual backup
@@ -201,11 +227,17 @@ docker compose -f docker-compose.prod.yml restart
 # Check database status
 docker compose -f docker-compose.prod.yml exec postgres pg_isready -U postgres
 
+# Check database health and migration status
+npm run db:health
+
 # Check database logs
 docker compose -f docker-compose.prod.yml logs postgres
 
 # Reset database connection
 docker compose -f docker-compose.prod.yml restart postgres app
+
+# Verify migrations are applied
+npm run db:status
 ```
 
 #### SSL Certificate Issues
