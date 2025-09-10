@@ -113,20 +113,20 @@
   - Test GET /api/dashboard with statistics calculation
   - _Requirements: 3.2, 3.3, 6.3_
 
-- [ ] 7. Implement database query tests with proper isolation
-- [ ] 7.1 Create user and authentication query tests
+- [x] 7. Implement database query tests with proper isolation
+- [x] 7.1 Create user and authentication query tests
   - Test user creation and retrieval functions
   - Test session management and validation queries
   - Test password hashing and verification logic
   - _Requirements: 3.3, 5.1, 5.2_
 
-- [ ] 7.2 Build plant data query tests
+- [x] 7.2 Build plant data query tests
   - Test plant and plant instance CRUD operations
   - Test plant search and filtering queries
   - Test plant relationship and taxonomy queries
   - _Requirements: 3.3, 5.1, 5.2_
 
-- [ ] 7.3 Implement care data query tests
+- [x] 7.3 Implement care data query tests
   - Test care record creation and retrieval
   - Test care history aggregation and statistics
   - Test care reminder and scheduling logic
