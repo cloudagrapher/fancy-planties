@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-// import { useQuery } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { PlantsGrid, PlantDetailModal, PlantInstanceForm } from '@/components/plants';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 
@@ -10,6 +10,7 @@ interface PlantsPageClientProps {
 }
 
 export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
+  const queryClient = useQueryClient();
   const [selectedPlant, setSelectedPlant] = useState<EnhancedPlantInstance | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -46,9 +47,17 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   };
 
   // Handle form success
-  const handleFormSuccess = () => {
+  const handleFormSuccess = async () => {
     setIsFormModalOpen(false);
     setEditingPlant(null);
+    
+    // Force a grid refresh to ensure immediate updates
+    console.log('Form success, forcing grid refresh...');
+    await queryClient.invalidateQueries({ 
+      queryKey: ['plant-instances', userId],
+      refetchType: 'all'
+    });
+    
     // Don't automatically open detail modal - let user decide
     // This prevents the white line issue from modal conflicts
   };
