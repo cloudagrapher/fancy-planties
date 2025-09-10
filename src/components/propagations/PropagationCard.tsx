@@ -153,12 +153,13 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
-        <div className="flex items-start justify-between">
-          {/* Left side - Image and basic info */}
-          <div className="flex items-start space-x-4 flex-1">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 hover:shadow-md transition-shadow">
+        {/* Mobile-first layout */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+          {/* Top section - Image, name, and status */}
+          <div className="flex items-start space-x-3 sm:space-x-4 flex-1">
             {/* Propagation image */}
-            <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
               {propagation.images && Array.isArray(propagation.images) && propagation.images.length > 0 ? (
                 propagation.images[0].startsWith('data:') ? (
                   <img
@@ -177,66 +178,103 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
                 )
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">
-                  <StatusIcon className="w-6 h-6" />
+                  <StatusIcon className="w-4 h-4 sm:w-6 sm:h-6" />
                 </div>
               )}
             </div>
 
             {/* Propagation details */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 truncate">
+              {/* Mobile layout - stacked */}
+              <div className="sm:hidden">
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="text-sm font-medium text-gray-900 truncate flex-1 pr-2">
                     {propagation.nickname}
                   </h3>
-                  <p className="text-sm text-gray-600">
-                    {propagation.plant.genus} {propagation.plant.species}
-                  </p>
-                  {propagation.plant.commonName && (
-                    <p className="text-sm text-gray-500">
-                      {propagation.plant.commonName}
-                    </p>
-                  )}
+                  {/* Mobile status badge - compact */}
+                  <div className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border ${currentStatus.color} flex-shrink-0`}>
+                    <StatusIcon className="w-2.5 h-2.5 mr-1" />
+                    <span className="hidden xs:inline">{currentStatus.label}</span>
+                    <span className="xs:hidden">
+                      {currentStatus.label === 'Started' && 'Start'}
+                      {currentStatus.label === 'Rooting' && 'Root'}
+                      {currentStatus.label === 'Planted' && 'Plant'}
+                      {currentStatus.label === 'Established' && 'Est'}
+                    </span>
+                  </div>
                 </div>
-
-                {/* Status badge */}
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${currentStatus.color}`}>
-                  <StatusIcon className="w-3 h-3 mr-1" />
-                  {currentStatus.label}
+                {/* Hide scientific name on mobile */}
+                <div className="text-xs text-gray-500 mb-2">
+                  {propagation.plant.commonName || `${propagation.plant.genus} ${propagation.plant.species}`}
                 </div>
               </div>
 
-              {/* Metadata */}
-              <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+              {/* Desktop layout - traditional */}
+              <div className="hidden sm:block">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 truncate">
+                      {propagation.nickname}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {propagation.plant.genus} {propagation.plant.species}
+                    </p>
+                    {propagation.plant.commonName && (
+                      <p className="text-sm text-gray-500">
+                        {propagation.plant.commonName}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Desktop status badge */}
+                  <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${currentStatus.color} flex-shrink-0 ml-4`}>
+                    <StatusIcon className="w-3 h-3 mr-1" />
+                    {currentStatus.label}
+                  </div>
+                </div>
+              </div>
+
+              {/* Metadata - responsive */}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs sm:text-sm text-gray-500">
                 <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  {daysSinceStarted} days ago
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <span className="sm:hidden">{daysSinceStarted}d</span>
+                  <span className="hidden sm:inline">{daysSinceStarted} days ago</span>
                 </div>
                 <div className="flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {propagation.location}
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <span className="truncate max-w-20 sm:max-w-none">{propagation.location}</span>
                 </div>
                 
-                {/* Source type indicator */}
+                {/* Source type indicator - simplified on mobile */}
                 {(propagation as any).sourceType === 'internal' && propagation.parentInstance && (
                   <div className="flex items-center">
-                    <TreePine className="w-4 h-4 mr-1" />
-                    From: {propagation.parentInstance.nickname}
+                    <TreePine className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <span className="sm:hidden">Parent</span>
+                    <span className="hidden sm:inline">From: {propagation.parentInstance.nickname}</span>
                   </div>
                 )}
                 
                 {(propagation as any).sourceType === 'external' && (
                   <div className="flex items-center">
-                    <div className="w-4 h-4 mr-1 flex items-center justify-center">
+                    <div className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex items-center justify-center text-xs">
                       {(propagation as any).externalSource === 'gift' && '🎁'}
                       {(propagation as any).externalSource === 'trade' && '🔄'}
                       {(propagation as any).externalSource === 'purchase' && '🛒'}
                       {(propagation as any).externalSource === 'other' && '📦'}
                     </div>
-                    {(propagation as any).externalSource === 'gift' && 'Gift'}
-                    {(propagation as any).externalSource === 'trade' && 'Trade'}
-                    {(propagation as any).externalSource === 'purchase' && 'Purchase'}
-                    {(propagation as any).externalSource === 'other' && 'Other source'}
+                    <span className="sm:hidden">
+                      {(propagation as any).externalSource === 'gift' && 'Gift'}
+                      {(propagation as any).externalSource === 'trade' && 'Trade'}
+                      {(propagation as any).externalSource === 'purchase' && 'Buy'}
+                      {(propagation as any).externalSource === 'other' && 'Other'}
+                    </span>
+                    <span className="hidden sm:inline">
+                      {(propagation as any).externalSource === 'gift' && 'Gift'}
+                      {(propagation as any).externalSource === 'trade' && 'Trade'}
+                      {(propagation as any).externalSource === 'purchase' && 'Purchase'}
+                      {(propagation as any).externalSource === 'other' && 'Other source'}
+                    </span>
                   </div>
                 )}
               </div>
@@ -248,74 +286,125 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
                 </div>
               )}
 
-              {/* Notes preview */}
+              {/* Notes preview - hidden on mobile */}
               {propagation.notes && (
-                <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                <p className="hidden sm:block text-sm text-gray-600 mt-2 line-clamp-2">
                   {propagation.notes}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Right side - Actions */}
-          <div className="flex items-center space-x-2 ml-4">
-            {/* Quick status update button */}
-            {currentStatus.nextStatus && (
-              <button
-                onClick={() => handleStatusUpdate(currentStatus.nextStatus!)}
-                disabled={isUpdatingStatus}
-                className="flex items-center px-3 py-1.5 text-sm bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors disabled:opacity-50"
-              >
-                <ArrowRight className="w-4 h-4 mr-1" />
-                {isUpdatingStatus ? 'Updating...' : currentStatus.nextLabel}
-              </button>
-            )}
-
-            {/* Convert to plant button (for established propagations) */}
-            {propagation.status === 'established' && (
-              <button
-                onClick={() => setShowConvertModal(true)}
-                className="flex items-center px-3 py-1.5 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
-              >
-                <TreePine className="w-4 h-4 mr-1" />
-                Convert to Plant
-              </button>
-            )}
-
-            {/* Menu button */}
-            <div className="relative">
-              <button
-                onClick={() => setShowMenu(!showMenu)}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <MoreVertical className="w-4 h-4" />
-              </button>
-
-              {/* Dropdown menu */}
-              {showMenu && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                  <button
-                    onClick={() => {
-                      setShowEditForm(true);
-                      setShowMenu(false);
-                    }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <Edit className="w-4 h-4 mr-3" />
-                    Edit Details
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowDeleteConfirm(true);
-                      setShowMenu(false);
-                    }}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4 mr-3" />
-                    Delete Propagation
-                  </button>
-                </div>
+          {/* Actions - mobile responsive */}
+          <div className="mt-3 sm:mt-0 sm:ml-4">
+            {/* Mobile actions - stacked layout */}
+            <div className="sm:hidden flex flex-col gap-2">
+              {/* Primary action button */}
+              {currentStatus.nextStatus && (
+                <button
+                  onClick={() => handleStatusUpdate(currentStatus.nextStatus!)}
+                  disabled={isUpdatingStatus}
+                  className="flex items-center justify-center px-3 py-2 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 min-h-[36px] touch-action-manipulation"
+                >
+                  <ArrowRight className="w-4 h-4 mr-1" />
+                  {isUpdatingStatus ? 'Updating...' : (
+                    currentStatus.nextStatus === 'rooting' ? 'Mark Rooting' :
+                    currentStatus.nextStatus === 'planted' ? 'Mark Planted' :
+                    currentStatus.nextStatus === 'established' ? 'Mark Done' :
+                    currentStatus.nextLabel
+                  )}
+                </button>
               )}
+
+              {/* Convert button for established - mobile */}
+              {propagation.status === 'established' && (
+                <button
+                  onClick={() => setShowConvertModal(true)}
+                  className="flex items-center justify-center px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors min-h-[36px] touch-action-manipulation"
+                >
+                  <TreePine className="w-4 h-4 mr-1" />
+                  Convert to Plant
+                </button>
+              )}
+
+              {/* Secondary actions in a row */}
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  onClick={() => setShowEditForm(true)}
+                  className="flex items-center justify-center px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors flex-1"
+                >
+                  <Edit className="w-3 h-3 mr-1" />
+                  Edit
+                </button>
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100 transition-colors"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop actions - horizontal layout */}
+            <div className="hidden sm:flex items-center space-x-2">
+              {/* Quick status update button */}
+              {currentStatus.nextStatus && (
+                <button
+                  onClick={() => handleStatusUpdate(currentStatus.nextStatus!)}
+                  disabled={isUpdatingStatus}
+                  className="flex items-center px-3 py-1.5 text-sm bg-primary-50 text-primary-700 rounded-lg hover:bg-primary-100 transition-colors disabled:opacity-50"
+                >
+                  <ArrowRight className="w-4 h-4 mr-1" />
+                  {isUpdatingStatus ? 'Updating...' : currentStatus.nextLabel}
+                </button>
+              )}
+
+              {/* Convert to plant button (for established propagations) */}
+              {propagation.status === 'established' && (
+                <button
+                  onClick={() => setShowConvertModal(true)}
+                  className="flex items-center px-3 py-1.5 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
+                >
+                  <TreePine className="w-4 h-4 mr-1" />
+                  Convert to Plant
+                </button>
+              )}
+
+              {/* Menu button */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+
+                {/* Dropdown menu */}
+                {showMenu && (
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                    <button
+                      onClick={() => {
+                        setShowEditForm(true);
+                        setShowMenu(false);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    >
+                      <Edit className="w-4 h-4 mr-3" />
+                      Edit Details
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDeleteConfirm(true);
+                        setShowMenu(false);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4 mr-3" />
+                      Delete Propagation
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
