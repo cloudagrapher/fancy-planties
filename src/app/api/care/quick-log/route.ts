@@ -8,8 +8,6 @@ export async function POST(request: NextRequest) {
     const { user } = await requireAuthSession();
     const body = await request.json();
     
-    console.log('Quick care log request body:', body);
-    
     // Validate the quick care log data
     const validation = careValidation.validateQuickCareLog({
       ...body,

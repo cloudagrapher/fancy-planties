@@ -20,7 +20,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const plantId = parseInt(id);
+    const plantId = parseInt(id, 10);
     if (isNaN(plantId)) {
       return NextResponse.json({ error: 'Invalid plant ID' }, { status: 400 });
     }
@@ -61,7 +61,7 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const plantId = parseInt(id);
+    const plantId = parseInt(id, 10);
     if (isNaN(plantId)) {
       return NextResponse.json({ error: 'Invalid plant ID' }, { status: 400 });
     }
@@ -118,7 +118,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const plantId = parseInt(id);
+    const plantId = parseInt(id, 10);
     if (isNaN(plantId)) {
       return NextResponse.json({ error: 'Invalid plant ID' }, { status: 400 });
     }

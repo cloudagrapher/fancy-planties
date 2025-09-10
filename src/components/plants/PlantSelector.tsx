@@ -30,6 +30,7 @@ export default function PlantSelector({
   const [viewMode, setViewMode] = useState<ViewMode>('selector');
   const [addFormQuery, setAddFormQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Handle plant selection from selector
   const handlePlantSelect = (plant: PlantSuggestion | null) => {
@@ -80,7 +81,8 @@ export default function PlantSelector({
       setAddFormQuery('');
     } catch (error) {
       console.error('Error creating plant:', error);
-      // TODO: Show error toast/notification
+      setError('Failed to create plant. Please try again.');
+      setTimeout(() => setError(null), 5000);
     } finally {
       setIsCreating(false);
     }
@@ -118,6 +120,12 @@ export default function PlantSelector({
   if (viewMode === 'add-form') {
     return (
       <div className={className}>
+        {/* Error Display */}
+        {error && (
+          <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
         <PlantTaxonomyForm
           onSubmit={handleFormSubmit}
           onCancel={handleFormCancel}
@@ -139,6 +147,13 @@ export default function PlantSelector({
         showQuickSelect={showQuickSelect}
         autoFocus={autoFocus}
       />
+      
+      {/* Error Display */}
+      {error && (
+        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          {error}
+        </div>
+      )}
       
       {/* Selected Plant Display */}
       {selectedPlant && (
