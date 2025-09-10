@@ -220,8 +220,8 @@ export default function PlantDetailModal({
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`tab ${activeTab === tab.id ? 'tab--active' : ''}`}
                   >
-                    <span className="mr-2">{tab.icon}</span>
-                    {tab.label}
+                    <span className="tab-emoji">{tab.icon}</span>
+                    <span className="tab-label">{tab.label}</span>
                   </button>
                 ))}
               </div>

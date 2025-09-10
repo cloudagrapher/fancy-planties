@@ -94,6 +94,7 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
                   userId={userId}
                   onPlantSelect={handlePlantSelect}
                   onCareAction={handleCareAction}
+                  onEdit={handlePlantEdit}
                   onBulkAction={handleBulkAction}
                   showSearch={true}
                   showFilters={true}

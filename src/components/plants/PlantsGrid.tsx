@@ -23,6 +23,7 @@ interface PlantsGridProps {
   userId: number;
   onPlantSelect?: (plant: EnhancedPlantInstance) => void;
   onCareAction?: (plant: EnhancedPlantInstance, action: 'fertilize' | 'repot') => void;
+  onEdit?: (plant: EnhancedPlantInstance) => void;
   onBulkAction?: (plants: EnhancedPlantInstance[], action: string) => void;
   showSearch?: boolean;
   showFilters?: boolean;
@@ -39,6 +40,7 @@ export default function PlantsGrid({
   userId,
   onPlantSelect,
   onCareAction,
+  onEdit,
   onBulkAction,
   showSearch = true,
   showFilters = true,
@@ -387,6 +389,7 @@ export default function PlantsGrid({
                 size={cardSize}
                 onSelect={handlePlantSelect}
                 onCareAction={handleCareAction}
+                onEdit={onEdit}
                 onSwipeLeft={handleSwipeLeft}
                 onSwipeRight={handleSwipeRight}
                 isSelected={selectedPlants.includes(plant.id)}
