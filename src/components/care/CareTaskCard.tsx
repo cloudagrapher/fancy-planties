@@ -58,9 +58,9 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
   const statusInfo = getCareStatusInfo();
 
   return (
-    <div className={`rounded-lg border p-3 sm:p-4 ${statusInfo.color} transition-all hover:shadow-md`}>
+    <div className={`rounded-lg border p-3 sm:p-4 ${statusInfo.color} transition-all hover:shadow-md w-full max-w-full overflow-hidden`}>
       {/* Mobile Layout */}
-      <div className="sm:hidden">
+      <div className="sm:hidden w-full max-w-full overflow-hidden">
         <div className="flex items-start space-x-3 mb-3">
           {/* Plant Image */}
           <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
@@ -96,11 +96,11 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
         </div>
 
         {/* Mobile Actions Row */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full max-w-full overflow-hidden">
           <button
             onClick={() => handleQuickCare('fertilizer')}
             disabled={isLoading}
-            className="flex-1 px-2 py-2 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation"
+            className="flex-1 px-2 py-2 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation max-w-0 min-w-0"
             title="Quick fertilize"
             aria-label={`Quick fertilize ${plant.displayName}`}
           >
@@ -114,7 +114,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           <button
             onClick={() => handleQuickCare('water')}
             disabled={isLoading}
-            className="flex-1 px-2 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation"
+            className="flex-1 px-2 py-2 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation max-w-0 min-w-0"
             title="Quick water"
             aria-label={`Quick water ${plant.displayName}`}
           >
@@ -128,7 +128,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           <button
             onClick={() => handleQuickCare('inspect')}
             disabled={isLoading}
-            className="flex-1 px-2 py-2 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation"
+            className="flex-1 px-2 py-2 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[36px] touch-manipulation max-w-0 min-w-0"
             title="Quick inspect"
             aria-label={`Quick inspect ${plant.displayName}`}
           >
