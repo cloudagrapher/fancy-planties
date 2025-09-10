@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import FertilizerCalendar from '@/components/calendar/FertilizerCalendar';
+import LogoutButton from '@/components/auth/LogoutButton';
 import type { DashboardStats, FertilizerEvent } from '@/app/api/dashboard/route';
 
 interface DashboardClientProps {
@@ -51,13 +52,20 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 Your plants are looking great today
               </p>
             </div>
-            <Link 
-              href="/dashboard/profile"
-              className="btn btn--ghost btn--sm text-neutral-600 flex items-center gap-2"
-            >
-              <span>👤</span>
-              Profile
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link 
+                href="/dashboard/profile"
+                className="btn btn--ghost btn--sm text-neutral-600 flex items-center gap-2"
+              >
+                <span>👤</span>
+                Profile
+              </Link>
+              <LogoutButton 
+                className="btn btn--ghost btn--sm text-neutral-600"
+              >
+                Sign Out
+              </LogoutButton>
+            </div>
           </div>
 
           {/* Main Dashboard */}
@@ -109,51 +117,52 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 </div>
               </div>
 
-              {/* Fertilizer Calendar */}
+              {/* Calendar or Getting Started Card */}
               <div className="section--sm">
-                <FertilizerCalendar events={displayStats.fertilizerEvents} />
-              </div>
-
-              {/* Getting Started Card */}
-              <div className="card card--flat" style={{ marginTop: '24px' }}>
-                <div className="card-header">
-                  <div className="flex-center" style={{ marginBottom: '8px' }}>
-                    <span style={{ fontSize: '1.5rem', marginRight: '8px' }}>🌟</span>
-                    <h2 className="text-xl font-semibold text-neutral-900">Getting Started</h2>
+                {displayStats.fertilizerEvents.length > 0 ? (
+                  <FertilizerCalendar events={displayStats.fertilizerEvents} />
+                ) : (
+                  <div className="card card--flat">
+                    <div className="card-header">
+                      <div className="flex-center" style={{ marginBottom: '8px' }}>
+                        <span style={{ fontSize: '1.5rem', marginRight: '8px' }}>🌟</span>
+                        <h2 className="text-xl font-semibold text-neutral-900">Getting Started</h2>
+                      </div>
+                      <p className="text-neutral-600 text-sm text-center">Let&apos;s help you create your dream plant collection</p>
+                    </div>
+                    <div className="card-body">
+                      <div className="space-y-4">
+                        <div className="flex items-center text-neutral-700 step-mint">
+                          <div className="step-number-mint">
+                            <span className="text-mint-800 text-sm font-semibold">1</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-neutral-900">Add your first plant</div>
+                            <div className="text-sm text-neutral-600">Start tracking your collection</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center text-neutral-700 step-salmon">
+                          <div className="step-number-salmon">
+                            <span className="text-salmon-800 text-sm font-semibold">2</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-neutral-900">Set up care schedules</div>
+                            <div className="text-sm text-neutral-600">Never forget watering or fertilizing</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center text-neutral-700 step-lavender">
+                          <div className="step-number-lavender">
+                            <span className="text-lavender-800 text-sm font-semibold">3</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-neutral-900">Track propagations</div>
+                            <div className="text-sm text-neutral-600">Monitor your propagation success</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-neutral-600 text-sm text-center">Let&apos;s help you create your dream plant collection</p>
-                </div>
-                <div className="card-body">
-                  <div className="space-y-4">
-                    <div className="flex items-center text-neutral-700 step-mint">
-                      <div className="step-number-mint">
-                        <span className="text-mint-800 text-sm font-semibold">1</span>
-                      </div>
-                      <div>
-                        <div className="font-medium text-neutral-900">Add your first plant</div>
-                        <div className="text-sm text-neutral-600">Start tracking your collection</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center text-neutral-700 step-salmon">
-                      <div className="step-number-salmon">
-                        <span className="text-salmon-800 text-sm font-semibold">2</span>
-                      </div>
-                      <div>
-                        <div className="font-medium text-neutral-900">Set up care schedules</div>
-                        <div className="text-sm text-neutral-600">Never forget watering or fertilizing</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center text-neutral-700 step-lavender">
-                      <div className="step-number-lavender">
-                        <span className="text-lavender-800 text-sm font-semibold">3</span>
-                      </div>
-                      <div>
-                        <div className="font-medium text-neutral-900">Track propagations</div>
-                        <div className="text-sm text-neutral-600">Monitor your propagation success</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
