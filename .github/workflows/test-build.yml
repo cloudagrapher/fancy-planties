@@ -13,6 +13,25 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  check-skip:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+    - name: Check if build should be skipped
+      id: check
+      run: |
+        # Get the commit message
+        COMMIT_MSG="${{ github.event.head_commit.message }}"
+        
+        # Check if commit message starts with skip keywords
+        if [[ "$COMMIT_MSG" =~ ^(\[skip ci\]|\[ci skip\]|\[skip build\]|\[build skip\]|\[docs\]|\[readme\]) ]]; then
+          echo "skip=true" >> $GITHUB_OUTPUT
+          echo "🚫 Build skipped due to commit message: $COMMIT_MSG"
+        else
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "✅ Build will proceed for commit: $COMMIT_MSG"
+        fi
   test-build:
     runs-on: ubuntu-latest
     permissions:
