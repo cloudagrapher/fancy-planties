@@ -15,7 +15,7 @@ export async function GET(
     }
 
     const resolvedParams = await params;
-    const id = parseInt(resolvedParams.id);
+    const id = parseInt(resolvedParams.id, 10);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid plant instance ID' }, { status: 400 });
     }
@@ -53,7 +53,7 @@ export async function PUT(
     }
 
     const resolvedParams = await params;
-    const id = parseInt(resolvedParams.id);
+    const id = parseInt(resolvedParams.id, 10);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid plant instance ID' }, { status: 400 });
     }
@@ -108,7 +108,7 @@ export async function PUT(
     const allImages = [...(body.existingImages || []), ...newImageBase64s];
     
     // Convert string values to appropriate types
-    if (body.plantId) body.plantId = parseInt(body.plantId);
+    if (body.plantId) body.plantId = parseInt(body.plantId, 10);
     if (body.isActive) body.isActive = body.isActive === 'true';
     
     // Set the combined images array
@@ -167,7 +167,7 @@ export async function DELETE(
     }
 
     const resolvedParams = await params;
-    const id = parseInt(resolvedParams.id);
+    const id = parseInt(resolvedParams.id, 10);
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid plant instance ID' }, { status: 400 });
     }

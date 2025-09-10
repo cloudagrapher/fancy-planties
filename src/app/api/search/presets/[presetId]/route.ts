@@ -30,11 +30,11 @@ export async function GET(
     }
     
     if (searchParams.get('limit')) {
-      overrides.limit = parseInt(searchParams.get('limit')!);
+      overrides.limit = parseInt(searchParams.get('limit')!, 10);
     }
     
     if (searchParams.get('offset')) {
-      overrides.offset = parseInt(searchParams.get('offset')!);
+      overrides.offset = parseInt(searchParams.get('offset')!, 10);
     }
 
     // Search with preset

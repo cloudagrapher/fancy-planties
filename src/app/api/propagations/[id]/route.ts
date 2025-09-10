@@ -29,7 +29,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const propagationId = parseInt(id);
+    const propagationId = parseInt(id, 10);
     if (isNaN(propagationId)) {
       return NextResponse.json({ error: 'Invalid propagation ID' }, { status: 400 });
     }
@@ -67,7 +67,7 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const propagationId = parseInt(id);
+    const propagationId = parseInt(id, 10);
     if (isNaN(propagationId)) {
       return NextResponse.json({ error: 'Invalid propagation ID' }, { status: 400 });
     }
@@ -117,7 +117,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const propagationId = parseInt(id);
+    const propagationId = parseInt(id, 10);
     if (isNaN(propagationId)) {
       return NextResponse.json({ error: 'Invalid propagation ID' }, { status: 400 });
     }

@@ -214,13 +214,13 @@ export class PlantInstanceQueries {
           
           switch (unit.toLowerCase()) {
             case 'day':
-              nextDue.setDate(nextDue.getDate() + parseInt(amount));
+              nextDue.setDate(nextDue.getDate() + parseInt(amount, 10));
               break;
             case 'week':
-              nextDue.setDate(nextDue.getDate() + (parseInt(amount) * 7));
+              nextDue.setDate(nextDue.getDate() + (parseInt(amount, 10) * 7));
               break;
             case 'month':
-              nextDue.setMonth(nextDue.getMonth() + parseInt(amount));
+              nextDue.setMonth(nextDue.getMonth() + parseInt(amount, 10));
               break;
           }
         }

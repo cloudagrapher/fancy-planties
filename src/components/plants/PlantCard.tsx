@@ -15,6 +15,7 @@ interface PlantCardProps {
   showLastCare?: boolean;
   onSelect?: (plant: EnhancedPlantInstance) => void;
   onCareAction?: (plant: EnhancedPlantInstance, action: 'fertilize' | 'repot') => void;
+  onEdit?: (plant: EnhancedPlantInstance) => void;
   onSwipeLeft?: (plant: EnhancedPlantInstance) => void;
   onSwipeRight?: (plant: EnhancedPlantInstance) => void;
   isSelected?: boolean;
@@ -31,6 +32,7 @@ export default function PlantCard({
   showLastCare = false,
   onSelect,
   onCareAction,
+  onEdit,
   onSwipeLeft,
   onSwipeRight,
   isSelected = false,
@@ -114,6 +116,15 @@ export default function PlantCard({
     }
   };
 
+  // Handle edit action
+  const handleEdit = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    triggerHaptic('medium');
+    if (onEdit) {
+      onEdit(plant);
+    }
+  };
+
   // Format days for display
   const formatDays = (days: number | null): string => {
     if (days === null) return '';
@@ -165,26 +176,30 @@ export default function PlantCard({
 
   // Get quick actions
   const getQuickActions = () => {
-    if (!onCareAction) return null;
+    if (!onCareAction && !onEdit) return null;
 
     return (
       <div className="flex space-x-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button
-          onClick={(e) => handleCareAction('fertilize', e)}
-          className="btn btn--sm btn--outline"
-          title="Quick care"
-          aria-label={`Quick care for ${plant.displayName}`}
-        >
-          <span aria-hidden="true">💧</span> Care
-        </button>
-        <button
-          onClick={(e) => handleCareAction('repot', e)}
-          className="btn btn--sm btn--secondary"
-          title="Edit plant"
-          aria-label={`Edit ${plant.displayName}`}
-        >
-          <span aria-hidden="true">✏️</span> Edit
-        </button>
+        {onCareAction && (
+          <button
+            onClick={(e) => handleCareAction('fertilize', e)}
+            className="btn btn--sm btn--outline"
+            title="Quick care"
+            aria-label={`Quick care for ${plant.displayName}`}
+          >
+            <span aria-hidden="true">💧</span> Care
+          </button>
+        )}
+        {onEdit && (
+          <button
+            onClick={handleEdit}
+            className="btn btn--sm btn--secondary"
+            title="Edit plant"
+            aria-label={`Edit ${plant.displayName}`}
+          >
+            <span aria-hidden="true">✏️</span> Edit
+          </button>
+        )}
       </div>
     );
   };

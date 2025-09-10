@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
 
     // Get search history
     const history = await advancedSearchService.getSearchHistory(user.id, limit);
