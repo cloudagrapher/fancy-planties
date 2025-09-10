@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import PlantCard from './PlantCard';
 import PlantSearchFilter from './PlantSearchFilter';
@@ -8,15 +8,15 @@ import PlantCardSkeleton from './PlantCardSkeleton';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/shared/PullToRefreshIndicator';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import type { 
-  EnhancedPlantInstance, 
+import type {
+  EnhancedPlantInstance,
   PlantInstanceSearchResult,
   PlantInstanceSortField,
-  AdvancedSearchResult 
+  AdvancedSearchResult
 } from '@/lib/types/plant-instance-types';
-import type { 
+import type {
   PlantInstanceFilter,
-  EnhancedPlantInstanceFilter 
+  EnhancedPlantInstanceFilter
 } from '@/lib/validation/plant-schemas';
 
 interface PlantsGridProps {
@@ -57,7 +57,7 @@ export default function PlantsGrid({
     userId,
     overdueOnly: false,
     isActive: true,
-    limit: 20,
+    limit: 50, // Increased from 20 to 50 to show more plants initially
     offset: 0,
     ...initialFilters,
   });
@@ -68,6 +68,7 @@ export default function PlantsGrid({
   const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
   const [useSearchResults, setUseSearchResults] = useState(false);
   const { triggerHaptic } = useHapticFeedback();
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Fetch plants with infinite query
   const {
@@ -106,7 +107,9 @@ export default function PlantsGrid({
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
-      return lastPage.hasMore ? lastPage.filters.offset + lastPage.filters.limit : undefined;
+      const nextOffset = lastPage.hasMore ? lastPage.filters.offset + lastPage.filters.limit : undefined;
+
+      return nextOffset;
     },
     staleTime: 1000 * 30, // 30 seconds (more responsive to changes)
     gcTime: 1000 * 60 * 5, // Keep cached data for 5 minutes
@@ -120,9 +123,29 @@ export default function PlantsGrid({
       return (searchResults.instances || []).filter(Boolean);
     }
     const result = data?.pages.flatMap(page => page.instances).filter(Boolean) ?? [];
-    console.log('PlantsGrid debug:', { data, pages: data?.pages, result: result.length, isError, isLoading });
+
+    // Enhanced debugging for infinite scroll
+    const lastPage = data?.pages?.[data.pages.length - 1];
+    console.log('PlantsGrid debug:', {
+      totalPages: data?.pages?.length,
+      plantsLoaded: result.length,
+      hasNextPage,
+      isFetchingNextPage,
+      lastPageHasMore: lastPage?.hasMore,
+      lastPageTotalCount: lastPage?.totalCount,
+      lastPageOffset: lastPage?.filters?.offset,
+      lastPageLimit: lastPage?.filters?.limit,
+      calculatedNextOffset: lastPage ? lastPage.filters.offset + lastPage.filters.limit : 0,
+      allPagesData: data?.pages?.map(page => ({
+        instanceCount: page.instances.length,
+        hasMore: page.hasMore,
+        totalCount: page.totalCount,
+        offset: page.filters.offset,
+        limit: page.filters.limit
+      }))
+    });
     return result;
-  }, [data, searchResults, useSearchResults, isError, isLoading]);
+  }, [data, searchResults, useSearchResults, hasNextPage, isFetchingNextPage]);
 
   // Handle search
   const handleSearch = useCallback((query: string) => {
@@ -227,11 +250,36 @@ export default function PlantsGrid({
   // Handle infinite scroll
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    const isNearBottom = scrollTop + clientHeight >= scrollHeight - 1000;
-    
+    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+    const isNearBottom = scrollPercentage >= 0.8; // Trigger when 80% scrolled
+
     if (isNearBottom && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Intersection Observer for infinite scroll (more reliable than scroll events)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => {
+      if (loadMoreRef.current) {
+        observer.unobserve(loadMoreRef.current);
+      }
+    };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Exit selection mode
@@ -331,7 +379,7 @@ export default function PlantsGrid({
                   Select All
                 </button>
               </div>
-              
+
               {selectedPlants.length > 0 && (
                 <div className="flex gap-2">
                   <button
@@ -354,9 +402,10 @@ export default function PlantsGrid({
       )}
 
       {/* Plants Grid */}
-      <div 
+      <div
         ref={pullToRefreshRef}
         className="flex-1 overflow-auto pull-to-refresh"
+        style={{ maxHeight: '70vh', minHeight: '400px' }}
         onScroll={handleScroll}
       >
         {/* Pull to Refresh Indicator */}
@@ -402,11 +451,47 @@ export default function PlantsGrid({
           </div>
         )}
 
-        {/* Loading more indicator */}
+        {/* Loading more indicator and manual load button */}
         {isFetchingNextPage && (
           <div className="flex-center py-4">
             <div className="spinner" />
             <span className="ml-2 text-sm text-neutral-600">Loading more...</span>
+          </div>
+        )}
+
+        {/* Intersection Observer target for infinite scroll */}
+        {hasNextPage && (
+          <div
+            ref={loadMoreRef}
+            className="flex-center py-4"
+            style={{ minHeight: '100px' }}
+          >
+            {isFetchingNextPage ? (
+              <>
+                <div className="spinner" />
+                <span className="ml-2 text-sm text-neutral-600">Loading more...</span>
+              </>
+            ) : (
+              <button
+                onClick={() => fetchNextPage()}
+                className="btn btn--secondary"
+              >
+                Load More Plants ({plants.length} of {data?.pages?.[0]?.totalCount || 0})
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Debug info for infinite scroll */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="p-4 bg-gray-100 text-xs text-gray-600 border-t">
+            <div>Plants loaded: {plants.length}</div>
+            <div>Has next page: {hasNextPage ? 'Yes' : 'No'}</div>
+            <div>Is fetching: {isFetchingNextPage ? 'Yes' : 'No'}</div>
+            <div>Total pages: {data?.pages?.length || 0}</div>
+            {data?.pages?.[data.pages.length - 1] && (
+              <div>Last page total: {data.pages[data.pages.length - 1].totalCount}</div>
+            )}
           </div>
         )}
       </div>
