@@ -72,6 +72,35 @@ export async function GET(request: NextRequest) {
     const successfulCount = propagationStats?.successfulPropagations || 0;
     const propagationSuccessRate = completedCount > 0 ? Math.round((successfulCount / completedCount) * 100) : 0;
 
+    // Get fertilizer events from plant instances with due dates
+    const fertilizerEventData = await db
+      .select({
+        id: plantInstances.id,
+        nickname: plantInstances.nickname,
+        fertilizerDue: plantInstances.fertilizerDue
+      })
+      .from(plantInstances)
+      .where(
+        and(
+          eq(plantInstances.userId, userId),
+          eq(plantInstances.isActive, true)
+        )
+      );
+
+    // Convert to fertilizer events with proper date filtering (show events for next 30 days)
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+    
+    const fertilizerEvents: FertilizerEvent[] = fertilizerEventData
+      .filter(plant => plant.fertilizerDue && plant.fertilizerDue <= thirtyDaysFromNow)
+      .map(plant => ({
+        id: `fertilizer-${plant.id}`,
+        plantName: plant.nickname,
+        plantId: plant.id.toString(),
+        date: plant.fertilizerDue!.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        type: 'fertilize' as const
+      }));
+
     const dashboardStats: DashboardStats = {
       totalPlants: plantStats?.totalPlants || 0,
       activePlants: plantStats?.activePlants || 0,
@@ -80,7 +109,7 @@ export async function GET(request: NextRequest) {
       activePropagations: propagationStats?.activePropagations || 0,
       successfulPropagations: successfulCount,
       propagationSuccessRate,
-      fertilizerEvents: []
+      fertilizerEvents
     };
     
     return NextResponse.json(dashboardStats);
