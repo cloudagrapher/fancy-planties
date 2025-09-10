@@ -159,6 +159,47 @@ export default function PlantsClient({ plants }: Props) {
 
 ## 🗄️ Database Architecture
 
+### Migration System
+
+The application features an enhanced database migration system that automatically manages schema changes:
+
+#### Migration Features
+
+- **Automatic Detection**: Scans `/drizzle` directory for `.sql` migration files
+- **Order Enforcement**: Applies migrations in alphabetical order to ensure consistency
+- **Duplicate Prevention**: Tracks applied migrations in `__drizzle_migrations` table
+- **Statement Parsing**: Handles Drizzle's statement breakpoint format
+- **RLS Integration**: Automatically applies Row-Level Security policies
+- **Health Monitoring**: Comprehensive database health checks
+
+#### Migration Workflow
+
+```typescript
+// Migration execution process
+1. Create __drizzle_migrations table if not exists
+2. Scan /drizzle directory for .sql files
+3. Filter out RLS policy files (handled separately)
+4. Sort files alphabetically for consistent ordering
+5. For each migration file:
+   - Check if already applied via hash lookup
+   - Parse SQL statements using breakpoint delimiters
+   - Execute each statement individually
+   - Record migration as applied with timestamp
+6. Apply RLS policies from rls-policies.sql
+7. Perform health check validation
+```
+
+#### Migration Utilities
+
+```typescript
+// Available migration operations
+MigrationUtils.runMigrations()        // Apply all pending migrations
+MigrationUtils.applyRLSPolicies()     // Apply Row-Level Security policies
+MigrationUtils.getMigrationStatus()   // Check applied vs pending migrations
+MigrationUtils.healthCheck()          // Comprehensive database health check
+MigrationUtils.seedInitialData()      // Seed common plant taxonomy data
+```
+
 ### Schema Design
 
 #### Core Entities
@@ -168,6 +209,7 @@ erDiagram
     users ||--o{ plant_instances : owns
     users ||--o{ propagations : owns
     users ||--o{ sessions : has
+    users ||--o{ email_verification_codes : has
     plants ||--o{ plant_instances : "instance of"
     plants ||--o{ propagations : "propagated from"
     plant_instances ||--o{ propagations : "parent of"
@@ -178,6 +220,16 @@ erDiagram
         string email UK
         string hashed_password
         string name
+        boolean is_email_verified
+        timestamp created_at
+    }
+
+    email_verification_codes {
+        int id PK
+        string email UK
+        string code
+        timestamp expires_at
+        int attempts
         timestamp created_at
     }
 
