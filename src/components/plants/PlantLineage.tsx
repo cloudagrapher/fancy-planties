@@ -13,6 +13,20 @@ interface PlantLineageProps {
 
 export default function PlantLineage({ plant, propagations, parentPlant }: PlantLineageProps) {
   const [selectedPropagation, setSelectedPropagation] = useState<Propagation | null>(null);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+
+  // Add error handling for the component
+  try {
+    if (!plant) {
+      return (
+        <div className="p-6">
+          <div className="text-center py-8 text-gray-500">
+            <div className="text-4xl mb-2">❌</div>
+            <p className="text-sm">Unable to load plant data</p>
+          </div>
+        </div>
+      );
+    }
 
   // Get status color for propagation
   const getStatusColor = (status: string) => {
@@ -47,10 +61,17 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
   };
 
   // Calculate days since propagation started
-  const getDaysSinceStarted = (dateStarted: Date) => {
+  const getDaysSinceStarted = (dateStarted: Date | string) => {
     const now = new Date();
-    const diffMs = now.getTime() - new Date(dateStarted).getTime();
+    const startDate = typeof dateStarted === 'string' ? new Date(dateStarted) : dateStarted;
+    const diffMs = now.getTime() - startDate.getTime();
     return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  };
+
+  // Get progress index for status
+  const getStatusIndex = (status: string) => {
+    const statusOrder = ['started', 'rooting', 'planted', 'established'];
+    return statusOrder.indexOf(status);
   };
 
   return (
@@ -74,6 +95,11 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                     width={64}
                     height={64}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">🌱</div>';
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -118,6 +144,11 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                   width={64}
                   height={64}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400">🌱</div>';
+                  }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -150,19 +181,31 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
           <span className="mr-2">🌿</span>
           Propagations from this Plant
           <span className="ml-2 text-sm font-normal text-gray-500">
-            ({propagations.length})
+            ({propagations?.length || 0})
           </span>
         </h3>
         
-        {propagations.length > 0 ? (
+        {propagations && propagations.length > 0 ? (
           <div className="space-y-3">
             {propagations.map((propagation) => (
               <div
                 key={propagation.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow cursor-pointer"
+                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 onClick={() => setSelectedPropagation(
                   selectedPropagation?.id === propagation.id ? null : propagation
                 )}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedPropagation(
+                      selectedPropagation?.id === propagation.id ? null : propagation
+                    );
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+                aria-expanded={selectedPropagation?.id === propagation.id}
+                aria-label={`${selectedPropagation?.id === propagation.id ? 'Collapse' : 'Expand'} details for ${propagation.nickname}`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-4 flex-1">
@@ -175,6 +218,11 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                           width={48}
                           height={48}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">${getStatusIcon(propagation.status)}</div>`;
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
@@ -225,23 +273,30 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                     <div className="space-y-2">
                       <h5 className="text-sm font-medium text-gray-700">Progress Timeline</h5>
                       <div className="flex items-center space-x-2">
-                        {['started', 'rooting', 'planted', 'established'].map((status, index) => (
-                          <div key={status} className="flex items-center">
-                            <div className={`w-3 h-3 rounded-full border-2 ${
-                              propagation.status === status || 
-                              ['started', 'rooting', 'planted', 'established'].indexOf(propagation.status) > index
-                                ? 'bg-primary-500 border-primary-500'
-                                : 'bg-gray-200 border-gray-300'
-                            }`} />
-                            {index < 3 && (
-                              <div className={`w-8 h-0.5 ${
-                                ['started', 'rooting', 'planted', 'established'].indexOf(propagation.status) > index
-                                  ? 'bg-primary-500'
-                                  : 'bg-gray-200'
-                              }`} />
-                            )}
-                          </div>
-                        ))}
+                        {['started', 'rooting', 'planted', 'established'].map((status, index) => {
+                          const currentStatusIndex = getStatusIndex(propagation.status);
+                          const isCompleted = currentStatusIndex >= index;
+                          
+                          return (
+                            <div key={status} className="flex items-center">
+                              <div 
+                                className={`w-3 h-3 rounded-full border-2 ${
+                                  isCompleted
+                                    ? 'bg-primary-500 border-primary-500'
+                                    : 'bg-gray-200 border-gray-300'
+                                }`}
+                                title={`${status.charAt(0).toUpperCase() + status.slice(1)} ${isCompleted ? '(completed)' : '(pending)'}`}
+                              />
+                              {index < 3 && (
+                                <div className={`w-8 h-0.5 ${
+                                  currentStatusIndex > index
+                                    ? 'bg-primary-500'
+                                    : 'bg-gray-200'
+                                }`} />
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>Started</span>
@@ -274,6 +329,11 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                                 width={64}
                                 height={64}
                                 className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.parentElement!.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400 text-xs">📷</div>';
+                                }}
                               />
                             </div>
                           ))}
@@ -324,7 +384,10 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                 <div>
                   <span className="text-gray-600">Success Rate:</span>
                   <span className="ml-2 font-medium">
-                    {Math.round((propagations.filter(p => p.status === 'established').length / propagations.length) * 100)}%
+                    {propagations.length > 0 
+                      ? Math.round((propagations.filter(p => p.status === 'established').length / propagations.length) * 100)
+                      : 0
+                    }%
                   </span>
                 </div>
                 
@@ -341,4 +404,16 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
       )}
     </div>
   );
+  } catch (error) {
+    console.error('Error in PlantLineage component:', error);
+    return (
+      <div className="p-6">
+        <div className="text-center py-8 text-red-500">
+          <div className="text-4xl mb-2">⚠️</div>
+          <p className="text-sm">Something went wrong loading the lineage data</p>
+          <p className="text-xs mt-2 text-gray-500">Please try refreshing the page</p>
+        </div>
+      </div>
+    );
+  }
 }
