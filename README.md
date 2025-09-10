@@ -208,19 +208,42 @@ See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for comprehensive deployment instructi
 
 ## 🧪 Testing
 
+Our comprehensive testing suite includes unit tests, integration tests, and end-to-end tests with optimized parallel execution for faster development cycles.
+
+### Test Execution
+
 ```bash
-# Run all tests
+# Run all tests with parallel execution
 npm run test:all
 
-# Unit tests
+# Unit tests (optimized for parallel execution)
 npm test
 
 # E2E tests
 npm run test:e2e
 
-# Test coverage
+# Test coverage with detailed reporting
 npm run test:coverage
+
+# Watch mode for development
+npm run test:watch
 ```
+
+### Test Performance Optimization
+
+The test suite is configured for optimal performance:
+
+- **Parallel Execution**: Uses 50% of CPU cores locally, 2 workers in CI
+- **Memory Management**: 512MB worker memory limit prevents memory leaks
+- **Test Isolation**: Proper cleanup between tests with resetMocks/clearMocks
+- **Fast Feedback**: Bail on first failure in CI environments
+- **Caching**: Jest cache enabled for faster subsequent runs
+
+### Test Coverage Requirements
+
+- **Minimum Coverage**: 80% across branches, functions, lines, and statements
+- **Coverage Reports**: Available in text, LCOV, and HTML formats
+- **Coverage Location**: `./coverage/` directory with detailed HTML reports
 
 ## 📊 Available Scripts
 
