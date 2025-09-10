@@ -54,6 +54,38 @@ Content-Type: application/json
 POST /api/auth/signout
 ```
 
+#### Verify Email
+```http
+POST /api/auth/verify-email
+Content-Type: application/json
+
+{
+  "code": "123456"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Email verified successfully"
+}
+```
+
+#### Resend Verification Code
+```http
+POST /api/auth/resend-verification
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Verification code sent",
+  "cooldownSeconds": 60
+}
+```
+
 ## 🌿 Plants API
 
 ### Get All Plants (Taxonomy)
@@ -461,6 +493,7 @@ All API endpoints return consistent error responses:
 API endpoints are rate limited to prevent abuse:
 
 - **Authentication endpoints**: 5 requests per minute per IP
+- **Email verification endpoints**: 5 verification attempts per hour, 60-second cooldown for resend
 - **General API endpoints**: 100 requests per minute per user
 - **File upload endpoints**: 10 requests per minute per user
 

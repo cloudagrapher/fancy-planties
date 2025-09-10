@@ -52,6 +52,7 @@ graph TB
 | **PostgreSQL** | Database | ACID compliance, JSON support, row-level security, mature ecosystem |
 | **Drizzle ORM** | Database ORM | TypeScript-first, lightweight, excellent DX, type safety |
 | **Lucia Auth** | Authentication | Simple, secure, PostgreSQL integration, session-based |
+| **Resend** | Email Service | Reliable transactional email, developer-friendly API, good deliverability |
 | **Tailwind CSS** | Styling | Utility-first, mobile-first, rapid development, consistent design |
 | **Docker** | Containerization | Consistent environments, easy deployment, scalability |
 
@@ -305,6 +306,41 @@ sequenceDiagram
     API-->>Client: Authorized response
 ```
 
+### Email Verification Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant EmailService
+    participant Resend
+    participant DB
+
+    Client->>API: POST /api/auth/signup
+    API->>DB: Create unverified user
+    API->>EmailService: Generate verification code
+    EmailService->>DB: Store code with expiry
+    EmailService->>Resend: Send verification email
+    Resend-->>EmailService: Email sent confirmation
+    API-->>Client: Registration success, verify email
+
+    Note over Client,DB: Email verification
+    Client->>API: POST /api/auth/verify-email
+    API->>DB: Validate code & expiry
+    DB-->>API: Code valid
+    API->>DB: Mark user as verified
+    API->>DB: Delete used code
+    API-->>Client: Verification success
+
+    Note over Client,DB: Resend verification
+    Client->>API: POST /api/auth/resend-verification
+    API->>DB: Check cooldown & rate limits
+    API->>EmailService: Generate new code
+    EmailService->>DB: Invalidate old codes
+    EmailService->>Resend: Send new email
+    API-->>Client: New code sent
+```
+
 ### Security Measures
 
 #### Input Validation
@@ -322,6 +358,50 @@ export async function POST(request: NextRequest) {
   const validated = createPlantSchema.parse(body); // Throws if invalid
   // Process validated data
 }
+```
+
+#### Email Verification Security
+```typescript
+// Secure verification code generation
+export class EmailVerificationCodeService {
+  generateSecureCode(): string {
+    // Cryptographically secure 6-digit code
+    return crypto.randomInt(100000, 999999).toString();
+  }
+
+  async validateCode(email: string, code: string): Promise<boolean> {
+    const storedCode = await this.getStoredCode(email);
+    
+    // Check expiry (10 minutes)
+    if (storedCode.expiresAt < new Date()) {
+      await this.deleteCode(email);
+      return false;
+    }
+
+    // Check attempt limits (5 attempts max)
+    if (storedCode.attempts >= 5) {
+      await this.deleteCode(email);
+      return false;
+    }
+
+    // Increment attempts and validate
+    await this.incrementAttempts(email);
+    return storedCode.code === code;
+  }
+}
+
+// Rate limiting for verification endpoints
+const verificationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 attempts per hour
+  message: 'Too many verification attempts',
+});
+
+const resendLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 1, // 1 resend per minute
+  message: 'Please wait before requesting another code',
+});
 ```
 
 #### Row Level Security

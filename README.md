@@ -179,6 +179,7 @@ See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for comprehensive deployment instructi
 | **Framework** | Next.js 15 App Router | React framework with SSR and static generation |
 | **Database** | PostgreSQL + Drizzle ORM | Relational database with type-safe queries |
 | **Authentication** | Lucia Auth | Session-based authentication |
+| **Email Service** | Resend | Transactional email delivery for verification |
 | **Styling** | Tailwind CSS v4 | Utility-first CSS framework |
 | **PWA** | next-pwa | Progressive Web App features |
 | **Testing** | Jest + Cypress | Unit, integration, and E2E testing |
@@ -283,11 +284,12 @@ The test suite is configured for optimal performance:
 ## 🔒 Security Features
 
 - **Authentication**: Secure session-based auth with bcrypt password hashing
+- **Email Verification**: Required email verification for new accounts with secure 6-digit codes
 - **Data Isolation**: Row-level security ensures user data segregation
 - **Security Headers**: Comprehensive security headers via Nginx
 - **Input Validation**: Zod schema validation on all inputs
 - **HTTPS**: SSL/TLS encryption in production
-- **Rate Limiting**: API rate limiting to prevent abuse
+- **Rate Limiting**: API rate limiting to prevent abuse and verification attempts
 
 ## 🌍 Browser Support
 
