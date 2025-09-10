@@ -1,0 +1,28 @@
+{
+  "enabled": true,
+  "name": "Documentation Sync",
+  "description": "Monitors all TypeScript, JavaScript, and configuration files for changes and triggers documentation updates in README.md and docs folder",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "src/**/*.js",
+      "src/**/*.jsx",
+      "*.ts",
+      "*.tsx",
+      "*.js",
+      "*.jsx",
+      "*.json",
+      "package.json",
+      "next.config.ts",
+      "drizzle.config.ts",
+      "middleware.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Source code has been modified. Please review the changes and update the documentation accordingly. Update the README.md file to reflect any new features, API changes, or architectural modifications. If there is a /docs folder, also update relevant documentation files there. Focus on keeping the documentation accurate and up-to-date with the current codebase."
+  }
+}
