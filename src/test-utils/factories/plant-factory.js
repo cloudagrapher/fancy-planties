@@ -93,32 +93,36 @@ export const createTestVerifiedPlant = (overrides = {}) => {
 
 /**
  * Creates a test plant instance (user's specific plant)
- * @param {Object} plant - Plant taxonomy object
- * @param {Object} user - User object who owns the plant
- * @param {Object} overrides - Properties to override
+ * @param {Object} overrides - Properties to override (can include plant, user, etc.)
  * @returns {Object} Test plant instance object
  */
-export const createTestPlantInstance = (plant, user, overrides = {}) => {
+export const createTestPlantInstance = (overrides = {}) => {
   plantInstanceCounter++;
   
   const location = LOCATIONS[plantInstanceCounter % LOCATIONS.length];
   const schedule = FERTILIZER_SCHEDULES[plantInstanceCounter % FERTILIZER_SCHEDULES.length];
   
+  // Create default plant if not provided
+  const defaultPlant = overrides.plant || createTestPlant();
+  const defaultUserId = overrides.userId || 1;
+  
   const basePlantInstance = {
     id: plantInstanceCounter,
-    userId: user.id,
-    plantId: plant.id,
-    nickname: `My ${plant.commonName} #${plantInstanceCounter}`,
+    userId: defaultUserId,
+    plantId: overrides.plantId || defaultPlant.id,
+    nickname: `My Plant #${plantInstanceCounter}`,
     location,
     lastFertilized: plantInstanceCounter % 2 === 0 ? new Date(Date.now() - 1000 * 60 * 60 * 24 * 14) : null, // Some fertilized 2 weeks ago
     fertilizerSchedule: schedule,
     fertilizerDue: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // Due in a week
     lastRepot: plantInstanceCounter % 3 === 0 ? new Date(Date.now() - 1000 * 60 * 60 * 24 * 365) : null, // Some repotted a year ago
-    notes: `Personal notes about my ${plant.commonName}`,
+    notes: `Personal notes about my plant`,
     images: [],
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
+    // Include plant data for enhanced instances
+    plant: defaultPlant,
   };
   
   return {

@@ -1,6 +1,13 @@
 // User test data factory
 
-import { generateRandomString } from 'oslo/crypto';
+// Simple random string generator for tests (avoiding oslo dependency issues)
+const generateRandomString = (length, alphabet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ') => {
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+  }
+  return result;
+};
 import bcrypt from 'bcryptjs';
 
 // Counter for unique test data

@@ -46,12 +46,10 @@ const CARE_NOTES = [
 
 /**
  * Creates a test care record with realistic data
- * @param {Object} plantInstance - Plant instance object
- * @param {Object} user - User object who performed the care
  * @param {Object} overrides - Properties to override in the generated care record
  * @returns {Object} Test care record object
  */
-export const createTestCareRecord = (plantInstance, user, overrides = {}) => {
+export const createTestCareRecord = (overrides = {}) => {
   careRecordCounter++;
   
   const careType = CARE_TYPES[careRecordCounter % CARE_TYPES.length];
@@ -59,17 +57,20 @@ export const createTestCareRecord = (plantInstance, user, overrides = {}) => {
   
   const baseCareRecord = {
     id: careRecordCounter,
-    userId: user.id,
-    plantInstanceId: plantInstance.id,
-    careType,
-    careDate,
+    userId: overrides.userId || 1,
+    plantInstanceId: overrides.plantInstanceId || 1,
+    careType: overrides.careType || careType,
+    careDate: overrides.careDate || careDate,
     notes: CARE_NOTES[careRecordCounter % CARE_NOTES.length],
-    fertilizerType: careType === 'fertilizer' ? FERTILIZER_TYPES[careRecordCounter % FERTILIZER_TYPES.length] : null,
-    potSize: careType === 'repot' ? POT_SIZES[careRecordCounter % POT_SIZES.length] : null,
-    soilType: careType === 'repot' ? SOIL_TYPES[careRecordCounter % SOIL_TYPES.length] : null,
+    fertilizerType: (overrides.careType || careType) === 'fertilizer' ? FERTILIZER_TYPES[careRecordCounter % FERTILIZER_TYPES.length] : null,
+    potSize: (overrides.careType || careType) === 'repot' ? POT_SIZES[careRecordCounter % POT_SIZES.length] : null,
+    soilType: (overrides.careType || careType) === 'repot' ? SOIL_TYPES[careRecordCounter % SOIL_TYPES.length] : null,
     images: [],
     createdAt: new Date(),
     updatedAt: new Date(),
+    // Add computed fields for display
+    formattedDate: (overrides.careDate || careDate).toLocaleDateString(),
+    daysSinceCare: Math.floor((Date.now() - (overrides.careDate || careDate).getTime()) / (1000 * 60 * 60 * 24)),
   };
   
   return {
