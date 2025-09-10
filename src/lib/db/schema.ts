@@ -8,9 +8,29 @@ export const users = pgTable('users', {
   hashedPassword: text('hashed_password').notNull(),
   name: text('name').notNull(),
   isCurator: boolean('is_curator').default(false).notNull(),
+  isEmailVerified: boolean('is_email_verified').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  // Index for email verification status
+  emailVerifiedIdx: index('users_email_verified_idx').on(table.isEmailVerified),
+}));
+
+// Email verification codes table
+export const emailVerificationCodes = pgTable('email_verification_codes', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  code: text('code').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  attemptsUsed: integer('attempts_used').default(0).notNull(),
+}, (table) => ({
+  // Indexes for email verification code queries
+  userIdIdx: index('email_verification_codes_user_id_idx').on(table.userId),
+  expiresAtIdx: index('email_verification_codes_expires_at_idx').on(table.expiresAt),
+  // Unique constraint to ensure one active code per user
+  userActiveCodeUnique: uniqueIndex('email_verification_codes_user_active_unique').on(table.userId, table.expiresAt),
+}));
 
 // Sessions table for Lucia auth
 export const sessions = pgTable('sessions', {
@@ -262,6 +282,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   createdPlants: many(plants),
   careHistory: many(careHistory),
   careGuides: many(careGuides),
+  emailVerificationCodes: many(emailVerificationCodes),
 }));
 
 export const plantsRelations = relations(plants, ({ many, one }) => ({
@@ -319,6 +340,13 @@ export const sessionsRelations = relations(sessions, ({ one }) => ({
   }),
 }));
 
+export const emailVerificationCodesRelations = relations(emailVerificationCodes, ({ one }) => ({
+  user: one(users, {
+    fields: [emailVerificationCodes.userId],
+    references: [users.id],
+  }),
+}));
+
 export const careGuidesRelations = relations(careGuides, ({ one }) => ({
   user: one(users, {
     fields: [careGuides.userId],
@@ -331,6 +359,8 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
 export type NewSession = typeof sessions.$inferInsert;
+export type EmailVerificationCode = typeof emailVerificationCodes.$inferSelect;
+export type NewEmailVerificationCode = typeof emailVerificationCodes.$inferInsert;
 export type Plant = typeof plants.$inferSelect;
 export type NewPlant = typeof plants.$inferInsert;
 export type PlantInstance = typeof plantInstances.$inferSelect;

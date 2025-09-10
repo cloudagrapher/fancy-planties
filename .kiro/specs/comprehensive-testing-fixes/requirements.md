@@ -2,101 +2,102 @@
 
 ## Introduction
 
-The plant tracker application has extensive test coverage but is experiencing systematic test failures across multiple categories. The failures fall into several distinct patterns: database connection issues in integration tests, component rendering problems due to missing dependencies, mock configuration issues, and test environment setup problems. This feature will systematically address all test failures to ensure a robust, reliable test suite that supports continuous development and deployment.
+The current testing infrastructure in the plant tracker application lacks consistency, proper global configuration, and focused coverage. Tests are failing in cascading patterns when fixes are applied, and there's an overemphasis on edge cases rather than core functionality coverage. This feature will establish a robust, maintainable testing foundation with clear patterns and comprehensive coverage of critical user workflows.
 
 ## Requirements
 
-### Requirement 1: Database Test Infrastructure
+### Requirement 1
 
-**User Story:** As a developer, I want database integration tests to run reliably without requiring a live PostgreSQL connection, so that I can run tests in any environment including CI/CD pipelines.
-
-#### Acceptance Criteria
-
-1. WHEN running database integration tests THEN the system SHALL use an in-memory or mock database instead of requiring a live PostgreSQL connection
-2. WHEN database tests execute THEN they SHALL complete within the 10-second timeout limit
-3. WHEN database connection fails THEN tests SHALL provide clear error messages indicating the mock setup issue rather than network connectivity problems
-4. WHEN tests clean up database state THEN they SHALL not cause "clearImmediate is not defined" errors in the Jest environment
-
-### Requirement 2: Component Test Stability
-
-**User Story:** As a developer, I want component tests to render and interact correctly with all dependencies properly mocked, so that I can verify component behavior without external service dependencies.
+**User Story:** As a developer, I want a consistent testing configuration and setup, so that tests run reliably and don't fail due to configuration issues.
 
 #### Acceptance Criteria
 
-1. WHEN PlantsGrid component tests run THEN they SHALL properly render plant cards with mocked data
-2. WHEN components use pull-to-refresh functionality THEN the getRefreshIndicatorStyle function SHALL be properly defined and mocked
-3. WHEN tests expect specific DOM elements THEN those elements SHALL be present in the rendered output
-4. WHEN components make API calls THEN the fetch mock SHALL return appropriate test data
-5. WHEN tests verify API call parameters THEN the assertions SHALL match the actual API call format
+1. WHEN the test suite is executed THEN all tests SHALL use a unified global configuration
+2. WHEN a test is fixed THEN other tests SHALL NOT fail due to shared state or configuration conflicts
+3. WHEN new tests are added THEN they SHALL follow established patterns and configurations
+4. IF a test requires specific setup THEN it SHALL use standardized test utilities and helpers
+5. WHEN tests run in CI/CD THEN they SHALL have consistent behavior across environments
 
-### Requirement 3: Mock Configuration Consistency
+### Requirement 2
 
-**User Story:** As a developer, I want all browser APIs and external dependencies to be consistently mocked across all test files, so that tests run reliably in the Jest environment without browser-specific errors.
-
-#### Acceptance Criteria
-
-1. WHEN tests use navigator APIs THEN they SHALL be properly mocked with configurable properties
-2. WHEN tests interact with service workers THEN the service worker registration SHALL be mocked appropriately
-3. WHEN tests use performance APIs THEN they SHALL have consistent mock implementations
-4. WHEN tests run in parallel THEN mock state SHALL not leak between test suites
-5. WHEN tests complete THEN all mocks SHALL be properly reset for the next test
-
-### Requirement 4: Test Environment Isolation
-
-**User Story:** As a developer, I want each test to run in isolation without state pollution from other tests, so that test results are deterministic and reliable.
+**User Story:** As a developer, I want focused test coverage on core functionality, so that I can ensure critical user workflows work correctly without maintaining excessive edge case tests.
 
 #### Acceptance Criteria
 
-1. WHEN tests run in sequence THEN each test SHALL start with a clean state
-2. WHEN global objects are modified in tests THEN they SHALL be restored after each test
-3. WHEN localStorage or sessionStorage is used THEN it SHALL be cleared between tests
-4. WHEN DOM elements are created THEN they SHALL be cleaned up after each test
-5. WHEN async operations are pending THEN they SHALL not interfere with subsequent tests
+1. WHEN writing tests THEN they SHALL prioritize core user workflows over edge cases
+2. WHEN measuring coverage THEN critical paths SHALL have at least 80% test coverage
+3. WHEN tests are written THEN they SHALL focus on integration and user behavior over implementation details
+4. IF edge case tests exist THEN they SHALL be clearly justified and documented
+5. WHEN refactoring code THEN tests SHALL remain stable and not require constant updates
 
-### Requirement 5: API Route Test Coverage
+### Requirement 3
 
-**User Story:** As a developer, I want API route tests to properly simulate Next.js request/response handling, so that I can verify API functionality without running a full server.
-
-#### Acceptance Criteria
-
-1. WHEN API route tests execute THEN they SHALL use proper Next.js Request/Response mocks
-2. WHEN testing authentication endpoints THEN they SHALL properly mock session validation
-3. WHEN testing database operations THEN they SHALL use mocked database queries
-4. WHEN API routes return errors THEN tests SHALL verify proper error handling and status codes
-5. WHEN API routes process request bodies THEN tests SHALL verify proper data validation
-
-### Requirement 6: Performance and Accessibility Test Reliability
-
-**User Story:** As a developer, I want performance and accessibility tests to run consistently with proper browser API mocks, so that I can maintain quality standards without flaky test results.
+**User Story:** As a developer, I want standardized test patterns and utilities, so that writing and maintaining tests is efficient and consistent.
 
 #### Acceptance Criteria
 
-1. WHEN performance tests measure metrics THEN they SHALL use mocked performance APIs with predictable values
-2. WHEN accessibility tests check compliance THEN they SHALL have proper DOM and ARIA mocks
-3. WHEN CSS performance tests run THEN they SHALL have mocked getComputedStyle with design system values
-4. WHEN mobile usability tests execute THEN they SHALL have proper touch and gesture API mocks
-5. WHEN visual regression tests run THEN they SHALL have consistent rendering environments
+1. WHEN writing component tests THEN developers SHALL use standardized testing utilities
+2. WHEN testing API endpoints THEN developers SHALL use consistent request/response patterns
+3. WHEN testing database operations THEN developers SHALL use standardized database test helpers
+4. WHEN mocking dependencies THEN developers SHALL use established mock patterns
+5. WHEN testing authentication THEN developers SHALL use consistent auth test utilities
 
-### Requirement 7: Test Execution Speed and Reliability
+### Requirement 4
 
-**User Story:** As a developer, I want the entire test suite to complete quickly and reliably, so that I can get fast feedback during development and CI/CD processes.
-
-#### Acceptance Criteria
-
-1. WHEN running the full test suite THEN it SHALL complete in under 60 seconds
-2. WHEN tests encounter timeouts THEN they SHALL provide clear diagnostic information
-3. WHEN tests fail THEN error messages SHALL clearly indicate the root cause
-4. WHEN running tests in CI THEN they SHALL have the same success rate as local development
-5. WHEN tests use async operations THEN they SHALL properly handle promises and avoid race conditions
-
-### Requirement 8: Test Data Management
-
-**User Story:** As a developer, I want consistent, realistic test data across all test suites, so that tests accurately reflect real-world usage scenarios.
+**User Story:** As a developer, I want clear test organization and naming conventions, so that I can easily find, understand, and maintain tests.
 
 #### Acceptance Criteria
 
-1. WHEN tests need plant data THEN they SHALL use consistent mock plant instances with realistic properties
-2. WHEN tests need user data THEN they SHALL use properly structured user objects with authentication context
-3. WHEN tests need API responses THEN they SHALL return data matching the actual API schema
-4. WHEN tests create relationships between entities THEN they SHALL maintain referential integrity in mock data
-5. WHEN tests modify data THEN changes SHALL not persist between test runs
+1. WHEN organizing tests THEN they SHALL follow a clear directory structure
+2. WHEN naming test files THEN they SHALL use consistent naming conventions
+3. WHEN writing test descriptions THEN they SHALL clearly describe the behavior being tested
+4. WHEN grouping tests THEN they SHALL be organized by feature or component
+5. WHEN documenting tests THEN they SHALL include clear setup and teardown instructions
+
+### Requirement 5
+
+**User Story:** As a developer, I want reliable test isolation and cleanup, so that tests don't interfere with each other and can run in any order.
+
+#### Acceptance Criteria
+
+1. WHEN tests run THEN each test SHALL have isolated state and not affect other tests
+2. WHEN tests complete THEN they SHALL clean up any created resources or state
+3. WHEN tests use external dependencies THEN they SHALL be properly mocked or isolated
+4. WHEN database tests run THEN they SHALL use transaction rollback or test database cleanup
+5. WHEN tests run in parallel THEN they SHALL not conflict with each other
+
+### Requirement 6
+
+**User Story:** As a developer, I want comprehensive coverage of critical user workflows, so that I can be confident the application works correctly for end users.
+
+#### Acceptance Criteria
+
+1. WHEN testing user authentication THEN all auth flows SHALL be covered (login, logout, session management)
+2. WHEN testing plant management THEN core CRUD operations SHALL be thoroughly tested
+3. WHEN testing care tracking THEN care logging and history SHALL be comprehensively covered
+4. WHEN testing data import THEN CSV import workflows SHALL be fully tested
+5. WHEN testing search functionality THEN search and filtering SHALL be properly covered
+
+### Requirement 7
+
+**User Story:** As a developer, I want fast and efficient test execution, so that I can run tests frequently during development without significant delays.
+
+#### Acceptance Criteria
+
+1. WHEN running the full test suite THEN it SHALL complete in under 2 minutes
+2. WHEN running individual test files THEN they SHALL execute quickly for rapid feedback
+3. WHEN tests use external resources THEN they SHALL be optimized for speed
+4. WHEN running tests in watch mode THEN only affected tests SHALL re-run
+5. WHEN tests require database operations THEN they SHALL use efficient test data setup
+
+### Requirement 8
+
+**User Story:** As a developer, I want clear test failure reporting and debugging capabilities, so that I can quickly identify and fix issues when tests fail.
+
+#### Acceptance Criteria
+
+1. WHEN tests fail THEN error messages SHALL clearly indicate the cause and location
+2. WHEN debugging tests THEN developers SHALL have access to detailed logging and state information
+3. WHEN tests fail in CI THEN failure reports SHALL provide sufficient information for remote debugging
+4. WHEN assertion failures occur THEN they SHALL show expected vs actual values clearly
+5. WHEN tests timeout or hang THEN they SHALL provide clear timeout information and stack traces

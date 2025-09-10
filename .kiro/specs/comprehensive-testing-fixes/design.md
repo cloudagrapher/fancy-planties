@@ -2,334 +2,400 @@
 
 ## Overview
 
-This design addresses systematic test failures across the plant tracker application by implementing a comprehensive testing infrastructure overhaul. The solution focuses on four key areas: database test mocking, component dependency management, browser API mocking consistency, and test environment isolation. The design ensures all tests can run reliably in CI/CD environments without external dependencies while maintaining realistic test scenarios.
+The current testing infrastructure suffers from several critical issues: inconsistent configuration, cascading test failures, excessive edge case testing, and lack of proper test isolation. This design establishes a comprehensive testing framework that prioritizes reliability, maintainability, and focused coverage of core user workflows.
+
+The solution involves restructuring the test architecture with clear patterns, standardized utilities, and a focus on integration testing over unit testing of implementation details.
 
 ## Architecture
 
-### Test Infrastructure Layers
+### Testing Strategy Hierarchy
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Test Execution Layer                     │
-├─────────────────────────────────────────────────────────────┤
-│  Jest Configuration │ Test Environment │ Coverage Reporting │
-├─────────────────────────────────────────────────────────────┤
-│                   Mock Management Layer                     │
-├─────────────────────────────────────────────────────────────┤
-│ Database Mocks │ Browser API Mocks │ Component Mocks      │
-├─────────────────────────────────────────────────────────────┤
-│                   Test Data Layer                          │
-├─────────────────────────────────────────────────────────────┤
-│ Plant Fixtures │ User Fixtures │ API Response Fixtures    │
-├─────────────────────────────────────────────────────────────┤
-│                 Test Utilities Layer                       │
-├─────────────────────────────────────────────────────────────┤
-│ Render Helpers │ Mock Factories │ Assertion Helpers       │
-└─────────────────────────────────────────────────────────────┘
+1. Core User Workflows (Integration Tests) - 60% of effort
+   ├── Authentication flows
+   ├── Plant CRUD operations  
+   ├── Care tracking workflows
+   └── Data import processes
+
+2. Component Behavior Tests - 30% of effort
+   ├── User interactions
+   ├── Form validation
+   ├── State management
+   └── Error handling
+
+3. Utility & Edge Cases - 10% of effort
+   ├── Helper functions
+   ├── Error boundaries
+   └── Performance edge cases
 ```
 
-### Database Testing Strategy
+### Test Organization Structure
 
-Instead of requiring live PostgreSQL connections, implement a multi-tier mocking approach:
-
-1. **In-Memory Database**: Use SQLite in-memory for integration tests that need real SQL operations
-2. **Query Mocking**: Mock Drizzle ORM queries for unit tests
-3. **Connection Mocking**: Mock database connection for tests that only need to verify query construction
-
-### Component Testing Strategy
-
-Implement comprehensive dependency injection for component tests:
-
-1. **Hook Mocking**: Mock all custom hooks with realistic return values
-2. **API Mocking**: Provide consistent fetch mocks with proper response formatting
-3. **Browser API Mocking**: Mock all browser APIs used by components
-4. **State Management**: Mock React Query and other state management libraries
+```
+src/
+├── __tests__/
+│   ├── integration/           # Core workflow tests
+│   │   ├── auth-flows.test.ts
+│   │   ├── plant-management.test.ts
+│   │   ├── care-tracking.test.ts
+│   │   └── data-import.test.ts
+│   ├── components/           # Component behavior tests
+│   │   ├── forms/
+│   │   ├── navigation/
+│   │   └── shared/
+│   └── utils/               # Utility function tests
+├── test-utils/              # Centralized test utilities
+│   ├── setup/
+│   │   ├── test-environment.ts
+│   │   ├── database-setup.ts
+│   │   └── auth-setup.ts
+│   ├── factories/
+│   │   ├── user-factory.ts
+│   │   ├── plant-factory.ts
+│   │   └── care-factory.ts
+│   ├── helpers/
+│   │   ├── render-helpers.tsx
+│   │   ├── api-helpers.ts
+│   │   └── interaction-helpers.ts
+│   └── mocks/
+│       ├── api-mocks.ts
+│       ├── component-mocks.tsx
+│       └── service-mocks.ts
+```
 
 ## Components and Interfaces
 
-### Database Mock System
+### Test Configuration System
 
+#### Core Configuration (`jest.config.js`)
+- Unified setup for all test types
+- Proper module resolution and mocking
+- Coverage thresholds focused on critical paths
+- Optimized performance settings
+
+#### Global Setup (`jest.setup.js`)
+- Standardized browser API mocks
+- Next.js integration mocks
+- Database connection mocking
+- Authentication state mocking
+
+#### Environment Setup (`test-utils/setup/test-environment.ts`)
 ```typescript
-interface DatabaseMockConfig {
-  useInMemory: boolean;
-  mockQueries: boolean;
-  seedData?: TestDataSeed;
-}
-
-interface TestDataSeed {
-  users: TestUser[];
-  plants: TestPlant[];
-  plantInstances: TestPlantInstance[];
-  propagations: TestPropagation[];
-}
-
-class DatabaseTestManager {
-  setup(config: DatabaseMockConfig): Promise<void>;
-  teardown(): Promise<void>;
-  seedTestData(data: TestDataSeed): Promise<void>;
-  clearTestData(): Promise<void>;
+interface TestEnvironment {
+  setupDatabase(): Promise<void>;
+  teardownDatabase(): Promise<void>;
+  createTestUser(): Promise<TestUser>;
+  authenticateUser(user: TestUser): Promise<void>;
+  resetState(): Promise<void>;
 }
 ```
 
-### Component Test Utilities
+### Test Utilities Framework
 
+#### Render Helpers (`test-utils/helpers/render-helpers.tsx`)
 ```typescript
-interface ComponentTestConfig {
-  mockUser?: TestUser;
-  mockPlants?: TestPlant[];
-  mockApiResponses?: Record<string, any>;
-  mockHooks?: Record<string, any>;
+interface RenderOptions {
+  user?: TestUser;
+  initialRoute?: string;
+  providers?: React.ComponentType[];
+  mockApis?: ApiMockConfig;
 }
 
-interface TestRenderOptions extends RenderOptions {
-  config?: ComponentTestConfig;
-  wrapper?: ComponentType<any>;
-}
-
-function renderWithTestConfig(
-  component: ReactElement,
-  options?: TestRenderOptions
+function renderWithProviders(
+  component: React.ReactElement,
+  options?: RenderOptions
 ): RenderResult;
 ```
 
-### Mock Factory System
-
+#### API Test Helpers (`test-utils/helpers/api-helpers.ts`)
 ```typescript
-interface MockFactory<T> {
-  create(overrides?: Partial<T>): T;
-  createMany(count: number, overrides?: Partial<T>): T[];
-  reset(): void;
-}
-
-class TestDataFactory {
-  users: MockFactory<TestUser>;
-  plants: MockFactory<TestPlant>;
-  plantInstances: MockFactory<TestPlantInstance>;
-  propagations: MockFactory<TestPropagation>;
-  apiResponses: MockFactory<ApiResponse>;
+interface ApiTestHelper {
+  mockSuccessResponse<T>(data: T): void;
+  mockErrorResponse(status: number, message: string): void;
+  expectApiCall(endpoint: string, method: string): void;
+  createAuthenticatedRequest(user: TestUser): RequestInit;
 }
 ```
 
-### Browser API Mock Manager
-
+#### Database Test Manager (`test-utils/setup/database-setup.ts`)
 ```typescript
-interface BrowserAPIMocks {
-  navigator: MockNavigator;
-  performance: MockPerformance;
-  localStorage: MockStorage;
-  sessionStorage: MockStorage;
-  fetch: MockFetch;
-}
-
-class BrowserMockManager {
-  setup(): BrowserAPIMocks;
-  reset(): void;
-  teardown(): void;
+interface DatabaseTestManager {
+  createTestDatabase(): Promise<void>;
+  seedTestData(): Promise<TestData>;
+  cleanupTestData(): Promise<void>;
+  createTransaction(): Promise<Transaction>;
+  rollbackTransaction(tx: Transaction): Promise<void>;
 }
 ```
+
+### Mock System Architecture
+
+#### Component Mocks (`test-utils/mocks/component-mocks.tsx`)
+- Lightweight mock implementations
+- Consistent prop interfaces
+- Predictable behavior for testing
+- No complex rendering logic
+
+#### API Mocks (`test-utils/mocks/api-mocks.ts`)
+```typescript
+interface ApiMockConfig {
+  auth?: AuthMockConfig;
+  plants?: PlantMockConfig;
+  care?: CareMockConfig;
+  import?: ImportMockConfig;
+}
+
+class ApiMocker {
+  setupMocks(config: ApiMockConfig): void;
+  resetMocks(): void;
+  verifyMockCalls(): void;
+}
+```
+
+#### Service Mocks (`test-utils/mocks/service-mocks.ts`)
+- Database service mocking
+- External API mocking
+- File system operation mocking
+- Browser API mocking
 
 ## Data Models
 
-### Test Data Structures
+### Test Data Factories
 
+#### User Factory (`test-utils/factories/user-factory.ts`)
 ```typescript
 interface TestUser {
   id: number;
   email: string;
   username: string;
+  hashedPassword: string;
   createdAt: Date;
-  isActive: boolean;
+  session?: TestSession;
 }
 
+function createTestUser(overrides?: Partial<TestUser>): TestUser;
+function createAuthenticatedUser(): Promise<TestUser>;
+```
+
+#### Plant Factory (`test-utils/factories/plant-factory.ts`)
+```typescript
 interface TestPlant {
   id: number;
-  scientificName: string;
   commonName: string;
+  scientificName: string;
   family: string;
-  genus: string;
-  species: string;
+  userId: number;
 }
 
 interface TestPlantInstance {
   id: number;
-  userId: number;
   plantId: number;
   nickname: string;
   location: string;
-  acquiredDate: Date;
-  isActive: boolean;
-  lastWatered?: Date;
-  lastFertilized?: Date;
+  userId: number;
+  careHistory?: TestCareRecord[];
 }
 
-interface TestPropagation {
-  id: number;
-  userId: number;
-  plantInstanceId?: number;
-  method: string;
-  status: string;
-  startDate: Date;
-  notes?: string;
-}
+function createTestPlant(overrides?: Partial<TestPlant>): TestPlant;
+function createTestPlantInstance(overrides?: Partial<TestPlantInstance>): TestPlantInstance;
 ```
 
-### Mock Response Schemas
-
+#### Care Factory (`test-utils/factories/care-factory.ts`)
 ```typescript
-interface MockApiResponse<T = any> {
-  data?: T;
-  error?: string;
-  status: number;
-  headers?: Record<string, string>;
+interface TestCareRecord {
+  id: number;
+  plantInstanceId: number;
+  careType: CareType;
+  careDate: Date;
+  notes?: string;
+  userId: number;
 }
 
-interface MockFetchConfig {
-  url: string | RegExp;
-  method?: string;
-  response: MockApiResponse;
-  delay?: number;
+function createTestCareRecord(overrides?: Partial<TestCareRecord>): TestCareRecord;
+function createCareHistory(plantInstanceId: number, count: number): TestCareRecord[];
+```
+
+### Test State Management
+
+#### Test Context (`test-utils/setup/test-context.ts`)
+```typescript
+interface TestContext {
+  user: TestUser | null;
+  database: DatabaseTestManager;
+  apiMocks: ApiMocker;
+  cleanup: (() => Promise<void>)[];
 }
+
+function createTestContext(): Promise<TestContext>;
+function cleanupTestContext(context: TestContext): Promise<void>;
 ```
 
 ## Error Handling
 
-### Database Connection Errors
+### Test Error Categories
 
+#### Configuration Errors
+- Missing environment variables
+- Database connection failures
+- Mock setup failures
+- Module resolution issues
+
+#### Test Isolation Errors
+- State leakage between tests
+- Incomplete cleanup
+- Mock pollution
+- Database transaction issues
+
+#### Assertion Errors
+- Unclear error messages
+- Missing context information
+- Timeout issues
+- Async operation failures
+
+### Error Recovery Strategies
+
+#### Automatic Retry Logic
 ```typescript
-class DatabaseMockError extends Error {
-  constructor(
-    message: string,
-    public readonly operation: string,
-    public readonly originalError?: Error
-  ) {
-    super(`Database mock error in ${operation}: ${message}`);
-  }
+interface RetryConfig {
+  maxAttempts: number;
+  backoffMs: number;
+  retryableErrors: string[];
 }
+
+function withRetry<T>(
+  operation: () => Promise<T>,
+  config: RetryConfig
+): Promise<T>;
 ```
 
-### Component Rendering Errors
+#### Graceful Degradation
+- Fallback to simpler test scenarios
+- Skip tests with unavailable dependencies
+- Provide meaningful error context
+- Maintain test suite stability
 
+#### Debug Information Collection
 ```typescript
-class ComponentTestError extends Error {
-  constructor(
-    message: string,
-    public readonly component: string,
-    public readonly missingDependency?: string
-  ) {
-    super(`Component test error in ${component}: ${message}`);
-  }
+interface TestDebugInfo {
+  testName: string;
+  timestamp: Date;
+  environment: TestEnvironment;
+  mockStates: Record<string, any>;
+  databaseState: any;
+  errorContext: any;
 }
-```
 
-### Mock Configuration Errors
-
-```typescript
-class MockConfigurationError extends Error {
-  constructor(
-    message: string,
-    public readonly mockType: string,
-    public readonly suggestion?: string
-  ) {
-    super(`Mock configuration error for ${mockType}: ${message}`);
-  }
-}
+function collectDebugInfo(error: Error): TestDebugInfo;
 ```
 
 ## Testing Strategy
 
-### Test Categories and Approaches
+### Integration Test Patterns
 
-1. **Unit Tests**: Mock all external dependencies, focus on component logic
-2. **Integration Tests**: Use in-memory database, mock browser APIs
-3. **E2E Tests**: Mock external services, use real component interactions
-4. **Performance Tests**: Mock performance APIs with predictable values
-5. **Accessibility Tests**: Mock DOM APIs with ARIA support
-
-### Test Environment Configuration
-
+#### Authentication Flow Testing
 ```typescript
-interface TestEnvironmentConfig {
-  database: {
-    type: 'mock' | 'memory' | 'real';
-    connectionString?: string;
-    seedData?: boolean;
-  };
-  browser: {
-    mockNavigator: boolean;
-    mockPerformance: boolean;
-    mockStorage: boolean;
-  };
-  network: {
-    mockFetch: boolean;
-    defaultResponses: MockFetchConfig[];
-  };
-  cleanup: {
-    resetMocks: boolean;
-    clearStorage: boolean;
-    resetDOM: boolean;
-  };
-}
+describe('Authentication Flows', () => {
+  it('should complete full signup and login workflow', async () => {
+    // Test complete user journey from signup to authenticated state
+  });
+  
+  it('should handle session persistence across page reloads', async () => {
+    // Test session management and persistence
+  });
+});
 ```
 
-### Specific Fix Strategies
+#### Plant Management Testing
+```typescript
+describe('Plant Management Workflows', () => {
+  it('should create, edit, and delete plant instances', async () => {
+    // Test complete CRUD workflow
+  });
+  
+  it('should handle plant care tracking end-to-end', async () => {
+    // Test care logging and history viewing
+  });
+});
+```
 
-#### Database Test Fixes
+### Component Testing Patterns
 
-1. **Replace live PostgreSQL**: Implement SQLite in-memory for integration tests
-2. **Mock Drizzle queries**: Create query result mocks for unit tests
-3. **Fix clearImmediate errors**: Polyfill Node.js APIs in Jest environment
-4. **Timeout handling**: Implement proper async/await patterns with timeouts
+#### Form Testing Strategy
+```typescript
+describe('PlantInstanceForm', () => {
+  it('should validate and submit plant data', async () => {
+    // Focus on user interactions and form behavior
+  });
+  
+  it('should handle validation errors gracefully', async () => {
+    // Test error states and user feedback
+  });
+});
+```
 
-#### Component Test Fixes
+#### Navigation Testing Strategy
+```typescript
+describe('Navigation Components', () => {
+  it('should navigate between main sections', async () => {
+    // Test routing and navigation state
+  });
+});
+```
 
-1. **PlantsGrid rendering**: Mock usePlantInstances hook with test data
-2. **Pull-to-refresh functionality**: Mock getRefreshIndicatorStyle function
-3. **API call verification**: Fix fetch mock assertions to match actual call format
-4. **DOM element presence**: Ensure test data renders expected elements
+### Performance Testing Integration
 
-#### Mock Consistency Fixes
+#### Load Testing Patterns
+```typescript
+describe('Performance Characteristics', () => {
+  it('should render large plant lists efficiently', async () => {
+    // Test with realistic data volumes
+  });
+  
+  it('should handle concurrent user actions', async () => {
+    // Test race conditions and state consistency
+  });
+});
+```
 
-1. **Navigator API**: Implement configurable navigator mock with proper cleanup
-2. **Performance API**: Mock performance.now() and related methods consistently
-3. **Storage APIs**: Implement proper localStorage/sessionStorage mocks
-4. **Service Worker**: Mock registration and lifecycle methods
+### Coverage Strategy
 
-## Implementation Phases
+#### Critical Path Coverage (80% minimum)
+- User authentication flows
+- Plant CRUD operations
+- Care tracking workflows
+- Data import processes
+- Search and filtering
 
-### Phase 1: Core Infrastructure
-- Set up database mocking system
-- Implement test data factories
-- Create browser API mock manager
-- Update Jest configuration
+#### Component Coverage (70% minimum)
+- Form validation and submission
+- Navigation and routing
+- Error handling and display
+- Loading states and feedback
 
-### Phase 2: Component Test Fixes
-- Fix PlantsGrid component tests
-- Resolve pull-to-refresh functionality issues
-- Update API call mocking and assertions
-- Ensure proper DOM element rendering
+#### Utility Coverage (60% minimum)
+- Data transformation functions
+- Validation helpers
+- API client functions
+- Database query helpers
 
-### Phase 3: Integration Test Fixes
-- Replace database connections with mocks
-- Fix timeout and async handling issues
-- Implement proper test data seeding
-- Resolve clearImmediate errors
+### Test Execution Strategy
 
-### Phase 4: Test Environment Optimization
-- Implement test isolation and cleanup
-- Optimize test execution speed
-- Add comprehensive error reporting
-- Validate CI/CD compatibility
+#### Parallel Execution
+- Isolated test databases per worker
+- Independent mock configurations
+- No shared global state
+- Proper cleanup between tests
 
-### Phase 5: Quality Assurance
-- Run full test suite validation
-- Performance benchmarking
-- Documentation updates
-- Developer experience improvements
+#### Fast Feedback Loop
+- Watch mode for development
+- Selective test execution
+- Optimized test data setup
+- Efficient mock implementations
 
-## Success Metrics
+#### CI/CD Integration
+- Consistent environment setup
+- Proper test isolation
+- Comprehensive error reporting
+- Performance monitoring
 
-1. **Test Success Rate**: 100% of tests pass consistently
-2. **Execution Time**: Full test suite completes in under 60 seconds
-3. **Isolation**: No test state pollution between runs
-4. **CI Compatibility**: Tests pass in CI environment without modifications
-5. **Developer Experience**: Clear error messages and fast feedback loops
+This design provides a robust foundation for reliable, maintainable testing that focuses on user value while maintaining development velocity.
