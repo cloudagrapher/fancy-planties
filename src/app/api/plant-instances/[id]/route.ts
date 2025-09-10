@@ -21,7 +21,7 @@ export async function GET(
     }
 
     const plantInstance = await PlantInstanceQueries.getEnhancedById(id);
-    
+
     if (!plantInstance) {
       return NextResponse.json({ error: 'Plant instance not found' }, { status: 404 });
     }
@@ -71,11 +71,11 @@ export async function PUT(
     // Check if request is FormData or JSON
     const contentType = request.headers.get('content-type');
     let body: any;
-    
+
     if (contentType?.includes('multipart/form-data')) {
       // Handle FormData for file uploads
       const formData = await request.formData();
-      
+
       // Helper function to convert file to base64
       const fileToBase64 = async (file: File): Promise<string> => {
         const bytes = await file.arrayBuffer();
@@ -88,7 +88,7 @@ export async function PUT(
       body = {};
       const imageFiles: File[] = [];
       const existingImages: (string | FormDataEntryValue)[] = [];
-      
+
       for (const [key, value] of formData.entries()) {
         if (key.startsWith('existingImages[')) {
           // Handle existing images array
@@ -128,14 +128,14 @@ export async function PUT(
         );
       }
     }
-    
+
     // Convert date strings to Date objects if they exist and are not empty
     const processedBody = {
       ...body,
       lastFertilized: body.lastFertilized && body.lastFertilized !== '' ? new Date(body.lastFertilized) : null,
       lastRepot: body.lastRepot && body.lastRepot !== '' ? new Date(body.lastRepot) : null,
     };
-    
+
     // Validate the update data
     const updateData = updatePlantInstanceSchema.parse({
       ...processedBody,
@@ -148,21 +148,21 @@ export async function PUT(
 
     // Update the plant instance
     const updatedInstance = await PlantInstanceQueries.update(id, dataToUpdate);
-    
+
     // Get the enhanced plant instance with plant data
     const enhancedInstance = await PlantInstanceQueries.getEnhancedById(updatedInstance.id);
-    
+
     return NextResponse.json(enhancedInstance);
   } catch (error) {
     console.error('Failed to update plant instance:', error);
-    
+
     if (error instanceof Error && error.message.includes('validation')) {
       return NextResponse.json(
         { error: 'Invalid plant instance data', details: error.message },
         { status: 400 }
       );
     }
-    
+
     return NextResponse.json(
       { error: 'Failed to update plant instance' },
       { status: 500 }
@@ -199,7 +199,7 @@ export async function DELETE(
 
     // Delete the plant instance
     const deleted = await PlantInstanceQueries.delete(id);
-    
+
     if (!deleted) {
       return NextResponse.json({ error: 'Failed to delete plant instance' }, { status: 500 });
     }
