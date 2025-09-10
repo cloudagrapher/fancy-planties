@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This feature implements email verification for user accounts to enhance security and ensure valid email addresses. Users will receive a 6-digit verification code via email during signup and must verify their email before accessing protected features of the plant tracker application.
+This feature implements email verification for user accounts to enhance security and ensure valid email addresses. Users will receive a 6-digit verification code via email during signup and must verify their email before accessing protected features of the plant tracker application. The system will use a third-party email service (such as Resend, SendGrid, or similar) with a free tier to ensure reliable email delivery and avoid spam issues.
 
 ## Requirements
 
@@ -12,9 +12,10 @@ This feature implements email verification for user accounts to enhance security
 
 #### Acceptance Criteria
 
-1. WHEN a user completes the signup form THEN the system SHALL create an unverified user account and send a 6-digit verification code to their email
+1. WHEN a user completes the signup form THEN the system SHALL create an unverified user account and send a 6-digit verification code via a third-party email service
 2. WHEN a verification code is generated THEN the system SHALL set an expiration time of 10 minutes
 3. WHEN a user receives the verification email THEN it SHALL contain a clear 6-digit code and instructions for verification
+4. WHEN the email service is unavailable THEN the system SHALL display an appropriate error message and allow retry
 4. WHEN a user enters the correct verification code within the time limit THEN the system SHALL mark their email as verified and grant access to the application
 5. WHEN a user enters an incorrect verification code THEN the system SHALL display an error message and allow retry
 
@@ -73,3 +74,15 @@ This feature implements email verification for user accounts to enhance security
 2. WHEN a user account is deleted THEN all associated verification codes SHALL be removed
 3. WHEN the system starts up THEN it SHALL clean up any expired verification codes
 4. WHEN verification attempts exceed rate limits THEN the system SHALL log the attempts for security monitoring
+
+### Requirement 7
+
+**User Story:** As a developer, I want to use a reliable third-party email service, so that emails are delivered consistently without being marked as spam.
+
+#### Acceptance Criteria
+
+1. WHEN the system needs to send verification emails THEN it SHALL use a third-party email service with a free tier (such as Resend, SendGrid, or Mailgun)
+2. WHEN configuring the email service THEN the system SHALL use environment variables for API keys and configuration
+3. WHEN the email service API call fails THEN the system SHALL retry up to 3 times with exponential backoff
+4. WHEN all retry attempts fail THEN the system SHALL log the error and display a user-friendly message
+5. WHEN the email service quota is exceeded THEN the system SHALL gracefully handle the error and notify administrators
