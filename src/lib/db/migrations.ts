@@ -21,6 +21,54 @@ export class MigrationUtils {
         );
       `);
 
+      // Apply migration files from drizzle directory
+      const migrationsPath = path.join(process.cwd(), 'drizzle');
+      
+      if (fs.existsSync(migrationsPath)) {
+        const files = fs.readdirSync(migrationsPath);
+        const sqlFiles = files
+          .filter(file => file.endsWith('.sql') && !file.includes('rls-policies'))
+          .sort(); // Ensure migrations are applied in order
+
+        for (const file of sqlFiles) {
+          const filePath = path.join(migrationsPath, file);
+          const migrationSQL = fs.readFileSync(filePath, 'utf8');
+          
+          // Check if migration was already applied
+          const [existing] = await db.execute(sql`
+            SELECT COUNT(*) as count FROM __drizzle_migrations 
+            WHERE hash = ${file}
+          `);
+          
+          if (Number(existing?.count) === 0) {
+            console.log(`  📋 Applying migration: ${file}`);
+            
+            // Split migration into individual statements
+            const statements = migrationSQL
+              .split('--> statement-breakpoint')
+              .map(stmt => stmt.trim())
+              .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+
+            for (const statement of statements) {
+              const cleanStatement = statement.trim();
+              if (cleanStatement && !cleanStatement.startsWith('--')) {
+                await db.execute(sql.raw(cleanStatement));
+              }
+            }
+            
+            // Record migration as applied
+            await db.execute(sql`
+              INSERT INTO __drizzle_migrations (hash, created_at) 
+              VALUES (${file}, ${Date.now()})
+            `);
+            
+            console.log(`  ✅ Applied migration: ${file}`);
+          } else {
+            console.log(`  ⏭️  Skipping already applied migration: ${file}`);
+          }
+        }
+      }
+
       console.log('Migrations completed successfully');
     } catch (error) {
       console.error('Migration failed:', error);
@@ -96,25 +144,34 @@ export class MigrationUtils {
     pendingMigrations: string[];
   }> {
     try {
-      // Get applied migrations count
-      const [result] = await db.execute(sql`
-        SELECT COUNT(*) as count FROM __drizzle_migrations
+      // Get applied migrations
+      const appliedResults = await db.execute(sql`
+        SELECT hash FROM __drizzle_migrations ORDER BY created_at
       `);
       
-      const appliedMigrations = result?.count || 0;
+      const appliedMigrations = appliedResults.length;
+      const appliedHashes = new Set(appliedResults.map(r => r.hash));
       
-      // Get pending migrations by checking the drizzle folder
+      // Get all migration files
       const migrationsPath = path.join(process.cwd(), 'drizzle');
       const pendingMigrations: string[] = [];
       
       if (fs.existsSync(migrationsPath)) {
         const files = fs.readdirSync(migrationsPath);
-        const sqlFiles = files.filter(file => file.endsWith('.sql') && !file.includes('rls-policies'));
-        pendingMigrations.push(...sqlFiles);
+        const sqlFiles = files
+          .filter(file => file.endsWith('.sql') && !file.includes('rls-policies'))
+          .sort();
+        
+        // Find pending migrations
+        for (const file of sqlFiles) {
+          if (!appliedHashes.has(file)) {
+            pendingMigrations.push(file);
+          }
+        }
       }
 
       return {
-        appliedMigrations: Number(appliedMigrations),
+        appliedMigrations,
         pendingMigrations
       };
     } catch (error) {
@@ -207,12 +264,12 @@ export class MigrationUtils {
       `);
       const migrationsApplied = Boolean(migrationTable?.exists) || false;
 
-      // Check if main tables exist
+      // Check if main tables exist (including email verification)
       const [tablesCheck] = await db.execute(sql`
         SELECT 
-          (SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN ('users', 'plants', 'plant_instances', 'propagations', 'sessions')) as table_count
+          (SELECT COUNT(*) FROM information_schema.tables WHERE table_name IN ('users', 'plants', 'plant_instances', 'propagations', 'sessions', 'email_verification_codes')) as table_count
       `);
-      const tablesExist = Number(tablesCheck?.table_count) === 5;
+      const tablesExist = Number(tablesCheck?.table_count) === 6;
 
       // Check if RLS is enabled on user tables
       const [rlsCheck] = await db.execute(sql`
@@ -221,9 +278,9 @@ export class MigrationUtils {
         JOIN pg_namespace n ON n.oid = c.relnamespace
         WHERE c.relrowsecurity = true 
         AND n.nspname = 'public'
-        AND c.relname IN ('plant_instances', 'propagations', 'sessions')
+        AND c.relname IN ('plant_instances', 'propagations', 'sessions', 'care_history', 'care_guides', 'email_verification_codes')
       `);
-      const rlsEnabled = Number(rlsCheck?.rls_count) === 3;
+      const rlsEnabled = Number(rlsCheck?.rls_count) === 6;
 
       return {
         connected,

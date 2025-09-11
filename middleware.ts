@@ -10,6 +10,15 @@ const protectedRoutes = [
   '/api/user',
 ];
 
+// Define routes that require email verification
+const verificationRequiredRoutes = [
+  '/dashboard',
+  '/api/plants',
+  '/api/propagations',
+  '/api/care',
+  '/api/user',
+];
+
 // Define auth routes that should redirect if already authenticated
 const authRoutes = [
   '/auth/signin',
@@ -22,16 +31,24 @@ const publicApiRoutes = [
   '/api/auth/signin',
   '/api/auth/signup',
   '/api/auth/signout',
+  '/api/auth/verify-email',
+  '/api/auth/resend-verification',
+  '/api/auth/check-verification',
   '/api/health',
 ];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('auth_session');
   const isAuthenticated = !!sessionCookie?.value;
 
   // Check if the route is protected
   const isProtectedRoute = protectedRoutes.some(route => 
+    pathname.startsWith(route)
+  );
+
+  // Check if the route requires email verification
+  const requiresVerification = verificationRequiredRoutes.some(route => 
     pathname.startsWith(route)
   );
 
@@ -50,6 +67,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow access to email verification page for authenticated users
+  if (pathname === '/auth/verify-email' && isAuthenticated) {
+    return NextResponse.next();
+  }
+
   // Redirect unauthenticated users from protected routes
   if (isProtectedRoute && !isAuthenticated) {
     const signInUrl = new URL('/auth/signin', request.url);
@@ -57,8 +79,51 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
-  // Redirect authenticated users from auth routes
-  if (isAuthRoute && isAuthenticated) {
+  // Check email verification for authenticated users on verification-required routes
+  if (requiresVerification && isAuthenticated && sessionCookie?.value) {
+    try {
+      // Make a request to our internal API to check verification status
+      const verificationCheckUrl = new URL('/api/auth/check-verification', request.url);
+      const verificationResponse = await fetch(verificationCheckUrl, {
+        headers: {
+          'Cookie': request.headers.get('cookie') || '',
+        },
+      });
+      
+      if (verificationResponse.ok) {
+        const { isVerified } = await verificationResponse.json();
+        
+        if (!isVerified) {
+          // For API routes, return 403 instead of redirect
+          if (pathname.startsWith('/api/')) {
+            return NextResponse.json(
+              { 
+                error: 'Email verification required',
+                code: 'EMAIL_VERIFICATION_REQUIRED',
+                message: 'Please verify your email address to access this resource.'
+              },
+              { status: 403 }
+            );
+          }
+          
+          // For page routes, redirect to verification page
+          return NextResponse.redirect(new URL('/auth/verify-email', request.url));
+        }
+      } else if (verificationResponse.status === 401) {
+        // User is not authenticated, redirect to signin
+        const signInUrl = new URL('/auth/signin', request.url);
+        signInUrl.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(signInUrl);
+      }
+    } catch (error) {
+      // If verification check fails, allow the request to continue
+      // The individual route handlers will handle authentication
+      console.error('Verification check error in middleware:', error);
+    }
+  }
+
+  // Redirect authenticated users from auth routes (except verify-email)
+  if (isAuthRoute && isAuthenticated && pathname !== '/auth/verify-email') {
     const redirectUrl = request.nextUrl.searchParams.get('redirect') || '/dashboard';
     return NextResponse.redirect(new URL(redirectUrl, request.url));
   }

@@ -1,0 +1,488 @@
+d38f88613819dec4d6aab9bdf86067b6
+'use client';
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get DataImport () {
+        return DataImport;
+    },
+    get default () {
+        return _default;
+    }
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _react = require("react");
+const _lucidereact = require("lucide-react");
+const _CSVImportModal = require("./CSVImportModal");
+const _ImportHistory = require("./ImportHistory");
+function DataImport({ className = '' }) {
+    const [showImportModal, setShowImportModal] = (0, _react.useState)(false);
+    const [activeTab, setActiveTab] = (0, _react.useState)('import');
+    const handleImportComplete = (summary)=>{
+        // Refresh the history when import completes
+        if (activeTab === 'history') {
+        // The ImportHistory component will automatically refresh
+        }
+    };
+    const downloadTemplate = (type)=>{
+        const templates = {
+            plant_taxonomy: {
+                filename: 'plant_taxonomy_template.csv',
+                headers: [
+                    'Family',
+                    'Genus',
+                    'Species',
+                    'Cultivar',
+                    'Common Name'
+                ],
+                example: [
+                    'Araceae',
+                    'Monstera',
+                    'deliciosa',
+                    'Thai Constellation',
+                    'Monstera Deliciosa'
+                ]
+            },
+            plant_instances: {
+                filename: 'plant_collection_template.csv',
+                headers: [
+                    'Family',
+                    'Genus',
+                    'Species',
+                    'Cultivar',
+                    'Common Name',
+                    'Location',
+                    'Last Fertilized',
+                    'Fertilizer Schedule',
+                    'Fertilizer Due',
+                    'Last Repot'
+                ],
+                example: [
+                    'Araceae',
+                    'Monstera',
+                    'deliciosa',
+                    'Thai Constellation',
+                    'Monstera Deliciosa',
+                    'Living Room',
+                    '2024-01-01',
+                    'every 4 weeks',
+                    '2024-01-29',
+                    '2023-06-15'
+                ]
+            },
+            propagations: {
+                filename: 'propagations_template.csv',
+                headers: [
+                    'Family',
+                    'Genus',
+                    'Species',
+                    'Cultivar',
+                    'Common Name',
+                    'Location',
+                    'Date Started',
+                    'Source',
+                    'Source Details',
+                    'Parent Plant'
+                ],
+                example: [
+                    'Araceae',
+                    'Monstera',
+                    'deliciosa',
+                    'Thai Constellation',
+                    'Monstera Deliciosa',
+                    'Propagation Station',
+                    '2024-01-15',
+                    'gift',
+                    'Gift from Sarah',
+                    ''
+                ]
+            }
+        };
+        const template = templates[type];
+        const csvContent = [
+            template.headers.join(','),
+            template.example.join(',')
+        ].join('\n');
+        const blob = new Blob([
+            csvContent
+        ], {
+            type: 'text/csv;charset=utf-8;'
+        });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', template.filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+    return /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+        className: `space-y-6 ${className}`,
+        children: [
+            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)("h2", {
+                        className: "text-xl font-semibold text-gray-900 mb-2",
+                        children: "Data Import"
+                    }),
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                        className: "text-gray-600",
+                        children: "Import your plant data from CSV files to quickly populate your collection."
+                    })
+                ]
+            }),
+            /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                className: "border-b border-gray-200",
+                children: /*#__PURE__*/ (0, _jsxruntime.jsxs)("nav", {
+                    className: "-mb-px flex space-x-8",
+                    children: [
+                        /*#__PURE__*/ (0, _jsxruntime.jsxs)("button", {
+                            onClick: ()=>setActiveTab('import'),
+                            className: `
+              py-2 px-1 border-b-2 font-medium text-sm transition-colors
+              ${activeTab === 'import' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+            `,
+                            children: [
+                                /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.Upload, {
+                                    className: "w-4 h-4 inline mr-2"
+                                }),
+                                "Import Data"
+                            ]
+                        }),
+                        /*#__PURE__*/ (0, _jsxruntime.jsxs)("button", {
+                            onClick: ()=>setActiveTab('history'),
+                            className: `
+              py-2 px-1 border-b-2 font-medium text-sm transition-colors
+              ${activeTab === 'history' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+            `,
+                            children: [
+                                /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.History, {
+                                    className: "w-4 h-4 inline mr-2"
+                                }),
+                                "Import History"
+                            ]
+                        })
+                    ]
+                })
+            }),
+            activeTab === 'import' && /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                className: "space-y-6",
+                children: [
+                    /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                        className: "bg-primary-50 border border-primary-200 rounded-lg p-6",
+                        children: /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                            className: "flex items-start space-x-4",
+                            children: [
+                                /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                    className: "p-3 bg-primary-200 rounded-lg",
+                                    children: /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.Database, {
+                                        className: "w-6 h-6 text-primary-600"
+                                    })
+                                }),
+                                /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                    className: "flex-1",
+                                    children: [
+                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("h3", {
+                                            className: "font-semibold text-primary-900 mb-2",
+                                            children: "Quick Start Guide"
+                                        }),
+                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                            className: "text-primary-700 mb-4",
+                                            children: "Import your existing plant data to get started quickly. We support three types of CSV imports:"
+                                        }),
+                                        /*#__PURE__*/ (0, _jsxruntime.jsxs)("ul", {
+                                            className: "space-y-2 text-sm text-primary-700",
+                                            children: [
+                                                /*#__PURE__*/ (0, _jsxruntime.jsxs)("li", {
+                                                    className: "flex items-center",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("span", {
+                                                            className: "w-2 h-2 bg-primary-400 rounded-full mr-3"
+                                                        }),
+                                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                                            children: "Plant Taxonomy:"
+                                                        }),
+                                                        " Species information with separate cultivar field support"
+                                                    ]
+                                                }),
+                                                /*#__PURE__*/ (0, _jsxruntime.jsxs)("li", {
+                                                    className: "flex items-center",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("span", {
+                                                            className: "w-2 h-2 bg-primary-400 rounded-full mr-3"
+                                                        }),
+                                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                                            children: "Plant Collection:"
+                                                        }),
+                                                        " Your plant instances with enhanced taxonomy and care schedules"
+                                                    ]
+                                                }),
+                                                /*#__PURE__*/ (0, _jsxruntime.jsxs)("li", {
+                                                    className: "flex items-center",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("span", {
+                                                            className: "w-2 h-2 bg-primary-400 rounded-full mr-3"
+                                                        }),
+                                                        /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                                            children: "Propagations:"
+                                                        }),
+                                                        " Propagation records with external source tracking (gifts, trades, purchases)"
+                                                    ]
+                                                })
+                                            ]
+                                        })
+                                    ]
+                                })
+                            ]
+                        })
+                    }),
+                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                        className: "grid gap-4 md:grid-cols-2",
+                        children: [
+                            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                className: "border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                        className: "flex items-center space-x-3 mb-4",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                className: "p-2 bg-blue-100 rounded-lg",
+                                                children: /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.FileText, {
+                                                    className: "w-5 h-5 text-blue-600"
+                                                })
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("h3", {
+                                                className: "font-semibold text-gray-900",
+                                                children: "Import from CSV"
+                                            })
+                                        ]
+                                    }),
+                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                        className: "text-gray-600 mb-4",
+                                        children: "Upload a CSV file with your plant data. We'll guide you through the process and validate your data."
+                                    }),
+                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("button", {
+                                        onClick: ()=>setShowImportModal(true),
+                                        className: "btn btn--primary btn--full",
+                                        children: "Start CSV Import"
+                                    })
+                                ]
+                            }),
+                            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                className: "border border-gray-200 rounded-lg p-6 hover:shadow-sm transition-shadow",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                        className: "flex items-center space-x-3 mb-4",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("div", {
+                                                className: "p-2 bg-green-100 rounded-lg",
+                                                children: /*#__PURE__*/ (0, _jsxruntime.jsx)(_lucidereact.FileText, {
+                                                    className: "w-5 h-5 text-green-600"
+                                                })
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("h3", {
+                                                className: "font-semibold text-gray-900",
+                                                children: "Download Templates"
+                                            })
+                                        ]
+                                    }),
+                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                        className: "text-gray-600 mb-4",
+                                        children: "Download CSV templates with the correct column headers and example data to get started quickly."
+                                    }),
+                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                        className: "space-y-2",
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("button", {
+                                                onClick: ()=>downloadTemplate('plant_taxonomy'),
+                                                className: "btn btn--sm btn--outline btn--full",
+                                                children: "Plant Taxonomy Template"
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("button", {
+                                                onClick: ()=>downloadTemplate('plant_instances'),
+                                                className: "btn btn--sm btn--outline btn--full",
+                                                children: "Plant Collection Template"
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("button", {
+                                                onClick: ()=>downloadTemplate('propagations'),
+                                                className: "btn btn--sm btn--outline btn--full",
+                                                children: "Propagations Template"
+                                            })
+                                        ]
+                                    })
+                                ]
+                            })
+                        ]
+                    }),
+                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                        className: "bg-gray-50 border border-gray-200 rounded-lg p-6",
+                        children: [
+                            /*#__PURE__*/ (0, _jsxruntime.jsx)("h3", {
+                                className: "font-semibold text-gray-900 mb-4",
+                                children: "CSV Format Requirements"
+                            }),
+                            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                className: "grid gap-6 md:grid-cols-3",
+                                children: [
+                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("h4", {
+                                                className: "font-medium text-gray-900 mb-2",
+                                                children: "Plant Taxonomy"
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                                className: "text-sm text-gray-600 space-y-1",
+                                                children: [
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                        children: /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                                            children: "Required columns:"
+                                                        })
+                                                    }),
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("ul", {
+                                                        className: "list-disc list-inside space-y-1 text-xs",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Family"
+                                                            }),
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Genus"
+                                                            }),
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Species"
+                                                            }),
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Common Name"
+                                                            })
+                                                        ]
+                                                    }),
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("p", {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                                                children: "Optional:"
+                                                            }),
+                                                            " Cultivar"
+                                                        ]
+                                                    }),
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                        className: "text-xs italic",
+                                                        children: 'Legacy "Common Name/Variety" column still supported'
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("h4", {
+                                                className: "font-medium text-gray-900 mb-2",
+                                                children: "Plant Collection"
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                                className: "text-sm text-gray-600 space-y-1",
+                                                children: [
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                        children: /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                                            children: "Required columns:"
+                                                        })
+                                                    }),
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("ul", {
+                                                        className: "list-disc list-inside space-y-1 text-xs",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Common Name"
+                                                            }),
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Location"
+                                                            }),
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Fertilizer Schedule"
+                                                            })
+                                                        ]
+                                                    }),
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("p", {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                                                children: "Optional:"
+                                                            }),
+                                                            " Cultivar, Last Fertilized, Last Repot"
+                                                        ]
+                                                    }),
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                        className: "text-xs italic",
+                                                        children: 'Legacy "Common Name/Variety" column still supported'
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    }),
+                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("h4", {
+                                                className: "font-medium text-gray-900 mb-2",
+                                                children: "Propagations"
+                                            }),
+                                            /*#__PURE__*/ (0, _jsxruntime.jsxs)("div", {
+                                                className: "text-sm text-gray-600 space-y-1",
+                                                children: [
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                        children: /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                                            children: "Required columns:"
+                                                        })
+                                                    }),
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("ul", {
+                                                        className: "list-disc list-inside space-y-1 text-xs",
+                                                        children: [
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Common Name"
+                                                            }),
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Location"
+                                                            }),
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("li", {
+                                                                children: "Date Started"
+                                                            })
+                                                        ]
+                                                    }),
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsxs)("p", {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, _jsxruntime.jsx)("strong", {
+                                                                children: "Optional:"
+                                                            }),
+                                                            " Cultivar, Source, Source Details, Parent Plant"
+                                                        ]
+                                                    }),
+                                                    /*#__PURE__*/ (0, _jsxruntime.jsx)("p", {
+                                                        className: "text-xs italic",
+                                                        children: "Source auto-detects external propagations (gifts, trades, purchases)"
+                                                    })
+                                                ]
+                                            })
+                                        ]
+                                    })
+                                ]
+                            })
+                        ]
+                    })
+                ]
+            }),
+            activeTab === 'history' && /*#__PURE__*/ (0, _jsxruntime.jsx)(_ImportHistory.ImportHistory, {}),
+            /*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.CSVImportModal, {
+                isOpen: showImportModal,
+                onClose: ()=>setShowImportModal(false),
+                onImportComplete: handleImportComplete
+            })
+        ]
+    });
+}
+const _default = DataImport;
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL2NvbXBvbmVudHMvaW1wb3J0L0RhdGFJbXBvcnQudHN4Il0sInNvdXJjZXNDb250ZW50IjpbIid1c2UgY2xpZW50JztcblxuaW1wb3J0IHsgdXNlU3RhdGUgfSBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBVcGxvYWQsIEZpbGVUZXh0LCBEYXRhYmFzZSwgSGlzdG9yeSB9IGZyb20gJ2x1Y2lkZS1yZWFjdCc7XG5pbXBvcnQgeyBDU1ZJbXBvcnRNb2RhbCB9IGZyb20gJy4vQ1NWSW1wb3J0TW9kYWwnO1xuaW1wb3J0IHsgSW1wb3J0SGlzdG9yeSB9IGZyb20gJy4vSW1wb3J0SGlzdG9yeSc7XG5cbmludGVyZmFjZSBEYXRhSW1wb3J0UHJvcHMge1xuICBjbGFzc05hbWU/OiBzdHJpbmc7XG59XG5cbmV4cG9ydCBmdW5jdGlvbiBEYXRhSW1wb3J0KHsgY2xhc3NOYW1lID0gJycgfTogRGF0YUltcG9ydFByb3BzKSB7XG4gIGNvbnN0IFtzaG93SW1wb3J0TW9kYWwsIHNldFNob3dJbXBvcnRNb2RhbF0gPSB1c2VTdGF0ZShmYWxzZSk7XG4gIGNvbnN0IFthY3RpdmVUYWIsIHNldEFjdGl2ZVRhYl0gPSB1c2VTdGF0ZTwnaW1wb3J0JyB8ICdoaXN0b3J5Jz4oJ2ltcG9ydCcpO1xuXG4gIGNvbnN0IGhhbmRsZUltcG9ydENvbXBsZXRlID0gKHN1bW1hcnk6IGFueSkgPT4ge1xuICAgIC8vIFJlZnJlc2ggdGhlIGhpc3Rvcnkgd2hlbiBpbXBvcnQgY29tcGxldGVzXG4gICAgaWYgKGFjdGl2ZVRhYiA9PT0gJ2hpc3RvcnknKSB7XG4gICAgICAvLyBUaGUgSW1wb3J0SGlzdG9yeSBjb21wb25lbnQgd2lsbCBhdXRvbWF0aWNhbGx5IHJlZnJlc2hcbiAgICB9XG4gIH07XG5cbiAgY29uc3QgZG93bmxvYWRUZW1wbGF0ZSA9ICh0eXBlOiAncGxhbnRfdGF4b25vbXknIHwgJ3BsYW50X2luc3RhbmNlcycgfCAncHJvcGFnYXRpb25zJykgPT4ge1xuICAgIGNvbnN0IHRlbXBsYXRlcyA9IHtcbiAgICAgIHBsYW50X3RheG9ub215OiB7XG4gICAgICAgIGZpbGVuYW1lOiAncGxhbnRfdGF4b25vbXlfdGVtcGxhdGUuY3N2JyxcbiAgICAgICAgaGVhZGVyczogWydGYW1pbHknLCAnR2VudXMnLCAnU3BlY2llcycsICdDdWx0aXZhcicsICdDb21tb24gTmFtZSddLFxuICAgICAgICBleGFtcGxlOiBbJ0FyYWNlYWUnLCAnTW9uc3RlcmEnLCAnZGVsaWNpb3NhJywgJ1RoYWkgQ29uc3RlbGxhdGlvbicsICdNb25zdGVyYSBEZWxpY2lvc2EnXVxuICAgICAgfSxcbiAgICAgIHBsYW50X2luc3RhbmNlczoge1xuICAgICAgICBmaWxlbmFtZTogJ3BsYW50X2NvbGxlY3Rpb25fdGVtcGxhdGUuY3N2JyxcbiAgICAgICAgaGVhZGVyczogWydGYW1pbHknLCAnR2VudXMnLCAnU3BlY2llcycsICdDdWx0aXZhcicsICdDb21tb24gTmFtZScsICdMb2NhdGlvbicsICdMYXN0IEZlcnRpbGl6ZWQnLCAnRmVydGlsaXplciBTY2hlZHVsZScsICdGZXJ0aWxpemVyIER1ZScsICdMYXN0IFJlcG90J10sXG4gICAgICAgIGV4YW1wbGU6IFsnQXJhY2VhZScsICdNb25zdGVyYScsICdkZWxpY2lvc2EnLCAnVGhhaSBDb25zdGVsbGF0aW9uJywgJ01vbnN0ZXJhIERlbGljaW9zYScsICdMaXZpbmcgUm9vbScsICcyMDI0LTAxLTAxJywgJ2V2ZXJ5IDQgd2Vla3MnLCAnMjAyNC0wMS0yOScsICcyMDIzLTA2LTE1J11cbiAgICAgIH0sXG4gICAgICBwcm9wYWdhdGlvbnM6IHtcbiAgICAgICAgZmlsZW5hbWU6ICdwcm9wYWdhdGlvbnNfdGVtcGxhdGUuY3N2JyxcbiAgICAgICAgaGVhZGVyczogWydGYW1pbHknLCAnR2VudXMnLCAnU3BlY2llcycsICdDdWx0aXZhcicsICdDb21tb24gTmFtZScsICdMb2NhdGlvbicsICdEYXRlIFN0YXJ0ZWQnLCAnU291cmNlJywgJ1NvdXJjZSBEZXRhaWxzJywgJ1BhcmVudCBQbGFudCddLFxuICAgICAgICBleGFtcGxlOiBbJ0FyYWNlYWUnLCAnTW9uc3RlcmEnLCAnZGVsaWNpb3NhJywgJ1RoYWkgQ29uc3RlbGxhdGlvbicsICdNb25zdGVyYSBEZWxpY2lvc2EnLCAnUHJvcGFnYXRpb24gU3RhdGlvbicsICcyMDI0LTAxLTE1JywgJ2dpZnQnLCAnR2lmdCBmcm9tIFNhcmFoJywgJyddXG4gICAgICB9XG4gICAgfTtcblxuICAgIGNvbnN0IHRlbXBsYXRlID0gdGVtcGxhdGVzW3R5cGVdO1xuICAgIGNvbnN0IGNzdkNvbnRlbnQgPSBbXG4gICAgICB0ZW1wbGF0ZS5oZWFkZXJzLmpvaW4oJywnKSxcbiAgICAgIHRlbXBsYXRlLmV4YW1wbGUuam9pbignLCcpXG4gICAgXS5qb2luKCdcXG4nKTtcblxuICAgIGNvbnN0IGJsb2IgPSBuZXcgQmxvYihbY3N2Q29udGVudF0sIHsgdHlwZTogJ3RleHQvY3N2O2NoYXJzZXQ9dXRmLTg7JyB9KTtcbiAgICBjb25zdCBsaW5rID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnYScpO1xuICAgIGNvbnN0IHVybCA9IFVSTC5jcmVhdGVPYmplY3RVUkwoYmxvYik7XG4gICAgbGluay5zZXRBdHRyaWJ1dGUoJ2hyZWYnLCB1cmwpO1xuICAgIGxpbmsuc2V0QXR0cmlidXRlKCdkb3dubG9hZCcsIHRlbXBsYXRlLmZpbGVuYW1lKTtcbiAgICBsaW5rLnN0eWxlLnZpc2liaWxpdHkgPSAnaGlkZGVuJztcbiAgICBkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKGxpbmspO1xuICAgIGxpbmsuY2xpY2soKTtcbiAgICBkb2N1bWVudC5ib2R5LnJlbW92ZUNoaWxkKGxpbmspO1xuICB9O1xuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9e2BzcGFjZS15LTYgJHtjbGFzc05hbWV9YH0+XG4gICAgICB7LyogSGVhZGVyICovfVxuICAgICAgPGRpdj5cbiAgICAgICAgPGgyIGNsYXNzTmFtZT1cInRleHQteGwgZm9udC1zZW1pYm9sZCB0ZXh0LWdyYXktOTAwIG1iLTJcIj5cbiAgICAgICAgICBEYXRhIEltcG9ydFxuICAgICAgICA8L2gyPlxuICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LWdyYXktNjAwXCI+XG4gICAgICAgICAgSW1wb3J0IHlvdXIgcGxhbnQgZGF0YSBmcm9tIENTViBmaWxlcyB0byBxdWlja2x5IHBvcHVsYXRlIHlvdXIgY29sbGVjdGlvbi5cbiAgICAgICAgPC9wPlxuICAgICAgPC9kaXY+XG5cbiAgICAgIHsvKiBUYWIgTmF2aWdhdGlvbiAqL31cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYm9yZGVyLWIgYm9yZGVyLWdyYXktMjAwXCI+XG4gICAgICAgIDxuYXYgY2xhc3NOYW1lPVwiLW1iLXB4IGZsZXggc3BhY2UteC04XCI+XG4gICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgb25DbGljaz17KCkgPT4gc2V0QWN0aXZlVGFiKCdpbXBvcnQnKX1cbiAgICAgICAgICAgIGNsYXNzTmFtZT17YFxuICAgICAgICAgICAgICBweS0yIHB4LTEgYm9yZGVyLWItMiBmb250LW1lZGl1bSB0ZXh0LXNtIHRyYW5zaXRpb24tY29sb3JzXG4gICAgICAgICAgICAgICR7YWN0aXZlVGFiID09PSAnaW1wb3J0J1xuICAgICAgICAgICAgICAgID8gJ2JvcmRlci1wcmltYXJ5LTUwMCB0ZXh0LXByaW1hcnktNjAwJ1xuICAgICAgICAgICAgICAgIDogJ2JvcmRlci10cmFuc3BhcmVudCB0ZXh0LWdyYXktNTAwIGhvdmVyOnRleHQtZ3JheS03MDAgaG92ZXI6Ym9yZGVyLWdyYXktMzAwJ1xuICAgICAgICAgICAgICB9XG4gICAgICAgICAgICBgfVxuICAgICAgICAgID5cbiAgICAgICAgICAgIDxVcGxvYWQgY2xhc3NOYW1lPVwidy00IGgtNCBpbmxpbmUgbXItMlwiIC8+XG4gICAgICAgICAgICBJbXBvcnQgRGF0YVxuICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHNldEFjdGl2ZVRhYignaGlzdG9yeScpfVxuICAgICAgICAgICAgY2xhc3NOYW1lPXtgXG4gICAgICAgICAgICAgIHB5LTIgcHgtMSBib3JkZXItYi0yIGZvbnQtbWVkaXVtIHRleHQtc20gdHJhbnNpdGlvbi1jb2xvcnNcbiAgICAgICAgICAgICAgJHthY3RpdmVUYWIgPT09ICdoaXN0b3J5J1xuICAgICAgICAgICAgICAgID8gJ2JvcmRlci1wcmltYXJ5LTUwMCB0ZXh0LXByaW1hcnktNjAwJ1xuICAgICAgICAgICAgICAgIDogJ2JvcmRlci10cmFuc3BhcmVudCB0ZXh0LWdyYXktNTAwIGhvdmVyOnRleHQtZ3JheS03MDAgaG92ZXI6Ym9yZGVyLWdyYXktMzAwJ1xuICAgICAgICAgICAgICB9XG4gICAgICAgICAgICBgfVxuICAgICAgICAgID5cbiAgICAgICAgICAgIDxIaXN0b3J5IGNsYXNzTmFtZT1cInctNCBoLTQgaW5saW5lIG1yLTJcIiAvPlxuICAgICAgICAgICAgSW1wb3J0IEhpc3RvcnlcbiAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgPC9uYXY+XG4gICAgICA8L2Rpdj5cblxuICAgICAgey8qIFRhYiBDb250ZW50ICovfVxuICAgICAge2FjdGl2ZVRhYiA9PT0gJ2ltcG9ydCcgJiYgKFxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInNwYWNlLXktNlwiPlxuICAgICAgICAgIHsvKiBRdWljayBTdGFydCBTZWN0aW9uICovfVxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiYmctcHJpbWFyeS01MCBib3JkZXIgYm9yZGVyLXByaW1hcnktMjAwIHJvdW5kZWQtbGcgcC02XCI+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtc3RhcnQgc3BhY2UteC00XCI+XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicC0zIGJnLXByaW1hcnktMjAwIHJvdW5kZWQtbGdcIj5cbiAgICAgICAgICAgICAgICA8RGF0YWJhc2UgY2xhc3NOYW1lPVwidy02IGgtNiB0ZXh0LXByaW1hcnktNjAwXCIgLz5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleC0xXCI+XG4gICAgICAgICAgICAgICAgPGgzIGNsYXNzTmFtZT1cImZvbnQtc2VtaWJvbGQgdGV4dC1wcmltYXJ5LTkwMCBtYi0yXCI+XG4gICAgICAgICAgICAgICAgICBRdWljayBTdGFydCBHdWlkZVxuICAgICAgICAgICAgICAgIDwvaDM+XG4gICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1wcmltYXJ5LTcwMCBtYi00XCI+XG4gICAgICAgICAgICAgICAgICBJbXBvcnQgeW91ciBleGlzdGluZyBwbGFudCBkYXRhIHRvIGdldCBzdGFydGVkIHF1aWNrbHkuIFdlIHN1cHBvcnQgdGhyZWUgdHlwZXMgb2YgQ1NWIGltcG9ydHM6XG4gICAgICAgICAgICAgICAgPC9wPlxuICAgICAgICAgICAgICAgIDx1bCBjbGFzc05hbWU9XCJzcGFjZS15LTIgdGV4dC1zbSB0ZXh0LXByaW1hcnktNzAwXCI+XG4gICAgICAgICAgICAgICAgICA8bGkgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXJcIj5cbiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidy0yIGgtMiBiZy1wcmltYXJ5LTQwMCByb3VuZGVkLWZ1bGwgbXItM1wiPjwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgPHN0cm9uZz5QbGFudCBUYXhvbm9teTo8L3N0cm9uZz4gU3BlY2llcyBpbmZvcm1hdGlvbiB3aXRoIHNlcGFyYXRlIGN1bHRpdmFyIGZpZWxkIHN1cHBvcnRcbiAgICAgICAgICAgICAgICAgIDwvbGk+XG4gICAgICAgICAgICAgICAgICA8bGkgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXJcIj5cbiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidy0yIGgtMiBiZy1wcmltYXJ5LTQwMCByb3VuZGVkLWZ1bGwgbXItM1wiPjwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgPHN0cm9uZz5QbGFudCBDb2xsZWN0aW9uOjwvc3Ryb25nPiBZb3VyIHBsYW50IGluc3RhbmNlcyB3aXRoIGVuaGFuY2VkIHRheG9ub215IGFuZCBjYXJlIHNjaGVkdWxlc1xuICAgICAgICAgICAgICAgICAgPC9saT5cbiAgICAgICAgICAgICAgICAgIDxsaSBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlclwiPlxuICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ3LTIgaC0yIGJnLXByaW1hcnktNDAwIHJvdW5kZWQtZnVsbCBtci0zXCI+PC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICA8c3Ryb25nPlByb3BhZ2F0aW9uczo8L3N0cm9uZz4gUHJvcGFnYXRpb24gcmVjb3JkcyB3aXRoIGV4dGVybmFsIHNvdXJjZSB0cmFja2luZyAoZ2lmdHMsIHRyYWRlcywgcHVyY2hhc2VzKVxuICAgICAgICAgICAgICAgICAgPC9saT5cbiAgICAgICAgICAgICAgICA8L3VsPlxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgey8qIEltcG9ydCBBY3Rpb25zICovfVxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZ3JpZCBnYXAtNCBtZDpncmlkLWNvbHMtMlwiPlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJib3JkZXIgYm9yZGVyLWdyYXktMjAwIHJvdW5kZWQtbGcgcC02IGhvdmVyOnNoYWRvdy1zbSB0cmFuc2l0aW9uLXNoYWRvd1wiPlxuICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIHNwYWNlLXgtMyBtYi00XCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTIgYmctYmx1ZS0xMDAgcm91bmRlZC1sZ1wiPlxuICAgICAgICAgICAgICAgICAgPEZpbGVUZXh0IGNsYXNzTmFtZT1cInctNSBoLTUgdGV4dC1ibHVlLTYwMFwiIC8+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPGgzIGNsYXNzTmFtZT1cImZvbnQtc2VtaWJvbGQgdGV4dC1ncmF5LTkwMFwiPlxuICAgICAgICAgICAgICAgICAgSW1wb3J0IGZyb20gQ1NWXG4gICAgICAgICAgICAgICAgPC9oMz5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtZ3JheS02MDAgbWItNFwiPlxuICAgICAgICAgICAgICAgIFVwbG9hZCBhIENTViBmaWxlIHdpdGggeW91ciBwbGFudCBkYXRhLiBXZSdsbCBndWlkZSB5b3UgdGhyb3VnaCB0aGUgcHJvY2VzcyBhbmQgdmFsaWRhdGUgeW91ciBkYXRhLlxuICAgICAgICAgICAgICA8L3A+XG4gICAgICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBzZXRTaG93SW1wb3J0TW9kYWwodHJ1ZSl9XG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiYnRuIGJ0bi0tcHJpbWFyeSBidG4tLWZ1bGxcIlxuICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgU3RhcnQgQ1NWIEltcG9ydFxuICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImJvcmRlciBib3JkZXItZ3JheS0yMDAgcm91bmRlZC1sZyBwLTYgaG92ZXI6c2hhZG93LXNtIHRyYW5zaXRpb24tc2hhZG93XCI+XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgc3BhY2UteC0zIG1iLTRcIj5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInAtMiBiZy1ncmVlbi0xMDAgcm91bmRlZC1sZ1wiPlxuICAgICAgICAgICAgICAgICAgPEZpbGVUZXh0IGNsYXNzTmFtZT1cInctNSBoLTUgdGV4dC1ncmVlbi02MDBcIiAvPlxuICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgIDxoMyBjbGFzc05hbWU9XCJmb250LXNlbWlib2xkIHRleHQtZ3JheS05MDBcIj5cbiAgICAgICAgICAgICAgICAgIERvd25sb2FkIFRlbXBsYXRlc1xuICAgICAgICAgICAgICAgIDwvaDM+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LWdyYXktNjAwIG1iLTRcIj5cbiAgICAgICAgICAgICAgICBEb3dubG9hZCBDU1YgdGVtcGxhdGVzIHdpdGggdGhlIGNvcnJlY3QgY29sdW1uIGhlYWRlcnMgYW5kIGV4YW1wbGUgZGF0YSB0byBnZXQgc3RhcnRlZCBxdWlja2x5LlxuICAgICAgICAgICAgICA8L3A+XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0yXCI+XG4gICAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gZG93bmxvYWRUZW1wbGF0ZSgncGxhbnRfdGF4b25vbXknKX1cbiAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImJ0biBidG4tLXNtIGJ0bi0tb3V0bGluZSBidG4tLWZ1bGxcIlxuICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIFBsYW50IFRheG9ub215IFRlbXBsYXRlXG4gICAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gZG93bmxvYWRUZW1wbGF0ZSgncGxhbnRfaW5zdGFuY2VzJyl9XG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJidG4gYnRuLS1zbSBidG4tLW91dGxpbmUgYnRuLS1mdWxsXCJcbiAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICBQbGFudCBDb2xsZWN0aW9uIFRlbXBsYXRlXG4gICAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gZG93bmxvYWRUZW1wbGF0ZSgncHJvcGFnYXRpb25zJyl9XG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJidG4gYnRuLS1zbSBidG4tLW91dGxpbmUgYnRuLS1mdWxsXCJcbiAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICBQcm9wYWdhdGlvbnMgVGVtcGxhdGVcbiAgICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgIHsvKiBDU1YgRm9ybWF0IEhlbHAgKi99XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJiZy1ncmF5LTUwIGJvcmRlciBib3JkZXItZ3JheS0yMDAgcm91bmRlZC1sZyBwLTZcIj5cbiAgICAgICAgICAgIDxoMyBjbGFzc05hbWU9XCJmb250LXNlbWlib2xkIHRleHQtZ3JheS05MDAgbWItNFwiPlxuICAgICAgICAgICAgICBDU1YgRm9ybWF0IFJlcXVpcmVtZW50c1xuICAgICAgICAgICAgPC9oMz5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZ3JpZCBnYXAtNiBtZDpncmlkLWNvbHMtM1wiPlxuICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgIDxoNCBjbGFzc05hbWU9XCJmb250LW1lZGl1bSB0ZXh0LWdyYXktOTAwIG1iLTJcIj5QbGFudCBUYXhvbm9teTwvaDQ+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ0ZXh0LXNtIHRleHQtZ3JheS02MDAgc3BhY2UteS0xXCI+XG4gICAgICAgICAgICAgICAgICA8cD48c3Ryb25nPlJlcXVpcmVkIGNvbHVtbnM6PC9zdHJvbmc+PC9wPlxuICAgICAgICAgICAgICAgICAgPHVsIGNsYXNzTmFtZT1cImxpc3QtZGlzYyBsaXN0LWluc2lkZSBzcGFjZS15LTEgdGV4dC14c1wiPlxuICAgICAgICAgICAgICAgICAgICA8bGk+RmFtaWx5PC9saT5cbiAgICAgICAgICAgICAgICAgICAgPGxpPkdlbnVzPC9saT5cbiAgICAgICAgICAgICAgICAgICAgPGxpPlNwZWNpZXM8L2xpPlxuICAgICAgICAgICAgICAgICAgICA8bGk+Q29tbW9uIE5hbWU8L2xpPlxuICAgICAgICAgICAgICAgICAgPC91bD5cbiAgICAgICAgICAgICAgICAgIDxwPjxzdHJvbmc+T3B0aW9uYWw6PC9zdHJvbmc+IEN1bHRpdmFyPC9wPlxuICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC14cyBpdGFsaWNcIj5MZWdhY3kgXCJDb21tb24gTmFtZS9WYXJpZXR5XCIgY29sdW1uIHN0aWxsIHN1cHBvcnRlZDwvcD5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIFxuICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgIDxoNCBjbGFzc05hbWU9XCJmb250LW1lZGl1bSB0ZXh0LWdyYXktOTAwIG1iLTJcIj5QbGFudCBDb2xsZWN0aW9uPC9oND5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInRleHQtc20gdGV4dC1ncmF5LTYwMCBzcGFjZS15LTFcIj5cbiAgICAgICAgICAgICAgICAgIDxwPjxzdHJvbmc+UmVxdWlyZWQgY29sdW1uczo8L3N0cm9uZz48L3A+XG4gICAgICAgICAgICAgICAgICA8dWwgY2xhc3NOYW1lPVwibGlzdC1kaXNjIGxpc3QtaW5zaWRlIHNwYWNlLXktMSB0ZXh0LXhzXCI+XG4gICAgICAgICAgICAgICAgICAgIDxsaT5Db21tb24gTmFtZTwvbGk+XG4gICAgICAgICAgICAgICAgICAgIDxsaT5Mb2NhdGlvbjwvbGk+XG4gICAgICAgICAgICAgICAgICAgIDxsaT5GZXJ0aWxpemVyIFNjaGVkdWxlPC9saT5cbiAgICAgICAgICAgICAgICAgIDwvdWw+XG4gICAgICAgICAgICAgICAgICA8cD48c3Ryb25nPk9wdGlvbmFsOjwvc3Ryb25nPiBDdWx0aXZhciwgTGFzdCBGZXJ0aWxpemVkLCBMYXN0IFJlcG90PC9wPlxuICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC14cyBpdGFsaWNcIj5MZWdhY3kgXCJDb21tb24gTmFtZS9WYXJpZXR5XCIgY29sdW1uIHN0aWxsIHN1cHBvcnRlZDwvcD5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIFxuICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgIDxoNCBjbGFzc05hbWU9XCJmb250LW1lZGl1bSB0ZXh0LWdyYXktOTAwIG1iLTJcIj5Qcm9wYWdhdGlvbnM8L2g0PlxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGV4dC1zbSB0ZXh0LWdyYXktNjAwIHNwYWNlLXktMVwiPlxuICAgICAgICAgICAgICAgICAgPHA+PHN0cm9uZz5SZXF1aXJlZCBjb2x1bW5zOjwvc3Ryb25nPjwvcD5cbiAgICAgICAgICAgICAgICAgIDx1bCBjbGFzc05hbWU9XCJsaXN0LWRpc2MgbGlzdC1pbnNpZGUgc3BhY2UteS0xIHRleHQteHNcIj5cbiAgICAgICAgICAgICAgICAgICAgPGxpPkNvbW1vbiBOYW1lPC9saT5cbiAgICAgICAgICAgICAgICAgICAgPGxpPkxvY2F0aW9uPC9saT5cbiAgICAgICAgICAgICAgICAgICAgPGxpPkRhdGUgU3RhcnRlZDwvbGk+XG4gICAgICAgICAgICAgICAgICA8L3VsPlxuICAgICAgICAgICAgICAgICAgPHA+PHN0cm9uZz5PcHRpb25hbDo8L3N0cm9uZz4gQ3VsdGl2YXIsIFNvdXJjZSwgU291cmNlIERldGFpbHMsIFBhcmVudCBQbGFudDwvcD5cbiAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQteHMgaXRhbGljXCI+U291cmNlIGF1dG8tZGV0ZWN0cyBleHRlcm5hbCBwcm9wYWdhdGlvbnMgKGdpZnRzLCB0cmFkZXMsIHB1cmNoYXNlcyk8L3A+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvZGl2PlxuICAgICAgKX1cblxuICAgICAge2FjdGl2ZVRhYiA9PT0gJ2hpc3RvcnknICYmIChcbiAgICAgICAgPEltcG9ydEhpc3RvcnkgLz5cbiAgICAgICl9XG5cbiAgICAgIHsvKiBDU1YgSW1wb3J0IE1vZGFsICovfVxuICAgICAgPENTVkltcG9ydE1vZGFsXG4gICAgICAgIGlzT3Blbj17c2hvd0ltcG9ydE1vZGFsfVxuICAgICAgICBvbkNsb3NlPXsoKSA9PiBzZXRTaG93SW1wb3J0TW9kYWwoZmFsc2UpfVxuICAgICAgICBvbkltcG9ydENvbXBsZXRlPXtoYW5kbGVJbXBvcnRDb21wbGV0ZX1cbiAgICAgIC8+XG4gICAgPC9kaXY+XG4gICk7XG59XG5cbmV4cG9ydCBkZWZhdWx0IERhdGFJbXBvcnQ7Il0sIm5hbWVzIjpbIkRhdGFJbXBvcnQiLCJjbGFzc05hbWUiLCJzaG93SW1wb3J0TW9kYWwiLCJzZXRTaG93SW1wb3J0TW9kYWwiLCJ1c2VTdGF0ZSIsImFjdGl2ZVRhYiIsInNldEFjdGl2ZVRhYiIsImhhbmRsZUltcG9ydENvbXBsZXRlIiwic3VtbWFyeSIsImRvd25sb2FkVGVtcGxhdGUiLCJ0eXBlIiwidGVtcGxhdGVzIiwicGxhbnRfdGF4b25vbXkiLCJmaWxlbmFtZSIsImhlYWRlcnMiLCJleGFtcGxlIiwicGxhbnRfaW5zdGFuY2VzIiwicHJvcGFnYXRpb25zIiwidGVtcGxhdGUiLCJjc3ZDb250ZW50Iiwiam9pbiIsImJsb2IiLCJCbG9iIiwibGluayIsImRvY3VtZW50IiwiY3JlYXRlRWxlbWVudCIsInVybCIsIlVSTCIsImNyZWF0ZU9iamVjdFVSTCIsInNldEF0dHJpYnV0ZSIsInN0eWxlIiwidmlzaWJpbGl0eSIsImJvZHkiLCJhcHBlbmRDaGlsZCIsImNsaWNrIiwicmVtb3ZlQ2hpbGQiLCJkaXYiLCJoMiIsInAiLCJuYXYiLCJidXR0b24iLCJvbkNsaWNrIiwiVXBsb2FkIiwiSGlzdG9yeSIsIkRhdGFiYXNlIiwiaDMiLCJ1bCIsImxpIiwic3BhbiIsInN0cm9uZyIsIkZpbGVUZXh0IiwiaDQiLCJJbXBvcnRIaXN0b3J5IiwiQ1NWSW1wb3J0TW9kYWwiLCJpc09wZW4iLCJvbkNsb3NlIiwib25JbXBvcnRDb21wbGV0ZSJdLCJtYXBwaW5ncyI6IkFBQUE7Ozs7Ozs7Ozs7OztRQVdnQkE7ZUFBQUE7O1FBeVBoQjtlQUFBOzs7O3VCQWxReUI7NkJBQzJCO2dDQUNyQjsrQkFDRDtBQU12QixTQUFTQSxXQUFXLEVBQUVDLFlBQVksRUFBRSxFQUFtQjtJQUM1RCxNQUFNLENBQUNDLGlCQUFpQkMsbUJBQW1CLEdBQUdDLElBQUFBLGVBQVEsRUFBQztJQUN2RCxNQUFNLENBQUNDLFdBQVdDLGFBQWEsR0FBR0YsSUFBQUEsZUFBUSxFQUF1QjtJQUVqRSxNQUFNRyx1QkFBdUIsQ0FBQ0M7UUFDNUIsNENBQTRDO1FBQzVDLElBQUlILGNBQWMsV0FBVztRQUMzQix5REFBeUQ7UUFDM0Q7SUFDRjtJQUVBLE1BQU1JLG1CQUFtQixDQUFDQztRQUN4QixNQUFNQyxZQUFZO1lBQ2hCQyxnQkFBZ0I7Z0JBQ2RDLFVBQVU7Z0JBQ1ZDLFNBQVM7b0JBQUM7b0JBQVU7b0JBQVM7b0JBQVc7b0JBQVk7aUJBQWM7Z0JBQ2xFQyxTQUFTO29CQUFDO29CQUFXO29CQUFZO29CQUFhO29CQUFzQjtpQkFBcUI7WUFDM0Y7WUFDQUMsaUJBQWlCO2dCQUNmSCxVQUFVO2dCQUNWQyxTQUFTO29CQUFDO29CQUFVO29CQUFTO29CQUFXO29CQUFZO29C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

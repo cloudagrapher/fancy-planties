@@ -1,0 +1,569 @@
+1baebe7edcb5bd2a0619367d26905f7c
+"use strict";
+
+/* istanbul ignore next */
+function cov_tqc90bdj9() {
+  var path = "/Users/stefanbekker/projects/fancy-planties/src/app/dashboard/profile/page.tsx";
+  var hash = "8abdf5146ff8c3ec73f2b73bcc165cf26c034ad6";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/stefanbekker/projects/fancy-planties/src/app/dashboard/profile/page.tsx",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 3
+        }
+      },
+      "1": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 10,
+          column: 3
+        }
+      },
+      "2": {
+        start: {
+          line: 8,
+          column: 8
+        },
+        end: {
+          line: 8,
+          column: 27
+        }
+      },
+      "3": {
+        start: {
+          line: 11,
+          column: 20
+        },
+        end: {
+          line: 11,
+          column: 48
+        }
+      },
+      "4": {
+        start: {
+          line: 12,
+          column: 16
+        },
+        end: {
+          line: 12,
+          column: 51
+        }
+      },
+      "5": {
+        start: {
+          line: 13,
+          column: 20
+        },
+        end: {
+          line: 13,
+          column: 68
+        }
+      },
+      "6": {
+        start: {
+          line: 14,
+          column: 36
+        },
+        end: {
+          line: 14,
+          column: 110
+        }
+      },
+      "7": {
+        start: {
+          line: 15,
+          column: 21
+        },
+        end: {
+          line: 15,
+          column: 44
+        }
+      },
+      "8": {
+        start: {
+          line: 17,
+          column: 4
+        },
+        end: {
+          line: 19,
+          column: 6
+        }
+      },
+      "9": {
+        start: {
+          line: 22,
+          column: 21
+        },
+        end: {
+          line: 22,
+          column: 60
+        }
+      },
+      "10": {
+        start: {
+          line: 23,
+          column: 4
+        },
+        end: {
+          line: 303,
+          column: 7
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 7,
+            column: 9
+          },
+          end: {
+            line: 7,
+            column: 10
+          }
+        },
+        loc: {
+          start: {
+            line: 7,
+            column: 20
+          },
+          end: {
+            line: 9,
+            column: 5
+          }
+        },
+        line: 7
+      },
+      "1": {
+        name: "_interop_require_default",
+        decl: {
+          start: {
+            line: 16,
+            column: 9
+          },
+          end: {
+            line: 16,
+            column: 33
+          }
+        },
+        loc: {
+          start: {
+            line: 16,
+            column: 39
+          },
+          end: {
+            line: 20,
+            column: 1
+          }
+        },
+        line: 16
+      },
+      "2": {
+        name: "ProfilePage",
+        decl: {
+          start: {
+            line: 21,
+            column: 15
+          },
+          end: {
+            line: 21,
+            column: 26
+          }
+        },
+        loc: {
+          start: {
+            line: 21,
+            column: 29
+          },
+          end: {
+            line: 304,
+            column: 1
+          }
+        },
+        line: 21
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 17,
+            column: 11
+          },
+          end: {
+            line: 19,
+            column: 5
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 17,
+            column: 35
+          },
+          end: {
+            line: 17,
+            column: 38
+          }
+        }, {
+          start: {
+            line: 17,
+            column: 41
+          },
+          end: {
+            line: 19,
+            column: 5
+          }
+        }],
+        line: 17
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 17,
+            column: 11
+          },
+          end: {
+            line: 17,
+            column: 32
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 17,
+            column: 11
+          },
+          end: {
+            line: 17,
+            column: 14
+          }
+        }, {
+          start: {
+            line: 17,
+            column: 18
+          },
+          end: {
+            line: 17,
+            column: 32
+          }
+        }],
+        line: 17
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0,
+      "2": 0
+    },
+    b: {
+      "0": [0, 0],
+      "1": [0, 0]
+    },
+    inputSourceMap: {
+      version: 3,
+      sources: ["/Users/stefanbekker/projects/fancy-planties/src/app/dashboard/profile/page.tsx"],
+      sourcesContent: ["import { requireAuthSession } from '@/lib/auth/server';\nimport { DataImport } from '@/components/import/DataImport';\nimport LogoutButton from '@/components/auth/LogoutButton';\nimport { User, Database, FileText, Download, Upload } from 'lucide-react';\n\nexport default async function ProfilePage() {\n  const { user } = await requireAuthSession();\n\n  return (\n    <div className=\"page\">\n      <div className=\"container\">\n        <div className=\"page-content\">\n          {/* Header */}\n          <div className=\"page-header\">\n            <div>\n              <h1 className=\"text-2xl font-bold text-neutral-900\">Profile</h1>\n              <p className=\"text-neutral-600 text-sm\">\n                Manage your account and import plant data\n              </p>\n            </div>\n          </div>\n\n          {/* User Info Card */}\n          <div className=\"card card--flat\" style={{ marginBottom: '24px' }}>\n            <div className=\"card-header\">\n              <div className=\"flex items-center space-x-3\">\n                <div className=\"p-3 bg-primary-100 rounded-lg\">\n                  <User className=\"w-6 h-6 text-primary-600\" />\n                </div>\n                <div>\n                  <h2 className=\"text-lg font-semibold text-neutral-900\">Account Information</h2>\n                  <p className=\"text-sm text-neutral-600\">Your profile details</p>\n                </div>\n              </div>\n            </div>\n            <div className=\"card-body\">\n              <div className=\"space-y-4\">\n                <div>\n                  <label className=\"text-sm font-medium text-neutral-700\">Name</label>\n                  <p className=\"text-neutral-900\">{user.name}</p>\n                </div>\n                <div>\n                  <label className=\"text-sm font-medium text-neutral-700\">Email</label>\n                  <p className=\"text-neutral-900\">{user.email}</p>\n                </div>\n                <div>\n                  <label className=\"text-sm font-medium text-neutral-700\">Member Since</label>\n                  <p className=\"text-neutral-900\">\n                    {new Date(user.createdAt).toLocaleDateString('en-US', {\n                      year: 'numeric',\n                      month: 'long',\n                      day: 'numeric'\n                    })}\n                  </p>\n                </div>\n              </div>\n              <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>\n                <LogoutButton className=\"btn btn--danger btn--sm\">\n                  Sign Out of Account\n                </LogoutButton>\n              </div>\n            </div>\n          </div>\n\n          {/* Data Management Section */}\n          <div className=\"card card--flat\">\n            <div className=\"card-header\">\n              <div className=\"flex items-center space-x-3\">\n                <div className=\"p-3 bg-mint-100 rounded-lg\">\n                  <Database className=\"w-6 h-6 text-mint-600\" />\n                </div>\n                <div>\n                  <h2 className=\"text-lg font-semibold text-neutral-900\">Data Management</h2>\n                  <p className=\"text-sm text-neutral-600\">Import and export your plant data</p>\n                </div>\n              </div>\n            </div>\n            <div className=\"card-body\">\n              <DataImport />\n            </div>\n          </div>\n\n          {/* Quick Actions */}\n          <div className=\"card card--flat\" style={{ marginTop: '24px' }}>\n            <div className=\"card-header\">\n              <h3 className=\"text-lg font-semibold text-neutral-900\">Quick Actions</h3>\n              <p className=\"text-sm text-neutral-600\">Common profile tasks</p>\n            </div>\n            <div className=\"card-body\">\n              <div className=\"grid gap-4 md:grid-cols-2\">\n                <div className=\"flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors\">\n                  <div className=\"flex items-center space-x-3\">\n                    <div className=\"p-2 bg-blue-100 rounded-lg\">\n                      <Download className=\"w-5 h-5 text-blue-600\" />\n                    </div>\n                    <div>\n                      <h4 className=\"font-medium text-neutral-900\">Export Data</h4>\n                      <p className=\"text-sm text-neutral-600\">Download your plant collection</p>\n                    </div>\n                  </div>\n                  <button className=\"btn btn--sm btn--outline\">\n                    Export\n                  </button>\n                </div>\n\n                <div className=\"flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors\">\n                  <div className=\"flex items-center space-x-3\">\n                    <div className=\"p-2 bg-green-100 rounded-lg\">\n                      <Upload className=\"w-5 h-5 text-green-600\" />\n                    </div>\n                    <div>\n                      <h4 className=\"font-medium text-neutral-900\">Bulk Import</h4>\n                      <p className=\"text-sm text-neutral-600\">Import multiple plants at once</p>\n                    </div>\n                  </div>\n                  <button className=\"btn btn--sm btn--outline\">\n                    Import\n                  </button>\n                </div>\n\n                <div className=\"flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors\">\n                  <div className=\"flex items-center space-x-3\">\n                    <div className=\"p-2 bg-purple-100 rounded-lg\">\n                      <FileText className=\"w-5 h-5 text-purple-600\" />\n                    </div>\n                    <div>\n                      <h4 className=\"font-medium text-neutral-900\">Data Templates</h4>\n                      <p className=\"text-sm text-neutral-600\">Download CSV templates</p>\n                    </div>\n                  </div>\n                  <button className=\"btn btn--sm btn--outline\">\n                    Download\n                  </button>\n                </div>\n              </div>\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n}"],
+      names: ["ProfilePage", "user", "requireAuthSession", "div", "className", "h1", "p", "style", "marginBottom", "User", "h2", "label", "name", "email", "Date", "createdAt", "toLocaleDateString", "year", "month", "day", "marginTop", "paddingTop", "borderTop", "LogoutButton", "Database", "DataImport", "h3", "Download", "h4", "button", "Upload", "FileText"],
+      mappings: "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"
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "8abdf5146ff8c3ec73f2b73bcc165cf26c034ad6"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_tqc90bdj9 = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_tqc90bdj9();
+cov_tqc90bdj9().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_tqc90bdj9().s[1]++;
+Object.defineProperty(exports, "default", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_tqc90bdj9().f[0]++;
+    cov_tqc90bdj9().s[2]++;
+    return ProfilePage;
+  }
+});
+const _jsxruntime =
+/* istanbul ignore next */
+(cov_tqc90bdj9().s[3]++, require("react/jsx-runtime"));
+const _server =
+/* istanbul ignore next */
+(cov_tqc90bdj9().s[4]++, require("../../../lib/auth/server"));
+const _DataImport =
+/* istanbul ignore next */
+(cov_tqc90bdj9().s[5]++, require("../../../components/import/DataImport"));
+const _LogoutButton =
+/* istanbul ignore next */
+(/*#__PURE__*/cov_tqc90bdj9().s[6]++, _interop_require_default(require("../../../components/auth/LogoutButton")));
+const _lucidereact =
+/* istanbul ignore next */
+(cov_tqc90bdj9().s[7]++, require("lucide-react"));
+function _interop_require_default(obj) {
+  /* istanbul ignore next */
+  cov_tqc90bdj9().f[1]++;
+  cov_tqc90bdj9().s[8]++;
+  return /* istanbul ignore next */(cov_tqc90bdj9().b[1][0]++, obj) &&
+  /* istanbul ignore next */
+  (cov_tqc90bdj9().b[1][1]++, obj.__esModule) ?
+  /* istanbul ignore next */
+  (cov_tqc90bdj9().b[0][0]++, obj) :
+  /* istanbul ignore next */
+  (cov_tqc90bdj9().b[0][1]++, {
+    default: obj
+  });
+}
+async function ProfilePage() {
+  /* istanbul ignore next */
+  cov_tqc90bdj9().f[2]++;
+  const {
+    user
+  } =
+  /* istanbul ignore next */
+  (cov_tqc90bdj9().s[9]++, await (0, _server.requireAuthSession)());
+  /* istanbul ignore next */
+  cov_tqc90bdj9().s[10]++;
+  return /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+    className: "page",
+    children: /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+      className: "container",
+      children: /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+        className: "page-content",
+        children: [/*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+          className: "page-header",
+          children: /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+            children: [/*#__PURE__*/(0, _jsxruntime.jsx)("h1", {
+              className: "text-2xl font-bold text-neutral-900",
+              children: "Profile"
+            }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+              className: "text-neutral-600 text-sm",
+              children: "Manage your account and import plant data"
+            })]
+          })
+        }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+          className: "card card--flat",
+          style: {
+            marginBottom: '24px'
+          },
+          children: [/*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+            className: "card-header",
+            children: /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+              className: "flex items-center space-x-3",
+              children: [/*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+                className: "p-3 bg-primary-100 rounded-lg",
+                children: /*#__PURE__*/(0, _jsxruntime.jsx)(_lucidereact.User, {
+                  className: "w-6 h-6 text-primary-600"
+                })
+              }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                children: [/*#__PURE__*/(0, _jsxruntime.jsx)("h2", {
+                  className: "text-lg font-semibold text-neutral-900",
+                  children: "Account Information"
+                }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+                  className: "text-sm text-neutral-600",
+                  children: "Your profile details"
+                })]
+              })]
+            })
+          }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+            className: "card-body",
+            children: [/*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+              className: "space-y-4",
+              children: [/*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                children: [/*#__PURE__*/(0, _jsxruntime.jsx)("label", {
+                  className: "text-sm font-medium text-neutral-700",
+                  children: "Name"
+                }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+                  className: "text-neutral-900",
+                  children: user.name
+                })]
+              }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                children: [/*#__PURE__*/(0, _jsxruntime.jsx)("label", {
+                  className: "text-sm font-medium text-neutral-700",
+                  children: "Email"
+                }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+                  className: "text-neutral-900",
+                  children: user.email
+                })]
+              }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                children: [/*#__PURE__*/(0, _jsxruntime.jsx)("label", {
+                  className: "text-sm font-medium text-neutral-700",
+                  children: "Member Since"
+                }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+                  className: "text-neutral-900",
+                  children: new Date(user.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })
+                })]
+              })]
+            }), /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+              style: {
+                marginTop: '24px',
+                paddingTop: '16px',
+                borderTop: '1px solid #e5e7eb'
+              },
+              children: /*#__PURE__*/(0, _jsxruntime.jsx)(_LogoutButton.default, {
+                className: "btn btn--danger btn--sm",
+                children: "Sign Out of Account"
+              })
+            })]
+          })]
+        }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+          className: "card card--flat",
+          children: [/*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+            className: "card-header",
+            children: /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+              className: "flex items-center space-x-3",
+              children: [/*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+                className: "p-3 bg-mint-100 rounded-lg",
+                children: /*#__PURE__*/(0, _jsxruntime.jsx)(_lucidereact.Database, {
+                  className: "w-6 h-6 text-mint-600"
+                })
+              }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                children: [/*#__PURE__*/(0, _jsxruntime.jsx)("h2", {
+                  className: "text-lg font-semibold text-neutral-900",
+                  children: "Data Management"
+                }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+                  className: "text-sm text-neutral-600",
+                  children: "Import and export your plant data"
+                })]
+              })]
+            })
+          }), /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+            className: "card-body",
+            children: /*#__PURE__*/(0, _jsxruntime.jsx)(_DataImport.DataImport, {})
+          })]
+        }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+          className: "card card--flat",
+          style: {
+            marginTop: '24px'
+          },
+          children: [/*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+            className: "card-header",
+            children: [/*#__PURE__*/(0, _jsxruntime.jsx)("h3", {
+              className: "text-lg font-semibold text-neutral-900",
+              children: "Quick Actions"
+            }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+              className: "text-sm text-neutral-600",
+              children: "Common profile tasks"
+            })]
+          }), /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+            className: "card-body",
+            children: /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+              className: "grid gap-4 md:grid-cols-2",
+              children: [/*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                className: "flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors",
+                children: [/*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                  className: "flex items-center space-x-3",
+                  children: [/*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+                    className: "p-2 bg-blue-100 rounded-lg",
+                    children: /*#__PURE__*/(0, _jsxruntime.jsx)(_lucidereact.Download, {
+                      className: "w-5 h-5 text-blue-600"
+                    })
+                  }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                    children: [/*#__PURE__*/(0, _jsxruntime.jsx)("h4", {
+                      className: "font-medium text-neutral-900",
+                      children: "Export Data"
+                    }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+                      className: "text-sm text-neutral-600",
+                      children: "Download your plant collection"
+                    })]
+                  })]
+                }), /*#__PURE__*/(0, _jsxruntime.jsx)("button", {
+                  className: "btn btn--sm btn--outline",
+                  children: "Export"
+                })]
+              }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                className: "flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors",
+                children: [/*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                  className: "flex items-center space-x-3",
+                  children: [/*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+                    className: "p-2 bg-green-100 rounded-lg",
+                    children: /*#__PURE__*/(0, _jsxruntime.jsx)(_lucidereact.Upload, {
+                      className: "w-5 h-5 text-green-600"
+                    })
+                  }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                    children: [/*#__PURE__*/(0, _jsxruntime.jsx)("h4", {
+                      className: "font-medium text-neutral-900",
+                      children: "Bulk Import"
+                    }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+                      className: "text-sm text-neutral-600",
+                      children: "Import multiple plants at once"
+                    })]
+                  })]
+                }), /*#__PURE__*/(0, _jsxruntime.jsx)("button", {
+                  className: "btn btn--sm btn--outline",
+                  children: "Import"
+                })]
+              }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                className: "flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors",
+                children: [/*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                  className: "flex items-center space-x-3",
+                  children: [/*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+                    className: "p-2 bg-purple-100 rounded-lg",
+                    children: /*#__PURE__*/(0, _jsxruntime.jsx)(_lucidereact.FileText, {
+                      className: "w-5 h-5 text-purple-600"
+                    })
+                  }), /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+                    children: [/*#__PURE__*/(0, _jsxruntime.jsx)("h4", {
+                      className: "font-medium text-neutral-900",
+                      children: "Data Templates"
+                    }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+                      className: "text-sm text-neutral-600",
+                      children: "Download CSV templates"
+                    })]
+                  })]
+                }), /*#__PURE__*/(0, _jsxruntime.jsx)("button", {
+                  className: "btn btn--sm btn--outline",
+                  children: "Download"
+                })]
+              })]
+            })
+          })]
+        })]
+      })
+    })
+  });
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJQcm9maWxlUGFnZSIsImNvdl90cWM5MGJkajkiLCJmIiwidXNlciIsInMiLCJfc2VydmVyIiwicmVxdWlyZUF1dGhTZXNzaW9uIiwiX2pzeHJ1bnRpbWUiLCJqc3giLCJjbGFzc05hbWUiLCJqc3hzIiwic3R5bGUiLCJtYXJnaW5Cb3R0b20iLCJfbHVjaWRlcmVhY3QiLCJVc2VyIiwibmFtZSIsImVtYWlsIiwiRGF0ZSIsImNyZWF0ZWRBdCIsInRvTG9jYWxlRGF0ZVN0cmluZyIsInllYXIiLCJtb250aCIsImRheSIsIm1hcmdpblRvcCIsInBhZGRpbmdUb3AiLCJib3JkZXJUb3AiLCJfTG9nb3V0QnV0dG9uIiwiZGVmYXVsdCIsIkRhdGFiYXNlIiwiX0RhdGFJbXBvcnQiLCJEYXRhSW1wb3J0IiwiRG93bmxvYWQiLCJVcGxvYWQiLCJGaWxlVGV4dCJdLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL2FwcC9kYXNoYm9hcmQvcHJvZmlsZS9wYWdlLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgeyByZXF1aXJlQXV0aFNlc3Npb24gfSBmcm9tICdAL2xpYi9hdXRoL3NlcnZlcic7XG5pbXBvcnQgeyBEYXRhSW1wb3J0IH0gZnJvbSAnQC9jb21wb25lbnRzL2ltcG9ydC9EYXRhSW1wb3J0JztcbmltcG9ydCBMb2dvdXRCdXR0b24gZnJvbSAnQC9jb21wb25lbnRzL2F1dGgvTG9nb3V0QnV0dG9uJztcbmltcG9ydCB7IFVzZXIsIERhdGFiYXNlLCBGaWxlVGV4dCwgRG93bmxvYWQsIFVwbG9hZCB9IGZyb20gJ2x1Y2lkZS1yZWFjdCc7XG5cbmV4cG9ydCBkZWZhdWx0IGFzeW5jIGZ1bmN0aW9uIFByb2ZpbGVQYWdlKCkge1xuICBjb25zdCB7IHVzZXIgfSA9IGF3YWl0IHJlcXVpcmVBdXRoU2Vzc2lvbigpO1xuXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9XCJwYWdlXCI+XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cImNvbnRhaW5lclwiPlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInBhZ2UtY29udGVudFwiPlxuICAgICAgICAgIHsvKiBIZWFkZXIgKi99XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwYWdlLWhlYWRlclwiPlxuICAgICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgICAgPGgxIGNsYXNzTmFtZT1cInRleHQtMnhsIGZvbnQtYm9sZCB0ZXh0LW5ldXRyYWwtOTAwXCI+UHJvZmlsZTwvaDE+XG4gICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtbmV1dHJhbC02MDAgdGV4dC1zbVwiPlxuICAgICAgICAgICAgICAgIE1hbmFnZSB5b3VyIGFjY291bnQgYW5kIGltcG9ydCBwbGFudCBkYXRhXG4gICAgICAgICAgICAgIDwvcD5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgey8qIFVzZXIgSW5mbyBDYXJkICovfVxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiY2FyZCBjYXJkLS1mbGF0XCIgc3R5bGU9e3sgbWFyZ2luQm90dG9tOiAnMjRweCcgfX0+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImNhcmQtaGVhZGVyXCI+XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgc3BhY2UteC0zXCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTMgYmctcHJpbWFyeS0xMDAgcm91bmRlZC1sZ1wiPlxuICAgICAgICAgICAgICAgICAgPFVzZXIgY2xhc3NOYW1lPVwidy02IGgtNiB0ZXh0LXByaW1hcnktNjAwXCIgLz5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgICAgPGgyIGNsYXNzTmFtZT1cInRleHQtbGcgZm9udC1zZW1pYm9sZCB0ZXh0LW5ldXRyYWwtOTAwXCI+QWNjb3VudCBJbmZvcm1hdGlvbjwvaDI+XG4gICAgICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXNtIHRleHQtbmV1dHJhbC02MDBcIj5Zb3VyIHByb2ZpbGUgZGV0YWlsczwvcD5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiY2FyZC1ib2R5XCI+XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS00XCI+XG4gICAgICAgICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJ0ZXh0LXNtIGZvbnQtbWVkaXVtIHRleHQtbmV1dHJhbC03MDBcIj5OYW1lPC9sYWJlbD5cbiAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtbmV1dHJhbC05MDBcIj57dXNlci5uYW1lfTwvcD5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cInRleHQtc20gZm9udC1tZWRpdW0gdGV4dC1uZXV0cmFsLTcwMFwiPkVtYWlsPC9sYWJlbD5cbiAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtbmV1dHJhbC05MDBcIj57dXNlci5lbWFpbH08L3A+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJ0ZXh0LXNtIGZvbnQtbWVkaXVtIHRleHQtbmV1dHJhbC03MDBcIj5NZW1iZXIgU2luY2U8L2xhYmVsPlxuICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1uZXV0cmFsLTkwMFwiPlxuICAgICAgICAgICAgICAgICAgICB7bmV3IERhdGUodXNlci5jcmVhdGVkQXQpLnRvTG9jYWxlRGF0ZVN0cmluZygnZW4tVVMnLCB7XG4gICAgICAgICAgICAgICAgICAgICAgeWVhcjogJ251bWVyaWMnLFxuICAgICAgICAgICAgICAgICAgICAgIG1vbnRoOiAnbG9uZycsXG4gICAgICAgICAgICAgICAgICAgICAgZGF5OiAnbnVtZXJpYydcbiAgICAgICAgICAgICAgICAgICAgfSl9XG4gICAgICAgICAgICAgICAgICA8L3A+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICA8ZGl2IHN0eWxlPXt7IG1hcmdpblRvcDogJzI0cHgnLCBwYWRkaW5nVG9wOiAnMTZweCcsIGJvcmRlclRvcDogJzFweCBzb2xpZCAjZTVlN2ViJyB9fT5cbiAgICAgICAgICAgICAgICA8TG9nb3V0QnV0dG9uIGNsYXNzTmFtZT1cImJ0biBidG4tLWRhbmdlciBidG4tLXNtXCI+XG4gICAgICAgICAgICAgICAgICBTaWduIE91dCBvZiBBY2NvdW50XG4gICAgICAgICAgICAgICAgPC9Mb2dvdXRCdXR0b24+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICB7LyogRGF0YSBNYW5hZ2VtZW50IFNlY3Rpb24gKi99XG4gICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJjYXJkIGNhcmQtLWZsYXRcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiY2FyZC1oZWFkZXJcIj5cbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBzcGFjZS14LTNcIj5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInAtMyBiZy1taW50LTEwMCByb3VuZGVkLWxnXCI+XG4gICAgICAgICAgICAgICAgICA8RGF0YWJhc2UgY2xhc3NOYW1lPVwidy02IGgtNiB0ZXh0LW1pbnQtNjAwXCIgLz5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgICAgPGgyIGNsYXNzTmFtZT1cInRleHQtbGcgZm9udC1zZW1pYm9sZCB0ZXh0LW5ldXRyYWwtOTAwXCI+RGF0YSBNYW5hZ2VtZW50PC9oMj5cbiAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtc20gdGV4dC1uZXV0cmFsLTYwMFwiPkltcG9ydCBhbmQgZXhwb3J0IHlvdXIgcGxhbnQgZGF0YTwvcD5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiY2FyZC1ib2R5XCI+XG4gICAgICAgICAgICAgIDxEYXRhSW1wb3J0IC8+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgIHsvKiBRdWljayBBY3Rpb25zICovfVxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiY2FyZCBjYXJkLS1mbGF0XCIgc3R5bGU9e3sgbWFyZ2luVG9wOiAnMjRweCcgfX0+XG4gICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImNhcmQtaGVhZGVyXCI+XG4gICAgICAgICAgICAgIDxoMyBjbGFzc05hbWU9XCJ0ZXh0LWxnIGZvbnQtc2VtaWJvbGQgdGV4dC1uZXV0cmFsLTkwMFwiPlF1aWNrIEFjdGlvbnM8L2gzPlxuICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXNtIHRleHQtbmV1dHJhbC02MDBcIj5Db21tb24gcHJvZmlsZSB0YXNrczwvcD5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJjYXJkLWJvZHlcIj5cbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJncmlkIGdhcC00IG1kOmdyaWQtY29scy0yXCI+XG4gICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4gcC00IGJvcmRlciBib3JkZXItbmV1dHJhbC0yMDAgcm91bmRlZC1sZyBob3ZlcjpiZy1uZXV0cmFsLTUwIHRyYW5zaXRpb24tY29sb3JzXCI+XG4gICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIHNwYWNlLXgtM1wiPlxuICAgICAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInAtMiBiZy1ibHVlLTEwMCByb3VuZGVkLWxnXCI+XG4gICAgICAgICAgICAgICAgICAgICAgPERvd25sb2FkIGNsYXNzTmFtZT1cInctNSBoLTUgdGV4dC1ibHVlLTYwMFwiIC8+XG4gICAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgICA8ZGl2PlxuICAgICAgICAgICAgICAgICAgICAgIDxoNCBjbGFzc05hbWU9XCJmb250LW1lZGl1bSB0ZXh0LW5ldXRyYWwtOTAwXCI+RXhwb3J0IERhdGE8L2g0PlxuICAgICAgICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT1cInRleHQtc20gdGV4dC1uZXV0cmFsLTYwMFwiPkRvd25sb2FkIHlvdXIgcGxhbnQgY29sbGVjdGlvbjwvcD5cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgIDxidXR0b24gY2xhc3NOYW1lPVwiYnRuIGJ0bi0tc20gYnRuLS1vdXRsaW5lXCI+XG4gICAgICAgICAgICAgICAgICAgIEV4cG9ydFxuICAgICAgICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktYmV0d2VlbiBwLTQgYm9yZGVyIGJvcmRlci1uZXV0cmFsLTIwMCByb3VuZGVkLWxnIGhvdmVyOmJnLW5ldXRyYWwtNTAgdHJhbnNpdGlvbi1jb2xvcnNcIj5cbiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgc3BhY2UteC0zXCI+XG4gICAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicC0yIGJnLWdyZWVuLTEwMCByb3VuZGVkLWxnXCI+XG4gICAgICAgICAgICAgICAgICAgICAgPFVwbG9hZCBjbGFzc05hbWU9XCJ3LTUgaC01IHRleHQtZ3JlZW4tNjAwXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICAgICAgICAgICAgPGg0IGNsYXNzTmFtZT1cImZvbnQtbWVkaXVtIHRleHQtbmV1dHJhbC05MDBcIj5CdWxrIEltcG9ydDwvaDQ+XG4gICAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1zbSB0ZXh0LW5ldXRyYWwtNjAwXCI+SW1wb3J0IG11bHRpcGxlIHBsYW50cyBhdCBvbmNlPC9wPlxuICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgICAgICAgPGJ1dHRvbiBjbGFzc05hbWU9XCJidG4gYnRuLS1zbSBidG4tLW91dGxpbmVcIj5cbiAgICAgICAgICAgICAgICAgICAgSW1wb3J0XG4gICAgICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIHAtNCBib3JkZXIgYm9yZGVyLW5ldXRyYWwtMjAwIHJvdW5kZWQtbGcgaG92ZXI6YmctbmV1dHJhbC01MCB0cmFuc2l0aW9uLWNvbG9yc1wiPlxuICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBzcGFjZS14LTNcIj5cbiAgICAgICAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJwLTIgYmctcHVycGxlLTEwMCByb3VuZGVkLWxnXCI+XG4gICAgICAgICAgICAgICAgICAgICAgPEZpbGVUZXh0IGNsYXNzTmFtZT1cInctNSBoLTUgdGV4dC1wdXJwbGUtNjAwXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICAgICAgICAgICAgPGg0IGNsYXNzTmFtZT1cImZvbnQtbWVkaXVtIHRleHQtbmV1dHJhbC05MDBcIj5EYXRhIFRlbXBsYXRlczwvaDQ+XG4gICAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1zbSB0ZXh0LW5ldXRyYWwtNjAwXCI+RG93bmxvYWQgQ1NWIHRlbXBsYXRlczwvcD5cbiAgICAgICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgIDxidXR0b24gY2xhc3NOYW1lPVwiYnRuIGJ0bi0tc20gYnRuLS1vdXRsaW5lXCI+XG4gICAgICAgICAgICAgICAgICAgIERvd25sb2FkXG4gICAgICAgICAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cbiAgICA8L2Rpdj5cbiAgKTtcbn0iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7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

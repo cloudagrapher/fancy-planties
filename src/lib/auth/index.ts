@@ -121,6 +121,20 @@ export async function signUp(email: string, password: string, name: string): Pro
   };
 }
 
+export async function signUpUnverified(email: string, password: string, name: string): Promise<User> {
+  // Check if user already exists
+  const existingUser = await getUserByEmail(email);
+  
+  if (existingUser) {
+    throw new Error('User already exists');
+  }
+  
+  // Create new unverified user (no session created)
+  const user = await createUser(email, password, name);
+  
+  return user;
+}
+
 export async function signOut(sessionId: string): Promise<void> {
   await lucia.invalidateSession(sessionId);
 }

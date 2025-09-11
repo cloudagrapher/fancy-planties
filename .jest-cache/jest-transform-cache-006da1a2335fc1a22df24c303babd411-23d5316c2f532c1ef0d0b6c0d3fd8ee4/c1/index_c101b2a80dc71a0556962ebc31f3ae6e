@@ -1,0 +1,26 @@
+1a333ea5e7d53b99fca875d8400c4031
+// Test mocks - centralized exports
+// Re-export mock utilities
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+_export_star(require("./nextjs-mocks.js"), exports);
+_export_star(require("./api-mocks.js"), exports);
+_export_star(require("./component-mocks.js"), exports);
+_export_star(require("./service-mocks.js"), exports);
+function _export_star(from, to) {
+    Object.keys(from).forEach(function(k) {
+        if (k !== "default" && !Object.prototype.hasOwnProperty.call(to, k)) {
+            Object.defineProperty(to, k, {
+                enumerable: true,
+                get: function() {
+                    return from[k];
+                }
+            });
+        }
+    });
+    return from;
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL3Rlc3QtdXRpbHMvbW9ja3MvaW5kZXguanMiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gVGVzdCBtb2NrcyAtIGNlbnRyYWxpemVkIGV4cG9ydHNcblxuLy8gUmUtZXhwb3J0IG1vY2sgdXRpbGl0aWVzXG5leHBvcnQgKiBmcm9tICcuL25leHRqcy1tb2Nrcyc7XG5leHBvcnQgKiBmcm9tICcuL2FwaS1tb2Nrcyc7XG5leHBvcnQgKiBmcm9tICcuL2NvbXBvbmVudC1tb2Nrcyc7XG5leHBvcnQgKiBmcm9tICcuL3NlcnZpY2UtbW9ja3MnOyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxtQ0FBbUM7QUFFbkMsMkJBQTJCOzs7OztxQkFDYjtxQkFDQTtxQkFDQTtxQkFDQSJ9

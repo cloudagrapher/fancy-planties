@@ -56,9 +56,16 @@ export default function SignUpForm() {
         return;
       }
 
-      // Success - redirect to dashboard
-      router.push('/dashboard');
-      router.refresh();
+      // Success - check if email verification is required
+      if (result.requiresVerification) {
+        // Redirect to email verification page
+        router.push('/auth/verify-email');
+        router.refresh();
+      } else {
+        // Redirect to dashboard (fallback for already verified users)
+        router.push('/dashboard');
+        router.refresh();
+      }
       
     } catch (error) {
       console.error('Sign up error:', error);

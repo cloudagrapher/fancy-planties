@@ -57,6 +57,9 @@ function main() {
   console.log('📋 Checking migration logs...');
   runCommand('docker compose logs db-migrate', 'Show migration logs');
   
+  console.log('📧 Setting up email verification...');
+  runCommand('npm run db:setup-email-verification', 'Setup email verification schema');
+  
   console.log('🎉 Database initialization complete!');
   console.log('💡 You can now start the application with: docker compose up app');
 }

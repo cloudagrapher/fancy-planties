@@ -85,6 +85,27 @@ export async function requireAuthSession(redirectTo: string = '/auth/signin') {
   return { user, session };
 }
 
+// Require authenticated and email verified user or redirect
+export async function requireVerifiedSession(redirectTo: string = '/auth/signin') {
+  const { user, session } = await validateRequest();
+  
+  if (!user || !session) {
+    redirect(redirectTo);
+  }
+  
+  if (!user.isEmailVerified) {
+    redirect('/auth/verify-email');
+  }
+  
+  return { user, session };
+}
+
+// Check if user has verified email (without redirect)
+export async function isEmailVerified(): Promise<boolean> {
+  const { user } = await validateRequest();
+  return !!(user && user.isEmailVerified);
+}
+
 // Check if user is authenticated (without redirect)
 export async function isAuthenticated(): Promise<boolean> {
   const { user, session } = await validateRequest();
