@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
       
       const { email, password, name } = validation.data;
       
-      // Create unverified user
+      // Create unverified user (or get existing unverified user)
       const user = await signUpUnverified(email, password, name);
+      const isExistingUser = user.createdAt < new Date(Date.now() - 1000); // Created more than 1 second ago
       
       // Generate verification code
       const verificationCode = await emailVerificationCodeService.generateCode(user.id);
@@ -35,9 +36,13 @@ export async function POST(request: NextRequest) {
         
         console.log(`Verification email sent to ${email} for user ${user.id}`);
         
+        const message = isExistingUser 
+          ? 'Verification email resent. Please check your email for the new verification code.'
+          : 'Account created successfully. Please check your email for a verification code.';
+        
         return NextResponse.json({
           success: true,
-          message: 'Account created successfully. Please check your email for a verification code.',
+          message,
           requiresVerification: true,
           user: {
             id: user.id,
@@ -71,9 +76,13 @@ export async function POST(request: NextRequest) {
               errorMessage += 'Please try resending the verification code.';
           }
           
+          const message = isExistingUser 
+            ? 'Account found. ' 
+            : 'Account created successfully. ';
+          
           return NextResponse.json({
             success: true,
-            message: 'Account created successfully.',
+            message,
             requiresVerification: true,
             emailError: errorMessage,
             user: {
@@ -86,9 +95,13 @@ export async function POST(request: NextRequest) {
         }
         
         // For unknown email errors, still return success but mention the issue
+        const message = isExistingUser 
+          ? 'Account found. ' 
+          : 'Account created successfully. ';
+        
         return NextResponse.json({
           success: true,
-          message: 'Account created successfully.',
+          message,
           requiresVerification: true,
           emailError: 'Failed to send verification email. Please try resending the verification code.',
           user: {

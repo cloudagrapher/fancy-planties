@@ -58,8 +58,9 @@ export default function SignUpForm() {
 
       // Success - check if email verification is required
       if (result.requiresVerification) {
-        // Redirect to email verification page
-        router.push('/auth/verify-email');
+        // Redirect to email verification page with email parameter
+        const searchParams = new URLSearchParams({ email: formData.email });
+        router.push(`/auth/verify-email?${searchParams.toString()}`);
         router.refresh();
       } else {
         // Redirect to dashboard (fallback for already verified users)

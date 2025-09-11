@@ -1,4 +1,4 @@
-import { requireAuthSession } from '@/lib/auth/server';
+import { getAuthSession } from '@/lib/auth/server';
 import { redirect } from 'next/navigation';
 import EmailVerificationClient from './EmailVerificationClient';
 
@@ -7,12 +7,25 @@ export const metadata = {
   description: 'Verify your email address to complete your account setup',
 };
 
-export default async function VerifyEmailPage() {
-  const { user } = await requireAuthSession('/auth/signin');
+interface PageProps {
+  searchParams: Promise<{ email?: string }>;
+}
+
+export default async function VerifyEmailPage({ searchParams }: PageProps) {
+  const { user } = await getAuthSession();
+  const params = await searchParams;
   
-  // If user is already verified, redirect to dashboard
-  if (user.isEmailVerified) {
+  // If user is authenticated and already verified, redirect to dashboard
+  if (user && user.isEmailVerified) {
     redirect('/dashboard');
+  }
+  
+  // Determine email to show - either from authenticated user or URL parameter
+  const email = user?.email || params.email;
+  
+  if (!email) {
+    // If no email available, redirect to signup
+    redirect('/auth/signup');
   }
   
   return (
@@ -42,14 +55,14 @@ export default async function VerifyEmailPage() {
             We've sent a verification code to
           </p>
           <p className="font-semibold text-mint-700 text-lg">
-            {user.email}
+            {email}
           </p>
           <p className="text-sm text-neutral-500 mt-2">
             Check your inbox and enter the 6-digit code below
           </p>
         </div>
         
-        <EmailVerificationClient email={user.email} />
+        <EmailVerificationClient email={email} />
         
         <div className="text-center">
           <p className="text-xs text-neutral-400">

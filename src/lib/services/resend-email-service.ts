@@ -12,6 +12,74 @@ export class ResendEmailService implements EmailService {
     this.config = config;
   }
 
+  async sendPasswordResetEmail(email: string, resetToken: string, name: string): Promise<boolean> {
+    const startTime = Date.now();
+    
+    try {
+      const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}`;
+      
+      const { data, error } = await this.resend.emails.send({
+        from: `${this.config.fromName} <${this.config.fromEmail}>`,
+        to: [email],
+        subject: 'Reset your password',
+        html: this.generatePasswordResetEmailTemplate(resetUrl, name),
+        text: this.generatePasswordResetEmailText(resetUrl, name),
+      });
+
+      const responseTime = Date.now() - startTime;
+
+      if (error) {
+        console.error('Resend API error:', error);
+        
+        // Map Resend errors to our error types
+        let emailError: EmailServiceError;
+        if (error.message?.includes('quota') || error.message?.includes('limit')) {
+          emailError = new EmailServiceError('Email quota exceeded', 'QUOTA_EXCEEDED');
+        } else if (error.message?.includes('invalid') && error.message?.includes('email')) {
+          emailError = new EmailServiceError('Invalid email address', 'INVALID_EMAIL');
+        } else {
+          emailError = new EmailServiceError(`Resend API error: ${error.message}`, 'API_ERROR');
+        }
+        
+        // Record failure in monitor
+        emailServiceMonitor.recordFailure(
+          { message: emailError.message, code: emailError.code },
+          responseTime
+        );
+        
+        throw emailError;
+      }
+
+      // Record success in monitor
+      emailServiceMonitor.recordSuccess(responseTime);
+      
+      console.log('Password reset email sent successfully:', data?.id);
+      return true;
+      
+    } catch (error) {
+      const responseTime = Date.now() - startTime;
+      
+      if (error instanceof EmailServiceError) {
+        // Already recorded in monitor above
+        throw error;
+      }
+      
+      console.error('Network error sending password reset email:', error);
+      const networkError = new EmailServiceError(
+        `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'NETWORK_ERROR'
+      );
+      
+      // Record network error in monitor
+      emailServiceMonitor.recordFailure(
+        { message: networkError.message, code: networkError.code },
+        responseTime
+      );
+      
+      throw networkError;
+    }
+  }
+
   async sendVerificationEmail(email: string, code: string, name: string): Promise<boolean> {
     const startTime = Date.now();
     
@@ -168,6 +236,124 @@ Verification Code: ${code}
 This code expires in 10 minutes.
 
 If you didn't create an account with Fancy Planties, you can safely ignore this email.
+
+---
+This is an automated message from Fancy Planties. Please do not reply to this email.
+Need help? Contact us at support@fancy-planties.cloudagrapher.com
+    `.trim();
+  }
+
+  private generatePasswordResetEmailTemplate(resetUrl: string, name: string): string {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Your Password</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #22c55e;
+            margin-bottom: 10px;
+          }
+          .reset-button {
+            display: inline-block;
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+          }
+          .reset-link {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 30px 0;
+            word-break: break-all;
+          }
+          .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            font-size: 14px;
+            color: #6c757d;
+          }
+          .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">🌱 Fancy Planties</div>
+          <h1>Password Reset Request</h1>
+        </div>
+        
+        <p>Hi ${name},</p>
+        
+        <p>We received a request to reset your password for your Fancy Planties account. If you made this request, click the button below to reset your password:</p>
+        
+        <div style="text-align: center;">
+          <a href="${resetUrl}" class="reset-button">Reset Your Password</a>
+        </div>
+        
+        <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+        
+        <div class="reset-link">
+          <a href="${resetUrl}">${resetUrl}</a>
+        </div>
+        
+        <div class="warning">
+          <strong>Security Notice:</strong> This password reset link will expire in 1 hour for your security. If you didn't request this password reset, you can safely ignore this email.
+        </div>
+        
+        <p>If you're having trouble or didn't request this reset, please contact our support team.</p>
+        
+        <div class="footer">
+          <p>This is an automated message from Fancy Planties. Please do not reply to this email.</p>
+          <p>Need help? Contact us at support@fancy-planties.cloudagrapher.com</p>
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  private generatePasswordResetEmailText(resetUrl: string, name: string): string {
+    return `
+Hi ${name},
+
+We received a request to reset your password for your Fancy Planties account.
+
+To reset your password, click this link or copy it into your browser:
+${resetUrl}
+
+This link will expire in 1 hour for your security.
+
+If you didn't request this password reset, you can safely ignore this email.
 
 ---
 This is an automated message from Fancy Planties. Please do not reply to this email.
