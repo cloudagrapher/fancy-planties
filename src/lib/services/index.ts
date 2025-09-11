@@ -17,3 +17,6 @@ export {
   VerificationCodeError,
   emailVerificationCodeService 
 } from './email-verification-code-service';
+
+export type { EmailServiceStats, EmailServiceEvent } from './email-service-monitor';
+export { EmailServiceMonitor, emailServiceMonitor } from './email-service-monitor';
