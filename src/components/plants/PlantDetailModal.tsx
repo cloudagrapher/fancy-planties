@@ -76,10 +76,11 @@ export default function PlantDetailModal({
       };
     },
     enabled: isOpen && plantId > 0,
-    staleTime: 1000 * 30, // 30 seconds (more responsive to changes)
-    gcTime: 1000 * 60 * 5, // Keep cached data for 5 minutes
+    staleTime: 1000 * 5, // 5 seconds (much more responsive to changes) 
+    gcTime: 1000 * 60 * 2, // Keep cached data for 2 minutes
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
   // Quick care mutation
