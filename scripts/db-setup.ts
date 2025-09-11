@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
 
-import { MigrationUtils, checkDatabaseConnection } from '../src/lib/db';
+import { MigrationUtils } from '../src/lib/db/script-migrations';
+import { checkDatabaseConnection } from '../src/lib/db/script-connection';
 
 async function main() {
   const command = process.argv[2];
@@ -34,6 +35,7 @@ async function main() {
         await MigrationUtils.applyRLSPolicies();
         await MigrationUtils.seedInitialData();
         console.log('✅ Database setup complete');
+        console.log('💡 Run "npm run db:setup-email-verification" to ensure email verification is properly configured');
         break;
 
       case 'status':

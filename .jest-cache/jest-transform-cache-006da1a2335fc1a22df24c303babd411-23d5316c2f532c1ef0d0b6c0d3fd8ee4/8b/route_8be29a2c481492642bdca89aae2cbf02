@@ -1,0 +1,53 @@
+4850aea103aaaa45f4c53625cdf773e5
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "POST", {
+    enumerable: true,
+    get: function() {
+        return POST;
+    }
+});
+const _server = require("next/server");
+const _server1 = require("../../../../lib/auth/server");
+const _careservice = require("../../../../lib/services/care-service");
+const _careschemas = require("../../../../lib/validation/care-schemas");
+async function POST(request) {
+    try {
+        const { user } = await (0, _server1.requireAuthSession)();
+        const body = await request.json();
+        // Validate the quick care log data
+        const validation = _careschemas.careValidation.validateQuickCareLog({
+            ...body,
+            careDate: new Date(body.careDate || new Date())
+        });
+        if (!validation.success) {
+            console.error('Quick care validation error:', validation.error.issues);
+            return _server.NextResponse.json({
+                error: validation.error.issues[0]?.message || 'Invalid quick care data',
+                details: validation.error.issues
+            }, {
+                status: 400
+            });
+        }
+        const result = await _careservice.CareService.quickCareLog(user.id, validation.data);
+        if (!result.success) {
+            return _server.NextResponse.json({
+                error: result.error
+            }, {
+                status: 400
+            });
+        }
+        return _server.NextResponse.json(result.careHistory);
+    } catch (error) {
+        console.error('Error with quick care log:', error);
+        return _server.NextResponse.json({
+            error: 'Failed to log quick care'
+        }, {
+            status: 500
+        });
+    }
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL2FwcC9hcGkvY2FyZS9xdWljay1sb2cvcm91dGUudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgTmV4dFJlcXVlc3QsIE5leHRSZXNwb25zZSB9IGZyb20gJ25leHQvc2VydmVyJztcbmltcG9ydCB7IHJlcXVpcmVBdXRoU2Vzc2lvbiB9IGZyb20gJ0AvbGliL2F1dGgvc2VydmVyJztcbmltcG9ydCB7IENhcmVTZXJ2aWNlIH0gZnJvbSAnQC9saWIvc2VydmljZXMvY2FyZS1zZXJ2aWNlJztcbmltcG9ydCB7IGNhcmVWYWxpZGF0aW9uIH0gZnJvbSAnQC9saWIvdmFsaWRhdGlvbi9jYXJlLXNjaGVtYXMnO1xuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gUE9TVChyZXF1ZXN0OiBOZXh0UmVxdWVzdCkge1xuICB0cnkge1xuICAgIGNvbnN0IHsgdXNlciB9ID0gYXdhaXQgcmVxdWlyZUF1dGhTZXNzaW9uKCk7XG4gICAgY29uc3QgYm9keSA9IGF3YWl0IHJlcXVlc3QuanNvbigpO1xuICAgIFxuICAgIC8vIFZhbGlkYXRlIHRoZSBxdWljayBjYXJlIGxvZyBkYXRhXG4gICAgY29uc3QgdmFsaWRhdGlvbiA9IGNhcmVWYWxpZGF0aW9uLnZhbGlkYXRlUXVpY2tDYXJlTG9nKHtcbiAgICAgIC4uLmJvZHksXG4gICAgICBjYXJlRGF0ZTogbmV3IERhdGUoYm9keS5jYXJlRGF0ZSB8fCBuZXcgRGF0ZSgpKSxcbiAgICB9KTtcbiAgICBcbiAgICBpZiAoIXZhbGlkYXRpb24uc3VjY2Vzcykge1xuICAgICAgY29uc29sZS5lcnJvcignUXVpY2sgY2FyZSB2YWxpZGF0aW9uIGVycm9yOicsIHZhbGlkYXRpb24uZXJyb3IuaXNzdWVzKTtcbiAgICAgIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbihcbiAgICAgICAgeyBcbiAgICAgICAgICBlcnJvcjogdmFsaWRhdGlvbi5lcnJvci5pc3N1ZXNbMF0/Lm1lc3NhZ2UgfHwgJ0ludmFsaWQgcXVpY2sgY2FyZSBkYXRhJyxcbiAgICAgICAgICBkZXRhaWxzOiB2YWxpZGF0aW9uLmVycm9yLmlzc3VlcyBcbiAgICAgICAgfSxcbiAgICAgICAgeyBzdGF0dXM6IDQwMCB9XG4gICAgICApO1xuICAgIH1cbiAgICBcbiAgICBjb25zdCByZXN1bHQgPSBhd2FpdCBDYXJlU2VydmljZS5xdWlja0NhcmVMb2codXNlci5pZCwgdmFsaWRhdGlvbi5kYXRhKTtcbiAgICBcbiAgICBpZiAoIXJlc3VsdC5zdWNjZXNzKSB7XG4gICAgICByZXR1cm4gTmV4dFJlc3BvbnNlLmpzb24oXG4gICAgICAgIHsgZXJyb3I6IHJlc3VsdC5lcnJvciB9LFxuICAgICAgICB7IHN0YXR1czogNDAwIH1cbiAgICAgICk7XG4gICAgfVxuICAgIFxuICAgIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbihyZXN1bHQuY2FyZUhpc3RvcnkpO1xuICB9IGNhdGNoIChlcnJvcikge1xuICAgIGNvbnNvbGUuZXJyb3IoJ0Vycm9yIHdpdGggcXVpY2sgY2FyZSBsb2c6JywgZXJyb3IpO1xuICAgIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbihcbiAgICAgIHsgZXJyb3I6ICdGYWlsZWQgdG8gbG9nIHF1aWNrIGNhcmUnIH0sXG4gICAgICB7IHN0YXR1czogNTAwIH1cbiAgICApO1xuICB9XG59Il0sIm5hbWVzIjpbIlBPU1QiLCJyZXF1ZXN0IiwidXNlciIsInJlcXVpcmVBdXRoU2Vzc2lvbiIsImJvZHkiLCJqc29uIiwidmFsaWRhdGlvbiIsImNhcmVWYWxpZGF0aW9uIiwidmFsaWRhdGVRdWlja0NhcmVMb2ciLCJjYXJlRGF0ZSIsIkRhdGUiLCJzdWNjZXNzIiwiY29uc29sZSIsImVycm9yIiwiaXNzdWVzIiwiTmV4dFJlc3BvbnNlIiwibWVzc2FnZSIsImRldGFpbHMiLCJzdGF0dXMiLCJyZXN1bHQiLCJDYXJlU2VydmljZSIsInF1aWNrQ2FyZUxvZyIsImlkIiwiZGF0YSIsImNhcmVIaXN0b3J5Il0sIm1hcHBpbmdzIjoiOzs7OytCQUtzQkE7OztlQUFBQTs7O3dCQUxvQjt5QkFDUDs2QkFDUDs2QkFDRztBQUV4QixlQUFlQSxLQUFLQyxPQUFvQjtJQUM3QyxJQUFJO1FBQ0YsTUFBTSxFQUFFQyxJQUFJLEVBQUUsR0FBRyxNQUFNQyxJQUFBQSwyQkFBa0I7UUFDekMsTUFBTUMsT0FBTyxNQUFNSCxRQUFRSSxJQUFJO1FBRS9CLG1DQUFtQztRQUNuQyxNQUFNQyxhQUFhQywyQkFBYyxDQUFDQyxvQkFBb0IsQ0FBQztZQUNyRCxHQUFHSixJQUFJO1lBQ1BLLFVBQVUsSUFBSUMsS0FBS04sS0FBS0ssUUFBUSxJQUFJLElBQUlDO1FBQzFDO1FBRUEsSUFBSSxDQUFDSixXQUFXSyxPQUFPLEVBQUU7WUFDdkJDLFFBQVFDLEtBQUssQ0FBQyxnQ0FBZ0NQLFdBQVdPLEtBQUssQ0FBQ0MsTUFBTTtZQUNyRSxPQUFPQyxvQkFBWSxDQUFDVixJQUFJLENBQ3RCO2dCQUNFUSxPQUFPUCxXQUFXTyxLQUFLLENBQUNDLE1BQU0sQ0FBQyxFQUFFLEVBQUVFLFdBQVc7Z0JBQzlDQyxTQUFTWCxXQUFXTyxLQUFLLENBQUNDLE1BQU07WUFDbEMsR0FDQTtnQkFBRUksUUFBUTtZQUFJO1FBRWxCO1FBRUEsTUFBTUMsU0FBUyxNQUFNQyx3QkFBVyxDQUFDQyxZQUFZLENBQUNuQixLQUFLb0IsRUFBRSxFQUFFaEIsV0FBV2lCLElBQUk7UUFFdEUsSUFBSSxDQUFDSixPQUFPUixPQUFPLEVBQUU7WUFDbkIsT0FBT0ksb0JBQVksQ0FBQ1YsSUFBSSxDQUN0QjtnQkFBRVEsT0FBT00sT0FBT04sS0FBSztZQUFDLEdBQ3RCO2dCQUFFSyxRQUFRO1lBQUk7UUFFbEI7UUFFQSxPQUFPSCxvQkFBWSxDQUFDVixJQUFJLENBQUNjLE9BQU9LLFdBQVc7SUFDN0MsRUFBRSxPQUFPWCxPQUFPO1FBQ2RELFFBQVFDLEtBQUssQ0FBQyw4QkFBOEJBO1FBQzVDLE9BQU9FLG9CQUFZLENBQUNWLElBQUksQ0FDdEI7WUFBRVEsT0FBTztRQUEyQixHQUNwQztZQUFFSyxRQUFRO1FBQUk7SUFFbEI7QUFDRiJ9

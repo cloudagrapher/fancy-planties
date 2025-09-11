@@ -37,7 +37,9 @@
     "deploy:health": "./scripts/deploy-production.sh health",
     "backup:create": "./scripts/backup.sh",
     "backup:restore": "./scripts/restore.sh",
-    "db:seed": "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/fancy_planties\" npx tsx scripts/seed-plants.ts"
+    "db:seed": "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/fancy_planties\" npx tsx scripts/seed-plants.ts",
+    "db:verify-email-schema": "node scripts/verify-email-schema.js",
+    "db:setup-email-verification": "npx tsx scripts/setup-email-verification.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

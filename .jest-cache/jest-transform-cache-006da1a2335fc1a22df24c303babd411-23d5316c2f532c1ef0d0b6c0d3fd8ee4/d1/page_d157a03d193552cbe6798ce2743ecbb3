@@ -1,0 +1,366 @@
+87797f717e1e813e7652a107888831b6
+"use strict";
+
+/* istanbul ignore next */
+function cov_22qzdnw2my() {
+  var path = "/Users/stefanbekker/projects/fancy-planties/src/app/auth/signin/page.tsx";
+  var hash = "87eb27ab69091d9159d6eef7856fb612d8dbff26";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/stefanbekker/projects/fancy-planties/src/app/auth/signin/page.tsx",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 3
+        }
+      },
+      "1": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 10,
+          column: 3
+        }
+      },
+      "2": {
+        start: {
+          line: 8,
+          column: 8
+        },
+        end: {
+          line: 8,
+          column: 26
+        }
+      },
+      "3": {
+        start: {
+          line: 11,
+          column: 20
+        },
+        end: {
+          line: 11,
+          column: 48
+        }
+      },
+      "4": {
+        start: {
+          line: 12,
+          column: 16
+        },
+        end: {
+          line: 12,
+          column: 51
+        }
+      },
+      "5": {
+        start: {
+          line: 13,
+          column: 34
+        },
+        end: {
+          line: 13,
+          column: 106
+        }
+      },
+      "6": {
+        start: {
+          line: 15,
+          column: 4
+        },
+        end: {
+          line: 17,
+          column: 6
+        }
+      },
+      "7": {
+        start: {
+          line: 21,
+          column: 4
+        },
+        end: {
+          line: 21,
+          column: 49
+        }
+      },
+      "8": {
+        start: {
+          line: 22,
+          column: 4
+        },
+        end: {
+          line: 61,
+          column: 7
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 7,
+            column: 9
+          },
+          end: {
+            line: 7,
+            column: 10
+          }
+        },
+        loc: {
+          start: {
+            line: 7,
+            column: 20
+          },
+          end: {
+            line: 9,
+            column: 5
+          }
+        },
+        line: 7
+      },
+      "1": {
+        name: "_interop_require_default",
+        decl: {
+          start: {
+            line: 14,
+            column: 9
+          },
+          end: {
+            line: 14,
+            column: 33
+          }
+        },
+        loc: {
+          start: {
+            line: 14,
+            column: 39
+          },
+          end: {
+            line: 18,
+            column: 1
+          }
+        },
+        line: 14
+      },
+      "2": {
+        name: "SignInPage",
+        decl: {
+          start: {
+            line: 19,
+            column: 15
+          },
+          end: {
+            line: 19,
+            column: 25
+          }
+        },
+        loc: {
+          start: {
+            line: 19,
+            column: 28
+          },
+          end: {
+            line: 62,
+            column: 1
+          }
+        },
+        line: 19
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 15,
+            column: 11
+          },
+          end: {
+            line: 17,
+            column: 5
+          }
+        },
+        type: "cond-expr",
+        locations: [{
+          start: {
+            line: 15,
+            column: 35
+          },
+          end: {
+            line: 15,
+            column: 38
+          }
+        }, {
+          start: {
+            line: 15,
+            column: 41
+          },
+          end: {
+            line: 17,
+            column: 5
+          }
+        }],
+        line: 15
+      },
+      "1": {
+        loc: {
+          start: {
+            line: 15,
+            column: 11
+          },
+          end: {
+            line: 15,
+            column: 32
+          }
+        },
+        type: "binary-expr",
+        locations: [{
+          start: {
+            line: 15,
+            column: 11
+          },
+          end: {
+            line: 15,
+            column: 14
+          }
+        }, {
+          start: {
+            line: 15,
+            column: 18
+          },
+          end: {
+            line: 15,
+            column: 32
+          }
+        }],
+        line: 15
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0,
+      "2": 0
+    },
+    b: {
+      "0": [0, 0],
+      "1": [0, 0]
+    },
+    inputSourceMap: {
+      version: 3,
+      sources: ["/Users/stefanbekker/projects/fancy-planties/src/app/auth/signin/page.tsx"],
+      sourcesContent: ["import { redirectIfAuthenticated } from '@/lib/auth/server';\nimport SignInForm from '@/components/auth/SignInForm';\n\nexport default async function SignInPage() {\n  // Redirect if already authenticated\n  await redirectIfAuthenticated();\n\n  return (\n    <div className=\"min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50 px-4\">\n      <div className=\"max-w-md w-full space-y-8\">\n        <div className=\"text-center\">\n          <h1 className=\"text-3xl font-bold text-gray-900 mb-2\">\n            Welcome back to Fancy Planties\n          </h1>\n          <p className=\"text-gray-600\">\n            Sign in to continue managing your plant collection\n          </p>\n        </div>\n        \n        <div className=\"bg-white rounded-2xl shadow-soft p-8\">\n          <SignInForm />\n        </div>\n        \n        <div className=\"text-center\">\n          <p className=\"text-sm text-gray-600\">\n            Don&apos;t have an account?{' '}\n            <a \n              href=\"/auth/signup\" \n              className=\"font-medium text-primary-600 hover:text-primary-500 transition-colors\"\n            >\n              Sign up here\n            </a>\n          </p>\n        </div>\n      </div>\n    </div>\n  );\n}"],
+      names: ["SignInPage", "redirectIfAuthenticated", "div", "className", "h1", "p", "SignInForm", "a", "href"],
+      mappings: ";;;;+BAGA;;;eAA8BA;;;;wBAHU;mEACjB;;;;;;AAER,eAAeA;IAC5B,oCAAoC;IACpC,MAAMC,IAAAA,+BAAuB;IAE7B,qBACE,qBAACC;QAAIC,WAAU;kBACb,cAAA,sBAACD;YAAIC,WAAU;;8BACb,sBAACD;oBAAIC,WAAU;;sCACb,qBAACC;4BAAGD,WAAU;sCAAwC;;sCAGtD,qBAACE;4BAAEF,WAAU;sCAAgB;;;;8BAK/B,qBAACD;oBAAIC,WAAU;8BACb,cAAA,qBAACG,mBAAU;;8BAGb,qBAACJ;oBAAIC,WAAU;8BACb,cAAA,sBAACE;wBAAEF,WAAU;;4BAAwB;4BACP;0CAC5B,qBAACI;gCACCC,MAAK;gCACLL,WAAU;0CACX;;;;;;;;AAQb"
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "87eb27ab69091d9159d6eef7856fb612d8dbff26"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_22qzdnw2my = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_22qzdnw2my();
+cov_22qzdnw2my().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_22qzdnw2my().s[1]++;
+Object.defineProperty(exports, "default", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_22qzdnw2my().f[0]++;
+    cov_22qzdnw2my().s[2]++;
+    return SignInPage;
+  }
+});
+const _jsxruntime =
+/* istanbul ignore next */
+(cov_22qzdnw2my().s[3]++, require("react/jsx-runtime"));
+const _server =
+/* istanbul ignore next */
+(cov_22qzdnw2my().s[4]++, require("../../../lib/auth/server"));
+const _SignInForm =
+/* istanbul ignore next */
+(/*#__PURE__*/cov_22qzdnw2my().s[5]++, _interop_require_default(require("../../../components/auth/SignInForm")));
+function _interop_require_default(obj) {
+  /* istanbul ignore next */
+  cov_22qzdnw2my().f[1]++;
+  cov_22qzdnw2my().s[6]++;
+  return /* istanbul ignore next */(cov_22qzdnw2my().b[1][0]++, obj) &&
+  /* istanbul ignore next */
+  (cov_22qzdnw2my().b[1][1]++, obj.__esModule) ?
+  /* istanbul ignore next */
+  (cov_22qzdnw2my().b[0][0]++, obj) :
+  /* istanbul ignore next */
+  (cov_22qzdnw2my().b[0][1]++, {
+    default: obj
+  });
+}
+async function SignInPage() {
+  /* istanbul ignore next */
+  cov_22qzdnw2my().f[2]++;
+  cov_22qzdnw2my().s[7]++;
+  // Redirect if already authenticated
+  await (0, _server.redirectIfAuthenticated)();
+  /* istanbul ignore next */
+  cov_22qzdnw2my().s[8]++;
+  return /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+    className: "min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50 px-4",
+    children: /*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+      className: "max-w-md w-full space-y-8",
+      children: [/*#__PURE__*/(0, _jsxruntime.jsxs)("div", {
+        className: "text-center",
+        children: [/*#__PURE__*/(0, _jsxruntime.jsx)("h1", {
+          className: "text-3xl font-bold text-gray-900 mb-2",
+          children: "Welcome back to Fancy Planties"
+        }), /*#__PURE__*/(0, _jsxruntime.jsx)("p", {
+          className: "text-gray-600",
+          children: "Sign in to continue managing your plant collection"
+        })]
+      }), /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+        className: "bg-white rounded-2xl shadow-soft p-8",
+        children: /*#__PURE__*/(0, _jsxruntime.jsx)(_SignInForm.default, {})
+      }), /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+        className: "text-center",
+        children: /*#__PURE__*/(0, _jsxruntime.jsxs)("p", {
+          className: "text-sm text-gray-600",
+          children: ["Don't have an account?", ' ', /*#__PURE__*/(0, _jsxruntime.jsx)("a", {
+            href: "/auth/signup",
+            className: "font-medium text-primary-600 hover:text-primary-500 transition-colors",
+            children: "Sign up here"
+          })]
+        })
+      })]
+    })
+  });
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJTaWduSW5QYWdlIiwiY292XzIycXpkbncybXkiLCJmIiwicyIsIl9zZXJ2ZXIiLCJyZWRpcmVjdElmQXV0aGVudGljYXRlZCIsIl9qc3hydW50aW1lIiwianN4IiwiY2xhc3NOYW1lIiwianN4cyIsIl9TaWduSW5Gb3JtIiwiZGVmYXVsdCIsImhyZWYiXSwic291cmNlcyI6WyIvVXNlcnMvc3RlZmFuYmVra2VyL3Byb2plY3RzL2ZhbmN5LXBsYW50aWVzL3NyYy9hcHAvYXV0aC9zaWduaW4vcGFnZS50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgcmVkaXJlY3RJZkF1dGhlbnRpY2F0ZWQgfSBmcm9tICdAL2xpYi9hdXRoL3NlcnZlcic7XG5pbXBvcnQgU2lnbkluRm9ybSBmcm9tICdAL2NvbXBvbmVudHMvYXV0aC9TaWduSW5Gb3JtJztcblxuZXhwb3J0IGRlZmF1bHQgYXN5bmMgZnVuY3Rpb24gU2lnbkluUGFnZSgpIHtcbiAgLy8gUmVkaXJlY3QgaWYgYWxyZWFkeSBhdXRoZW50aWNhdGVkXG4gIGF3YWl0IHJlZGlyZWN0SWZBdXRoZW50aWNhdGVkKCk7XG5cbiAgcmV0dXJuIChcbiAgICA8ZGl2IGNsYXNzTmFtZT1cIm1pbi1oLXNjcmVlbiBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBiZy1ncmFkaWVudC10by1iciBmcm9tLXByaW1hcnktNTAgdG8tc2Vjb25kYXJ5LTUwIHB4LTRcIj5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwibWF4LXctbWQgdy1mdWxsIHNwYWNlLXktOFwiPlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInRleHQtY2VudGVyXCI+XG4gICAgICAgICAgPGgxIGNsYXNzTmFtZT1cInRleHQtM3hsIGZvbnQtYm9sZCB0ZXh0LWdyYXktOTAwIG1iLTJcIj5cbiAgICAgICAgICAgIFdlbGNvbWUgYmFjayB0byBGYW5jeSBQbGFudGllc1xuICAgICAgICAgIDwvaDE+XG4gICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1ncmF5LTYwMFwiPlxuICAgICAgICAgICAgU2lnbiBpbiB0byBjb250aW51ZSBtYW5hZ2luZyB5b3VyIHBsYW50IGNvbGxlY3Rpb25cbiAgICAgICAgICA8L3A+XG4gICAgICAgIDwvZGl2PlxuICAgICAgICBcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJiZy13aGl0ZSByb3VuZGVkLTJ4bCBzaGFkb3ctc29mdCBwLThcIj5cbiAgICAgICAgICA8U2lnbkluRm9ybSAvPlxuICAgICAgICA8L2Rpdj5cbiAgICAgICAgXG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidGV4dC1jZW50ZXJcIj5cbiAgICAgICAgICA8cCBjbGFzc05hbWU9XCJ0ZXh0LXNtIHRleHQtZ3JheS02MDBcIj5cbiAgICAgICAgICAgIERvbiZhcG9zO3QgaGF2ZSBhbiBhY2NvdW50P3snICd9XG4gICAgICAgICAgICA8YSBcbiAgICAgICAgICAgICAgaHJlZj1cIi9hdXRoL3NpZ251cFwiIFxuICAgICAgICAgICAgICBjbGFzc05hbWU9XCJmb250LW1lZGl1bSB0ZXh0LXByaW1hcnktNjAwIGhvdmVyOnRleHQtcHJpbWFyeS01MDAgdHJhbnNpdGlvbi1jb2xvcnNcIlxuICAgICAgICAgICAgPlxuICAgICAgICAgICAgICBTaWduIHVwIGhlcmVcbiAgICAgICAgICAgIDwvYT5cbiAgICAgICAgICA8L3A+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG4gICAgPC9kaXY+XG4gICk7XG59Il0sIm1hcHBpbmdzIjoiOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7K0JBR0E7Ozs7OztXQUE4QkEsVUFBQTs7Ozs7Ozs7a0NBSFU7Ozt3RUFDakI7Ozs7Ozs7Ozs7Ozs7OztBQUVSLGVBQWVBLFdBQUE7RUFBQTtFQUFBQyxjQUFBLEdBQUFDLENBQUE7RUFBQUQsY0FBQSxHQUFBRSxDQUFBO0VBQzVCO0VBQ0EsTUFBTSxJQUFBQyxPQUFBLENBQUFDLHVCQUF1QjtFQUFBO0VBQUFKLGNBQUEsR0FBQUUsQ0FBQTtFQUU3QixvQkFDRSxJQUFBRyxXQUFBLENBQUFDLEdBQUEsRUFBQztJQUFJQyxTQUFBLEVBQVU7Y0FDYixpQkFBQUYsV0FBQSxDQUFBRyxJQUFBLEVBQUM7TUFBSUQsU0FBQSxFQUFVOzhCQUNiLElBQUFGLFdBQUEsQ0FBQUcsSUFBQSxFQUFDO1FBQUlELFNBQUEsRUFBVTtnQ0FDYixJQUFBRixXQUFBLENBQUFDLEdBQUEsRUFBQztVQUFHQyxTQUFBLEVBQVU7b0JBQXdDO3lCQUd0RCxJQUFBRixXQUFBLENBQUFDLEdBQUEsRUFBQztVQUFFQyxTQUFBLEVBQVU7b0JBQWdCOzt1QkFLL0IsSUFBQUYsV0FBQSxDQUFBQyxHQUFBLEVBQUM7UUFBSUMsU0FBQSxFQUFVO2tCQUNiLGlCQUFBRixXQUFBLENBQUFDLEdBQUEsRUFBQ0csV0FBQSxDQUFBQyxPQUFVO3VCQUdiLElBQUFMLFdBQUEsQ0FBQUMsR0FBQSxFQUFDO1FBQUlDLFNBQUEsRUFBVTtrQkFDYixpQkFBQUYsV0FBQSxDQUFBRyxJQUFBLEVBQUM7VUFBRUQsU0FBQSxFQUFVO3FCQUF3QiwwQkFDUCxLLGFBQzVCLElBQUFGLFdBQUEsQ0FBQUMsR0FBQSxFQUFDO1lBQ0NLLElBQUEsRUFBSztZQUNMSixTQUFBLEVBQVU7c0JBQ1g7Ozs7OztBQVFiIiwiaWdub3JlTGlzdCI6W119

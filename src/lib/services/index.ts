@@ -8,3 +8,12 @@ export { ResendEmailService, createEmailService } from './resend-email-service';
 // Re-export configuration types and functions
 export type { EmailVerificationConfig } from './email-config';
 export { loadEmailVerificationConfig, getEmailVerificationConfig } from './email-config';
+
+// Re-export email verification code service
+export type { EmailVerificationCode } from './email-verification-code-service';
+export { 
+  EmailVerificationCodeService, 
+  VerificationError, 
+  VerificationCodeError,
+  emailVerificationCodeService 
+} from './email-verification-code-service';
