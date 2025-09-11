@@ -20,16 +20,19 @@ This guide provides comprehensive documentation for testing patterns, best pract
    - Complete user workflows
    - End-to-end functionality
    - Critical business logic
+   - Email verification flows
 
 2. Component Tests (30% of effort)
    - User interactions
    - Form validation
    - Error handling
+   - Email verification UI
 
 3. Utility Tests (10% of effort)
    - Helper functions
    - Edge cases
    - Performance scenarios
+   - Email service reliability
 ```
 
 ## Test Organization
@@ -43,7 +46,8 @@ src/
 │   │   ├── auth-flows.test.js
 │   │   ├── plant-management.test.js
 │   │   ├── care-tracking.test.js
-│   │   └── data-import.test.js
+│   │   ├── data-import.test.js
+│   │   └── email-service-integration.test.ts
 │   ├── api/                   # API endpoint tests
 │   │   ├── auth-core.test.js
 │   │   ├── plant-management.test.js
@@ -349,6 +353,129 @@ describe('Plant Instances API', () => {
         .post('/api/plant-instances')
         .send(plantData)
         .expect(401);
+    });
+  });
+});
+```
+
+### Email Service Test Pattern
+
+Email service tests verify email delivery, verification codes, and error handling.
+
+```javascript
+// Example: Email service integration testing
+import { createEmailService, EmailServiceError } from '@/lib/services/email';
+import { getEmailErrorMessage } from '@/lib/utils/email-errors';
+
+describe('Email Service Integration', () => {
+  let originalEnv;
+
+  beforeEach(() => {
+    originalEnv = process.env;
+    process.env = {
+      ...originalEnv,
+      RESEND_API_KEY: 'test-api-key',
+      FROM_EMAIL: 'test@example.com',
+      FROM_NAME: 'Test App',
+      NODE_ENV: 'test',
+    };
+  });
+
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
+  it('should create email service with valid configuration', () => {
+    expect(() => createEmailService()).not.toThrow();
+  });
+
+  it('should handle missing API key gracefully', () => {
+    delete process.env.RESEND_API_KEY;
+    expect(() => createEmailService()).toThrow('RESEND_API_KEY environment variable is required');
+  });
+
+  it('should provide user-friendly error messages', () => {
+    const quotaError = new EmailServiceError('Quota exceeded', 'QUOTA_EXCEEDED');
+    const message = getEmailErrorMessage(quotaError);
+    
+    expect(message).toContain('temporarily unavailable');
+    expect(message).not.toContain('Quota exceeded'); // Hide technical details
+  });
+});
+```
+
+### Email Verification API Test Pattern
+
+```javascript
+// Example: Email verification endpoint testing
+describe('Email Verification API', () => {
+  let testContext, testUser;
+
+  beforeEach(async () => {
+    testContext = await createTestContext();
+    testUser = await createUnverifiedUser(); // User without email verification
+  });
+
+  afterEach(async () => {
+    await cleanupTestContext(testContext);
+  });
+
+  describe('POST /api/auth/verify-email', () => {
+    it('should verify email with valid code', async () => {
+      // Generate verification code
+      const verificationCode = await generateTestVerificationCode(testUser.email);
+
+      const response = await testContext.apiClient
+        .post('/api/auth/verify-email')
+        .send({ 
+          email: testUser.email,
+          code: verificationCode 
+        })
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      
+      // Verify user is now verified
+      const updatedUser = await getUserByEmail(testUser.email);
+      expect(updatedUser.isEmailVerified).toBe(true);
+    });
+
+    it('should reject invalid verification codes', async () => {
+      const response = await testContext.apiClient
+        .post('/api/auth/verify-email')
+        .send({ 
+          email: testUser.email,
+          code: '000000' // Invalid code
+        })
+        .expect(400);
+
+      expect(response.body.error).toBe('Invalid or expired verification code');
+    });
+
+    it('should enforce rate limiting on verification attempts', async () => {
+      // Make multiple failed attempts
+      for (let i = 0; i < 6; i++) {
+        await testContext.apiClient
+          .post('/api/auth/verify-email')
+          .send({ email: testUser.email, code: '000000' })
+          .expect(i < 5 ? 400 : 429); // Rate limited after 5 attempts
+      }
+    });
+  });
+
+  describe('POST /api/auth/resend-verification', () => {
+    it('should resend verification code with cooldown', async () => {
+      // First request should succeed
+      await testContext.apiClient
+        .post('/api/auth/resend-verification')
+        .send({ email: testUser.email })
+        .expect(200);
+
+      // Immediate second request should be rate limited
+      await testContext.apiClient
+        .post('/api/auth/resend-verification')
+        .send({ email: testUser.email })
+        .expect(429);
     });
   });
 });

@@ -228,6 +228,9 @@ npm run test:coverage
 
 # Watch mode for development
 npm run test:watch
+
+# Email verification specific tests
+npm test -- --testPathPatterns="email.*unit|email.*integration" --verbose
 ```
 
 ### Testing Architecture
@@ -292,7 +295,8 @@ The test suite is configured for optimal performance:
 - **Security Headers**: Comprehensive security headers via Nginx
 - **Input Validation**: Zod schema validation on all inputs
 - **HTTPS**: SSL/TLS encryption in production
-- **Rate Limiting**: API rate limiting to prevent abuse and verification attempts
+- **Rate Limiting**: API rate limiting to prevent abuse
+- **Email Verification**: Secure 6-digit verification codes with rate limiting and attempt tracking
 
 ## 🌍 Browser Support
 

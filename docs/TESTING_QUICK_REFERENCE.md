@@ -23,6 +23,12 @@ npm test -- --verbose --runInBand
 
 # Clear Jest cache
 npm test -- --clearCache
+
+# Email verification specific tests
+npm test -- --testPathPatterns="email.*unit|email.*integration" --verbose
+
+# Run email service tests only
+npm test -- --testPathPatterns="email-service" --verbose
 ```
 
 ## Test File Templates
@@ -193,6 +199,20 @@ it('should handle errors', async () => {
 ### Authentication Testing
 ```javascript
 const { getByText } = renderWithAuth(<Component />, { user: testUser });
+```
+
+### Email Verification Testing
+```javascript
+// Test email service configuration
+expect(() => createEmailService()).not.toThrow();
+
+// Test verification code validation
+const response = await apiClient
+  .post('/api/auth/verify-email')
+  .send({ email: 'test@example.com', code: '123456' });
+
+// Test rate limiting
+await expect(multipleRequests()).rejects.toThrow('Rate limited');
 ```
 
 This quick reference provides the most commonly needed information for day-to-day testing work.
