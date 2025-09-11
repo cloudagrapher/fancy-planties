@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { X, Upload, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import PlantTaxonomySelector from '../plants/PlantTaxonomySelector';
@@ -33,6 +34,8 @@ interface FormData {
 }
 
 export default function PropagationForm({ propagation, onClose, onSuccess }: PropagationFormProps) {
+  const queryClient = useQueryClient();
+  
   const [formData, setFormData] = useState<FormData>({
     plantId: propagation?.plantId || null,
     parentInstanceId: propagation?.parentInstanceId || null,
@@ -198,6 +201,46 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
         throw new Error(errorData.error || 'Failed to save propagation');
       }
 
+      // Comprehensive cache invalidation after successful propagation save
+      await Promise.all([
+        // Invalidate propagation-related queries
+        queryClient.invalidateQueries({ 
+          queryKey: ['propagations'],
+          refetchType: 'all'
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['propagations', 'stats'],
+          refetchType: 'all'
+        }),
+        
+        // Also invalidate the dashboard statistics propagation stats
+        queryClient.invalidateQueries({ 
+          queryKey: ['propagation-stats'],
+          refetchType: 'all'
+        }),
+        
+        // Invalidate plant-related queries (for lineage updates)
+        queryClient.invalidateQueries({ 
+          queryKey: ['plant-instances'],
+          refetchType: 'all'
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['plant-detail'],
+          refetchType: 'all'
+        }),
+        
+        // Invalidate dashboard data that might show propagation counts
+        queryClient.invalidateQueries({ 
+          queryKey: ['care-dashboard'],
+          refetchType: 'all'
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['care-dashboard-stats'],
+          refetchType: 'all'
+        })
+      ]);
+
+      console.log('Propagation cache invalidation complete');
       onSuccess();
     } catch (error) {
       console.error('Error saving propagation:', error);

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, TrendingUp, Clock, CheckCircle, Sprout } from 'lucide-react';
 import PropagationCard from './PropagationCard';
 import PropagationForm from './PropagationForm';
@@ -23,42 +24,50 @@ interface PropagationDashboardProps {
 }
 
 export default function PropagationDashboard({ userId }: PropagationDashboardProps) {
-  const [propagations, setPropagations] = useState<PropagationWithDetails[]>([]);
-  const [stats, setStats] = useState<PropagationStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
-  // Fetch propagations and stats
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch propagations
-      const propResponse = await fetch('/api/propagations');
-      if (!propResponse.ok) {
+  // Fetch propagations using React Query
+  const {
+    data: propagations = [],
+    isLoading: propagationsLoading,
+    error: propagationsError,
+    refetch: refetchPropagations
+  } = useQuery({
+    queryKey: ['propagations'],
+    queryFn: async (): Promise<PropagationWithDetails[]> => {
+      const response = await fetch('/api/propagations');
+      if (!response.ok) {
         throw new Error('Failed to fetch propagations');
       }
-      const propData = await propResponse.json();
-      setPropagations(propData);
+      return response.json();
+    },
+    staleTime: 1000 * 10, // 10 seconds
+    gcTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-      // Fetch stats
-      const statsResponse = await fetch('/api/propagations/stats');
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
-        setStats(statsData);
+  // Fetch propagation stats using React Query  
+  const {
+    data: stats = null,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats
+  } = useQuery({
+    queryKey: ['propagations', 'stats'],
+    queryFn: async (): Promise<PropagationStats> => {
+      const response = await fetch('/api/propagations/stats');
+      if (!response.ok) {
+        throw new Error('Failed to fetch propagation statistics');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load propagations');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.json();
+    },
+    staleTime: 1000 * 10, // 10 seconds
+    gcTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const loading = propagationsLoading || statsLoading;
+  const error = propagationsError || statsError;
 
   // Group propagations by status
   const groupedPropagations = propagations.reduce((acc, prop) => {
@@ -102,8 +111,18 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
     }
   };
 
-  const handlePropagationUpdate = () => {
-    fetchData(); // Refresh data after updates
+  const handlePropagationUpdate = async () => {
+    // Invalidate and refetch propagation data after updates
+    await Promise.all([
+      queryClient.invalidateQueries({ 
+        queryKey: ['propagations'],
+        refetchType: 'all'
+      }),
+      queryClient.invalidateQueries({ 
+        queryKey: ['propagations', 'stats'],
+        refetchType: 'all'
+      })
+    ]);
     setShowAddForm(false); // Close the form modal
   };
 
@@ -129,9 +148,14 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
     return (
       <div className="rounded-2xl shadow-sm border border-red-200/70 bg-red-50/70 backdrop-blur p-6 text-center">
         <div className="text-red-600 text-lg font-medium mb-2">Error Loading Propagations</div>
-        <p className="text-red-600 mb-4">{error}</p>
+        <p className="text-red-600 mb-4">
+          {error instanceof Error ? error.message : 'Failed to load propagations'}
+        </p>
         <button
-          onClick={fetchData}
+          onClick={() => {
+            refetchPropagations();
+            refetchStats();
+          }}
           className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm"
         >
           Try Again
