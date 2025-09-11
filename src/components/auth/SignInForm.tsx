@@ -57,9 +57,16 @@ export default function SignInForm() {
         return;
       }
 
-      // Success - redirect to dashboard or intended page
-      router.push(redirectTo);
-      router.refresh();
+      // Success - check if email verification is required
+      if (result.requiresVerification) {
+        // Redirect to email verification page
+        router.push('/auth/verify-email');
+        router.refresh();
+      } else {
+        // Success - redirect to dashboard or intended page
+        router.push(redirectTo);
+        router.refresh();
+      }
       
     } catch (error) {
       console.error('Sign in error:', error);

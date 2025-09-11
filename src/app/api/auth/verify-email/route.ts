@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { emailVerificationCodeService, VerificationCodeError, VerificationError } from '@/lib/services/email-verification-code-service';
-import { withRateLimit } from '@/lib/auth/middleware';
+import { withVerificationRateLimit } from '@/lib/auth/email-verification-middleware';
 
 // Validation schema for email verification request
 const verifyEmailSchema = z.object({
@@ -9,13 +9,13 @@ const verifyEmailSchema = z.object({
   code: z.string().length(6, 'Verification code must be 6 digits').regex(/^\d{6}$/, 'Verification code must contain only digits'),
 });
 
-// Note: Rate limiting is handled by the withRateLimit middleware with default settings
+// Note: Rate limiting is handled by the withVerificationRateLimit middleware with enhanced email verification limits
 
 export async function POST(request: NextRequest) {
-  return withRateLimit(request, async (req) => {
+  return withVerificationRateLimit(request, async (req) => {
+    // Extract parsed body from middleware
+    const body = (req as any)._parsedBody || await req.json();
     try {
-      const body = await req.json();
-      
       // Validate input
       const validation = verifyEmailSchema.safeParse(body);
       if (!validation.success) {

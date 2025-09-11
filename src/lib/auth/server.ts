@@ -112,6 +112,21 @@ export async function isAuthenticated(): Promise<boolean> {
   return !!(user && session);
 }
 
+// Validate request and require email verification for API routes
+export async function validateVerifiedRequest(): Promise<{ user: User; session: Session } | { user: null; session: null; error: string }> {
+  const { user, session } = await validateRequest();
+  
+  if (!user || !session) {
+    return { user: null, session: null, error: 'Unauthorized' };
+  }
+  
+  if (!user.isEmailVerified) {
+    return { user: null, session: null, error: 'Email verification required' };
+  }
+  
+  return { user, session };
+}
+
 // Redirect authenticated users away from auth pages
 export async function redirectIfAuthenticated(redirectTo: string = '/dashboard') {
   const { user, session } = await validateRequest();

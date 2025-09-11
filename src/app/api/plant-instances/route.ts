@@ -2,18 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { createPlantInstanceSchema, plantInstanceFilterSchema } from '@/lib/validation/plant-schemas';
-import { validateRequest } from '@/lib/auth/server';
+import { validateVerifiedRequest } from '@/lib/auth/server';
 
 // GET /api/plant-instances - Get plant instances with optional filtering
 export async function GET(request: NextRequest) {
   try {
-    const { user } = await validateRequest();
-    if (!user) {
+    const authResult = await validateVerifiedRequest();
+    if (!authResult.user) {
       return NextResponse.json({ 
         success: false,
-        error: 'Unauthorized' 
-      }, { status: 401 });
+        error: authResult.error 
+      }, { status: authResult.error === 'Email verification required' ? 403 : 401 });
     }
+    
+    const { user } = authResult;
 
     const { searchParams } = new URL(request.url);
     
@@ -55,13 +57,15 @@ export async function GET(request: NextRequest) {
 // POST /api/plant-instances - Create a new plant instance
 export async function POST(request: NextRequest) {
   try {
-    const { user } = await validateRequest();
-    if (!user) {
+    const authResult = await validateVerifiedRequest();
+    if (!authResult.user) {
       return NextResponse.json({ 
         success: false,
-        error: 'Unauthorized' 
-      }, { status: 401 });
+        error: authResult.error 
+      }, { status: authResult.error === 'Email verification required' ? 403 : 401 });
     }
+    
+    const { user } = authResult;
 
     // Check if request is FormData or JSON
     const contentType = request.headers.get('content-type');
