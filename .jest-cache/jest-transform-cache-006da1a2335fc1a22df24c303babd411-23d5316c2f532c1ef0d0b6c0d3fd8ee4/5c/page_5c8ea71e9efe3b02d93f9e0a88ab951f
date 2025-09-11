@@ -1,0 +1,231 @@
+1b58cb65f72e299f72098098c7b8888d
+"use strict";
+
+/* istanbul ignore next */
+function cov_2icdevqa1l() {
+  var path = "/Users/stefanbekker/projects/fancy-planties/src/app/dashboard/care/page.tsx";
+  var hash = "0d15c54f011bfd10ee11b0191a30194e48721055";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/stefanbekker/projects/fancy-planties/src/app/dashboard/care/page.tsx",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 3
+        }
+      },
+      "1": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 10,
+          column: 3
+        }
+      },
+      "2": {
+        start: {
+          line: 8,
+          column: 8
+        },
+        end: {
+          line: 8,
+          column: 24
+        }
+      },
+      "3": {
+        start: {
+          line: 11,
+          column: 20
+        },
+        end: {
+          line: 11,
+          column: 48
+        }
+      },
+      "4": {
+        start: {
+          line: 12,
+          column: 16
+        },
+        end: {
+          line: 12,
+          column: 51
+        }
+      },
+      "5": {
+        start: {
+          line: 13,
+          column: 14
+        },
+        end: {
+          line: 13,
+          column: 49
+        }
+      },
+      "6": {
+        start: {
+          line: 15,
+          column: 21
+        },
+        end: {
+          line: 15,
+          column: 64
+        }
+      },
+      "7": {
+        start: {
+          line: 16,
+          column: 4
+        },
+        end: {
+          line: 27,
+          column: 7
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 7,
+            column: 9
+          },
+          end: {
+            line: 7,
+            column: 10
+          }
+        },
+        loc: {
+          start: {
+            line: 7,
+            column: 20
+          },
+          end: {
+            line: 9,
+            column: 5
+          }
+        },
+        line: 7
+      },
+      "1": {
+        name: "CarePage",
+        decl: {
+          start: {
+            line: 14,
+            column: 15
+          },
+          end: {
+            line: 14,
+            column: 23
+          }
+        },
+        loc: {
+          start: {
+            line: 14,
+            column: 26
+          },
+          end: {
+            line: 28,
+            column: 1
+          }
+        },
+        line: 14
+      }
+    },
+    branchMap: {},
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0
+    },
+    b: {},
+    inputSourceMap: {
+      version: 3,
+      sources: ["/Users/stefanbekker/projects/fancy-planties/src/app/dashboard/care/page.tsx"],
+      sourcesContent: ["import { requireVerifiedSession } from '@/lib/auth/server';\nimport { CareDashboard } from '@/components/care';\n\nexport default async function CarePage() {\n  const { user } = await requireVerifiedSession();\n\n  return (\n    <div className=\"min-h-screen pb-16 sm:pb-0 bg-gradient-to-b from-emerald-50 to-white\">\n      <div className=\"max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6\">\n        <div className=\"rounded-xl sm:rounded-2xl shadow-sm border border-slate-200/70 bg-white/70 backdrop-blur p-4 sm:p-8\">\n          <CareDashboard userId={user.id} />\n        </div>\n      </div>\n    </div>\n  );\n}"],
+      names: ["CarePage", "user", "requireVerifiedSession", "div", "className", "CareDashboard", "userId", "id"],
+      mappings: ";;;;+BAGA;;;eAA8BA;;;;wBAHS;sBACT;AAEf,eAAeA;IAC5B,MAAM,EAAEC,IAAI,EAAE,GAAG,MAAMC,IAAAA,8BAAsB;IAE7C,qBACE,qBAACC;QAAIC,WAAU;kBACb,cAAA,qBAACD;YAAIC,WAAU;sBACb,cAAA,qBAACD;gBAAIC,WAAU;0BACb,cAAA,qBAACC,mBAAa;oBAACC,QAAQL,KAAKM,EAAE;;;;;AAKxC"
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "0d15c54f011bfd10ee11b0191a30194e48721055"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_2icdevqa1l = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_2icdevqa1l();
+cov_2icdevqa1l().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_2icdevqa1l().s[1]++;
+Object.defineProperty(exports, "default", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_2icdevqa1l().f[0]++;
+    cov_2icdevqa1l().s[2]++;
+    return CarePage;
+  }
+});
+const _jsxruntime =
+/* istanbul ignore next */
+(cov_2icdevqa1l().s[3]++, require("react/jsx-runtime"));
+const _server =
+/* istanbul ignore next */
+(cov_2icdevqa1l().s[4]++, require("../../../lib/auth/server"));
+const _care =
+/* istanbul ignore next */
+(cov_2icdevqa1l().s[5]++, require("../../../components/care"));
+async function CarePage() {
+  /* istanbul ignore next */
+  cov_2icdevqa1l().f[1]++;
+  const {
+    user
+  } =
+  /* istanbul ignore next */
+  (cov_2icdevqa1l().s[6]++, await (0, _server.requireVerifiedSession)());
+  /* istanbul ignore next */
+  cov_2icdevqa1l().s[7]++;
+  return /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+    className: "min-h-screen pb-16 sm:pb-0 bg-gradient-to-b from-emerald-50 to-white",
+    children: /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+      className: "max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6",
+      children: /*#__PURE__*/(0, _jsxruntime.jsx)("div", {
+        className: "rounded-xl sm:rounded-2xl shadow-sm border border-slate-200/70 bg-white/70 backdrop-blur p-4 sm:p-8",
+        children: /*#__PURE__*/(0, _jsxruntime.jsx)(_care.CareDashboard, {
+          userId: user.id
+        })
+      })
+    })
+  });
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMmljZGV2cWExbCIsImFjdHVhbENvdmVyYWdlIiwicyIsIkNhcmVQYWdlIiwiZiIsInVzZXIiLCJfc2VydmVyIiwicmVxdWlyZVZlcmlmaWVkU2Vzc2lvbiIsIl9qc3hydW50aW1lIiwianN4IiwiY2xhc3NOYW1lIiwiX2NhcmUiLCJDYXJlRGFzaGJvYXJkIiwidXNlcklkIiwiaWQiXSwic291cmNlcyI6WyIvVXNlcnMvc3RlZmFuYmVra2VyL3Byb2plY3RzL2ZhbmN5LXBsYW50aWVzL3NyYy9hcHAvZGFzaGJvYXJkL2NhcmUvcGFnZS50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgcmVxdWlyZVZlcmlmaWVkU2Vzc2lvbiB9IGZyb20gJ0AvbGliL2F1dGgvc2VydmVyJztcbmltcG9ydCB7IENhcmVEYXNoYm9hcmQgfSBmcm9tICdAL2NvbXBvbmVudHMvY2FyZSc7XG5cbmV4cG9ydCBkZWZhdWx0IGFzeW5jIGZ1bmN0aW9uIENhcmVQYWdlKCkge1xuICBjb25zdCB7IHVzZXIgfSA9IGF3YWl0IHJlcXVpcmVWZXJpZmllZFNlc3Npb24oKTtcblxuICByZXR1cm4gKFxuICAgIDxkaXYgY2xhc3NOYW1lPVwibWluLWgtc2NyZWVuIHBiLTE2IHNtOnBiLTAgYmctZ3JhZGllbnQtdG8tYiBmcm9tLWVtZXJhbGQtNTAgdG8td2hpdGVcIj5cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwibWF4LXctN3hsIG14LWF1dG8gcHgtMyBzbTpweC00IHB5LTQgc206cHktNlwiPlxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInJvdW5kZWQteGwgc206cm91bmRlZC0yeGwgc2hhZG93LXNtIGJvcmRlciBib3JkZXItc2xhdGUtMjAwLzcwIGJnLXdoaXRlLzcwIGJhY2tkcm9wLWJsdXIgcC00IHNtOnAtOFwiPlxuICAgICAgICAgIDxDYXJlRGFzaGJvYXJkIHVzZXJJZD17dXNlci5pZH0gLz5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cbiAgICA8L2Rpdj5cbiAgKTtcbn0iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7OztJQU1FO0lBQUFBLGNBQUEsWUFBQUEsQ0FBQTtNQUFBLE9BQUFDLGNBQUE7SUFBQTtFQUFBO0VBQUEsT0FBQUEsY0FBQTtBQUFBO0FBQUFELGNBQUE7QUFBQUEsY0FBQSxHQUFBRSxDQUFBOzs7Ozs7K0JBSEY7Ozs7OztXQUE4QkMsUUFBQTs7Ozs7Ozs7a0NBSFM7OztrQ0FDVDtBQUVmLGVBQWVBLFNBQUE7RUFBQTtFQUFBSCxjQUFBLEdBQUFJLENBQUE7RUFDNUIsTUFBTTtJQUFFQztFQUFJLENBQUU7RUFBQTtFQUFBLENBQUFMLGNBQUEsR0FBQUUsQ0FBQSxPQUFHLE1BQU0sSUFBQUksT0FBQSxDQUFBQyxzQkFBc0I7RUFBQTtFQUFBUCxjQUFBLEdBQUFFLENBQUE7RUFFN0Msb0JBQ0UsSUFBQU0sV0FBQSxDQUFBQyxHQUFBLEVBQUM7SUFBSUMsU0FBQSxFQUFVO2NBQ2IsaUJBQUFGLFdBQUEsQ0FBQUMsR0FBQSxFQUFDO01BQUlDLFNBQUEsRUFBVTtnQkFDYixpQkFBQUYsV0FBQSxDQUFBQyxHQUFBLEVBQUM7UUFBSUMsU0FBQSxFQUFVO2tCQUNiLGlCQUFBRixXQUFBLENBQUFDLEdBQUEsRUFBQ0UsS0FBQSxDQUFBQyxhQUFhO1VBQUNDLE1BQUEsRUFBUVIsSUFBQSxDQUFLUzs7Ozs7QUFLdEMiLCJpZ25vcmVMaXN0IjpbXX0=

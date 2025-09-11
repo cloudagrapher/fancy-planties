@@ -30,6 +30,12 @@ export class CareHistoryQueries {
    * Create a new care history entry
    */
   static async createCareHistory(data: NewCareHistory): Promise<CareHistory> {
+    // Validate care type enum constraint
+    const validCareTypes = ['fertilizer', 'water', 'repot', 'prune', 'inspect', 'other'];
+    if (!validCareTypes.includes(data.careType)) {
+      throw new Error(`Invalid care type: ${data.careType}. Must be one of: ${validCareTypes.join(', ')}`);
+    }
+
     const [careEntry] = await db
       .insert(careHistory)
       .values({
@@ -227,7 +233,24 @@ export class CareHistoryQueries {
    * Delete care history entry
    */
   static async deleteCareHistory(id: number, userId: number): Promise<boolean> {
-    const result = await db
+    // First check if record exists and belongs to user
+    const existing = await db
+      .select()
+      .from(careHistory)
+      .where(
+        and(
+          eq(careHistory.id, id),
+          eq(careHistory.userId, userId)
+        )
+      )
+      .limit(1);
+    
+    if (existing.length === 0) {
+      return false; // Record doesn't exist or doesn't belong to user
+    }
+    
+    // Perform the delete
+    await db
       .delete(careHistory)
       .where(
         and(
@@ -235,8 +258,15 @@ export class CareHistoryQueries {
           eq(careHistory.userId, userId)
         )
       );
-
-    return result.length > 0;
+    
+    // Verify deletion by checking if record still exists
+    const stillExists = await db
+      .select()
+      .from(careHistory)
+      .where(eq(careHistory.id, id))
+      .limit(1);
+        
+    return stillExists.length === 0;
   }
 
   /**

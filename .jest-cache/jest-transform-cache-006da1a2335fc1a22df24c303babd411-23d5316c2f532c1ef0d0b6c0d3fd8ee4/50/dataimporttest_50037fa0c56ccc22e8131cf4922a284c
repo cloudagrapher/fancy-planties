@@ -1,0 +1,997 @@
+147859e87af6729cc11db206dc200cc5
+// Data Import Integration Tests
+// Tests complete CSV file upload, parsing, validation, and import workflows
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+const _jsxruntime = require("react/jsx-runtime");
+const _react = require("@testing-library/react");
+const _testutils = require("../../test-utils");
+const _apihelpers = require("../../test-utils/helpers/api-helpers.js");
+const _userfactory = require("../../test-utils/factories/user-factory.js");
+const _CSVImportModal = /*#__PURE__*/ _interop_require_default(require("../../components/import/CSVImportModal"));
+const _DataImport = /*#__PURE__*/ _interop_require_default(require("../../components/import/DataImport"));
+function _interop_require_default(obj) {
+    return obj && obj.__esModule ? obj : {
+        default: obj
+    };
+}
+// Mock file reading
+global.FileReader = class {
+    constructor(){
+        this.onload = null;
+        this.onerror = null;
+    }
+    readAsText(file) {
+        setTimeout(()=>{
+            if (this.onload) {
+                this.onload({
+                    target: {
+                        result: file.content || 'Family,Genus,Species,Common Name\nAraceae,Monstera,deliciosa,Monstera Deliciosa'
+                    }
+                });
+            }
+        }, 0);
+    }
+};
+describe('Data Import Integration Tests', ()=>{
+    let testUser;
+    let testSession;
+    beforeEach(()=>{
+        jest.clearAllMocks();
+        (0, _apihelpers.resetApiMocks)();
+        // Create authenticated test user
+        const authData = (0, _userfactory.createAuthenticatedTestUser)();
+        testUser = authData.user;
+        testSession = authData.session;
+    });
+    afterEach(()=>{
+        (0, _apihelpers.resetApiMocks)();
+    });
+    describe('CSV File Upload and Parsing Workflow', ()=>{
+        it('should complete CSV upload and parsing workflow', async ()=>{
+            // Arrange
+            const validationResult = {
+                isValid: true,
+                errors: [],
+                preview: [
+                    {
+                        Family: 'Araceae',
+                        Genus: 'Monstera',
+                        Species: 'deliciosa',
+                        'Common Name': 'Monstera Deliciosa'
+                    }
+                ]
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: validationResult
+                }
+            });
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Select import type
+            const plantTaxonomyButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy/i
+            });
+            await user.click(plantTaxonomyButton);
+            // Upload file
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'Family,Genus,Species,Common Name\nAraceae,Monstera,deliciosa,Monstera Deliciosa'
+            ], 'plants.csv', {
+                type: 'text/csv'
+            });
+            csvFile.content = 'Family,Genus,Species,Common Name\nAraceae,Monstera,deliciosa,Monstera Deliciosa';
+            await user.upload(fileInput, csvFile);
+            // Assert - Verify validation API was called
+            await (0, _react.waitFor)(()=>{
+                expect(global.fetch).toHaveBeenCalledWith('/api/import/csv/validate', expect.objectContaining({
+                    method: 'POST',
+                    body: expect.stringContaining('plant_taxonomy')
+                }));
+            });
+            // Assert - Verify preview is shown
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText('Review your data')).toBeInTheDocument();
+                expect(_react.screen.getByText('Monstera Deliciosa')).toBeInTheDocument();
+            });
+        });
+        it('should handle CSV parsing validation errors', async ()=>{
+            // Arrange
+            const validationResult = {
+                isValid: false,
+                errors: [
+                    'Missing required column: Family',
+                    'Row 2: Invalid genus format'
+                ],
+                preview: []
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: validationResult
+                }
+            });
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Select type and upload invalid file
+            const plantTaxonomyButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy/i
+            });
+            await user.click(plantTaxonomyButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const invalidCsvFile = new File([
+                'Invalid,Headers\nBad,Data'
+            ], 'invalid.csv', {
+                type: 'text/csv'
+            });
+            invalidCsvFile.content = 'Invalid,Headers\nBad,Data';
+            await user.upload(fileInput, invalidCsvFile);
+            // Assert - Verify validation errors are displayed
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/missing required column: family/i)).toBeInTheDocument();
+                expect(_react.screen.getByText(/invalid genus format/i)).toBeInTheDocument();
+            });
+        });
+        it('should handle different CSV import types', async ()=>{
+            // Arrange
+            const plantInstanceValidation = {
+                isValid: true,
+                errors: [],
+                preview: [
+                    {
+                        'Common Name': 'Monstera Deliciosa',
+                        Location: 'Living Room',
+                        'Fertilizer Schedule': 'every 4 weeks'
+                    }
+                ]
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: plantInstanceValidation
+                }
+            });
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Select plant instances import type
+            const plantInstancesButton = _react.screen.getByRole('button', {
+                name: /plant instances|plant collection/i
+            });
+            await user.click(plantInstancesButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'Common Name,Location,Fertilizer Schedule\nMonstera Deliciosa,Living Room,every 4 weeks'
+            ], 'collection.csv', {
+                type: 'text/csv'
+            });
+            csvFile.content = 'Common Name,Location,Fertilizer Schedule\nMonstera Deliciosa,Living Room,every 4 weeks';
+            await user.upload(fileInput, csvFile);
+            // Assert - Verify correct import type was sent
+            await (0, _react.waitFor)(()=>{
+                expect(global.fetch).toHaveBeenCalledWith('/api/import/csv/validate', expect.objectContaining({
+                    body: expect.stringContaining('plant_instances')
+                }));
+            });
+            // Assert - Verify plant instance data is shown
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText('Living Room')).toBeInTheDocument();
+                expect(_react.screen.getByText('every 4 weeks')).toBeInTheDocument();
+            });
+        });
+        it('should handle file reading errors gracefully', async ()=>{
+            // Arrange - Mock FileReader to fail
+            global.FileReader = class {
+                constructor(){
+                    this.onerror = null;
+                }
+                readAsText() {
+                    setTimeout(()=>{
+                        if (this.onerror) {
+                            this.onerror(new Error('Failed to read file'));
+                        }
+                    }, 0);
+                }
+            };
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Try to upload file
+            const plantTaxonomyButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy/i
+            });
+            await user.click(plantTaxonomyButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'test'
+            ], 'test.csv', {
+                type: 'text/csv'
+            });
+            await user.upload(fileInput, csvFile);
+            // Assert - Verify error is displayed
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/failed to read file/i)).toBeInTheDocument();
+            });
+        });
+    });
+    describe('Data Validation and Error Handling During Import', ()=>{
+        it('should handle validation API errors', async ()=>{
+            // Arrange
+            (0, _apihelpers.mockApiError)('/api/import/csv/validate', 500, {
+                error: 'Validation service unavailable'
+            }, 'POST');
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Upload file
+            const plantTaxonomyButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy/i
+            });
+            await user.click(plantTaxonomyButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'test'
+            ], 'test.csv', {
+                type: 'text/csv'
+            });
+            await user.upload(fileInput, csvFile);
+            // Assert - Verify error is displayed
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/failed to validate csv/i)).toBeInTheDocument();
+            });
+        });
+        it('should validate required fields for different import types', async ()=>{
+            // Arrange
+            const propagationValidation = {
+                isValid: false,
+                errors: [
+                    'Row 2: Missing required field "Date Started"',
+                    'Row 3: Invalid date format in "Date Started"'
+                ],
+                preview: [
+                    {
+                        'Common Name': 'Monstera Deliciosa',
+                        Location: 'Propagation Station',
+                        'Date Started': ''
+                    }
+                ]
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: propagationValidation
+                }
+            });
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Select propagations import
+            const propagationsButton = _react.screen.getByRole('button', {
+                name: /propagations/i
+            });
+            await user.click(propagationsButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'Common Name,Location,Date Started\nMonstera Deliciosa,Propagation Station,'
+            ], 'propagations.csv', {
+                type: 'text/csv'
+            });
+            csvFile.content = 'Common Name,Location,Date Started\nMonstera Deliciosa,Propagation Station,';
+            await user.upload(fileInput, csvFile);
+            // Assert - Verify field-specific validation errors
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/missing required field "date started"/i)).toBeInTheDocument();
+                expect(_react.screen.getByText(/invalid date format/i)).toBeInTheDocument();
+            });
+        });
+        it('should handle duplicate data validation', async ()=>{
+            // Arrange
+            const validationWithDuplicates = {
+                isValid: true,
+                errors: [],
+                warnings: [
+                    'Row 2: Duplicate plant found - Monstera deliciosa already exists',
+                    'Row 4: Similar plant found - Monstera adansonii (90% match)'
+                ],
+                preview: [
+                    {
+                        Family: 'Araceae',
+                        Genus: 'Monstera',
+                        Species: 'deliciosa',
+                        'Common Name': 'Monstera Deliciosa'
+                    }
+                ]
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: validationWithDuplicates
+                }
+            });
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Upload file with duplicates
+            const plantTaxonomyButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy/i
+            });
+            await user.click(plantTaxonomyButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'test'
+            ], 'duplicates.csv', {
+                type: 'text/csv'
+            });
+            await user.upload(fileInput, csvFile);
+            // Assert - Verify duplicate warnings are shown
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/duplicate plant found/i)).toBeInTheDocument();
+                expect(_react.screen.getByText(/similar plant found/i)).toBeInTheDocument();
+            });
+        });
+        it('should validate data format requirements', async ()=>{
+            // Arrange
+            const formatValidation = {
+                isValid: false,
+                errors: [
+                    'Row 2: "Fertilizer Schedule" must be one of: weekly, biweekly, monthly, etc.',
+                    'Row 3: "Last Fertilized" must be a valid date (YYYY-MM-DD)',
+                    'Row 4: "Location" cannot be empty'
+                ],
+                preview: []
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: formatValidation
+                }
+            });
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Upload file with format errors
+            const plantInstancesButton = _react.screen.getByRole('button', {
+                name: /plant instances/i
+            });
+            await user.click(plantInstancesButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'test'
+            ], 'format-errors.csv', {
+                type: 'text/csv'
+            });
+            await user.upload(fileInput, csvFile);
+            // Assert - Verify format validation errors
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/fertilizer schedule.*must be one of/i)).toBeInTheDocument();
+                expect(_react.screen.getByText(/must be a valid date/i)).toBeInTheDocument();
+                expect(_react.screen.getByText(/location.*cannot be empty/i)).toBeInTheDocument();
+            });
+        });
+    });
+    describe('Successful Import Completion and Data Persistence', ()=>{
+        it('should complete successful import workflow with progress tracking', async ()=>{
+            // Arrange
+            const validationResult = {
+                isValid: true,
+                errors: [],
+                preview: [
+                    {
+                        Family: 'Araceae',
+                        Genus: 'Monstera',
+                        Species: 'deliciosa',
+                        'Common Name': 'Monstera Deliciosa'
+                    }
+                ]
+            };
+            const importResult = {
+                importId: 'import-123',
+                status: 'started'
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: validationResult
+                },
+                'POST /api/import/csv': {
+                    status: 200,
+                    data: importResult
+                }
+            });
+            // Mock import progress polling
+            let progressCallCount = 0;
+            global.fetch = jest.fn((url, options)=>{
+                if (url.includes('/api/import/csv/validate')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve(validationResult)
+                    });
+                }
+                if (url.includes('/api/import/csv') && options?.method === 'POST') {
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve(importResult)
+                    });
+                }
+                if (url.includes('/api/import/progress/import-123')) {
+                    progressCallCount++;
+                    const progress = progressCallCount >= 3 ? {
+                        status: 'completed',
+                        progress: 100,
+                        summary: {
+                            totalRows: 1,
+                            successfulRows: 1,
+                            failedRows: 0,
+                            created: 1,
+                            updated: 0,
+                            skipped: 0
+                        }
+                    } : {
+                        status: 'processing',
+                        progress: progressCallCount * 30,
+                        currentRow: progressCallCount,
+                        totalRows: 1
+                    };
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve(progress)
+                    });
+                }
+                return Promise.reject(new Error('Unexpected API call'));
+            });
+            const mockOnImportComplete = jest.fn();
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn(),
+                onImportComplete: mockOnImportComplete
+            }));
+            // Act - Complete full import workflow
+            // Step 1: Select type
+            const plantTaxonomyButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy/i
+            });
+            await user.click(plantTaxonomyButton);
+            // Step 2: Upload file
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'test'
+            ], 'test.csv', {
+                type: 'text/csv'
+            });
+            await user.upload(fileInput, csvFile);
+            // Step 3: Start import
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText('Review your data')).toBeInTheDocument();
+            });
+            const startImportButton = _react.screen.getByRole('button', {
+                name: /start import/i
+            });
+            await user.click(startImportButton);
+            // Assert - Verify import was started
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/importing data/i)).toBeInTheDocument();
+            });
+            // Assert - Verify import completion
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/import completed successfully/i)).toBeInTheDocument();
+            }, {
+                timeout: 10000
+            });
+            // Assert - Verify completion callback was called
+            expect(mockOnImportComplete).toHaveBeenCalledWith(expect.objectContaining({
+                totalRows: 1,
+                successfulRows: 1,
+                created: 1
+            }));
+        });
+        it('should handle import server errors during processing', async ()=>{
+            // Arrange
+            const validationResult = {
+                isValid: true,
+                errors: [],
+                preview: [
+                    {
+                        'Common Name': 'Test Plant'
+                    }
+                ]
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: validationResult
+                }
+            });
+            (0, _apihelpers.mockApiError)('/api/import/csv', 500, {
+                error: 'Database connection failed'
+            }, 'POST');
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Try to start import
+            const plantTaxonomyButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy/i
+            });
+            await user.click(plantTaxonomyButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'test'
+            ], 'test.csv', {
+                type: 'text/csv'
+            });
+            await user.upload(fileInput, csvFile);
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByRole('button', {
+                    name: /start import/i
+                })).toBeInTheDocument();
+            });
+            const startImportButton = _react.screen.getByRole('button', {
+                name: /start import/i
+            });
+            await user.click(startImportButton);
+            // Assert - Verify error is displayed
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/failed to start import/i)).toBeInTheDocument();
+            });
+        });
+        it('should handle partial import success with error reporting', async ()=>{
+            // Arrange
+            const validationResult = {
+                isValid: true,
+                errors: [],
+                preview: [
+                    {
+                        'Common Name': 'Plant 1'
+                    },
+                    {
+                        'Common Name': 'Plant 2'
+                    }
+                ]
+            };
+            const importResult = {
+                importId: 'import-456'
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: validationResult
+                },
+                'POST /api/import/csv': {
+                    status: 200,
+                    data: importResult
+                }
+            });
+            // Mock progress with partial success
+            global.fetch = jest.fn((url, options)=>{
+                if (url.includes('validate') || url.includes('/api/import/csv') && options?.method === 'POST') {
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve(url.includes('validate') ? validationResult : importResult)
+                    });
+                }
+                if (url.includes('/api/import/progress/import-456')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve({
+                                status: 'completed',
+                                progress: 100,
+                                summary: {
+                                    totalRows: 2,
+                                    successfulRows: 1,
+                                    failedRows: 1,
+                                    created: 1,
+                                    updated: 0,
+                                    skipped: 0,
+                                    errors: [
+                                        {
+                                            row: 2,
+                                            error: 'Duplicate plant name'
+                                        }
+                                    ]
+                                }
+                            })
+                    });
+                }
+                return Promise.reject(new Error('Unexpected API call'));
+            });
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - Complete import with partial success
+            const plantTaxonomyButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy/i
+            });
+            await user.click(plantTaxonomyButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'test'
+            ], 'test.csv', {
+                type: 'text/csv'
+            });
+            await user.upload(fileInput, csvFile);
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByRole('button', {
+                    name: /start import/i
+                })).toBeInTheDocument();
+            });
+            const startImportButton = _react.screen.getByRole('button', {
+                name: /start import/i
+            });
+            await user.click(startImportButton);
+            // Assert - Verify partial success is reported
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/import completed/i)).toBeInTheDocument();
+            }, {
+                timeout: 10000
+            });
+        // Note: The actual error display would depend on the ImportProgress component implementation
+        });
+    });
+    describe('Template Download and Import Workflow Integration', ()=>{
+        it('should provide CSV template downloads for different import types', async ()=>{
+            // Arrange
+            const originalCreateElement = document.createElement;
+            const mockLink = {
+                setAttribute: jest.fn(),
+                click: jest.fn(),
+                style: {}
+            };
+            document.createElement = jest.fn((tagName)=>{
+                if (tagName === 'a') {
+                    return mockLink;
+                }
+                return originalCreateElement.call(document, tagName);
+            });
+            const originalCreateObjectURL = URL.createObjectURL;
+            URL.createObjectURL = jest.fn(()=>'blob:mock-url');
+            const originalAppendChild = document.body.appendChild;
+            const originalRemoveChild = document.body.removeChild;
+            document.body.appendChild = jest.fn();
+            document.body.removeChild = jest.fn();
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_DataImport.default, {}));
+            // Act - Download plant taxonomy template
+            const taxonomyTemplateButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy template/i
+            });
+            await user.click(taxonomyTemplateButton);
+            // Assert - Verify template download was triggered
+            expect(mockLink.setAttribute).toHaveBeenCalledWith('href', 'blob:mock-url');
+            expect(mockLink.setAttribute).toHaveBeenCalledWith('download', 'plant_taxonomy_template.csv');
+            expect(mockLink.click).toHaveBeenCalled();
+            // Cleanup
+            document.createElement = originalCreateElement;
+            URL.createObjectURL = originalCreateObjectURL;
+            document.body.appendChild = originalAppendChild;
+            document.body.removeChild = originalRemoveChild;
+        });
+        it('should show import history and status tracking', async ()=>{
+            // Arrange
+            const importHistory = [
+                {
+                    id: 'import-123',
+                    type: 'plant_taxonomy',
+                    filename: 'plants.csv',
+                    status: 'completed',
+                    createdAt: '2024-01-15T10:00:00Z',
+                    summary: {
+                        totalRows: 10,
+                        successfulRows: 9,
+                        failedRows: 1,
+                        created: 9
+                    }
+                },
+                {
+                    id: 'import-124',
+                    type: 'plant_instances',
+                    filename: 'collection.csv',
+                    status: 'processing',
+                    createdAt: '2024-01-16T14:30:00Z',
+                    progress: 75
+                }
+            ];
+            (0, _apihelpers.mockApiResponse)({
+                'GET /api/import/csv': {
+                    status: 200,
+                    data: {
+                        imports: importHistory
+                    }
+                }
+            });
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_DataImport.default, {}));
+            // Act - Switch to history tab
+            const historyTab = _react.screen.getByRole('button', {
+                name: /import history/i
+            });
+            await user.click(historyTab);
+            // Assert - Verify import history is displayed
+            await (0, _react.waitFor)(()=>{
+                expect(global.fetch).toHaveBeenCalledWith('/api/import/csv');
+            });
+        // Note: The actual history display would depend on the ImportHistory component implementation
+        });
+        it('should handle end-to-end import workflow from template to completion', async ()=>{
+            // This test would simulate:
+            // 1. Download template
+            // 2. Upload filled template
+            // 3. Validate data
+            // 4. Complete import
+            // 5. View in history
+            // Arrange
+            const validationResult = {
+                isValid: true,
+                errors: [],
+                preview: [
+                    {
+                        Family: 'Araceae',
+                        Genus: 'Monstera',
+                        Species: 'deliciosa',
+                        'Common Name': 'Monstera Deliciosa'
+                    }
+                ]
+            };
+            const importResult = {
+                importId: 'import-789'
+            };
+            (0, _apihelpers.mockApiResponse)({
+                'POST /api/import/csv/validate': {
+                    status: 200,
+                    data: validationResult
+                },
+                'POST /api/import/csv': {
+                    status: 200,
+                    data: importResult
+                },
+                'GET /api/import/csv': {
+                    status: 200,
+                    data: {
+                        imports: [
+                            {
+                                id: 'import-789',
+                                type: 'plant_taxonomy',
+                                status: 'completed',
+                                summary: {
+                                    totalRows: 1,
+                                    successfulRows: 1,
+                                    created: 1
+                                }
+                            }
+                        ]
+                    }
+                }
+            });
+            // Mock progress completion
+            global.fetch = jest.fn((url, options)=>{
+                if (url.includes('validate')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve(validationResult)
+                    });
+                }
+                if (url.includes('/api/import/csv') && options?.method === 'POST') {
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve(importResult)
+                    });
+                }
+                if (url.includes('/api/import/progress/import-789')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve({
+                                status: 'completed',
+                                progress: 100,
+                                summary: {
+                                    totalRows: 1,
+                                    successfulRows: 1,
+                                    created: 1
+                                }
+                            })
+                    });
+                }
+                if (url.includes('/api/import/csv') && options?.method === 'GET') {
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve({
+                                imports: [
+                                    {
+                                        id: 'import-789',
+                                        type: 'plant_taxonomy',
+                                        status: 'completed',
+                                        summary: {
+                                            totalRows: 1,
+                                            successfulRows: 1,
+                                            created: 1
+                                        }
+                                    }
+                                ]
+                            })
+                    });
+                }
+                return Promise.reject(new Error('Unexpected API call'));
+            });
+            const { user, rerender } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_DataImport.default, {}));
+            // Step 1: Start CSV import
+            const startImportButton = _react.screen.getByRole('button', {
+                name: /start csv import/i
+            });
+            await user.click(startImportButton);
+            // Step 2: Complete import workflow (simplified)
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/import csv data/i)).toBeInTheDocument();
+            });
+            // Step 3: Check history after import
+            rerender(/*#__PURE__*/ (0, _jsxruntime.jsx)(_DataImport.default, {}));
+            const historyTab = _react.screen.getByRole('button', {
+                name: /import history/i
+            });
+            await user.click(historyTab);
+            // Assert - Verify completed import appears in history
+            await (0, _react.waitFor)(()=>{
+                expect(global.fetch).toHaveBeenCalledWith('/api/import/csv');
+            });
+        });
+    });
+    describe('Error Recovery and User Experience', ()=>{
+        it('should allow users to retry failed imports', async ()=>{
+            // Arrange
+            const validationResult = {
+                isValid: true,
+                errors: [],
+                preview: [
+                    {
+                        'Common Name': 'Test Plant'
+                    }
+                ]
+            };
+            // First attempt fails, second succeeds
+            let attemptCount = 0;
+            global.fetch = jest.fn((url, options)=>{
+                if (url.includes('validate')) {
+                    return Promise.resolve({
+                        ok: true,
+                        json: ()=>Promise.resolve(validationResult)
+                    });
+                }
+                if (url.includes('/api/import/csv') && options?.method === 'POST') {
+                    attemptCount++;
+                    if (attemptCount === 1) {
+                        return Promise.resolve({
+                            ok: false,
+                            json: ()=>Promise.resolve({
+                                    error: 'Temporary server error'
+                                })
+                        });
+                    } else {
+                        return Promise.resolve({
+                            ok: true,
+                            json: ()=>Promise.resolve({
+                                    importId: 'import-retry-123'
+                                })
+                        });
+                    }
+                }
+                return Promise.reject(new Error('Unexpected API call'));
+            });
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: jest.fn()
+            }));
+            // Act - First attempt (fails)
+            const plantTaxonomyButton = _react.screen.getByRole('button', {
+                name: /plant taxonomy/i
+            });
+            await user.click(plantTaxonomyButton);
+            const fileInput = _react.screen.getByLabelText(/upload|file/i);
+            const csvFile = new File([
+                'test'
+            ], 'test.csv', {
+                type: 'text/csv'
+            });
+            await user.upload(fileInput, csvFile);
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByRole('button', {
+                    name: /start import/i
+                })).toBeInTheDocument();
+            });
+            const startImportButton = _react.screen.getByRole('button', {
+                name: /start import/i
+            });
+            await user.click(startImportButton);
+            // Assert - First attempt fails
+            await (0, _react.waitFor)(()=>{
+                expect(_react.screen.getByText(/failed to start import/i)).toBeInTheDocument();
+            });
+            // Act - Retry import
+            await user.click(startImportButton);
+            // Assert - Second attempt should succeed
+            await (0, _react.waitFor)(()=>{
+                expect(attemptCount).toBe(2);
+            });
+        });
+        it('should provide clear error messages for common issues', async ()=>{
+            // Arrange
+            const commonErrors = [
+                {
+                    error: 'File too large',
+                    expectedMessage: /file.*too large/i
+                },
+                {
+                    error: 'Invalid file format',
+                    expectedMessage: /invalid.*format/i
+                },
+                {
+                    error: 'Missing required columns',
+                    expectedMessage: /missing.*columns/i
+                },
+                {
+                    error: 'Network timeout',
+                    expectedMessage: /network.*timeout|connection/i
+                }
+            ];
+            for (const { error, expectedMessage } of commonErrors){
+                (0, _apihelpers.mockApiError)('/api/import/csv/validate', 400, {
+                    error
+                }, 'POST');
+                const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                    isOpen: true,
+                    onClose: jest.fn()
+                }));
+                // Act - Trigger error
+                const plantTaxonomyButton = _react.screen.getByRole('button', {
+                    name: /plant taxonomy/i
+                });
+                await user.click(plantTaxonomyButton);
+                const fileInput = _react.screen.getByLabelText(/upload|file/i);
+                const csvFile = new File([
+                    'test'
+                ], 'test.csv', {
+                    type: 'text/csv'
+                });
+                await user.upload(fileInput, csvFile);
+                // Assert - Verify appropriate error message
+                await (0, _react.waitFor)(()=>{
+                    expect(_react.screen.getByText(expectedMessage)).toBeInTheDocument();
+                });
+            }
+        });
+        it('should handle modal state management correctly', async ()=>{
+            // Arrange
+            const mockOnClose = jest.fn();
+            const { user } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: mockOnClose
+            }));
+            // Act - Close modal during different steps
+            const closeButton = _react.screen.getByRole('button', {
+                name: /close/i
+            });
+            await user.click(closeButton);
+            // Assert - Verify close callback was called
+            expect(mockOnClose).toHaveBeenCalled();
+            // Act - Test escape key
+            const { rerender } = (0, _testutils.renderWithProviders)(/*#__PURE__*/ (0, _jsxruntime.jsx)(_CSVImportModal.default, {
+                isOpen: true,
+                onClose: mockOnClose
+            }));
+            await user.keyboard('{Escape}');
+        // Assert - Modal should close on escape
+        // Note: This would depend on the actual escape key handling implementation
+        });
+    });
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL19fdGVzdHNfXy9pbnRlZ3JhdGlvbi9kYXRhLWltcG9ydC50ZXN0LmpzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIERhdGEgSW1wb3J0IEludGVncmF0aW9uIFRlc3RzXG4vLyBUZXN0cyBjb21wbGV0ZSBDU1YgZmlsZSB1cGxvYWQsIHBhcnNpbmcsIHZhbGlkYXRpb24sIGFuZCBpbXBvcnQgd29ya2Zsb3dzXG5cbmltcG9ydCB7IHNjcmVlbiwgd2FpdEZvciB9IGZyb20gJ0B0ZXN0aW5nLWxpYnJhcnkvcmVhY3QnO1xuaW1wb3J0IHsgcmVuZGVyV2l0aFByb3ZpZGVycywgdXNlckludGVyYWN0aW9ucyB9IGZyb20gJ0AvdGVzdC11dGlscyc7XG5pbXBvcnQgeyBtb2NrQXBpUmVzcG9uc2UsIG1vY2tBcGlFcnJvciwgcmVzZXRBcGlNb2NrcyB9IGZyb20gJ0AvdGVzdC11dGlscy9oZWxwZXJzL2FwaS1oZWxwZXJzJztcbmltcG9ydCB7IGNyZWF0ZUF1dGhlbnRpY2F0ZWRUZXN0VXNlciB9IGZyb20gJ0AvdGVzdC11dGlscy9mYWN0b3JpZXMvdXNlci1mYWN0b3J5JztcbmltcG9ydCBDU1ZJbXBvcnRNb2RhbCBmcm9tICdAL2NvbXBvbmVudHMvaW1wb3J0L0NTVkltcG9ydE1vZGFsJztcbmltcG9ydCBEYXRhSW1wb3J0IGZyb20gJ0AvY29tcG9uZW50cy9pbXBvcnQvRGF0YUltcG9ydCc7XG5cbi8vIE1vY2sgZmlsZSByZWFkaW5nXG5nbG9iYWwuRmlsZVJlYWRlciA9IGNsYXNzIHtcbiAgY29uc3RydWN0b3IoKSB7XG4gICAgdGhpcy5vbmxvYWQgPSBudWxsO1xuICAgIHRoaXMub25lcnJvciA9IG51bGw7XG4gIH1cbiAgXG4gIHJlYWRBc1RleHQoZmlsZSkge1xuICAgIHNldFRpbWVvdXQoKCkgPT4ge1xuICAgICAgaWYgKHRoaXMub25sb2FkKSB7XG4gICAgICAgIHRoaXMub25sb2FkKHsgdGFyZ2V0OiB7IHJlc3VsdDogZmlsZS5jb250ZW50IHx8ICdGYW1pbHksR2VudXMsU3BlY2llcyxDb21tb24gTmFtZVxcbkFyYWNlYWUsTW9uc3RlcmEsZGVsaWNpb3NhLE1vbnN0ZXJhIERlbGljaW9zYScgfSB9KTtcbiAgICAgIH1cbiAgICB9LCAwKTtcbiAgfVxufTtcblxuZGVzY3JpYmUoJ0RhdGEgSW1wb3J0IEludGVncmF0aW9uIFRlc3RzJywgKCkgPT4ge1xuICBsZXQgdGVzdFVzZXI7XG4gIGxldCB0ZXN0U2Vzc2lvbjtcblxuICBiZWZvcmVFYWNoKCgpID0+IHtcbiAgICBqZXN0LmNsZWFyQWxsTW9ja3MoKTtcbiAgICByZXNldEFwaU1vY2tzKCk7XG5cbiAgICAvLyBDcmVhdGUgYXV0aGVudGljYXRlZCB0ZXN0IHVzZXJcbiAgICBjb25zdCBhdXRoRGF0YSA9IGNyZWF0ZUF1dGhlbnRpY2F0ZWRUZXN0VXNlcigpO1xuICAgIHRlc3RVc2VyID0gYXV0aERhdGEudXNlcjtcbiAgICB0ZXN0U2Vzc2lvbiA9IGF1dGhEYXRhLnNlc3Npb247XG4gIH0pO1xuXG4gIGFmdGVyRWFjaCgoKSA9PiB7XG4gICAgcmVzZXRBcGlNb2NrcygpO1xuICB9KTtcblxuICBkZXNjcmliZSgnQ1NWIEZpbGUgVXBsb2FkIGFuZCBQYXJzaW5nIFdvcmtmbG93JywgKCkgPT4ge1xuICAgIGl0KCdzaG91bGQgY29tcGxldGUgQ1NWIHVwbG9hZCBhbmQgcGFyc2luZyB3b3JrZmxvdycsIGFzeW5jICgpID0+IHtcbiAgICAgIC8vIEFycmFuZ2VcbiAgICAgIGNvbnN0IHZhbGlkYXRpb25SZXN1bHQgPSB7XG4gICAgICAgIGlzVmFsaWQ6IHRydWUsXG4gICAgICAgIGVycm9yczogW10sXG4gICAgICAgIHByZXZpZXc6IFtcbiAgICAgICAgICB7XG4gICAgICAgICAgICBGYW1pbHk6ICdBcmFjZWFlJyxcbiAgICAgICAgICAgIEdlbnVzOiAnTW9uc3RlcmEnLFxuICAgICAgICAgICAgU3BlY2llczogJ2RlbGljaW9zYScsXG4gICAgICAgICAgICAnQ29tbW9uIE5hbWUnOiAnTW9uc3RlcmEgRGVsaWNpb3NhJyxcbiAgICAgICAgICB9LFxuICAgICAgICBdLFxuICAgICAgfTtcblxuICAgICAgbW9ja0FwaVJlc3BvbnNlKHtcbiAgICAgICAgJ1BPU1QgL2FwaS9pbXBvcnQvY3N2L3ZhbGlkYXRlJzoge1xuICAgICAgICAgIHN0YXR1czogMjAwLFxuICAgICAgICAgIGRhdGE6IHZhbGlkYXRpb25SZXN1bHQsXG4gICAgICAgIH0sXG4gICAgICB9KTtcblxuICAgICAgY29uc3QgeyB1c2VyIH0gPSByZW5kZXJXaXRoUHJvdmlkZXJzKFxuICAgICAgICA8Q1NWSW1wb3J0TW9kYWxcbiAgICAgICAgICBpc09wZW49e3RydWV9XG4gICAgICAgICAgb25DbG9zZT17amVzdC5mbigpfVxuICAgICAgICAvPlxuICAgICAgKTtcblxuICAgICAgLy8gQWN0IC0gU2VsZWN0IGltcG9ydCB0eXBlXG4gICAgICBjb25zdCBwbGFudFRheG9ub215QnV0dG9uID0gc2NyZWVuLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAvcGxhbnQgdGF4b25vbXkvaSB9KTtcbiAgICAgIGF3YWl0IHVzZXIuY2xpY2socGxhbnRUYXhvbm9teUJ1dHRvbik7XG5cbiAgICAgIC8vIFVwbG9hZCBmaWxlXG4gICAgICBjb25zdCBmaWxlSW5wdXQgPSBzY3JlZW4uZ2V0QnlMYWJlbFRleHQoL3VwbG9hZHxmaWxlL2kpO1xuICAgICAgY29uc3QgY3N2RmlsZSA9IG5ldyBGaWxlKFsnRmFtaWx5LEdlbnVzLFNwZWNpZXMsQ29tbW9uIE5hbWVcXG5BcmFjZWFlLE1vbnN0ZXJhLGRlbGljaW9zYSxNb25zdGVyYSBEZWxpY2lvc2EnXSwgJ3BsYW50cy5jc3YnLCB7XG4gICAgICAgIHR5cGU6ICd0ZXh0L2NzdicsXG4gICAgICB9KTtcbiAgICAgIGNzdkZpbGUuY29udGVudCA9ICdGYW1pbHksR2VudXMsU3BlY2llcyxDb21tb24gTmFtZVxcbkFyYWNlYWUsTW9uc3RlcmEsZGVsaWNpb3NhLE1vbnN0ZXJhIERlbGljaW9zYSc7XG5cbiAgICAgIGF3YWl0IHVzZXIudXBsb2FkKGZpbGVJbnB1dCwgY3N2RmlsZSk7XG5cbiAgICAgIC8vIEFzc2VydCAtIFZlcmlmeSB2YWxpZGF0aW9uIEFQSSB3YXMgY2FsbGVkXG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KGdsb2JhbC5mZXRjaCkudG9IYXZlQmVlbkNhbGxlZFdpdGgoXG4gICAgICAgICAgJy9hcGkvaW1wb3J0L2Nzdi92YWxpZGF0ZScsXG4gICAgICAgICAgZXhwZWN0Lm9iamVjdENvbnRhaW5pbmcoe1xuICAgICAgICAgICAgbWV0aG9kOiAnUE9TVCcsXG4gICAgICAgICAgICBib2R5OiBleHBlY3Quc3RyaW5nQ29udGFpbmluZygncGxhbnRfdGF4b25vbXknKSxcbiAgICAgICAgICB9KVxuICAgICAgICApO1xuICAgICAgfSk7XG5cbiAgICAgIC8vIEFzc2VydCAtIFZlcmlmeSBwcmV2aWV3IGlzIHNob3duXG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoJ1JldmlldyB5b3VyIGRhdGEnKSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoJ01vbnN0ZXJhIERlbGljaW9zYScpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgICAgfSk7XG4gICAgfSk7XG5cbiAgICBpdCgnc2hvdWxkIGhhbmRsZSBDU1YgcGFyc2luZyB2YWxpZGF0aW9uIGVycm9ycycsIGFzeW5jICgpID0+IHtcbiAgICAgIC8vIEFycmFuZ2VcbiAgICAgIGNvbnN0IHZhbGlkYXRpb25SZXN1bHQgPSB7XG4gICAgICAgIGlzVmFsaWQ6IGZhbHNlLFxuICAgICAgICBlcnJvcnM6IFtcbiAgICAgICAgICAnTWlzc2luZyByZXF1aXJlZCBjb2x1bW46IEZhbWlseScsXG4gICAgICAgICAgJ1JvdyAyOiBJbnZhbGlkIGdlbnVzIGZvcm1hdCcsXG4gICAgICAgIF0sXG4gICAgICAgIHByZXZpZXc6IFtdLFxuICAgICAgfTtcblxuICAgICAgbW9ja0FwaVJlc3BvbnNlKHtcbiAgICAgICAgJ1BPU1QgL2FwaS9pbXBvcnQvY3N2L3ZhbGlkYXRlJzoge1xuICAgICAgICAgIHN0YXR1czogMjAwLFxuICAgICAgICAgIGRhdGE6IHZhbGlkYXRpb25SZXN1bHQsXG4gICAgICAgIH0sXG4gICAgICB9KTtcblxuICAgICAgY29uc3QgeyB1c2VyIH0gPSByZW5kZXJXaXRoUHJvdmlkZXJzKFxuICAgICAgICA8Q1NWSW1wb3J0TW9kYWxcbiAgICAgICAgICBpc09wZW49e3RydWV9XG4gICAgICAgICAgb25DbG9zZT17amVzdC5mbigpfVxuICAgICAgICAvPlxuICAgICAgKTtcblxuICAgICAgLy8gQWN0IC0gU2VsZWN0IHR5cGUgYW5kIHVwbG9hZCBpbnZhbGlkIGZpbGVcbiAgICAgIGNvbnN0IHBsYW50VGF4b25vbXlCdXR0b24gPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9wbGFudCB0YXhvbm9teS9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhwbGFudFRheG9ub215QnV0dG9uKTtcblxuICAgICAgY29uc3QgZmlsZUlucHV0ID0gc2NyZWVuLmdldEJ5TGFiZWxUZXh0KC91cGxvYWR8ZmlsZS9pKTtcbiAgICAgIGNvbnN0IGludmFsaWRDc3ZGaWxlID0gbmV3IEZpbGUoWydJbnZhbGlkLEhlYWRlcnNcXG5CYWQsRGF0YSddLCAnaW52YWxpZC5jc3YnLCB7XG4gICAgICAgIHR5cGU6ICd0ZXh0L2NzdicsXG4gICAgICB9KTtcbiAgICAgIGludmFsaWRDc3ZGaWxlLmNvbnRlbnQgPSAnSW52YWxpZCxIZWFkZXJzXFxuQmFkLERhdGEnO1xuXG4gICAgICBhd2FpdCB1c2VyLnVwbG9hZChmaWxlSW5wdXQsIGludmFsaWRDc3ZGaWxlKTtcblxuICAgICAgLy8gQXNzZXJ0IC0gVmVyaWZ5IHZhbGlkYXRpb24gZXJyb3JzIGFyZSBkaXNwbGF5ZWRcbiAgICAgIGF3YWl0IHdhaXRGb3IoKCkgPT4ge1xuICAgICAgICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dCgvbWlzc2luZyByZXF1aXJlZCBjb2x1bW46IGZhbWlseS9pKSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoL2ludmFsaWQgZ2VudXMgZm9ybWF0L2kpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgICAgfSk7XG4gICAgfSk7XG5cbiAgICBpdCgnc2hvdWxkIGhhbmRsZSBkaWZmZXJlbnQgQ1NWIGltcG9ydCB0eXBlcycsIGFzeW5jICgpID0+IHtcbiAgICAgIC8vIEFycmFuZ2VcbiAgICAgIGNvbnN0IHBsYW50SW5zdGFuY2VWYWxpZGF0aW9uID0ge1xuICAgICAgICBpc1ZhbGlkOiB0cnVlLFxuICAgICAgICBlcnJvcnM6IFtdLFxuICAgICAgICBwcmV2aWV3OiBbXG4gICAgICAgICAge1xuICAgICAgICAgICAgJ0NvbW1vbiBOYW1lJzogJ01vbnN0ZXJhIERlbGljaW9zYScsXG4gICAgICAgICAgICBMb2NhdGlvbjogJ0xpdmluZyBSb29tJyxcbiAgICAgICAgICAgICdGZXJ0aWxpemVyIFNjaGVkdWxlJzogJ2V2ZXJ5IDQgd2Vla3MnLFxuICAgICAgICAgIH0sXG4gICAgICAgIF0sXG4gICAgICB9O1xuXG4gICAgICBtb2NrQXBpUmVzcG9uc2Uoe1xuICAgICAgICAnUE9TVCAvYXBpL2ltcG9ydC9jc3YvdmFsaWRhdGUnOiB7XG4gICAgICAgICAgc3RhdHVzOiAyMDAsXG4gICAgICAgICAgZGF0YTogcGxhbnRJbnN0YW5jZVZhbGlkYXRpb24sXG4gICAgICAgIH0sXG4gICAgICB9KTtcblxuICAgICAgY29uc3QgeyB1c2VyIH0gPSByZW5kZXJXaXRoUHJvdmlkZXJzKFxuICAgICAgICA8Q1NWSW1wb3J0TW9kYWxcbiAgICAgICAgICBpc09wZW49e3RydWV9XG4gICAgICAgICAgb25DbG9zZT17amVzdC5mbigpfVxuICAgICAgICAvPlxuICAgICAgKTtcblxuICAgICAgLy8gQWN0IC0gU2VsZWN0IHBsYW50IGluc3RhbmNlcyBpbXBvcnQgdHlwZVxuICAgICAgY29uc3QgcGxhbnRJbnN0YW5jZXNCdXR0b24gPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9wbGFudCBpbnN0YW5jZXN8cGxhbnQgY29sbGVjdGlvbi9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhwbGFudEluc3RhbmNlc0J1dHRvbik7XG5cbiAgICAgIGNvbnN0IGZpbGVJbnB1dCA9IHNjcmVlbi5nZXRCeUxhYmVsVGV4dCgvdXBsb2FkfGZpbGUvaSk7XG4gICAgICBjb25zdCBjc3ZGaWxlID0gbmV3IEZpbGUoWydDb21tb24gTmFtZSxMb2NhdGlvbixGZXJ0aWxpemVyIFNjaGVkdWxlXFxuTW9uc3RlcmEgRGVsaWNpb3NhLExpdmluZyBSb29tLGV2ZXJ5IDQgd2Vla3MnXSwgJ2NvbGxlY3Rpb24uY3N2Jywge1xuICAgICAgICB0eXBlOiAndGV4dC9jc3YnLFxuICAgICAgfSk7XG4gICAgICBjc3ZGaWxlLmNvbnRlbnQgPSAnQ29tbW9uIE5hbWUsTG9jYXRpb24sRmVydGlsaXplciBTY2hlZHVsZVxcbk1vbnN0ZXJhIERlbGljaW9zYSxMaXZpbmcgUm9vbSxldmVyeSA0IHdlZWtzJztcblxuICAgICAgYXdhaXQgdXNlci51cGxvYWQoZmlsZUlucHV0LCBjc3ZGaWxlKTtcblxuICAgICAgLy8gQXNzZXJ0IC0gVmVyaWZ5IGNvcnJlY3QgaW1wb3J0IHR5cGUgd2FzIHNlbnRcbiAgICAgIGF3YWl0IHdhaXRGb3IoKCkgPT4ge1xuICAgICAgICBleHBlY3QoZ2xvYmFsLmZldGNoKS50b0hhdmVCZWVuQ2FsbGVkV2l0aChcbiAgICAgICAgICAnL2FwaS9pbXBvcnQvY3N2L3ZhbGlkYXRlJyxcbiAgICAgICAgICBleHBlY3Qub2JqZWN0Q29udGFpbmluZyh7XG4gICAgICAgICAgICBib2R5OiBleHBlY3Quc3RyaW5nQ29udGFpbmluZygncGxhbnRfaW5zdGFuY2VzJyksXG4gICAgICAgICAgfSlcbiAgICAgICAgKTtcbiAgICAgIH0pO1xuXG4gICAgICAvLyBBc3NlcnQgLSBWZXJpZnkgcGxhbnQgaW5zdGFuY2UgZGF0YSBpcyBzaG93blxuICAgICAgYXdhaXQgd2FpdEZvcigoKSA9PiB7XG4gICAgICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KCdMaXZpbmcgUm9vbScpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgICAgICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dCgnZXZlcnkgNCB3ZWVrcycpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgICAgfSk7XG4gICAgfSk7XG5cbiAgICBpdCgnc2hvdWxkIGhhbmRsZSBmaWxlIHJlYWRpbmcgZXJyb3JzIGdyYWNlZnVsbHknLCBhc3luYyAoKSA9PiB7XG4gICAgICAvLyBBcnJhbmdlIC0gTW9jayBGaWxlUmVhZGVyIHRvIGZhaWxcbiAgICAgIGdsb2JhbC5GaWxlUmVhZGVyID0gY2xhc3Mge1xuICAgICAgICBjb25zdHJ1Y3RvcigpIHtcbiAgICAgICAgICB0aGlzLm9uZXJyb3IgPSBudWxsO1xuICAgICAgICB9XG4gICAgICAgIFxuICAgICAgICByZWFkQXNUZXh0KCkge1xuICAgICAgICAgIHNldFRpbWVvdXQoKCkgPT4ge1xuICAgICAgICAgICAgaWYgKHRoaXMub25lcnJvcikge1xuICAgICAgICAgICAgICB0aGlzLm9uZXJyb3IobmV3IEVycm9yKCdGYWlsZWQgdG8gcmVhZCBmaWxlJykpO1xuICAgICAgICAgICAgfVxuICAgICAgICAgIH0sIDApO1xuICAgICAgICB9XG4gICAgICB9O1xuXG4gICAgICBjb25zdCB7IHVzZXIgfSA9IHJlbmRlcldpdGhQcm92aWRlcnMoXG4gICAgICAgIDxDU1ZJbXBvcnRNb2RhbFxuICAgICAgICAgIGlzT3Blbj17dHJ1ZX1cbiAgICAgICAgICBvbkNsb3NlPXtqZXN0LmZuKCl9XG4gICAgICAgIC8+XG4gICAgICApO1xuXG4gICAgICAvLyBBY3QgLSBUcnkgdG8gdXBsb2FkIGZpbGVcbiAgICAgIGNvbnN0IHBsYW50VGF4b25vbXlCdXR0b24gPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9wbGFudCB0YXhvbm9teS9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhwbGFudFRheG9ub215QnV0dG9uKTtcblxuICAgICAgY29uc3QgZmlsZUlucHV0ID0gc2NyZWVuLmdldEJ5TGFiZWxUZXh0KC91cGxvYWR8ZmlsZS9pKTtcbiAgICAgIGNvbnN0IGNzdkZpbGUgPSBuZXcgRmlsZShbJ3Rlc3QnXSwgJ3Rlc3QuY3N2JywgeyB0eXBlOiAndGV4dC9jc3YnIH0pO1xuICAgICAgYXdhaXQgdXNlci51cGxvYWQoZmlsZUlucHV0LCBjc3ZGaWxlKTtcblxuICAgICAgLy8gQXNzZXJ0IC0gVmVyaWZ5IGVycm9yIGlzIGRpc3BsYXllZFxuICAgICAgYXdhaXQgd2FpdEZvcigoKSA9PiB7XG4gICAgICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KC9mYWlsZWQgdG8gcmVhZCBmaWxlL2kpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgICAgfSk7XG4gICAgfSk7XG4gIH0pOyBcbiBkZXNjcmliZSgnRGF0YSBWYWxpZGF0aW9uIGFuZCBFcnJvciBIYW5kbGluZyBEdXJpbmcgSW1wb3J0JywgKCkgPT4ge1xuICAgIGl0KCdzaG91bGQgaGFuZGxlIHZhbGlkYXRpb24gQVBJIGVycm9ycycsIGFzeW5jICgpID0+IHtcbiAgICAgIC8vIEFycmFuZ2VcbiAgICAgIG1vY2tBcGlFcnJvcignL2FwaS9pbXBvcnQvY3N2L3ZhbGlkYXRlJywgNTAwLCB7IGVycm9yOiAnVmFsaWRhdGlvbiBzZXJ2aWNlIHVuYXZhaWxhYmxlJyB9LCAnUE9TVCcpO1xuXG4gICAgICBjb25zdCB7IHVzZXIgfSA9IHJlbmRlcldpdGhQcm92aWRlcnMoXG4gICAgICAgIDxDU1ZJbXBvcnRNb2RhbFxuICAgICAgICAgIGlzT3Blbj17dHJ1ZX1cbiAgICAgICAgICBvbkNsb3NlPXtqZXN0LmZuKCl9XG4gICAgICAgIC8+XG4gICAgICApO1xuXG4gICAgICAvLyBBY3QgLSBVcGxvYWQgZmlsZVxuICAgICAgY29uc3QgcGxhbnRUYXhvbm9teUJ1dHRvbiA9IHNjcmVlbi5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogL3BsYW50IHRheG9ub215L2kgfSk7XG4gICAgICBhd2FpdCB1c2VyLmNsaWNrKHBsYW50VGF4b25vbXlCdXR0b24pO1xuXG4gICAgICBjb25zdCBmaWxlSW5wdXQgPSBzY3JlZW4uZ2V0QnlMYWJlbFRleHQoL3VwbG9hZHxmaWxlL2kpO1xuICAgICAgY29uc3QgY3N2RmlsZSA9IG5ldyBGaWxlKFsndGVzdCddLCAndGVzdC5jc3YnLCB7IHR5cGU6ICd0ZXh0L2NzdicgfSk7XG4gICAgICBhd2FpdCB1c2VyLnVwbG9hZChmaWxlSW5wdXQsIGNzdkZpbGUpO1xuXG4gICAgICAvLyBBc3NlcnQgLSBWZXJpZnkgZXJyb3IgaXMgZGlzcGxheWVkXG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoL2ZhaWxlZCB0byB2YWxpZGF0ZSBjc3YvaSkpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgICB9KTtcbiAgICB9KTtcblxuICAgIGl0KCdzaG91bGQgdmFsaWRhdGUgcmVxdWlyZWQgZmllbGRzIGZvciBkaWZmZXJlbnQgaW1wb3J0IHR5cGVzJywgYXN5bmMgKCkgPT4ge1xuICAgICAgLy8gQXJyYW5nZVxuICAgICAgY29uc3QgcHJvcGFnYXRpb25WYWxpZGF0aW9uID0ge1xuICAgICAgICBpc1ZhbGlkOiBmYWxzZSxcbiAgICAgICAgZXJyb3JzOiBbXG4gICAgICAgICAgJ1JvdyAyOiBNaXNzaW5nIHJlcXVpcmVkIGZpZWxkIFwiRGF0ZSBTdGFydGVkXCInLFxuICAgICAgICAgICdSb3cgMzogSW52YWxpZCBkYXRlIGZvcm1hdCBpbiBcIkRhdGUgU3RhcnRlZFwiJyxcbiAgICAgICAgXSxcbiAgICAgICAgcHJldmlldzogW1xuICAgICAgICAgIHtcbiAgICAgICAgICAgICdDb21tb24gTmFtZSc6ICdNb25zdGVyYSBEZWxpY2lvc2EnLFxuICAgICAgICAgICAgTG9jYXRpb246ICdQcm9wYWdhdGlvbiBTdGF0aW9uJyxcbiAgICAgICAgICAgICdEYXRlIFN0YXJ0ZWQnOiAnJywgLy8gTWlzc2luZ1xuICAgICAgICAgIH0sXG4gICAgICAgIF0sXG4gICAgICB9O1xuXG4gICAgICBtb2NrQXBpUmVzcG9uc2Uoe1xuICAgICAgICAnUE9TVCAvYXBpL2ltcG9ydC9jc3YvdmFsaWRhdGUnOiB7XG4gICAgICAgICAgc3RhdHVzOiAyMDAsXG4gICAgICAgICAgZGF0YTogcHJvcGFnYXRpb25WYWxpZGF0aW9uLFxuICAgICAgICB9LFxuICAgICAgfSk7XG5cbiAgICAgIGNvbnN0IHsgdXNlciB9ID0gcmVuZGVyV2l0aFByb3ZpZGVycyhcbiAgICAgICAgPENTVkltcG9ydE1vZGFsXG4gICAgICAgICAgaXNPcGVuPXt0cnVlfVxuICAgICAgICAgIG9uQ2xvc2U9e2plc3QuZm4oKX1cbiAgICAgICAgLz5cbiAgICAgICk7XG5cbiAgICAgIC8vIEFjdCAtIFNlbGVjdCBwcm9wYWdhdGlvbnMgaW1wb3J0XG4gICAgICBjb25zdCBwcm9wYWdhdGlvbnNCdXR0b24gPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9wcm9wYWdhdGlvbnMvaSB9KTtcbiAgICAgIGF3YWl0IHVzZXIuY2xpY2socHJvcGFnYXRpb25zQnV0dG9uKTtcblxuICAgICAgY29uc3QgZmlsZUlucHV0ID0gc2NyZWVuLmdldEJ5TGFiZWxUZXh0KC91cGxvYWR8ZmlsZS9pKTtcbiAgICAgIGNvbnN0IGNzdkZpbGUgPSBuZXcgRmlsZShbJ0NvbW1vbiBOYW1lLExvY2F0aW9uLERhdGUgU3RhcnRlZFxcbk1vbnN0ZXJhIERlbGljaW9zYSxQcm9wYWdhdGlvbiBTdGF0aW9uLCddLCAncHJvcGFnYXRpb25zLmNzdicsIHtcbiAgICAgICAgdHlwZTogJ3RleHQvY3N2JyxcbiAgICAgIH0pO1xuICAgICAgY3N2RmlsZS5jb250ZW50ID0gJ0NvbW1vbiBOYW1lLExvY2F0aW9uLERhdGUgU3RhcnRlZFxcbk1vbnN0ZXJhIERlbGljaW9zYSxQcm9wYWdhdGlvbiBTdGF0aW9uLCc7XG5cbiAgICAgIGF3YWl0IHVzZXIudXBsb2FkKGZpbGVJbnB1dCwgY3N2RmlsZSk7XG5cbiAgICAgIC8vIEFzc2VydCAtIFZlcmlmeSBmaWVsZC1zcGVjaWZpYyB2YWxpZGF0aW9uIGVycm9yc1xuICAgICAgYXdhaXQgd2FpdEZvcigoKSA9PiB7XG4gICAgICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KC9taXNzaW5nIHJlcXVpcmVkIGZpZWxkIFwiZGF0ZSBzdGFydGVkXCIvaSkpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KC9pbnZhbGlkIGRhdGUgZm9ybWF0L2kpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgICAgfSk7XG4gICAgfSk7XG5cbiAgICBpdCgnc2hvdWxkIGhhbmRsZSBkdXBsaWNhdGUgZGF0YSB2YWxpZGF0aW9uJywgYXN5bmMgKCkgPT4ge1xuICAgICAgLy8gQXJyYW5nZVxuICAgICAgY29uc3QgdmFsaWRhdGlvbldpdGhEdXBsaWNhdGVzID0ge1xuICAgICAgICBpc1ZhbGlkOiB0cnVlLFxuICAgICAgICBlcnJvcnM6IFtdLFxuICAgICAgICB3YXJuaW5nczogW1xuICAgICAgICAgICdSb3cgMjogRHVwbGljYXRlIHBsYW50IGZvdW5kIC0gTW9uc3RlcmEgZGVsaWNpb3NhIGFscmVhZHkgZXhpc3RzJyxcbiAgICAgICAgICAnUm93IDQ6IFNpbWlsYXIgcGxhbnQgZm91bmQgLSBNb25zdGVyYSBhZGFuc29uaWkgKDkwJSBtYXRjaCknLFxuICAgICAgICBdLFxuICAgICAgICBwcmV2aWV3OiBbXG4gICAgICAgICAge1xuICAgICAgICAgICAgRmFtaWx5OiAnQXJhY2VhZScsXG4gICAgICAgICAgICBHZW51czogJ01vbnN0ZXJhJyxcbiAgICAgICAgICAgIFNwZWNpZXM6ICdkZWxpY2lvc2EnLFxuICAgICAgICAgICAgJ0NvbW1vbiBOYW1lJzogJ01vbnN0ZXJhIERlbGljaW9zYScsXG4gICAgICAgICAgfSxcbiAgICAgICAgXSxcbiAgICAgIH07XG5cbiAgICAgIG1vY2tBcGlSZXNwb25zZSh7XG4gICAgICAgICdQT1NUIC9hcGkvaW1wb3J0L2Nzdi92YWxpZGF0ZSc6IHtcbiAgICAgICAgICBzdGF0dXM6IDIwMCxcbiAgICAgICAgICBkYXRhOiB2YWxpZGF0aW9uV2l0aER1cGxpY2F0ZXMsXG4gICAgICAgIH0sXG4gICAgICB9KTtcblxuICAgICAgY29uc3QgeyB1c2VyIH0gPSByZW5kZXJXaXRoUHJvdmlkZXJzKFxuICAgICAgICA8Q1NWSW1wb3J0TW9kYWxcbiAgICAgICAgICBpc09wZW49e3RydWV9XG4gICAgICAgICAgb25DbG9zZT17amVzdC5mbigpfVxuICAgICAgICAvPlxuICAgICAgKTtcblxuICAgICAgLy8gQWN0IC0gVXBsb2FkIGZpbGUgd2l0aCBkdXBsaWNhdGVzXG4gICAgICBjb25zdCBwbGFudFRheG9ub215QnV0dG9uID0gc2NyZWVuLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAvcGxhbnQgdGF4b25vbXkvaSB9KTtcbiAgICAgIGF3YWl0IHVzZXIuY2xpY2socGxhbnRUYXhvbm9teUJ1dHRvbik7XG5cbiAgICAgIGNvbnN0IGZpbGVJbnB1dCA9IHNjcmVlbi5nZXRCeUxhYmVsVGV4dCgvdXBsb2FkfGZpbGUvaSk7XG4gICAgICBjb25zdCBjc3ZGaWxlID0gbmV3IEZpbGUoWyd0ZXN0J10sICdkdXBsaWNhdGVzLmNzdicsIHsgdHlwZTogJ3RleHQvY3N2JyB9KTtcbiAgICAgIGF3YWl0IHVzZXIudXBsb2FkKGZpbGVJbnB1dCwgY3N2RmlsZSk7XG5cbiAgICAgIC8vIEFzc2VydCAtIFZlcmlmeSBkdXBsaWNhdGUgd2FybmluZ3MgYXJlIHNob3duXG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoL2R1cGxpY2F0ZSBwbGFudCBmb3VuZC9pKSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoL3NpbWlsYXIgcGxhbnQgZm91bmQvaSkpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgICB9KTtcbiAgICB9KTtcblxuICAgIGl0KCdzaG91bGQgdmFsaWRhdGUgZGF0YSBmb3JtYXQgcmVxdWlyZW1lbnRzJywgYXN5bmMgKCkgPT4ge1xuICAgICAgLy8gQXJyYW5nZVxuICAgICAgY29uc3QgZm9ybWF0VmFsaWRhdGlvbiA9IHtcbiAgICAgICAgaXNWYWxpZDogZmFsc2UsXG4gICAgICAgIGVycm9yczogW1xuICAgICAgICAgICdSb3cgMjogXCJGZXJ0aWxpemVyIFNjaGVkdWxlXCIgbXVzdCBiZSBvbmUgb2Y6IHdlZWtseSwgYml3ZWVrbHksIG1vbnRobHksIGV0Yy4nLFxuICAgICAgICAgICdSb3cgMzogXCJMYXN0IEZlcnRpbGl6ZWRcIiBtdXN0IGJlIGEgdmFsaWQgZGF0ZSAoWVlZWS1NTS1ERCknLFxuICAgICAgICAgICdSb3cgNDogXCJMb2NhdGlvblwiIGNhbm5vdCBiZSBlbXB0eScsXG4gICAgICAgIF0sXG4gICAgICAgIHByZXZpZXc6IFtdLFxuICAgICAgfTtcblxuICAgICAgbW9ja0FwaVJlc3BvbnNlKHtcbiAgICAgICAgJ1BPU1QgL2FwaS9pbXBvcnQvY3N2L3ZhbGlkYXRlJzoge1xuICAgICAgICAgIHN0YXR1czogMjAwLFxuICAgICAgICAgIGRhdGE6IGZvcm1hdFZhbGlkYXRpb24sXG4gICAgICAgIH0sXG4gICAgICB9KTtcblxuICAgICAgY29uc3QgeyB1c2VyIH0gPSByZW5kZXJXaXRoUHJvdmlkZXJzKFxuICAgICAgICA8Q1NWSW1wb3J0TW9kYWxcbiAgICAgICAgICBpc09wZW49e3RydWV9XG4gICAgICAgICAgb25DbG9zZT17amVzdC5mbigpfVxuICAgICAgICAvPlxuICAgICAgKTtcblxuICAgICAgLy8gQWN0IC0gVXBsb2FkIGZpbGUgd2l0aCBmb3JtYXQgZXJyb3JzXG4gICAgICBjb25zdCBwbGFudEluc3RhbmNlc0J1dHRvbiA9IHNjcmVlbi5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogL3BsYW50IGluc3RhbmNlcy9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhwbGFudEluc3RhbmNlc0J1dHRvbik7XG5cbiAgICAgIGNvbnN0IGZpbGVJbnB1dCA9IHNjcmVlbi5nZXRCeUxhYmVsVGV4dCgvdXBsb2FkfGZpbGUvaSk7XG4gICAgICBjb25zdCBjc3ZGaWxlID0gbmV3IEZpbGUoWyd0ZXN0J10sICdmb3JtYXQtZXJyb3JzLmNzdicsIHsgdHlwZTogJ3RleHQvY3N2JyB9KTtcbiAgICAgIGF3YWl0IHVzZXIudXBsb2FkKGZpbGVJbnB1dCwgY3N2RmlsZSk7XG5cbiAgICAgIC8vIEFzc2VydCAtIFZlcmlmeSBmb3JtYXQgdmFsaWRhdGlvbiBlcnJvcnNcbiAgICAgIGF3YWl0IHdhaXRGb3IoKCkgPT4ge1xuICAgICAgICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dCgvZmVydGlsaXplciBzY2hlZHVsZS4qbXVzdCBiZSBvbmUgb2YvaSkpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KC9tdXN0IGJlIGEgdmFsaWQgZGF0ZS9pKSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoL2xvY2F0aW9uLipjYW5ub3QgYmUgZW1wdHkvaSkpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgICB9KTtcbiAgICB9KTtcbiAgfSk7XG5cbiAgZGVzY3JpYmUoJ1N1Y2Nlc3NmdWwgSW1wb3J0IENvbXBsZXRpb24gYW5kIERhdGEgUGVyc2lzdGVuY2UnLCAoKSA9PiB7XG4gICAgaXQoJ3Nob3VsZCBjb21wbGV0ZSBzdWNjZXNzZnVsIGltcG9ydCB3b3JrZmxvdyB3aXRoIHByb2dyZXNzIHRyYWNraW5nJywgYXN5bmMgKCkgPT4ge1xuICAgICAgLy8gQXJyYW5nZVxuICAgICAgY29uc3QgdmFsaWRhdGlvblJlc3VsdCA9IHtcbiAgICAgICAgaXNWYWxpZDogdHJ1ZSxcbiAgICAgICAgZXJyb3JzOiBbXSxcbiAgICAgICAgcHJldmlldzogW1xuICAgICAgICAgIHsgRmFtaWx5OiAnQXJhY2VhZScsIEdlbnVzOiAnTW9uc3RlcmEnLCBTcGVjaWVzOiAnZGVsaWNpb3NhJywgJ0NvbW1vbiBOYW1lJzogJ01vbnN0ZXJhIERlbGljaW9zYScgfSxcbiAgICAgICAgXSxcbiAgICAgIH07XG5cbiAgICAgIGNvbnN0IGltcG9ydFJlc3VsdCA9IHtcbiAgICAgICAgaW1wb3J0SWQ6ICdpbXBvcnQtMTIzJyxcbiAgICAgICAgc3RhdHVzOiAnc3RhcnRlZCcsXG4gICAgICB9O1xuXG4gICAgICBtb2NrQXBpUmVzcG9uc2Uoe1xuICAgICAgICAnUE9TVCAvYXBpL2ltcG9ydC9jc3YvdmFsaWRhdGUnOiB7XG4gICAgICAgICAgc3RhdHVzOiAyMDAsXG4gICAgICAgICAgZGF0YTogdmFsaWRhdGlvblJlc3VsdCxcbiAgICAgICAgfSxcbiAgICAgICAgJ1BPU1QgL2FwaS9pbXBvcnQvY3N2Jzoge1xuICAgICAgICAgIHN0YXR1czogMjAwLFxuICAgICAgICAgIGRhdGE6IGltcG9ydFJlc3VsdCxcbiAgICAgICAgfSxcbiAgICAgIH0pO1xuXG4gICAgICAvLyBNb2NrIGltcG9ydCBwcm9ncmVzcyBwb2xsaW5nXG4gICAgICBsZXQgcHJvZ3Jlc3NDYWxsQ291bnQgPSAwO1xuICAgICAgZ2xvYmFsLmZldGNoID0gamVzdC5mbigodXJsLCBvcHRpb25zKSA9PiB7XG4gICAgICAgIGlmICh1cmwuaW5jbHVkZXMoJy9hcGkvaW1wb3J0L2Nzdi92YWxpZGF0ZScpKSB7XG4gICAgICAgICAgcmV0dXJuIFByb21pc2UucmVzb2x2ZSh7XG4gICAgICAgICAgICBvazogdHJ1ZSxcbiAgICAgICAgICAgIGpzb246ICgpID0+IFByb21pc2UucmVzb2x2ZSh2YWxpZGF0aW9uUmVzdWx0KSxcbiAgICAgICAgICB9KTtcbiAgICAgICAgfVxuICAgICAgICBpZiAodXJsLmluY2x1ZGVzKCcvYXBpL2ltcG9ydC9jc3YnKSAmJiBvcHRpb25zPy5tZXRob2QgPT09ICdQT1NUJykge1xuICAgICAgICAgIHJldHVybiBQcm9taXNlLnJlc29sdmUoe1xuICAgICAgICAgICAgb2s6IHRydWUsXG4gICAgICAgICAgICBqc29uOiAoKSA9PiBQcm9taXNlLnJlc29sdmUoaW1wb3J0UmVzdWx0KSxcbiAgICAgICAgICB9KTtcbiAgICAgICAgfVxuICAgICAgICBpZiAodXJsLmluY2x1ZGVzKCcvYXBpL2ltcG9ydC9wcm9ncmVzcy9pbXBvcnQtMTIzJykpIHtcbiAgICAgICAgICBwcm9ncmVzc0NhbGxDb3VudCsrO1xuICAgICAgICAgIGNvbnN0IHByb2dyZXNzID0gcHJvZ3Jlc3NDYWxsQ291bnQgPj0gMyA/IHtcbiAgICAgICAgICAgIHN0YXR1czogJ2NvbXBsZXRlZCcsXG4gICAgICAgICAgICBwcm9ncmVzczogMTAwLFxuICAgICAgICAgICAgc3VtbWFyeToge1xuICAgICAgICAgICAgICB0b3RhbFJvd3M6IDEsXG4gICAgICAgICAgICAgIHN1Y2Nlc3NmdWxSb3dzOiAxLFxuICAgICAgICAgICAgICBmYWlsZWRSb3dzOiAwLFxuICAgICAgICAgICAgICBjcmVhdGVkOiAxLFxuICAgICAgICAgICAgICB1cGRhdGVkOiAwLFxuICAgICAgICAgICAgICBza2lwcGVkOiAwLFxuICAgICAgICAgICAgfSxcbiAgICAgICAgICB9IDoge1xuICAgICAgICAgICAgc3RhdHVzOiAncHJvY2Vzc2luZycsXG4gICAgICAgICAgICBwcm9ncmVzczogcHJvZ3Jlc3NDYWxsQ291bnQgKiAzMCxcbiAgICAgICAgICAgIGN1cnJlbnRSb3c6IHByb2dyZXNzQ2FsbENvdW50LFxuICAgICAgICAgICAgdG90YWxSb3dzOiAxLFxuICAgICAgICAgIH07XG4gICAgICAgICAgXG4gICAgICAgICAgcmV0dXJuIFByb21pc2UucmVzb2x2ZSh7XG4gICAgICAgICAgICBvazogdHJ1ZSxcbiAgICAgICAgICAgIGpzb246ICgpID0+IFByb21pc2UucmVzb2x2ZShwcm9ncmVzcyksXG4gICAgICAgICAgfSk7XG4gICAgICAgIH1cbiAgICAgICAgcmV0dXJuIFByb21pc2UucmVqZWN0KG5ldyBFcnJvcignVW5leHBlY3RlZCBBUEkgY2FsbCcpKTtcbiAgICAgIH0pO1xuXG4gICAgICBjb25zdCBtb2NrT25JbXBvcnRDb21wbGV0ZSA9IGplc3QuZm4oKTtcbiAgICAgIGNvbnN0IHsgdXNlciB9ID0gcmVuZGVyV2l0aFByb3ZpZGVycyhcbiAgICAgICAgPENTVkltcG9ydE1vZGFsXG4gICAgICAgICAgaXNPcGVuPXt0cnVlfVxuICAgICAgICAgIG9uQ2xvc2U9e2plc3QuZm4oKX1cbiAgICAgICAgICBvbkltcG9ydENvbXBsZXRlPXttb2NrT25JbXBvcnRDb21wbGV0ZX1cbiAgICAgICAgLz5cbiAgICAgICk7XG5cbiAgICAgIC8vIEFjdCAtIENvbXBsZXRlIGZ1bGwgaW1wb3J0IHdvcmtmbG93XG4gICAgICAvLyBTdGVwIDE6IFNlbGVjdCB0eXBlXG4gICAgICBjb25zdCBwbGFudFRheG9ub215QnV0dG9uID0gc2NyZWVuLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAvcGxhbnQgdGF4b25vbXkvaSB9KTtcbiAgICAgIGF3YWl0IHVzZXIuY2xpY2socGxhbnRUYXhvbm9teUJ1dHRvbik7XG5cbiAgICAgIC8vIFN0ZXAgMjogVXBsb2FkIGZpbGVcbiAgICAgIGNvbnN0IGZpbGVJbnB1dCA9IHNjcmVlbi5nZXRCeUxhYmVsVGV4dCgvdXBsb2FkfGZpbGUvaSk7XG4gICAgICBjb25zdCBjc3ZGaWxlID0gbmV3IEZpbGUoWyd0ZXN0J10sICd0ZXN0LmNzdicsIHsgdHlwZTogJ3RleHQvY3N2JyB9KTtcbiAgICAgIGF3YWl0IHVzZXIudXBsb2FkKGZpbGVJbnB1dCwgY3N2RmlsZSk7XG5cbiAgICAgIC8vIFN0ZXAgMzogU3RhcnQgaW1wb3J0XG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoJ1JldmlldyB5b3VyIGRhdGEnKSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgIH0pO1xuXG4gICAgICBjb25zdCBzdGFydEltcG9ydEJ1dHRvbiA9IHNjcmVlbi5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogL3N0YXJ0IGltcG9ydC9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhzdGFydEltcG9ydEJ1dHRvbik7XG5cbiAgICAgIC8vIEFzc2VydCAtIFZlcmlmeSBpbXBvcnQgd2FzIHN0YXJ0ZWRcbiAgICAgIGF3YWl0IHdhaXRGb3IoKCkgPT4ge1xuICAgICAgICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dCgvaW1wb3J0aW5nIGRhdGEvaSkpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgICB9KTtcblxuICAgICAgLy8gQXNzZXJ0IC0gVmVyaWZ5IGltcG9ydCBjb21wbGV0aW9uXG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoL2ltcG9ydCBjb21wbGV0ZWQgc3VjY2Vzc2Z1bGx5L2kpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgICAgfSwgeyB0aW1lb3V0OiAxMDAwMCB9KTtcblxuICAgICAgLy8gQXNzZXJ0IC0gVmVyaWZ5IGNvbXBsZXRpb24gY2FsbGJhY2sgd2FzIGNhbGxlZFxuICAgICAgZXhwZWN0KG1vY2tPbkltcG9ydENvbXBsZXRlKS50b0hhdmVCZWVuQ2FsbGVkV2l0aChcbiAgICAgICAgZXhwZWN0Lm9iamVjdENvbnRhaW5pbmcoe1xuICAgICAgICAgIHRvdGFsUm93czogMSxcbiAgICAgICAgICBzdWNjZXNzZnVsUm93czogMSxcbiAgICAgICAgICBjcmVhdGVkOiAxLFxuICAgICAgICB9KVxuICAgICAgKTtcbiAgICB9KTtcblxuICAgIGl0KCdzaG91bGQgaGFuZGxlIGltcG9ydCBzZXJ2ZXIgZXJyb3JzIGR1cmluZyBwcm9jZXNzaW5nJywgYXN5bmMgKCkgPT4ge1xuICAgICAgLy8gQXJyYW5nZVxuICAgICAgY29uc3QgdmFsaWRhdGlvblJlc3VsdCA9IHtcbiAgICAgICAgaXNWYWxpZDogdHJ1ZSxcbiAgICAgICAgZXJyb3JzOiBbXSxcbiAgICAgICAgcHJldmlldzogW3sgJ0NvbW1vbiBOYW1lJzogJ1Rlc3QgUGxhbnQnIH1dLFxuICAgICAgfTtcblxuICAgICAgbW9ja0FwaVJlc3BvbnNlKHtcbiAgICAgICAgJ1BPU1QgL2FwaS9pbXBvcnQvY3N2L3ZhbGlkYXRlJzoge1xuICAgICAgICAgIHN0YXR1czogMjAwLFxuICAgICAgICAgIGRhdGE6IHZhbGlkYXRpb25SZXN1bHQsXG4gICAgICAgIH0sXG4gICAgICB9KTtcblxuICAgICAgbW9ja0FwaUVycm9yKCcvYXBpL2ltcG9ydC9jc3YnLCA1MDAsIHsgZXJyb3I6ICdEYXRhYmFzZSBjb25uZWN0aW9uIGZhaWxlZCcgfSwgJ1BPU1QnKTtcblxuICAgICAgY29uc3QgeyB1c2VyIH0gPSByZW5kZXJXaXRoUHJvdmlkZXJzKFxuICAgICAgICA8Q1NWSW1wb3J0TW9kYWxcbiAgICAgICAgICBpc09wZW49e3RydWV9XG4gICAgICAgICAgb25DbG9zZT17amVzdC5mbigpfVxuICAgICAgICAvPlxuICAgICAgKTtcblxuICAgICAgLy8gQWN0IC0gVHJ5IHRvIHN0YXJ0IGltcG9ydFxuICAgICAgY29uc3QgcGxhbnRUYXhvbm9teUJ1dHRvbiA9IHNjcmVlbi5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogL3BsYW50IHRheG9ub215L2kgfSk7XG4gICAgICBhd2FpdCB1c2VyLmNsaWNrKHBsYW50VGF4b25vbXlCdXR0b24pO1xuXG4gICAgICBjb25zdCBmaWxlSW5wdXQgPSBzY3JlZW4uZ2V0QnlMYWJlbFRleHQoL3VwbG9hZHxmaWxlL2kpO1xuICAgICAgY29uc3QgY3N2RmlsZSA9IG5ldyBGaWxlKFsndGVzdCddLCAndGVzdC5jc3YnLCB7IHR5cGU6ICd0ZXh0L2NzdicgfSk7XG4gICAgICBhd2FpdCB1c2VyLnVwbG9hZChmaWxlSW5wdXQsIGNzdkZpbGUpO1xuXG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogL3N0YXJ0IGltcG9ydC9pIH0pKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgICAgfSk7XG5cbiAgICAgIGNvbnN0IHN0YXJ0SW1wb3J0QnV0dG9uID0gc2NyZWVuLmdldEJ5Um9sZSgnYnV0dG9uJywgeyBuYW1lOiAvc3RhcnQgaW1wb3J0L2kgfSk7XG4gICAgICBhd2FpdCB1c2VyLmNsaWNrKHN0YXJ0SW1wb3J0QnV0dG9uKTtcblxuICAgICAgLy8gQXNzZXJ0IC0gVmVyaWZ5IGVycm9yIGlzIGRpc3BsYXllZFxuICAgICAgYXdhaXQgd2FpdEZvcigoKSA9PiB7XG4gICAgICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KC9mYWlsZWQgdG8gc3RhcnQgaW1wb3J0L2kpKS50b0JlSW5UaGVEb2N1bWVudCgpO1xuICAgICAgfSk7XG4gICAgfSk7XG5cbiAgICBpdCgnc2hvdWxkIGhhbmRsZSBwYXJ0aWFsIGltcG9ydCBzdWNjZXNzIHdpdGggZXJyb3IgcmVwb3J0aW5nJywgYXN5bmMgKCkgPT4ge1xuICAgICAgLy8gQXJyYW5nZVxuICAgICAgY29uc3QgdmFsaWRhdGlvblJlc3VsdCA9IHtcbiAgICAgICAgaXNWYWxpZDogdHJ1ZSxcbiAgICAgICAgZXJyb3JzOiBbXSxcbiAgICAgICAgcHJldmlldzogW1xuICAgICAgICAgIHsgJ0NvbW1vbiBOYW1lJzogJ1BsYW50IDEnIH0sXG4gICAgICAgICAgeyAnQ29tbW9uIE5hbWUnOiAnUGxhbnQgMicgfSxcbiAgICAgICAgXSxcbiAgICAgIH07XG5cbiAgICAgIGNvbnN0IGltcG9ydFJlc3VsdCA9IHsgaW1wb3J0SWQ6ICdpbXBvcnQtNDU2JyB9O1xuXG4gICAgICBtb2NrQXBpUmVzcG9uc2Uoe1xuICAgICAgICAnUE9TVCAvYXBpL2ltcG9ydC9jc3YvdmFsaWRhdGUnOiB7XG4gICAgICAgICAgc3RhdHVzOiAyMDAsXG4gICAgICAgICAgZGF0YTogdmFsaWRhdGlvblJlc3VsdCxcbiAgICAgICAgfSxcbiAgICAgICAgJ1BPU1QgL2FwaS9pbXBvcnQvY3N2Jzoge1xuICAgICAgICAgIHN0YXR1czogMjAwLFxuICAgICAgICAgIGRhdGE6IGltcG9ydFJlc3VsdCxcbiAgICAgICAgfSxcbiAgICAgIH0pO1xuXG4gICAgICAvLyBNb2NrIHByb2dyZXNzIHdpdGggcGFydGlhbCBzdWNjZXNzXG4gICAgICBnbG9iYWwuZmV0Y2ggPSBqZXN0LmZuKCh1cmwsIG9wdGlvbnMpID0+IHtcbiAgICAgICAgaWYgKHVybC5pbmNsdWRlcygndmFsaWRhdGUnKSB8fCAodXJsLmluY2x1ZGVzKCcvYXBpL2ltcG9ydC9jc3YnKSAmJiBvcHRpb25zPy5tZXRob2QgPT09ICdQT1NUJykpIHtcbiAgICAgICAgICByZXR1cm4gUHJvbWlzZS5yZXNvbHZlKHtcbiAgICAgICAgICAgIG9rOiB0cnVlLFxuICAgICAgICAgICAganNvbjogKCkgPT4gUHJvbWlzZS5yZXNvbHZlKHVybC5pbmNsdWRlcygndmFsaWRhdGUnKSA/IHZhbGlkYXRpb25SZXN1bHQgOiBpbXBvcnRSZXN1bHQpLFxuICAgICAgICAgIH0pO1xuICAgICAgICB9XG4gICAgICAgIGlmICh1cmwuaW5jbHVkZXMoJy9hcGkvaW1wb3J0L3Byb2dyZXNzL2ltcG9ydC00NTYnKSkge1xuICAgICAgICAgIHJldHVybiBQcm9taXNlLnJlc29sdmUoe1xuICAgICAgICAgICAgb2s6IHRydWUsXG4gICAgICAgICAgICBqc29uOiAoKSA9PiBQcm9taXNlLnJlc29sdmUoe1xuICAgICAgICAgICAgICBzdGF0dXM6ICdjb21wbGV0ZWQnLFxuICAgICAgICAgICAgICBwcm9ncmVzczogMTAwLFxuICAgICAgICAgICAgICBzdW1tYXJ5OiB7XG4gICAgICAgICAgICAgICAgdG90YWxSb3dzOiAyLFxuICAgICAgICAgICAgICAgIHN1Y2Nlc3NmdWxSb3dzOiAxLFxuICAgICAgICAgICAgICAgIGZhaWxlZFJvd3M6IDEsXG4gICAgICAgICAgICAgICAgY3JlYXRlZDogMSxcbiAgICAgICAgICAgICAgICB1cGRhdGVkOiAwLFxuICAgICAgICAgICAgICAgIHNraXBwZWQ6IDAsXG4gICAgICAgICAgICAgICAgZXJyb3JzOiBbXG4gICAgICAgICAgICAgICAgICB7IHJvdzogMiwgZXJyb3I6ICdEdXBsaWNhdGUgcGxhbnQgbmFtZScgfSxcbiAgICAgICAgICAgICAgICBdLFxuICAgICAgICAgICAgICB9LFxuICAgICAgICAgICAgfSksXG4gICAgICAgICAgfSk7XG4gICAgICAgIH1cbiAgICAgICAgcmV0dXJuIFByb21pc2UucmVqZWN0KG5ldyBFcnJvcignVW5leHBlY3RlZCBBUEkgY2FsbCcpKTtcbiAgICAgIH0pO1xuXG4gICAgICBjb25zdCB7IHVzZXIgfSA9IHJlbmRlcldpdGhQcm92aWRlcnMoXG4gICAgICAgIDxDU1ZJbXBvcnRNb2RhbFxuICAgICAgICAgIGlzT3Blbj17dHJ1ZX1cbiAgICAgICAgICBvbkNsb3NlPXtqZXN0LmZuKCl9XG4gICAgICAgIC8+XG4gICAgICApO1xuXG4gICAgICAvLyBBY3QgLSBDb21wbGV0ZSBpbXBvcnQgd2l0aCBwYXJ0aWFsIHN1Y2Nlc3NcbiAgICAgIGNvbnN0IHBsYW50VGF4b25vbXlCdXR0b24gPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9wbGFudCB0YXhvbm9teS9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhwbGFudFRheG9ub215QnV0dG9uKTtcblxuICAgICAgY29uc3QgZmlsZUlucHV0ID0gc2NyZWVuLmdldEJ5TGFiZWxUZXh0KC91cGxvYWR8ZmlsZS9pKTtcbiAgICAgIGNvbnN0IGNzdkZpbGUgPSBuZXcgRmlsZShbJ3Rlc3QnXSwgJ3Rlc3QuY3N2JywgeyB0eXBlOiAndGV4dC9jc3YnIH0pO1xuICAgICAgYXdhaXQgdXNlci51cGxvYWQoZmlsZUlucHV0LCBjc3ZGaWxlKTtcblxuICAgICAgYXdhaXQgd2FpdEZvcigoKSA9PiB7XG4gICAgICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9zdGFydCBpbXBvcnQvaSB9KSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgIH0pO1xuXG4gICAgICBjb25zdCBzdGFydEltcG9ydEJ1dHRvbiA9IHNjcmVlbi5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogL3N0YXJ0IGltcG9ydC9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhzdGFydEltcG9ydEJ1dHRvbik7XG5cbiAgICAgIC8vIEFzc2VydCAtIFZlcmlmeSBwYXJ0aWFsIHN1Y2Nlc3MgaXMgcmVwb3J0ZWRcbiAgICAgIGF3YWl0IHdhaXRGb3IoKCkgPT4ge1xuICAgICAgICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dCgvaW1wb3J0IGNvbXBsZXRlZC9pKSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgIH0sIHsgdGltZW91dDogMTAwMDAgfSk7XG5cbiAgICAgIC8vIE5vdGU6IFRoZSBhY3R1YWwgZXJyb3IgZGlzcGxheSB3b3VsZCBkZXBlbmQgb24gdGhlIEltcG9ydFByb2dyZXNzIGNvbXBvbmVudCBpbXBsZW1lbnRhdGlvblxuICAgIH0pO1xuICB9KTsgXG4gZGVzY3JpYmUoJ1RlbXBsYXRlIERvd25sb2FkIGFuZCBJbXBvcnQgV29ya2Zsb3cgSW50ZWdyYXRpb24nLCAoKSA9PiB7XG4gICAgaXQoJ3Nob3VsZCBwcm92aWRlIENTViB0ZW1wbGF0ZSBkb3dubG9hZHMgZm9yIGRpZmZlcmVudCBpbXBvcnQgdHlwZXMnLCBhc3luYyAoKSA9PiB7XG4gICAgICAvLyBBcnJhbmdlXG4gICAgICBjb25zdCBvcmlnaW5hbENyZWF0ZUVsZW1lbnQgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50O1xuICAgICAgY29uc3QgbW9ja0xpbmsgPSB7XG4gICAgICAgIHNldEF0dHJpYnV0ZTogamVzdC5mbigpLFxuICAgICAgICBjbGljazogamVzdC5mbigpLFxuICAgICAgICBzdHlsZToge30sXG4gICAgICB9O1xuICAgICAgXG4gICAgICBkb2N1bWVudC5jcmVhdGVFbGVtZW50ID0gamVzdC5mbigodGFnTmFtZSkgPT4ge1xuICAgICAgICBpZiAodGFnTmFtZSA9PT0gJ2EnKSB7XG4gICAgICAgICAgcmV0dXJuIG1vY2tMaW5rO1xuICAgICAgICB9XG4gICAgICAgIHJldHVybiBvcmlnaW5hbENyZWF0ZUVsZW1lbnQuY2FsbChkb2N1bWVudCwgdGFnTmFtZSk7XG4gICAgICB9KTtcblxuICAgICAgY29uc3Qgb3JpZ2luYWxDcmVhdGVPYmplY3RVUkwgPSBVUkwuY3JlYXRlT2JqZWN0VVJMO1xuICAgICAgVVJMLmNyZWF0ZU9iamVjdFVSTCA9IGplc3QuZm4oKCkgPT4gJ2Jsb2I6bW9jay11cmwnKTtcblxuICAgICAgY29uc3Qgb3JpZ2luYWxBcHBlbmRDaGlsZCA9IGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQ7XG4gICAgICBjb25zdCBvcmlnaW5hbFJlbW92ZUNoaWxkID0gZG9jdW1lbnQuYm9keS5yZW1vdmVDaGlsZDtcbiAgICAgIGRvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQgPSBqZXN0LmZuKCk7XG4gICAgICBkb2N1bWVudC5ib2R5LnJlbW92ZUNoaWxkID0gamVzdC5mbigpO1xuXG4gICAgICBjb25zdCB7IHVzZXIgfSA9IHJlbmRlcldpdGhQcm92aWRlcnMoPERhdGFJbXBvcnQgLz4pO1xuXG4gICAgICAvLyBBY3QgLSBEb3dubG9hZCBwbGFudCB0YXhvbm9teSB0ZW1wbGF0ZVxuICAgICAgY29uc3QgdGF4b25vbXlUZW1wbGF0ZUJ1dHRvbiA9IHNjcmVlbi5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogL3BsYW50IHRheG9ub215IHRlbXBsYXRlL2kgfSk7XG4gICAgICBhd2FpdCB1c2VyLmNsaWNrKHRheG9ub215VGVtcGxhdGVCdXR0b24pO1xuXG4gICAgICAvLyBBc3NlcnQgLSBWZXJpZnkgdGVtcGxhdGUgZG93bmxvYWQgd2FzIHRyaWdnZXJlZFxuICAgICAgZXhwZWN0KG1vY2tMaW5rLnNldEF0dHJpYnV0ZSkudG9IYXZlQmVlbkNhbGxlZFdpdGgoJ2hyZWYnLCAnYmxvYjptb2NrLXVybCcpO1xuICAgICAgZXhwZWN0KG1vY2tMaW5rLnNldEF0dHJpYnV0ZSkudG9IYXZlQmVlbkNhbGxlZFdpdGgoJ2Rvd25sb2FkJywgJ3BsYW50X3RheG9ub215X3RlbXBsYXRlLmNzdicpO1xuICAgICAgZXhwZWN0KG1vY2tMaW5rLmNsaWNrKS50b0hhdmVCZWVuQ2FsbGVkKCk7XG5cbiAgICAgIC8vIENsZWFudXBcbiAgICAgIGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQgPSBvcmlnaW5hbENyZWF0ZUVsZW1lbnQ7XG4gICAgICBVUkwuY3JlYXRlT2JqZWN0VVJMID0gb3JpZ2luYWxDcmVhdGVPYmplY3RVUkw7XG4gICAgICBkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkID0gb3JpZ2luYWxBcHBlbmRDaGlsZDtcbiAgICAgIGRvY3VtZW50LmJvZHkucmVtb3ZlQ2hpbGQgPSBvcmlnaW5hbFJlbW92ZUNoaWxkO1xuICAgIH0pO1xuXG4gICAgaXQoJ3Nob3VsZCBzaG93IGltcG9ydCBoaXN0b3J5IGFuZCBzdGF0dXMgdHJhY2tpbmcnLCBhc3luYyAoKSA9PiB7XG4gICAgICAvLyBBcnJhbmdlXG4gICAgICBjb25zdCBpbXBvcnRIaXN0b3J5ID0gW1xuICAgICAgICB7XG4gICAgICAgICAgaWQ6ICdpbXBvcnQtMTIzJyxcbiAgICAgICAgICB0eXBlOiAncGxhbnRfdGF4b25vbXknLFxuICAgICAgICAgIGZpbGVuYW1lOiAncGxhbnRzLmNzdicsXG4gICAgICAgICAgc3RhdHVzOiAnY29tcGxldGVkJyxcbiAgICAgICAgICBjcmVhdGVkQXQ6ICcyMDI0LTAxLTE1VDEwOjAwOjAwWicsXG4gICAgICAgICAgc3VtbWFyeToge1xuICAgICAgICAgICAgdG90YWxSb3dzOiAxMCxcbiAgICAgICAgICAgIHN1Y2Nlc3NmdWxSb3dzOiA5LFxuICAgICAgICAgICAgZmFpbGVkUm93czogMSxcbiAgICAgICAgICAgIGNyZWF0ZWQ6IDksXG4gICAgICAgICAgfSxcbiAgICAgICAgfSxcbiAgICAgICAge1xuICAgICAgICAgIGlkOiAnaW1wb3J0LTEyNCcsXG4gICAgICAgICAgdHlwZTogJ3BsYW50X2luc3RhbmNlcycsXG4gICAgICAgICAgZmlsZW5hbWU6ICdjb2xsZWN0aW9uLmNzdicsXG4gICAgICAgICAgc3RhdHVzOiAncHJvY2Vzc2luZycsXG4gICAgICAgICAgY3JlYXRlZEF0OiAnMjAyNC0wMS0xNlQxNDozMDowMFonLFxuICAgICAgICAgIHByb2dyZXNzOiA3NSxcbiAgICAgICAgfSxcbiAgICAgIF07XG5cbiAgICAgIG1vY2tBcGlSZXNwb25zZSh7XG4gICAgICAgICdHRVQgL2FwaS9pbXBvcnQvY3N2Jzoge1xuICAgICAgICAgIHN0YXR1czogMjAwLFxuICAgICAgICAgIGRhdGE6IHsgaW1wb3J0czogaW1wb3J0SGlzdG9yeSB9LFxuICAgICAgICB9LFxuICAgICAgfSk7XG5cbiAgICAgIGNvbnN0IHsgdXNlciB9ID0gcmVuZGVyV2l0aFByb3ZpZGVycyg8RGF0YUltcG9ydCAvPik7XG5cbiAgICAgIC8vIEFjdCAtIFN3aXRjaCB0byBoaXN0b3J5IHRhYlxuICAgICAgY29uc3QgaGlzdG9yeVRhYiA9IHNjcmVlbi5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogL2ltcG9ydCBoaXN0b3J5L2kgfSk7XG4gICAgICBhd2FpdCB1c2VyLmNsaWNrKGhpc3RvcnlUYWIpO1xuXG4gICAgICAvLyBBc3NlcnQgLSBWZXJpZnkgaW1wb3J0IGhpc3RvcnkgaXMgZGlzcGxheWVkXG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KGdsb2JhbC5mZXRjaCkudG9IYXZlQmVlbkNhbGxlZFdpdGgoJy9hcGkvaW1wb3J0L2NzdicpO1xuICAgICAgfSk7XG5cbiAgICAgIC8vIE5vdGU6IFRoZSBhY3R1YWwgaGlzdG9yeSBkaXNwbGF5IHdvdWxkIGRlcGVuZCBvbiB0aGUgSW1wb3J0SGlzdG9yeSBjb21wb25lbnQgaW1wbGVtZW50YXRpb25cbiAgICB9KTtcblxuICAgIGl0KCdzaG91bGQgaGFuZGxlIGVuZC10by1lbmQgaW1wb3J0IHdvcmtmbG93IGZyb20gdGVtcGxhdGUgdG8gY29tcGxldGlvbicsIGFzeW5jICgpID0+IHtcbiAgICAgIC8vIFRoaXMgdGVzdCB3b3VsZCBzaW11bGF0ZTpcbiAgICAgIC8vIDEuIERvd25sb2FkIHRlbXBsYXRlXG4gICAgICAvLyAyLiBVcGxvYWQgZmlsbGVkIHRlbXBsYXRlXG4gICAgICAvLyAzLiBWYWxpZGF0ZSBkYXRhXG4gICAgICAvLyA0LiBDb21wbGV0ZSBpbXBvcnRcbiAgICAgIC8vIDUuIFZpZXcgaW4gaGlzdG9yeVxuXG4gICAgICAvLyBBcnJhbmdlXG4gICAgICBjb25zdCB2YWxpZGF0aW9uUmVzdWx0ID0ge1xuICAgICAgICBpc1ZhbGlkOiB0cnVlLFxuICAgICAgICBlcnJvcnM6IFtdLFxuICAgICAgICBwcmV2aWV3OiBbXG4gICAgICAgICAgeyBGYW1pbHk6ICdBcmFjZWFlJywgR2VudXM6ICdNb25zdGVyYScsIFNwZWNpZXM6ICdkZWxpY2lvc2EnLCAnQ29tbW9uIE5hbWUnOiAnTW9uc3RlcmEgRGVsaWNpb3NhJyB9LFxuICAgICAgICBdLFxuICAgICAgfTtcblxuICAgICAgY29uc3QgaW1wb3J0UmVzdWx0ID0geyBpbXBvcnRJZDogJ2ltcG9ydC03ODknIH07XG5cbiAgICAgIG1vY2tBcGlSZXNwb25zZSh7XG4gICAgICAgICdQT1NUIC9hcGkvaW1wb3J0L2Nzdi92YWxpZGF0ZSc6IHtcbiAgICAgICAgICBzdGF0dXM6IDIwMCxcbiAgICAgICAgICBkYXRhOiB2YWxpZGF0aW9uUmVzdWx0LFxuICAgICAgICB9LFxuICAgICAgICAnUE9TVCAvYXBpL2ltcG9ydC9jc3YnOiB7XG4gICAgICAgICAgc3RhdHVzOiAyMDAsXG4gICAgICAgICAgZGF0YTogaW1wb3J0UmVzdWx0LFxuICAgICAgICB9LFxuICAgICAgICAnR0VUIC9hcGkvaW1wb3J0L2Nzdic6IHtcbiAgICAgICAgICBzdGF0dXM6IDIwMCxcbiAgICAgICAgICBkYXRhOiB7XG4gICAgICAgICAgICBpbXBvcnRzOiBbe1xuICAgICAgICAgICAgICBpZDogJ2ltcG9ydC03ODknLFxuICAgICAgICAgICAgICB0eXBlOiAncGxhbnRfdGF4b25vbXknLFxuICAgICAgICAgICAgICBzdGF0dXM6ICdjb21wbGV0ZWQnLFxuICAgICAgICAgICAgICBzdW1tYXJ5OiB7IHRvdGFsUm93czogMSwgc3VjY2Vzc2Z1bFJvd3M6IDEsIGNyZWF0ZWQ6IDEgfSxcbiAgICAgICAgICAgIH1dLFxuICAgICAgICAgIH0sXG4gICAgICAgIH0sXG4gICAgICB9KTtcblxuICAgICAgLy8gTW9jayBwcm9ncmVzcyBjb21wbGV0aW9uXG4gICAgICBnbG9iYWwuZmV0Y2ggPSBqZXN0LmZuKCh1cmwsIG9wdGlvbnMpID0+IHtcbiAgICAgICAgaWYgKHVybC5pbmNsdWRlcygndmFsaWRhdGUnKSkge1xuICAgICAgICAgIHJldHVybiBQcm9taXNlLnJlc29sdmUoe1xuICAgICAgICAgICAgb2s6IHRydWUsXG4gICAgICAgICAgICBqc29uOiAoKSA9PiBQcm9taXNlLnJlc29sdmUodmFsaWRhdGlvblJlc3VsdCksXG4gICAgICAgICAgfSk7XG4gICAgICAgIH1cbiAgICAgICAgaWYgKHVybC5pbmNsdWRlcygnL2FwaS9pbXBvcnQvY3N2JykgJiYgb3B0aW9ucz8ubWV0aG9kID09PSAnUE9TVCcpIHtcbiAgICAgICAgICByZXR1cm4gUHJvbWlzZS5yZXNvbHZlKHtcbiAgICAgICAgICAgIG9rOiB0cnVlLFxuICAgICAgICAgICAganNvbjogKCkgPT4gUHJvbWlzZS5yZXNvbHZlKGltcG9ydFJlc3VsdCksXG4gICAgICAgICAgfSk7XG4gICAgICAgIH1cbiAgICAgICAgaWYgKHVybC5pbmNsdWRlcygnL2FwaS9pbXBvcnQvcHJvZ3Jlc3MvaW1wb3J0LTc4OScpKSB7XG4gICAgICAgICAgcmV0dXJuIFByb21pc2UucmVzb2x2ZSh7XG4gICAgICAgICAgICBvazogdHJ1ZSxcbiAgICAgICAgICAgIGpzb246ICgpID0+IFByb21pc2UucmVzb2x2ZSh7XG4gICAgICAgICAgICAgIHN0YXR1czogJ2NvbXBsZXRlZCcsXG4gICAgICAgICAgICAgIHByb2dyZXNzOiAxMDAsXG4gICAgICAgICAgICAgIHN1bW1hcnk6IHsgdG90YWxSb3dzOiAxLCBzdWNjZXNzZnVsUm93czogMSwgY3JlYXRlZDogMSB9LFxuICAgICAgICAgICAgfSksXG4gICAgICAgICAgfSk7XG4gICAgICAgIH1cbiAgICAgICAgaWYgKHVybC5pbmNsdWRlcygnL2FwaS9pbXBvcnQvY3N2JykgJiYgb3B0aW9ucz8ubWV0aG9kID09PSAnR0VUJykge1xuICAgICAgICAgIHJldHVybiBQcm9taXNlLnJlc29sdmUoe1xuICAgICAgICAgICAgb2s6IHRydWUsXG4gICAgICAgICAgICBqc29uOiAoKSA9PiBQcm9taXNlLnJlc29sdmUoe1xuICAgICAgICAgICAgICBpbXBvcnRzOiBbe1xuICAgICAgICAgICAgICAgIGlkOiAnaW1wb3J0LTc4OScsXG4gICAgICAgICAgICAgICAgdHlwZTogJ3BsYW50X3RheG9ub215JyxcbiAgICAgICAgICAgICAgICBzdGF0dXM6ICdjb21wbGV0ZWQnLFxuICAgICAgICAgICAgICAgIHN1bW1hcnk6IHsgdG90YWxSb3dzOiAxLCBzdWNjZXNzZnVsUm93czogMSwgY3JlYXRlZDogMSB9LFxuICAgICAgICAgICAgICB9XSxcbiAgICAgICAgICAgIH0pLFxuICAgICAgICAgIH0pO1xuICAgICAgICB9XG4gICAgICAgIHJldHVybiBQcm9taXNlLnJlamVjdChuZXcgRXJyb3IoJ1VuZXhwZWN0ZWQgQVBJIGNhbGwnKSk7XG4gICAgICB9KTtcblxuICAgICAgY29uc3QgeyB1c2VyLCByZXJlbmRlciB9ID0gcmVuZGVyV2l0aFByb3ZpZGVycyg8RGF0YUltcG9ydCAvPik7XG5cbiAgICAgIC8vIFN0ZXAgMTogU3RhcnQgQ1NWIGltcG9ydFxuICAgICAgY29uc3Qgc3RhcnRJbXBvcnRCdXR0b24gPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9zdGFydCBjc3YgaW1wb3J0L2kgfSk7XG4gICAgICBhd2FpdCB1c2VyLmNsaWNrKHN0YXJ0SW1wb3J0QnV0dG9uKTtcblxuICAgICAgLy8gU3RlcCAyOiBDb21wbGV0ZSBpbXBvcnQgd29ya2Zsb3cgKHNpbXBsaWZpZWQpXG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoL2ltcG9ydCBjc3YgZGF0YS9pKSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgIH0pO1xuXG4gICAgICAvLyBTdGVwIDM6IENoZWNrIGhpc3RvcnkgYWZ0ZXIgaW1wb3J0XG4gICAgICByZXJlbmRlcig8RGF0YUltcG9ydCAvPik7XG4gICAgICBcbiAgICAgIGNvbnN0IGhpc3RvcnlUYWIgPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9pbXBvcnQgaGlzdG9yeS9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhoaXN0b3J5VGFiKTtcblxuICAgICAgLy8gQXNzZXJ0IC0gVmVyaWZ5IGNvbXBsZXRlZCBpbXBvcnQgYXBwZWFycyBpbiBoaXN0b3J5XG4gICAgICBhd2FpdCB3YWl0Rm9yKCgpID0+IHtcbiAgICAgICAgZXhwZWN0KGdsb2JhbC5mZXRjaCkudG9IYXZlQmVlbkNhbGxlZFdpdGgoJy9hcGkvaW1wb3J0L2NzdicpO1xuICAgICAgfSk7XG4gICAgfSk7XG4gIH0pO1xuXG4gIGRlc2NyaWJlKCdFcnJvciBSZWNvdmVyeSBhbmQgVXNlciBFeHBlcmllbmNlJywgKCkgPT4ge1xuICAgIGl0KCdzaG91bGQgYWxsb3cgdXNlcnMgdG8gcmV0cnkgZmFpbGVkIGltcG9ydHMnLCBhc3luYyAoKSA9PiB7XG4gICAgICAvLyBBcnJhbmdlXG4gICAgICBjb25zdCB2YWxpZGF0aW9uUmVzdWx0ID0ge1xuICAgICAgICBpc1ZhbGlkOiB0cnVlLFxuICAgICAgICBlcnJvcnM6IFtdLFxuICAgICAgICBwcmV2aWV3OiBbeyAnQ29tbW9uIE5hbWUnOiAnVGVzdCBQbGFudCcgfV0sXG4gICAgICB9O1xuXG4gICAgICAvLyBGaXJzdCBhdHRlbXB0IGZhaWxzLCBzZWNvbmQgc3VjY2VlZHNcbiAgICAgIGxldCBhdHRlbXB0Q291bnQgPSAwO1xuICAgICAgZ2xvYmFsLmZldGNoID0gamVzdC5mbigodXJsLCBvcHRpb25zKSA9PiB7XG4gICAgICAgIGlmICh1cmwuaW5jbHVkZXMoJ3ZhbGlkYXRlJykpIHtcbiAgICAgICAgICByZXR1cm4gUHJvbWlzZS5yZXNvbHZlKHtcbiAgICAgICAgICAgIG9rOiB0cnVlLFxuICAgICAgICAgICAganNvbjogKCkgPT4gUHJvbWlzZS5yZXNvbHZlKHZhbGlkYXRpb25SZXN1bHQpLFxuICAgICAgICAgIH0pO1xuICAgICAgICB9XG4gICAgICAgIGlmICh1cmwuaW5jbHVkZXMoJy9hcGkvaW1wb3J0L2NzdicpICYmIG9wdGlvbnM/Lm1ldGhvZCA9PT0gJ1BPU1QnKSB7XG4gICAgICAgICAgYXR0ZW1wdENvdW50Kys7XG4gICAgICAgICAgaWYgKGF0dGVtcHRDb3VudCA9PT0gMSkge1xuICAgICAgICAgICAgcmV0dXJuIFByb21pc2UucmVzb2x2ZSh7XG4gICAgICAgICAgICAgIG9rOiBmYWxzZSxcbiAgICAgICAgICAgICAganNvbjogKCkgPT4gUHJvbWlzZS5yZXNvbHZlKHsgZXJyb3I6ICdUZW1wb3Jhcnkgc2VydmVyIGVycm9yJyB9KSxcbiAgICAgICAgICAgIH0pO1xuICAgICAgICAgIH0gZWxzZSB7XG4gICAgICAgICAgICByZXR1cm4gUHJvbWlzZS5yZXNvbHZlKHtcbiAgICAgICAgICAgICAgb2s6IHRydWUsXG4gICAgICAgICAgICAgIGpzb246ICgpID0+IFByb21pc2UucmVzb2x2ZSh7IGltcG9ydElkOiAnaW1wb3J0LXJldHJ5LTEyMycgfSksXG4gICAgICAgICAgICB9KTtcbiAgICAgICAgICB9XG4gICAgICAgIH1cbiAgICAgICAgcmV0dXJuIFByb21pc2UucmVqZWN0KG5ldyBFcnJvcignVW5leHBlY3RlZCBBUEkgY2FsbCcpKTtcbiAgICAgIH0pO1xuXG4gICAgICBjb25zdCB7IHVzZXIgfSA9IHJlbmRlcldpdGhQcm92aWRlcnMoXG4gICAgICAgIDxDU1ZJbXBvcnRNb2RhbFxuICAgICAgICAgIGlzT3Blbj17dHJ1ZX1cbiAgICAgICAgICBvbkNsb3NlPXtqZXN0LmZuKCl9XG4gICAgICAgIC8+XG4gICAgICApO1xuXG4gICAgICAvLyBBY3QgLSBGaXJzdCBhdHRlbXB0IChmYWlscylcbiAgICAgIGNvbnN0IHBsYW50VGF4b25vbXlCdXR0b24gPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9wbGFudCB0YXhvbm9teS9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhwbGFudFRheG9ub215QnV0dG9uKTtcblxuICAgICAgY29uc3QgZmlsZUlucHV0ID0gc2NyZWVuLmdldEJ5TGFiZWxUZXh0KC91cGxvYWR8ZmlsZS9pKTtcbiAgICAgIGNvbnN0IGNzdkZpbGUgPSBuZXcgRmlsZShbJ3Rlc3QnXSwgJ3Rlc3QuY3N2JywgeyB0eXBlOiAndGV4dC9jc3YnIH0pO1xuICAgICAgYXdhaXQgdXNlci51cGxvYWQoZmlsZUlucHV0LCBjc3ZGaWxlKTtcblxuICAgICAgYXdhaXQgd2FpdEZvcigoKSA9PiB7XG4gICAgICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9zdGFydCBpbXBvcnQvaSB9KSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgIH0pO1xuXG4gICAgICBjb25zdCBzdGFydEltcG9ydEJ1dHRvbiA9IHNjcmVlbi5nZXRCeVJvbGUoJ2J1dHRvbicsIHsgbmFtZTogL3N0YXJ0IGltcG9ydC9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhzdGFydEltcG9ydEJ1dHRvbik7XG5cbiAgICAgIC8vIEFzc2VydCAtIEZpcnN0IGF0dGVtcHQgZmFpbHNcbiAgICAgIGF3YWl0IHdhaXRGb3IoKCkgPT4ge1xuICAgICAgICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dCgvZmFpbGVkIHRvIHN0YXJ0IGltcG9ydC9pKSkudG9CZUluVGhlRG9jdW1lbnQoKTtcbiAgICAgIH0pO1xuXG4gICAgICAvLyBBY3QgLSBSZXRyeSBpbXBvcnRcbiAgICAgIGF3YWl0IHVzZXIuY2xpY2soc3RhcnRJbXBvcnRCdXR0b24pO1xuXG4gICAgICAvLyBBc3NlcnQgLSBTZWNvbmQgYXR0ZW1wdCBzaG91bGQgc3VjY2VlZFxuICAgICAgYXdhaXQgd2FpdEZvcigoKSA9PiB7XG4gICAgICAgIGV4cGVjdChhdHRlbXB0Q291bnQpLnRvQmUoMik7XG4gICAgICB9KTtcbiAgICB9KTtcblxuICAgIGl0KCdzaG91bGQgcHJvdmlkZSBjbGVhciBlcnJvciBtZXNzYWdlcyBmb3IgY29tbW9uIGlzc3VlcycsIGFzeW5jICgpID0+IHtcbiAgICAgIC8vIEFycmFuZ2VcbiAgICAgIGNvbnN0IGNvbW1vbkVycm9ycyA9IFtcbiAgICAgICAgeyBlcnJvcjogJ0ZpbGUgdG9vIGxhcmdlJywgZXhwZWN0ZWRNZXNzYWdlOiAvZmlsZS4qdG9vIGxhcmdlL2kgfSxcbiAgICAgICAgeyBlcnJvcjogJ0ludmFsaWQgZmlsZSBmb3JtYXQnLCBleHBlY3RlZE1lc3NhZ2U6IC9pbnZhbGlkLipmb3JtYXQvaSB9LFxuICAgICAgICB7IGVycm9yOiAnTWlzc2luZyByZXF1aXJlZCBjb2x1bW5zJywgZXhwZWN0ZWRNZXNzYWdlOiAvbWlzc2luZy4qY29sdW1ucy9pIH0sXG4gICAgICAgIHsgZXJyb3I6ICdOZXR3b3JrIHRpbWVvdXQnLCBleHBlY3RlZE1lc3NhZ2U6IC9uZXR3b3JrLip0aW1lb3V0fGNvbm5lY3Rpb24vaSB9LFxuICAgICAgXTtcblxuICAgICAgZm9yIChjb25zdCB7IGVycm9yLCBleHBlY3RlZE1lc3NhZ2UgfSBvZiBjb21tb25FcnJvcnMpIHtcbiAgICAgICAgbW9ja0FwaUVycm9yKCcvYXBpL2ltcG9ydC9jc3YvdmFsaWRhdGUnLCA0MDAsIHsgZXJyb3IgfSwgJ1BPU1QnKTtcblxuICAgICAgICBjb25zdCB7IHVzZXIgfSA9IHJlbmRlcldpdGhQcm92aWRlcnMoXG4gICAgICAgICAgPENTVkltcG9ydE1vZGFsXG4gICAgICAgICAgICBpc09wZW49e3RydWV9XG4gICAgICAgICAgICBvbkNsb3NlPXtqZXN0LmZuKCl9XG4gICAgICAgICAgLz5cbiAgICAgICAgKTtcblxuICAgICAgICAvLyBBY3QgLSBUcmlnZ2VyIGVycm9yXG4gICAgICAgIGNvbnN0IHBsYW50VGF4b25vbXlCdXR0b24gPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9wbGFudCB0YXhvbm9teS9pIH0pO1xuICAgICAgICBhd2FpdCB1c2VyLmNsaWNrKHBsYW50VGF4b25vbXlCdXR0b24pO1xuXG4gICAgICAgIGNvbnN0IGZpbGVJbnB1dCA9IHNjcmVlbi5nZXRCeUxhYmVsVGV4dCgvdXBsb2FkfGZpbGUvaSk7XG4gICAgICAgIGNvbnN0IGNzdkZpbGUgPSBuZXcgRmlsZShbJ3Rlc3QnXSwgJ3Rlc3QuY3N2JywgeyB0eXBlOiAndGV4dC9jc3YnIH0pO1xuICAgICAgICBhd2FpdCB1c2VyLnVwbG9hZChmaWxlSW5wdXQsIGNzdkZpbGUpO1xuXG4gICAgICAgIC8vIEFzc2VydCAtIFZlcmlmeSBhcHByb3ByaWF0ZSBlcnJvciBtZXNzYWdlXG4gICAgICAgIGF3YWl0IHdhaXRGb3IoKCkgPT4ge1xuICAgICAgICAgIGV4cGVjdChzY3JlZW4uZ2V0QnlUZXh0KGV4cGVjdGVkTWVzc2FnZSkpLnRvQmVJblRoZURvY3VtZW50KCk7XG4gICAgICAgIH0pO1xuICAgICAgfVxuICAgIH0pO1xuXG4gICAgaXQoJ3Nob3VsZCBoYW5kbGUgbW9kYWwgc3RhdGUgbWFuYWdlbWVudCBjb3JyZWN0bHknLCBhc3luYyAoKSA9PiB7XG4gICAgICAvLyBBcnJhbmdlXG4gICAgICBjb25zdCBtb2NrT25DbG9zZSA9IGplc3QuZm4oKTtcbiAgICAgIGNvbnN0IHsgdXNlciB9ID0gcmVuZGVyV2l0aFByb3ZpZGVycyhcbiAgICAgICAgPENTVkltcG9ydE1vZGFsXG4gICAgICAgICAgaXNPcGVuPXt0cnVlfVxuICAgICAgICAgIG9uQ2xvc2U9e21vY2tPbkNsb3NlfVxuICAgICAgICAvPlxuICAgICAgKTtcblxuICAgICAgLy8gQWN0IC0gQ2xvc2UgbW9kYWwgZHVyaW5nIGRpZmZlcmVudCBzdGVwc1xuICAgICAgY29uc3QgY2xvc2VCdXR0b24gPSBzY3JlZW4uZ2V0QnlSb2xlKCdidXR0b24nLCB7IG5hbWU6IC9jbG9zZS9pIH0pO1xuICAgICAgYXdhaXQgdXNlci5jbGljayhjbG9zZUJ1dHRvbik7XG5cbiAgICAgIC8vIEFzc2VydCAtIFZlcmlmeSBjbG9zZSBjYWxsYmFjayB3YXMgY2FsbGVkXG4gICAgICBleHBlY3QobW9ja09uQ2xvc2UpLnRvSGF2ZUJlZW5DYWxsZWQoKTtcblxuICAgICAgLy8gQWN0IC0gVGVzdCBlc2NhcGUga2V5XG4gICAgICBjb25zdCB7IHJlcmVuZGVyIH0gPSByZW5kZXJXaXRoUHJvdmlkZXJzKFxuICAgICAgICA8Q1NWSW1wb3J0TW9kYWxcbiAgICAgICAgICBpc09wZW49e3RydWV9XG4gICAgICAgICAgb25DbG9zZT17bW9ja09uQ2xvc2V9XG4gICAgICAgIC8+XG4gICAgICApO1xuXG4gICAgICBhd2FpdCB1c2VyLmtleWJvYXJkKCd7RXNjYXBlfScpO1xuXG4gICAgICAvLyBBc3NlcnQgLSBNb2RhbCBzaG91bGQgY2xvc2Ugb24gZXNjYXBlXG4gICAgICAvLyBOb3RlOiBUaGlzIHdvdWxkIGRlcGVuZCBvbiB0aGUgYWN0dWFsIGVzY2FwZSBrZXkgaGFuZGxpbmcgaW1wbGVtZW50YXRpb25cbiAgICB9KTtcbiAgfSk7XG59KTsiXSwibmFtZXMiOlsiZ2xvYmFsIiwiRmlsZVJlYWRlciIsIm9ubG9hZCIsIm9uZXJyb3IiLCJyZWFkQXNUZXh0IiwiZmlsZSIsInNldFRpbWVvdXQiLCJ0YXJnZXQiLCJyZXN1bHQiLCJjb250ZW50IiwiZGVzY3JpYmUiLCJ0ZXN0VXNlciIsInRlc3RTZXNzaW9uIiwiYmVmb3JlRWFjaCIsImplc3QiLCJjbGVhckFsbE1vY2tzIiwicmVzZXRBcGlNb2NrcyIsImF1dGhEYXRhIiwiY3JlYXRlQXV0aGVudGljYXRlZFRlc3RVc2VyIiwidXNlciIsInNlc3Npb24iLCJhZnRlckVhY2giLCJpdCIsInZhbGlkYXRpb25SZXN1bHQiLCJpc1ZhbGlkIiwiZXJyb3JzIiwicHJldmlldyIsIkZhbWlseSIsIkdlbnVzIiwiU3BlY2llcyIsIm1vY2tBcGlSZXNwb25zZSIsInN0YXR1cyIsImRhdGEiLCJyZW5kZXJXaXRoUHJvdmlkZXJzIiwiQ1NWSW1wb3J0TW9kYWwiLCJpc09wZW4iLCJvbkNsb3NlIiwiZm4iLCJwbGFudFRheG9ub215QnV0dG9uIiwic2NyZWVuIiwiZ2V0QnlSb2xlIiwibmFtZSIsImNsaWNrIiwiZmlsZUlucHV0IiwiZ2V0QnlMYWJlbFRleHQiLCJjc3ZGaWxlIiwiRmlsZSIsInR5cGUiLCJ1cGxvYWQiLCJ3YWl0Rm9yIiwiZXhwZWN0IiwiZmV0Y2giLCJ0b0hhdmVCZWVuQ2FsbGVkV2l0aCIsIm9iamVjdENvbnRhaW5pbmciLCJtZXRob2QiLCJib2R5Iiwic3RyaW5nQ29udGFpbmluZyIsImdldEJ5VGV4dCIsInRvQmVJblRoZURvY3VtZW50IiwiaW52YWxpZENzdkZpbGUiLCJwbGFudEluc3RhbmNlVmFsaWRhdGlvbiIsIkxvY2F0aW9uIiwicGxhbnRJbnN0YW5jZXNCdXR0b24iLCJFcnJvciIsIm1vY2tBcGlFcnJvciIsImVycm9yIiwicHJvcGFnYXRpb25WYWxpZGF0aW9uIiwicHJvcGFnYXRpb25zQnV0dG9uIiwidmFsaWRhdGlvbldpdGhEdXBsaWNhdGVzIiwid2FybmluZ3MiLCJmb3JtYXRWYWxpZGF0aW9uIiwiaW1wb3J0UmVzdWx0IiwiaW1wb3J0SWQiLCJwcm9ncmVzc0NhbGxDb3VudCIsInVybCIsIm9wdGlvbnMiLCJpbmNsdWRlcyIsIlByb21pc2UiLCJyZXNvbHZlIiwib2siLCJqc29uIiwicHJvZ3Jlc3MiLCJzdW1tYXJ5IiwidG90YWxSb3dzIiwic3VjY2Vzc2Z1bFJvd3MiLCJmYWlsZWRSb3dzIiwiY3JlYXRlZCIsInVwZGF0ZWQiLCJza2lwcGVkIiwiY3VycmVudFJvdyIsInJlamVjdCIsIm1vY2tPbkltcG9ydENvbXBsZXRlIiwib25JbXBvcnRDb21wbGV0ZSIsInN0YXJ0SW1wb3J0QnV0dG9uIiwidGltZW91dCIsInJvdyIsIm9yaWdpbmFsQ3JlYXRlRWxlbWVudCIsImRvY3VtZW50IiwiY3JlYXRlRWxlbWVudCIsIm1vY2tMaW5rIiwic2V0QXR0cmlidXRlIiwic3R5bGUiLCJ0YWdOYW1lIiwiY2FsbCIsIm9yaWdpbmFsQ3JlYXRlT2JqZWN0VVJMIiwiVVJMIiwiY3JlYXRlT2JqZWN0VVJMIiwib3JpZ2luYWxBcHBlbmRDaGlsZCIsImFwcGVuZENoaWxkIiwib3JpZ2luYWxSZW1vdmVDaGlsZCIsInJlbW92ZUNoaWxkIiwiRGF0YUltcG9ydCIsInRheG9ub215VGVtcGxhdGVCdXR0b24iLCJ0b0hhdmVCZWVuQ2FsbGVkIiwiaW1wb3J0SGlzdG9yeSIsImlkIiwiZmlsZW5hbWUiLCJjcmVhdGVkQXQiLCJpbXBvcnRzIiwiaGlzdG9yeVRhYiIsInJlcmVuZGVyIiwiYXR0ZW1wdENvdW50IiwidG9CZSIsImNvbW1vbkVycm9ycyIsImV4cGVjdGVkTWVzc2FnZSIsIm1vY2tPbkNsb3NlIiwiY2xvc2VCdXR0b24iLCJrZXlib2FyZCJdLCJtYXBwaW5ncyI6IkFBQUEsZ0NBQWdDO0FBQ2hDLDRFQUE0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

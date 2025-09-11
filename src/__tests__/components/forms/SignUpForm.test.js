@@ -92,7 +92,7 @@ describe('SignUpForm', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/name is required/i)).toBeInTheDocument();
-        expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+        expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument();
         expect(screen.getByText(/password is required/i)).toBeInTheDocument();
       });
 

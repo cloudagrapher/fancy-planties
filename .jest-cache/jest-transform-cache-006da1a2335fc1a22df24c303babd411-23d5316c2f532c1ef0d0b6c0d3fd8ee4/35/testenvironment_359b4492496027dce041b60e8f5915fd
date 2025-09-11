@@ -1,0 +1,31 @@
+20af2bcc531803684206a2fa422477d4
+// Test environment setup utilities
+// This file will be implemented in task 3.1
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get cleanupTestEnvironment () {
+        return cleanupTestEnvironment;
+    },
+    get createTestEnvironment () {
+        return createTestEnvironment;
+    }
+});
+const createTestEnvironment = ()=>{
+    // TODO: Implement in task 3.1
+    throw new Error('Test environment setup not yet implemented');
+};
+const cleanupTestEnvironment = ()=>{
+    // TODO: Implement in task 3.1
+    throw new Error('Test environment cleanup not yet implemented');
+};
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL3Rlc3QtdXRpbHMvc2V0dXAvdGVzdC1lbnZpcm9ubWVudC5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBUZXN0IGVudmlyb25tZW50IHNldHVwIHV0aWxpdGllc1xuLy8gVGhpcyBmaWxlIHdpbGwgYmUgaW1wbGVtZW50ZWQgaW4gdGFzayAzLjFcblxuZXhwb3J0IGNvbnN0IGNyZWF0ZVRlc3RFbnZpcm9ubWVudCA9ICgpID0+IHtcbiAgLy8gVE9ETzogSW1wbGVtZW50IGluIHRhc2sgMy4xXG4gIHRocm93IG5ldyBFcnJvcignVGVzdCBlbnZpcm9ubWVudCBzZXR1cCBub3QgeWV0IGltcGxlbWVudGVkJyk7XG59O1xuXG5leHBvcnQgY29uc3QgY2xlYW51cFRlc3RFbnZpcm9ubWVudCA9ICgpID0+IHtcbiAgLy8gVE9ETzogSW1wbGVtZW50IGluIHRhc2sgMy4xXG4gIHRocm93IG5ldyBFcnJvcignVGVzdCBlbnZpcm9ubWVudCBjbGVhbnVwIG5vdCB5ZXQgaW1wbGVtZW50ZWQnKTtcbn07Il0sIm5hbWVzIjpbImNsZWFudXBUZXN0RW52aXJvbm1lbnQiLCJjcmVhdGVUZXN0RW52aXJvbm1lbnQiLCJFcnJvciJdLCJtYXBwaW5ncyI6IkFBQUEsbUNBQW1DO0FBQ25DLDRDQUE0Qzs7Ozs7Ozs7Ozs7O1FBTy9CQTtlQUFBQTs7UUFMQUM7ZUFBQUE7OztBQUFOLE1BQU1BLHdCQUF3QjtJQUNuQyw4QkFBOEI7SUFDOUIsTUFBTSxJQUFJQyxNQUFNO0FBQ2xCO0FBRU8sTUFBTUYseUJBQXlCO0lBQ3BDLDhCQUE4QjtJQUM5QixNQUFNLElBQUlFLE1BQU07QUFDbEIifQ==

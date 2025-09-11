@@ -1,0 +1,48 @@
+801bbb841d0f91478a99abc5042fa94b
+// Global test setup - only essential browser API mocks and Next.js integration
+"use strict";
+// Essential Next.js mocks - moved to test-utils for better organization
+jest.mock('next/navigation', ()=>require('./src/test-utils/mocks/nextjs-mocks').navigationMock);
+jest.mock('next/image', ()=>require('./src/test-utils/mocks/nextjs-mocks').imageMock);
+jest.mock('next/server', ()=>require('./src/test-utils/mocks/nextjs-mocks').serverMock);
+jest.mock('next/headers', ()=>require('./src/test-utils/mocks/nextjs-mocks').headersMock);
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+require("@testing-library/jest-dom");
+// Essential Node.js polyfills for Jest environment
+global.setImmediate = global.setImmediate || ((fn, ...args)=>setTimeout(fn, 0, ...args));
+global.clearImmediate = global.clearImmediate || ((id)=>clearTimeout(id));
+// Process environment setup
+if (typeof global.process === 'undefined') {
+    global.process = {
+        env: {
+            NODE_ENV: 'test'
+        },
+        nextTick: (fn)=>setTimeout(fn, 0)
+    };
+}
+// Load environment variables for tests
+require('dotenv').config({
+    path: '.env.local'
+});
+// Set database URL for tests to use localhost instead of postgres hostname
+process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+// Essential browser API mocks
+require('./src/test-utils/setup/browser-mocks');
+// Component mocks are now handled per-test basis, not globally
+// Global test cleanup - minimal and focused
+beforeEach(()=>{
+    // Clear all mocks before each test
+    jest.clearAllMocks();
+    // Reset DOM
+    if (typeof document !== 'undefined') {
+        document.body.innerHTML = '';
+    }
+});
+afterEach(()=>{
+    // Clean up timers
+    jest.clearAllTimers();
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvamVzdC5zZXR1cC5qcyJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBHbG9iYWwgdGVzdCBzZXR1cCAtIG9ubHkgZXNzZW50aWFsIGJyb3dzZXIgQVBJIG1vY2tzIGFuZCBOZXh0LmpzIGludGVncmF0aW9uXG5pbXBvcnQgJ0B0ZXN0aW5nLWxpYnJhcnkvamVzdC1kb20nO1xuXG4vLyBFc3NlbnRpYWwgTm9kZS5qcyBwb2x5ZmlsbHMgZm9yIEplc3QgZW52aXJvbm1lbnRcbmdsb2JhbC5zZXRJbW1lZGlhdGUgPSBnbG9iYWwuc2V0SW1tZWRpYXRlIHx8ICgoZm4sIC4uLmFyZ3MpID0+IHNldFRpbWVvdXQoZm4sIDAsIC4uLmFyZ3MpKTtcbmdsb2JhbC5jbGVhckltbWVkaWF0ZSA9IGdsb2JhbC5jbGVhckltbWVkaWF0ZSB8fCAoKGlkKSA9PiBjbGVhclRpbWVvdXQoaWQpKTtcblxuLy8gUHJvY2VzcyBlbnZpcm9ubWVudCBzZXR1cFxuaWYgKHR5cGVvZiBnbG9iYWwucHJvY2VzcyA9PT0gJ3VuZGVmaW5lZCcpIHtcbiAgZ2xvYmFsLnByb2Nlc3MgPSB7XG4gICAgZW52OiB7IE5PREVfRU5WOiAndGVzdCcgfSxcbiAgICBuZXh0VGljazogKGZuKSA9PiBzZXRUaW1lb3V0KGZuLCAwKSxcbiAgfTtcbn1cblxuLy8gTG9hZCBlbnZpcm9ubWVudCB2YXJpYWJsZXMgZm9yIHRlc3RzXG5yZXF1aXJlKCdkb3RlbnYnKS5jb25maWcoeyBwYXRoOiAnLmVudi5sb2NhbCcgfSk7XG5cbi8vIFNldCBkYXRhYmFzZSBVUkwgZm9yIHRlc3RzIHRvIHVzZSBsb2NhbGhvc3QgaW5zdGVhZCBvZiBwb3N0Z3JlcyBob3N0bmFtZVxucHJvY2Vzcy5lbnYuREFUQUJBU0VfVVJMID0gJ3Bvc3RncmVzcWw6Ly9wb3N0Z3Jlczpwb3N0Z3Jlc0Bsb2NhbGhvc3Q6NTQzMy9mYW5jeV9wbGFudGllcyc7XG5cbi8vIEVzc2VudGlhbCBOZXh0LmpzIG1vY2tzIC0gbW92ZWQgdG8gdGVzdC11dGlscyBmb3IgYmV0dGVyIG9yZ2FuaXphdGlvblxuamVzdC5tb2NrKCduZXh0L25hdmlnYXRpb24nLCAoKSA9PiByZXF1aXJlKCcuL3NyYy90ZXN0LXV0aWxzL21vY2tzL25leHRqcy1tb2NrcycpLm5hdmlnYXRpb25Nb2NrKTtcbmplc3QubW9jaygnbmV4dC9pbWFnZScsICgpID0+IHJlcXVpcmUoJy4vc3JjL3Rlc3QtdXRpbHMvbW9ja3MvbmV4dGpzLW1vY2tzJykuaW1hZ2VNb2NrKTtcbmplc3QubW9jaygnbmV4dC9zZXJ2ZXInLCAoKSA9PiByZXF1aXJlKCcuL3NyYy90ZXN0LXV0aWxzL21vY2tzL25leHRqcy1tb2NrcycpLnNlcnZlck1vY2spO1xuamVzdC5tb2NrKCduZXh0L2hlYWRlcnMnLCAoKSA9PiByZXF1aXJlKCcuL3NyYy90ZXN0LXV0aWxzL21vY2tzL25leHRqcy1tb2NrcycpLmhlYWRlcnNNb2NrKTtcblxuLy8gRXNzZW50aWFsIGJyb3dzZXIgQVBJIG1vY2tzXG5yZXF1aXJlKCcuL3NyYy90ZXN0LXV0aWxzL3NldHVwL2Jyb3dzZXItbW9ja3MnKTtcblxuLy8gQ29tcG9uZW50IG1vY2tzIGFyZSBub3cgaGFuZGxlZCBwZXItdGVzdCBiYXNpcywgbm90IGdsb2JhbGx5XG5cbi8vIEdsb2JhbCB0ZXN0IGNsZWFudXAgLSBtaW5pbWFsIGFuZCBmb2N1c2VkXG5iZWZvcmVFYWNoKCgpID0+IHtcbiAgLy8gQ2xlYXIgYWxsIG1vY2tzIGJlZm9yZSBlYWNoIHRlc3RcbiAgamVzdC5jbGVhckFsbE1vY2tzKCk7XG4gIFxuICAvLyBSZXNldCBET01cbiAgaWYgKHR5cGVvZiBkb2N1bWVudCAhPT0gJ3VuZGVmaW5lZCcpIHtcbiAgICBkb2N1bWVudC5ib2R5LmlubmVySFRNTCA9ICcnO1xuICB9XG59KTtcblxuYWZ0ZXJFYWNoKCgpID0+IHtcbiAgLy8gQ2xlYW4gdXAgdGltZXJzXG4gIGplc3QuY2xlYXJBbGxUaW1lcnMoKTtcbn0pOyJdLCJuYW1lcyI6WyJqZXN0IiwibW9jayIsInJlcXVpcmUiLCJuYXZpZ2F0aW9uTW9jayIsImltYWdlTW9jayIsInNlcnZlck1vY2siLCJoZWFkZXJzTW9jayIsImdsb2JhbCIsInNldEltbWVkaWF0ZSIsImZuIiwiYXJncyIsInNldFRpbWVvdXQiLCJjbGVhckltbWVkaWF0ZSIsImlkIiwiY2xlYXJUaW1lb3V0IiwicHJvY2VzcyIsImVudiIsIk5PREVfRU5WIiwibmV4dFRpY2siLCJjb25maWciLCJwYXRoIiwiREFUQUJBU0VfVVJMIiwiYmVmb3JlRWFjaCIsImNsZWFyQWxsTW9ja3MiLCJkb2N1bWVudCIsImJvZHkiLCJpbm5lckhUTUwiLCJhZnRlckVhY2giLCJjbGVhckFsbFRpbWVycyJdLCJtYXBwaW5ncyI6IkFBQUEsK0VBQStFOztBQXFCL0Usd0VBQXdFO0FBQ3hFQSxLQUFLQyxJQUFJLENBQUMsbUJBQW1CLElBQU1DLFFBQVEsdUNBQXVDQyxjQUFjO0FBQ2hHSCxLQUFLQyxJQUFJLENBQUMsY0FBYyxJQUFNQyxRQUFRLHVDQUF1Q0UsU0FBUztBQUN0RkosS0FBS0MsSUFBSSxDQUFDLGVBQWUsSUFBTUMsUUFBUSx1Q0FBdUNHLFVBQVU7QUFDeEZMLEtBQUtDLElBQUksQ0FBQyxnQkFBZ0IsSUFBTUMsUUFBUSx1Q0FBdUNJLFdBQVc7Ozs7UUF4Qm5GO0FBRVAsbURBQW1EO0FBQ25EQyxPQUFPQyxZQUFZLEdBQUdELE9BQU9DLFlBQVksSUFBSyxDQUFBLENBQUNDLElBQUksR0FBR0MsT0FBU0MsV0FBV0YsSUFBSSxNQUFNQyxLQUFJO0FBQ3hGSCxPQUFPSyxjQUFjLEdBQUdMLE9BQU9LLGNBQWMsSUFBSyxDQUFBLENBQUNDLEtBQU9DLGFBQWFELEdBQUU7QUFFekUsNEJBQTRCO0FBQzVCLElBQUksT0FBT04sT0FBT1EsT0FBTyxLQUFLLGFBQWE7SUFDekNSLE9BQU9RLE9BQU8sR0FBRztRQUNmQyxLQUFLO1lBQUVDLFVBQVU7UUFBTztRQUN4QkMsVUFBVSxDQUFDVCxLQUFPRSxXQUFXRixJQUFJO0lBQ25DO0FBQ0Y7QUFFQSx1Q0FBdUM7QUFDdkNQLFFBQVEsVUFBVWlCLE1BQU0sQ0FBQztJQUFFQyxNQUFNO0FBQWE7QUFFOUMsMkVBQTJFO0FBQzNFTCxRQUFRQyxHQUFHLENBQUNLLFlBQVksR0FBRztBQVEzQiw4QkFBOEI7QUFDOUJuQixRQUFRO0FBRVIsK0RBQStEO0FBRS9ELDRDQUE0QztBQUM1Q29CLFdBQVc7SUFDVCxtQ0FBbUM7SUFDbkN0QixLQUFLdUIsYUFBYTtJQUVsQixZQUFZO0lBQ1osSUFBSSxPQUFPQyxhQUFhLGFBQWE7UUFDbkNBLFNBQVNDLElBQUksQ0FBQ0MsU0FBUyxHQUFHO0lBQzVCO0FBQ0Y7QUFFQUMsVUFBVTtJQUNSLGtCQUFrQjtJQUNsQjNCLEtBQUs0QixjQUFjO0FBQ3JCIn0=

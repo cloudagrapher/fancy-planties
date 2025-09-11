@@ -20,10 +20,12 @@ let userCounter = 0;
  */
 export const createTestUser = (overrides = {}) => {
   userCounter++;
+  const timestamp = Date.now();
+  const randomSuffix = Math.floor(Math.random() * 10000);
   
   const baseUser = {
-    id: userCounter,
-    email: `testuser${userCounter}@example.com`,
+    // Remove id - let database auto-generate it
+    email: `testuser${userCounter}_${timestamp}_${randomSuffix}@example.com`,
     name: `Test User ${userCounter}`,
     hashedPassword: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/RQ/dQ5YQm', // 'password123'
     isCurator: false,

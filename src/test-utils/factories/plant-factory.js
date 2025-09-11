@@ -12,14 +12,16 @@ let careRecordCounter = 0;
  */
 export const createTestPlant = (overrides = {}) => {
   plantCounter++;
+  const timestamp = Date.now();
+  const randomSuffix = Math.floor(Math.random() * 10000);
   
   const basePlant = {
-    id: plantCounter,
-    family: `Testaceae${plantCounter}`,
-    genus: `Testus${plantCounter}`,
-    species: `testicus${plantCounter}`,
-    cultivar: plantCounter % 2 === 0 ? `'Variegata${plantCounter}'` : null,
-    commonName: `Test Plant ${plantCounter}`,
+    // Remove id - let database auto-generate it
+    family: `Testaceae${plantCounter}_${timestamp}`,
+    genus: `Testus${plantCounter}_${timestamp}`,
+    species: `testicus${plantCounter}_${timestamp}`,
+    cultivar: plantCounter % 2 === 0 ? `'Variegata${plantCounter}_${randomSuffix}'` : null,
+    commonName: `Test Plant ${plantCounter}_${timestamp}`,
     isVerified: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -39,12 +41,9 @@ export const createTestPlant = (overrides = {}) => {
 export const createTestPlantInstance = (overrides = {}) => {
   plantInstanceCounter++;
   
-  const plant = createTestPlant();
-  
   const basePlantInstance = {
-    id: plantInstanceCounter,
-    plantId: plant.id,
-    userId: 1,
+    // Remove id - let database auto-generate it
+    // plantId and userId should be provided via overrides
     nickname: `My Test Plant ${plantInstanceCounter}`,
     location: `Test Location ${plantInstanceCounter}`,
     fertilizerSchedule: 'every_4_weeks',
@@ -55,7 +54,6 @@ export const createTestPlantInstance = (overrides = {}) => {
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
-    plant: plant,
   };
   
   return {

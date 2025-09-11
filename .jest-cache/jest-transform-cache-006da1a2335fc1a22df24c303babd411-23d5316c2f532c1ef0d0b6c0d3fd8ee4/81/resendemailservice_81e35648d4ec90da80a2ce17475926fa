@@ -1,0 +1,188 @@
+9c13c0da4f077ab3c846424693b5029a
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get ResendEmailService () {
+        return ResendEmailService;
+    },
+    get createEmailService () {
+        return createEmailService;
+    }
+});
+require("server-only");
+const _resend = require("resend");
+const _emailservice = require("./email-service");
+const _emailservicemonitor = require("./email-service-monitor");
+class ResendEmailService {
+    constructor(config){
+        this.resend = new _resend.Resend(config.apiKey);
+        this.config = config;
+    }
+    async sendVerificationEmail(email, code, name) {
+        const startTime = Date.now();
+        try {
+            const { data, error } = await this.resend.emails.send({
+                from: `${this.config.fromName} <${this.config.fromEmail}>`,
+                to: [
+                    email
+                ],
+                subject: 'Verify your email address',
+                html: this.generateVerificationEmailTemplate(code, name),
+                text: this.generateVerificationEmailText(code, name)
+            });
+            const responseTime = Date.now() - startTime;
+            if (error) {
+                console.error('Resend API error:', error);
+                // Map Resend errors to our error types
+                let emailError;
+                if (error.message?.includes('quota') || error.message?.includes('limit')) {
+                    emailError = new _emailservice.EmailServiceError('Email quota exceeded', 'QUOTA_EXCEEDED');
+                } else if (error.message?.includes('invalid') && error.message?.includes('email')) {
+                    emailError = new _emailservice.EmailServiceError('Invalid email address', 'INVALID_EMAIL');
+                } else {
+                    emailError = new _emailservice.EmailServiceError(`Resend API error: ${error.message}`, 'API_ERROR');
+                }
+                // Record failure in monitor
+                _emailservicemonitor.emailServiceMonitor.recordFailure({
+                    message: emailError.message,
+                    code: emailError.code
+                }, responseTime);
+                throw emailError;
+            }
+            // Record success in monitor
+            _emailservicemonitor.emailServiceMonitor.recordSuccess(responseTime);
+            console.log('Verification email sent successfully:', data?.id);
+            return true;
+        } catch (error) {
+            const responseTime = Date.now() - startTime;
+            if (error instanceof _emailservice.EmailServiceError) {
+                // Already recorded in monitor above
+                throw error;
+            }
+            console.error('Network error sending email:', error);
+            const networkError = new _emailservice.EmailServiceError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`, 'NETWORK_ERROR');
+            // Record network error in monitor
+            _emailservicemonitor.emailServiceMonitor.recordFailure({
+                message: networkError.message,
+                code: networkError.code
+            }, responseTime);
+            throw networkError;
+        }
+    }
+    generateVerificationEmailTemplate(code, name) {
+        return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verify Your Email</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #22c55e;
+            margin-bottom: 10px;
+          }
+          .verification-code {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 30px 0;
+          }
+          .code {
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            color: #22c55e;
+            font-family: 'Courier New', monospace;
+          }
+          .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            font-size: 14px;
+            color: #6c757d;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">🌱 Fancy Planties</div>
+          <h1>Verify Your Email Address</h1>
+        </div>
+        
+        <p>Hi ${name},</p>
+        
+        <p>Welcome to Fancy Planties! To complete your account setup, please verify your email address by entering the verification code below:</p>
+        
+        <div class="verification-code">
+          <div class="code">${code}</div>
+          <p style="margin: 10px 0 0 0; font-size: 14px; color: #6c757d;">
+            This code expires in 10 minutes
+          </p>
+        </div>
+        
+        <p>If you didn't create an account with Fancy Planties, you can safely ignore this email.</p>
+        
+        <div class="footer">
+          <p>This is an automated message from Fancy Planties. Please do not reply to this email.</p>
+          <p>Need help? Contact us at support@fancy-planties.cloudagrapher.com</p>
+        </div>
+      </body>
+      </html>
+    `;
+    }
+    generateVerificationEmailText(code, name) {
+        return `
+Hi ${name},
+
+Welcome to Fancy Planties! To complete your account setup, please verify your email address by entering the verification code below:
+
+Verification Code: ${code}
+
+This code expires in 10 minutes.
+
+If you didn't create an account with Fancy Planties, you can safely ignore this email.
+
+---
+This is an automated message from Fancy Planties. Please do not reply to this email.
+Need help? Contact us at support@fancy-planties.cloudagrapher.com
+    `.trim();
+    }
+}
+function createEmailService() {
+    const config = {
+        apiKey: process.env.RESEND_API_KEY,
+        fromEmail: process.env.FROM_EMAIL || 'send.mail.fancy-planties.cloudagrapher.com',
+        fromName: process.env.FROM_NAME || 'Fancy Planties'
+    };
+    if (!config.apiKey) {
+        throw new Error('RESEND_API_KEY environment variable is required');
+    }
+    return new ResendEmailService(config);
+}
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL2xpYi9zZXJ2aWNlcy9yZXNlbmQtZW1haWwtc2VydmljZS50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgJ3NlcnZlci1vbmx5JztcbmltcG9ydCB7IFJlc2VuZCB9IGZyb20gJ3Jlc2VuZCc7XG5pbXBvcnQgeyBFbWFpbFNlcnZpY2UsIEVtYWlsQ29uZmlnLCBFbWFpbFNlcnZpY2VFcnJvciB9IGZyb20gJy4vZW1haWwtc2VydmljZSc7XG5pbXBvcnQgeyBlbWFpbFNlcnZpY2VNb25pdG9yIH0gZnJvbSAnLi9lbWFpbC1zZXJ2aWNlLW1vbml0b3InO1xuXG5leHBvcnQgY2xhc3MgUmVzZW5kRW1haWxTZXJ2aWNlIGltcGxlbWVudHMgRW1haWxTZXJ2aWNlIHtcbiAgcHJpdmF0ZSByZXNlbmQ6IFJlc2VuZDtcbiAgcHJpdmF0ZSBjb25maWc6IEVtYWlsQ29uZmlnO1xuXG4gIGNvbnN0cnVjdG9yKGNvbmZpZzogRW1haWxDb25maWcpIHtcbiAgICB0aGlzLnJlc2VuZCA9IG5ldyBSZXNlbmQoY29uZmlnLmFwaUtleSk7XG4gICAgdGhpcy5jb25maWcgPSBjb25maWc7XG4gIH1cblxuICBhc3luYyBzZW5kVmVyaWZpY2F0aW9uRW1haWwoZW1haWw6IHN0cmluZywgY29kZTogc3RyaW5nLCBuYW1lOiBzdHJpbmcpOiBQcm9taXNlPGJvb2xlYW4+IHtcbiAgICBjb25zdCBzdGFydFRpbWUgPSBEYXRlLm5vdygpO1xuICAgIFxuICAgIHRyeSB7XG4gICAgICBjb25zdCB7IGRhdGEsIGVycm9yIH0gPSBhd2FpdCB0aGlzLnJlc2VuZC5lbWFpbHMuc2VuZCh7XG4gICAgICAgIGZyb206IGAke3RoaXMuY29uZmlnLmZyb21OYW1lfSA8JHt0aGlzLmNvbmZpZy5mcm9tRW1haWx9PmAsXG4gICAgICAgIHRvOiBbZW1haWxdLFxuICAgICAgICBzdWJqZWN0OiAnVmVyaWZ5IHlvdXIgZW1haWwgYWRkcmVzcycsXG4gICAgICAgIGh0bWw6IHRoaXMuZ2VuZXJhdGVWZXJpZmljYXRpb25FbWFpbFRlbXBsYXRlKGNvZGUsIG5hbWUpLFxuICAgICAgICB0ZXh0OiB0aGlzLmdlbmVyYXRlVmVyaWZpY2F0aW9uRW1haWxUZXh0KGNvZGUsIG5hbWUpLFxuICAgICAgfSk7XG5cbiAgICAgIGNvbnN0IHJlc3BvbnNlVGltZSA9IERhdGUubm93KCkgLSBzdGFydFRpbWU7XG5cbiAgICAgIGlmIChlcnJvcikge1xuICAgICAgICBjb25zb2xlLmVycm9yKCdSZXNlbmQgQVBJIGVycm9yOicsIGVycm9yKTtcbiAgICAgICAgXG4gICAgICAgIC8vIE1hcCBSZXNlbmQgZXJyb3JzIHRvIG91ciBlcnJvciB0eXBlc1xuICAgICAgICBsZXQgZW1haWxFcnJvcjogRW1haWxTZXJ2aWNlRXJyb3I7XG4gICAgICAgIGlmIChlcnJvci5tZXNzYWdlPy5pbmNsdWRlcygncXVvdGEnKSB8fCBlcnJvci5tZXNzYWdlPy5pbmNsdWRlcygnbGltaXQnKSkge1xuICAgICAgICAgIGVtYWlsRXJyb3IgPSBuZXcgRW1haWxTZXJ2aWNlRXJyb3IoJ0VtYWlsIHF1b3RhIGV4Y2VlZGVkJywgJ1FVT1RBX0VYQ0VFREVEJyk7XG4gICAgICAgIH0gZWxzZSBpZiAoZXJyb3IubWVzc2FnZT8uaW5jbHVkZXMoJ2ludmFsaWQnKSAmJiBlcnJvci5tZXNzYWdlPy5pbmNsdWRlcygnZW1haWwnKSkge1xuICAgICAgICAgIGVtYWlsRXJyb3IgPSBuZXcgRW1haWxTZXJ2aWNlRXJyb3IoJ0ludmFsaWQgZW1haWwgYWRkcmVzcycsICdJTlZBTElEX0VNQUlMJyk7XG4gICAgICAgIH0gZWxzZSB7XG4gICAgICAgICAgZW1haWxFcnJvciA9IG5ldyBFbWFpbFNlcnZpY2VFcnJvcihgUmVzZW5kIEFQSSBlcnJvcjogJHtlcnJvci5tZXNzYWdlfWAsICdBUElfRVJST1InKTtcbiAgICAgICAgfVxuICAgICAgICBcbiAgICAgICAgLy8gUmVjb3JkIGZhaWx1cmUgaW4gbW9uaXRvclxuICAgICAgICBlbWFpbFNlcnZpY2VNb25pdG9yLnJlY29yZEZhaWx1cmUoXG4gICAgICAgICAgeyBtZXNzYWdlOiBlbWFpbEVycm9yLm1lc3NhZ2UsIGNvZGU6IGVtYWlsRXJyb3IuY29kZSB9LFxuICAgICAgICAgIHJlc3BvbnNlVGltZVxuICAgICAgICApO1xuICAgICAgICBcbiAgICAgICAgdGhyb3cgZW1haWxFcnJvcjtcbiAgICAgIH1cblxuICAgICAgLy8gUmVjb3JkIHN1Y2Nlc3MgaW4gbW9uaXRvclxuICAgICAgZW1haWxTZXJ2aWNlTW9uaXRvci5yZWNvcmRTdWNjZXNzKHJlc3BvbnNlVGltZSk7XG4gICAgICBcbiAgICAgIGNvbnNvbGUubG9nKCdWZXJpZmljYXRpb24gZW1haWwgc2VudCBzdWNjZXNzZnVsbHk6JywgZGF0YT8uaWQpO1xuICAgICAgcmV0dXJuIHRydWU7XG4gICAgICBcbiAgICB9IGNhdGNoIChlcnJvcikge1xuICAgICAgY29uc3QgcmVzcG9uc2VUaW1lID0gRGF0ZS5ub3coKSAtIHN0YXJ0VGltZTtcbiAgICAgIFxuICAgICAgaWYgKGVycm9yIGluc3RhbmNlb2YgRW1haWxTZXJ2aWNlRXJyb3IpIHtcbiAgICAgICAgLy8gQWxyZWFkeSByZWNvcmRlZCBpbiBtb25pdG9yIGFib3ZlXG4gICAgICAgIHRocm93IGVycm9yO1xuICAgICAgfVxuICAgICAgXG4gICAgICBjb25zb2xlLmVycm9yKCdOZXR3b3JrIGVycm9yIHNlbmRpbmcgZW1haWw6JywgZXJyb3IpO1xuICAgICAgY29uc3QgbmV0d29ya0Vycm9yID0gbmV3IEVtYWlsU2VydmljZUVycm9yKFxuICAgICAgICBgTmV0d29yayBlcnJvcjogJHtlcnJvciBpbnN0YW5jZW9mIEVycm9yID8gZXJyb3IubWVzc2FnZSA6ICdVbmtub3duIGVycm9yJ31gLFxuICAgICAgICAnTkVUV09SS19FUlJPUidcbiAgICAgICk7XG4gICAgICBcbiAgICAgIC8vIFJlY29yZCBuZXR3b3JrIGVycm9yIGluIG1vbml0b3JcbiAgICAgIGVtYWlsU2VydmljZU1vbml0b3IucmVjb3JkRmFpbHVyZShcbiAgICAgICAgeyBtZXNzYWdlOiBuZXR3b3JrRXJyb3IubWVzc2FnZSwgY29kZTogbmV0d29ya0Vycm9yLmNvZGUgfSxcbiAgICAgICAgcmVzcG9uc2VUaW1lXG4gICAgICApO1xuICAgICAgXG4gICAgICB0aHJvdyBuZXR3b3JrRXJyb3I7XG4gICAgfVxuICB9XG5cbiAgcHJpdmF0ZSBnZW5lcmF0ZVZlcmlmaWNhdGlvbkVtYWlsVGVtcGxhdGUoY29kZTogc3RyaW5nLCBuYW1lOiBzdHJpbmcpOiBzdHJpbmcge1xuICAgIHJldHVybiBgXG4gICAgICA8IURPQ1RZUEUgaHRtbD5cbiAgICAgIDxodG1sIGxhbmc9XCJlblwiPlxuICAgICAgPGhlYWQ+XG4gICAgICAgIDxtZXRhIGNoYXJzZXQ9XCJVVEYtOFwiPlxuICAgICAgICA8bWV0YSBuYW1lPVwidmlld3BvcnRcIiBjb250ZW50PVwid2lkdGg9ZGV2aWNlLXdpZHRoLCBpbml0aWFsLXNjYWxlPTEuMFwiPlxuICAgICAgICA8dGl0bGU+VmVyaWZ5IFlvdXIgRW1haWw8L3RpdGxlPlxuICAgICAgICA8c3R5bGU+XG4gICAgICAgICAgYm9keSB7XG4gICAgICAgICAgICBmb250LWZhbWlseTogLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCAnU2Vnb2UgVUknLCBSb2JvdG8sIHNhbnMtc2VyaWY7XG4gICAgICAgICAgICBsaW5lLWhlaWdodDogMS42O1xuICAgICAgICAgICAgY29sb3I6ICMzMzM7XG4gICAgICAgICAgICBtYXgtd2lkdGg6IDYwMHB4O1xuICAgICAgICAgICAgbWFyZ2luOiAwIGF1dG87XG4gICAgICAgICAgICBwYWRkaW5nOiAyMHB4O1xuICAgICAgICAgIH1cbiAgICAgICAgICAuaGVhZGVyIHtcbiAgICAgICAgICAgIHRleHQtYWxpZ246IGNlbnRlcjtcbiAgICAgICAgICAgIG1hcmdpbi1ib3R0b206IDMwcHg7XG4gICAgICAgICAgfVxuICAgICAgICAgIC5sb2dvIHtcbiAgICAgICAgICAgIGZvbnQtc2l6ZTogMjRweDtcbiAgICAgICAgICAgIGZvbnQtd2VpZ2h0OiBib2xkO1xuICAgICAgICAgICAgY29sb3I6ICMyMmM1NWU7XG4gICAgICAgICAgICBtYXJnaW4tYm90dG9tOiAxMHB4O1xuICAgICAgICAgIH1cbiAgICAgICAgICAudmVyaWZpY2F0aW9uLWNvZGUge1xuICAgICAgICAgICAgYmFja2dyb3VuZDogI2Y4ZjlmYTtcbiAgICAgICAgICAgIGJvcmRlcjogMnB4IHNvbGlkICNlOWVjZWY7XG4gICAgICAgICAgICBib3JkZXItcmFkaXVzOiA4cHg7XG4gICAgICAgICAgICBwYWRkaW5nOiAyMHB4O1xuICAgICAgICAgICAgdGV4dC1hbGlnbjogY2VudGVyO1xuICAgICAgICAgICAgbWFyZ2luOiAzMHB4IDA7XG4gICAgICAgICAgfVxuICAgICAgICAgIC5jb2RlIHtcbiAgICAgICAgICAgIGZvbnQtc2l6ZTogMzJweDtcbiAgICAgICAgICAgIGZvbnQtd2VpZ2h0OiBib2xkO1xuICAgICAgICAgICAgbGV0dGVyLXNwYWNpbmc6IDRweDtcbiAgICAgICAgICAgIGNvbG9yOiAjMjJjNTVlO1xuICAgICAgICAgICAgZm9udC1mYW1pbHk6ICdDb3VyaWVyIE5ldycsIG1vbm9zcGFjZTtcbiAgICAgICAgICB9XG4gICAgICAgICAgLmZvb3RlciB7XG4gICAgICAgICAgICBtYXJnaW4tdG9wOiAzMHB4O1xuICAgICAgICAgICAgcGFkZGluZy10b3A6IDIwcHg7XG4gICAgICAgICAgICBib3JkZXItdG9wOiAxcHggc29saWQgI2U5ZWNlZjtcbiAgICAgICAgICAgIGZvbnQtc2l6ZTogMTRweDtcbiAgICAgICAgICAgIGNvbG9yOiAjNmM3NTdkO1xuICAgICAgICAgIH1cbiAgICAgICAgPC9zdHlsZT5cbiAgICAgIDwvaGVhZD5cbiAgICAgIDxib2R5PlxuICAgICAgICA8ZGl2IGNsYXNzPVwiaGVhZGVyXCI+XG4gICAgICAgICAgPGRpdiBjbGFzcz1cImxvZ29cIj7wn4yxIEZhbmN5IFBsYW50aWVzPC9kaXY+XG4gICAgICAgICAgPGgxPlZlcmlmeSBZb3VyIEVtYWlsIEFkZHJlc3M8L2gxPlxuICAgICAgICA8L2Rpdj5cbiAgICAgICAgXG4gICAgICAgIDxwPkhpICR7bmFtZX0sPC9wPlxuICAgICAgICBcbiAgICAgICAgPHA+V2VsY29tZSB0byBGYW5jeSBQbGFudGllcyEgVG8gY29tcGxldGUgeW91ciBhY2NvdW50IHNldHVwLCBwbGVhc2UgdmVyaWZ5IHlvdXIgZW1haWwgYWRkcmVzcyBieSBlbnRlcmluZyB0aGUgdmVyaWZpY2F0aW9uIGNvZGUgYmVsb3c6PC9wPlxuICAgICAgICBcbiAgICAgICAgPGRpdiBjbGFzcz1cInZlcmlmaWNhdGlvbi1jb2RlXCI+XG4gICAgICAgICAgPGRpdiBjbGFzcz1cImNvZGVcIj4ke2NvZGV9PC9kaXY+XG4gICAgICAgICAgPHAgc3R5bGU9XCJtYXJnaW46IDEwcHggMCAwIDA7IGZvbnQtc2l6ZTogMTRweDsgY29sb3I6ICM2Yzc1N2Q7XCI+XG4gICAgICAgICAgICBUaGlzIGNvZGUgZXhwaXJlcyBpbiAxMCBtaW51dGVzXG4gICAgICAgICAgPC9wPlxuICAgICAgICA8L2Rpdj5cbiAgICAgICAgXG4gICAgICAgIDxwPklmIHlvdSBkaWRuJ3QgY3JlYXRlIGFuIGFjY291bnQgd2l0aCBGYW5jeSBQbGFudGllcywgeW91IGNhbiBzYWZlbHkgaWdub3JlIHRoaXMgZW1haWwuPC9wPlxuICAgICAgICBcbiAgICAgICAgPGRpdiBjbGFzcz1cImZvb3RlclwiPlxuICAgICAgICAgIDxwPlRoaXMgaXMgYW4gYXV0b21hdGVkIG1lc3NhZ2UgZnJvbSBGYW5jeSBQbGFudGllcy4gUGxlYXNlIGRvIG5vdCByZXBseSB0byB0aGlzIGVtYWlsLjwvcD5cbiAgICAgICAgICA8cD5OZWVkIGhlbHA/IENvbnRhY3QgdXMgYXQgc3VwcG9ydEBmYW5jeS1wbGFudGllcy5jbG91ZGFncmFwaGVyLmNvbTwvcD5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2JvZHk+XG4gICAgICA8L2h0bWw+XG4gICAgYDtcbiAgfVxuXG4gIHByaXZhdGUgZ2VuZXJhdGVWZXJpZmljYXRpb25FbWFpbFRleHQoY29kZTogc3RyaW5nLCBuYW1lOiBzdHJpbmcpOiBzdHJpbmcge1xuICAgIHJldHVybiBgXG5IaSAke25hbWV9LFxuXG5XZWxjb21lIHRvIEZhbmN5IFBsYW50aWVzISBUbyBjb21wbGV0ZSB5b3VyIGFjY291bnQgc2V0dXAsIHBsZWFzZSB2ZXJpZnkgeW91ciBlbWFpbCBhZGRyZXNzIGJ5IGVudGVyaW5nIHRoZSB2ZXJpZmljYXRpb24gY29kZSBiZWxvdzpcblxuVmVyaWZpY2F0aW9uIENvZGU6ICR7Y29kZX1cblxuVGhpcyBjb2RlIGV4cGlyZXMgaW4gMTAgbWludXRlcy5cblxuSWYgeW91IGRpZG4ndCBjcmVhdGUgYW4gYWNjb3VudCB3aXRoIEZhbmN5IFBsYW50aWVzLCB5b3UgY2FuIHNhZmVseSBpZ25vcmUgdGhpcyBlbWFpbC5cblxuLS0tXG5UaGlzIGlzIGFuIGF1dG9tYXRlZCBtZXNzYWdlIGZyb20gRmFuY3kgUGxhbnRpZXMuIFBsZWFzZSBkbyBub3QgcmVwbHkgdG8gdGhpcyBlbWFpbC5cbk5lZWQgaGVscD8gQ29udGFjdCB1cyBhdCBzdXBwb3J0QGZhbmN5LXBsYW50aWVzLmNsb3VkYWdyYXBoZXIuY29tXG4gICAgYC50cmltKCk7XG4gIH1cbn1cblxuLy8gRmFjdG9yeSBmdW5jdGlvbiB0byBjcmVhdGUgZW1haWwgc2VydmljZSBpbnN0YW5jZVxuZXhwb3J0IGZ1bmN0aW9uIGNyZWF0ZUVtYWlsU2VydmljZSgpOiBFbWFpbFNlcnZpY2Uge1xuICBjb25zdCBjb25maWc6IEVtYWlsQ29uZmlnID0ge1xuICAgIGFwaUtleTogcHJvY2Vzcy5lbnYuUkVTRU5EX0FQSV9LRVkhLFxuICAgIGZyb21FbWFpbDogcHJvY2Vzcy5lbnYuRlJPTV9FTUFJTCB8fCAnc2VuZC5tYWlsLmZhbmN5LXBsYW50aWVzLmNsb3VkYWdyYXBoZXIuY29tJyxcbiAgICBmcm9tTmFtZTogcHJvY2Vzcy5lbnYuRlJPTV9OQU1FIHx8ICdGYW5jeSBQbGFudGllcycsXG4gIH07XG5cbiAgaWYgKCFjb25maWcuYXBpS2V5KSB7XG4gICAgdGhyb3cgbmV3IEVycm9yKCdSRVNFTkRfQVBJX0tFWSBlbnZpcm9ubWVudCB2YXJpYWJsZSBpcyByZXF1aXJlZCcpO1xuICB9XG5cbiAgcmV0dXJuIG5ldyBSZXNlbmRFbWFpbFNlcnZpY2UoY29uZmlnKTtcbn0iXSwibmFtZXMiOlsiUmVzZW5kRW1haWxTZXJ2aWNlIiwiY3JlYXRlRW1haWxTZXJ2aWNlIiwiY29uZmlnIiwicmVzZW5kIiwiUmVzZW5kIiwiYXBpS2V5Iiwic2VuZFZlcmlmaWNhdGlvbkVtYWlsIiwiZW1haWwiLCJjb2RlIiwibmFtZSIsInN0YXJ0VGltZSIsIkRhdGUiLCJub3ciLCJkYXRhIiwiZXJyb3IiLCJlbWFpbHMiLCJzZW5kIiwiZnJvbSIsImZyb21OYW1lIiwiZnJvbUVtYWlsIiwidG8iLCJzdWJqZWN0IiwiaHRtbCIsImdlbmVyYXRlVmVyaWZpY2F0aW9uRW1haWxUZW1wbGF0ZSIsInRleHQiLCJnZW5lcmF0ZVZlcmlmaWNhdGlvbkVtYWlsVGV4dCIsInJlc3BvbnNlVGltZSIsImNvbnNvbGUiLCJlbWFpbEVycm9yIiwibWVzc2FnZSIsImluY2x1ZGVzIiwiRW1haWxTZXJ2aWNlRXJyb3IiLCJlbWFpbFNlcnZpY2VNb25pdG9yIiwicmVjb3JkRmFpbHVyZSIsInJlY29yZFN1Y2Nlc3MiLCJsb2ciLCJpZCIsIm5ldHdvcmtFcnJvciIsIkVycm9yIiwidHJpbSIsInByb2Nlc3MiLCJlbnYiLCJSRVNFTkRfQVBJX0tFWSIsIkZST01fRU1BSUwiLCJGUk9NX05BTUUiXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7O1FBS2FBO2VBQUFBOztRQThLR0M7ZUFBQUE7OztRQW5MVDt3QkFDZ0I7OEJBQ3NDO3FDQUN6QjtBQUU3QixNQUFNRDtJQUlYLFlBQVlFLE1B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

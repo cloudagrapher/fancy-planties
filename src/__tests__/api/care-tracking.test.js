@@ -144,7 +144,13 @@ describe('Care Tracking API Endpoints', () => {
 
       // Assert
       expect(response.status).toBe(200);
-      expect(responseData).toEqual(createdCareRecord);
+      expect(responseData).toEqual({
+        ...createdCareRecord,
+        // JSON serializes dates to strings
+        careDate: createdCareRecord.careDate.toISOString(),
+        createdAt: createdCareRecord.createdAt.toISOString(),
+        updatedAt: createdCareRecord.updatedAt.toISOString(),
+      });
 
       expect(requireAuthSession).toHaveBeenCalled();
       expect(careValidation.validateCareForm).toHaveBeenCalledWith(validatedData);
@@ -324,7 +330,13 @@ describe('Care Tracking API Endpoints', () => {
 
       // Assert
       expect(response.status).toBe(200);
-      expect(responseData).toEqual(careRecords);
+      expect(responseData).toEqual(careRecords.map(record => ({
+        ...record,
+        // JSON serializes dates to strings
+        careDate: record.careDate.toISOString(),
+        createdAt: record.createdAt.toISOString(),
+        updatedAt: record.updatedAt.toISOString(),
+      })));
 
       expect(requireAuthSession).toHaveBeenCalled();
       expect(careValidation.validateQuickCareLog).toHaveBeenCalledWith(validatedData);
@@ -433,7 +445,13 @@ describe('Care Tracking API Endpoints', () => {
 
       // Assert
       expect(response.status).toBe(200);
-      expect(responseData).toEqual(careHistory);
+      expect(responseData).toEqual(careHistory.map(record => ({
+        ...record,
+        // JSON serializes dates to strings
+        careDate: record.careDate.toISOString(),
+        createdAt: record.createdAt.toISOString(),
+        updatedAt: record.updatedAt.toISOString(),
+      })));
 
       expect(validateRequest).toHaveBeenCalled();
       expect(CareHistoryQueries.getCareHistoryForPlant).toHaveBeenCalledWith(
@@ -479,7 +497,13 @@ describe('Care Tracking API Endpoints', () => {
 
       // Assert
       expect(response.status).toBe(200);
-      expect(responseData).toEqual(careHistory);
+      expect(responseData).toEqual(careHistory.map(record => ({
+        ...record,
+        // JSON serializes dates to strings
+        careDate: record.careDate.toISOString(),
+        createdAt: record.createdAt.toISOString(),
+        updatedAt: record.updatedAt.toISOString(),
+      })));
 
       expect(CareHistoryQueries.getCareHistoryForPlant).toHaveBeenCalledWith(
         plantInstanceId,
@@ -834,7 +858,13 @@ describe('Care Tracking API Endpoints', () => {
       const logResponseData = await logResponse.json();
 
       expect(logResponse.status).toBe(200);
-      expect(logResponseData).toEqual(careRecord);
+      expect(logResponseData).toEqual({
+        ...careRecord,
+        // JSON serializes dates to strings
+        careDate: careRecord.careDate.toISOString(),
+        createdAt: careRecord.createdAt.toISOString(),
+        updatedAt: careRecord.updatedAt.toISOString(),
+      });
 
       // Step 2: Get care history
       const careHistory = [careRecord];
@@ -847,7 +877,13 @@ describe('Care Tracking API Endpoints', () => {
       const historyResponseData = await historyResponse.json();
 
       expect(historyResponse.status).toBe(200);
-      expect(historyResponseData).toEqual(careHistory);
+      expect(historyResponseData).toEqual(careHistory.map(record => ({
+        ...record,
+        // JSON serializes dates to strings
+        careDate: record.careDate.toISOString(),
+        createdAt: record.createdAt.toISOString(),
+        updatedAt: record.updatedAt.toISOString(),
+      })));
 
       // Step 3: Get care dashboard
       const careDashboard = {
@@ -867,7 +903,16 @@ describe('Care Tracking API Endpoints', () => {
       const dashboardResponseData = await dashboardResponse.json();
 
       expect(dashboardResponse.status).toBe(200);
-      expect(dashboardResponseData).toEqual(careDashboard);
+      expect(dashboardResponseData).toEqual({
+        ...careDashboard,
+        recentCare: careDashboard.recentCare.map(record => ({
+          ...record,
+          // JSON serializes dates to strings
+          careDate: record.careDate.toISOString(),
+          createdAt: record.createdAt.toISOString(),
+          updatedAt: record.updatedAt.toISOString(),
+        })),
+      });
 
       // Verify all services were called correctly
       expect(CareService.logCareEvent).toHaveBeenCalledWith(testUser.id, expect.any(Object));
