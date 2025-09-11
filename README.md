@@ -215,10 +215,12 @@ Our comprehensive testing suite includes unit tests, integration tests, and end-
 
 ```bash
 # Run all tests with parallel execution
-npm run test:all
-
-# Unit tests (optimized for parallel execution)
 npm test
+
+# Specific test suites
+npm test -- src/__tests__/api/plant-management.test.js
+npm test -- src/__tests__/integration/
+npm test -- src/__tests__/components/
 
 # E2E tests
 npm run test:e2e
@@ -230,7 +232,10 @@ npm run test:coverage
 npm run test:watch
 
 # Email verification specific tests
-npm test -- --testPathPatterns="email.*unit|email.*integration" --verbose
+npm test -- --testPathPattern="email" --verbose
+
+# Run tests with specific patterns
+npm test -- --testNamePattern="should create plant instance"
 ```
 
 ### Testing Architecture
@@ -238,8 +243,8 @@ npm test -- --testPathPatterns="email.*unit|email.*integration" --verbose
 Our testing strategy follows a hierarchical approach:
 
 - **Integration Tests (60%)**: Complete user workflows and end-to-end functionality
-- **Component Tests (30%)**: User interactions, form validation, and error handling
-- **Utility Tests (10%)**: Helper functions, edge cases, and performance scenarios
+- **API Tests (25%)**: Endpoint validation, authentication, and data handling
+- **Component Tests (15%)**: User interactions, form validation, and error handling
 
 ### Key Testing Principles
 
@@ -247,6 +252,8 @@ Our testing strategy follows a hierarchical approach:
 - **User-Focused**: Tests simulate real user interactions rather than testing implementation details
 - **Reliable Patterns**: Consistent test utilities and factories ensure maintainable, non-flaky tests
 - **Performance Optimized**: Parallel execution and proper cleanup for fast feedback cycles
+- **Mock Strategy**: Proper separation of auth functions (`validateRequest` vs `validateVerifiedRequest`)
+- **Response Format Validation**: Tests verify actual API response structures and data serialization
 
 ### Test Performance Optimization
 

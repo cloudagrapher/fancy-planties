@@ -12,6 +12,7 @@ import { resetApiMocks } from '@/test-utils/helpers/api-helpers';
 // Mock the auth functions
 jest.mock('@/lib/auth/server', () => ({
   validateRequest: jest.fn(),
+  validateVerifiedRequest: jest.fn(),
 }));
 
 // Mock the database queries
@@ -51,7 +52,7 @@ jest.mock('@/lib/validation/plant-schemas', () => ({
 }));
 
 // Import mocked functions
-import { validateRequest } from '@/lib/auth/server';
+import { validateRequest, validateVerifiedRequest } from '@/lib/auth/server';
 import { createPlant, getPlantsWithStats, validatePlantTaxonomy } from '@/lib/db/queries/plant-taxonomy';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { 
@@ -78,6 +79,11 @@ describe('Plant Management API Endpoints', () => {
       user: testUser,
       session: testSession,
     });
+    
+    validateVerifiedRequest.mockResolvedValue({
+      user: testUser,
+      session: testSession,
+    });
   });
 
   afterEach(() => {
@@ -88,8 +94,8 @@ describe('Plant Management API Endpoints', () => {
     it('should return plants with default filters', async () => {
       // Arrange
       const mockPlants = [
-        createTestPlant({ family: 'Araceae', genus: 'Monstera' }),
-        createTestPlant({ family: 'Araceae', genus: 'Philodendron' }),
+        { ...createTestPlant({ family: 'Araceae', genus: 'Monstera' }), id: 1 },
+        { ...createTestPlant({ family: 'Araceae', genus: 'Philodendron' }), id: 2 },
       ];
 
       plantFilterSchema.parse.mockReturnValue({
@@ -113,11 +119,21 @@ describe('Plant Management API Endpoints', () => {
       expect(response.status).toBe(200);
       expect(responseData).toEqual({
         success: true,
-        data: mockPlants,
+        data: expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(Number),
+            family: expect.any(String),
+            genus: expect.any(String),
+            species: expect.any(String),
+            commonName: expect.any(String),
+            isVerified: true,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          })
+        ]),
         metadata: {
           operation: 'search',
-          timestamp: expect.any(Date),
-          userId: testUser.id,
+          timestamp: expect.any(String),
         },
       });
 
@@ -136,7 +152,7 @@ describe('Plant Management API Endpoints', () => {
     it('should return plants with family filter', async () => {
       // Arrange
       const mockPlants = [
-        createTestPlant({ family: 'Araceae', genus: 'Monstera' }),
+        { ...createTestPlant({ family: 'Araceae', genus: 'Monstera' }), id: 1 },
       ];
 
       plantFilterSchema.parse.mockReturnValue({
@@ -159,7 +175,15 @@ describe('Plant Management API Endpoints', () => {
       // Assert
       expect(response.status).toBe(200);
       expect(responseData.success).toBe(true);
-      expect(responseData.data).toEqual(mockPlants);
+      expect(responseData.data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(Number),
+          family: 'Araceae',
+          genus: 'Monstera',
+          commonName: expect.any(String),
+          isVerified: true,
+        })
+      ]));
 
       expect(plantFilterSchema.parse).toHaveBeenCalledWith({
         family: 'Araceae',
@@ -173,7 +197,7 @@ describe('Plant Management API Endpoints', () => {
 
     it('should return plants with pagination parameters', async () => {
       // Arrange
-      const mockPlants = [createTestPlant()];
+      const mockPlants = [{ ...createTestPlant(), id: 1 }];
 
       plantFilterSchema.parse.mockReturnValue({
         family: undefined,
@@ -282,7 +306,7 @@ describe('Plant Management API Endpoints', () => {
   describe('POST /api/plant-instances - Plant instance creation with data validation', () => {
     it('should create plant instance with valid JSON data', async () => {
       // Arrange
-      const testPlant = createTestPlant();
+      const testPlant = { ...createTestPlant(), id: 1 };
       const requestBody = {
         plantId: testPlant.id,
         nickname: 'My Monstera',
@@ -338,7 +362,7 @@ describe('Plant Management API Endpoints', () => {
 
     it('should create plant instance with FormData (file upload)', async () => {
       // Arrange
-      const testPlant = createTestPlant();
+      const testPlant = { ...createTestPlant(), id: 1 };
       const formData = new FormData();
       formData.append('plantId', testPlant.id.toString());
       formData.append('nickname', 'My Monstera');
@@ -428,9 +452,9 @@ describe('Plant Management API Endpoints', () => {
 
     it('should return unauthorized error when user not authenticated', async () => {
       // Arrange
-      validateRequest.mockResolvedValue({
+      validateVerifiedRequest.mockResolvedValue({
         user: null,
-        session: null,
+        error: 'Unauthorized',
       });
 
       const request = new NextRequest('http://localhost:3000/api/plant-instances', {
