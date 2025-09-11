@@ -1,0 +1,46 @@
+294ff8c51a8db690c058284a723ae16e
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "lucia", {
+    enumerable: true,
+    get: function() {
+        return lucia;
+    }
+});
+require("server-only");
+const _lucia = require("lucia");
+const _adapterpostgresql = require("@lucia-auth/adapter-postgresql");
+const _postgres = /*#__PURE__*/ _interop_require_default(require("postgres"));
+function _interop_require_default(obj) {
+    return obj && obj.__esModule ? obj : {
+        default: obj
+    };
+}
+// Create postgres client for Lucia adapter
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+const client = (0, _postgres.default)(connectionString);
+// Initialize PostgreSQL adapter for Lucia
+const adapter = new _adapterpostgresql.PostgresJsAdapter(client, {
+    session: 'sessions',
+    user: 'users'
+});
+const lucia = new _lucia.Lucia(adapter, {
+    sessionCookie: {
+        expires: false,
+        attributes: {
+            secure: false,
+            sameSite: 'lax'
+        }
+    },
+    getUserAttributes: (attributes)=>{
+        return {
+            id: attributes.id,
+            email: attributes.email,
+            name: attributes.name
+        };
+    }
+});
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL2xpYi9hdXRoL2x1Y2lhLnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCAnc2VydmVyLW9ubHknO1xuXG5pbXBvcnQgeyBMdWNpYSB9IGZyb20gJ2x1Y2lhJztcbmltcG9ydCB7IFBvc3RncmVzSnNBZGFwdGVyIH0gZnJvbSAnQGx1Y2lhLWF1dGgvYWRhcHRlci1wb3N0Z3Jlc3FsJztcbmltcG9ydCBwb3N0Z3JlcyBmcm9tICdwb3N0Z3Jlcyc7XG5cbi8vIENyZWF0ZSBwb3N0Z3JlcyBjbGllbnQgZm9yIEx1Y2lhIGFkYXB0ZXJcbmNvbnN0IGNvbm5lY3Rpb25TdHJpbmcgPSBwcm9jZXNzLmVudi5EQVRBQkFTRV9VUkwgfHwgJ3Bvc3RncmVzcWw6Ly9wb3N0Z3Jlczpwb3N0Z3Jlc0Bsb2NhbGhvc3Q6NTQzMy9mYW5jeV9wbGFudGllcyc7XG5jb25zdCBjbGllbnQgPSBwb3N0Z3Jlcyhjb25uZWN0aW9uU3RyaW5nKTtcblxuLy8gSW5pdGlhbGl6ZSBQb3N0Z3JlU1FMIGFkYXB0ZXIgZm9yIEx1Y2lhXG5jb25zdCBhZGFwdGVyID0gbmV3IFBvc3RncmVzSnNBZGFwdGVyKGNsaWVudCwge1xuICBzZXNzaW9uOiAnc2Vzc2lvbnMnLFxuICB1c2VyOiAndXNlcnMnLFxufSk7XG5cbi8vIEluaXRpYWxpemUgTHVjaWEgd2l0aCBjb25maWd1cmF0aW9uXG5leHBvcnQgY29uc3QgbHVjaWEgPSBuZXcgTHVjaWEoYWRhcHRlciwge1xuICBzZXNzaW9uQ29va2llOiB7XG4gICAgZXhwaXJlczogZmFsc2UsXG4gICAgYXR0cmlidXRlczoge1xuICAgICAgc2VjdXJlOiBmYWxzZSwgLy8gQWxsb3cgbm9uLXNlY3VyZSBjb29raWVzIGZvciBsb2NhbCBkZXZlbG9wbWVudFxuICAgICAgc2FtZVNpdGU6ICdsYXgnLFxuICAgIH0sXG4gIH0sXG4gIGdldFVzZXJBdHRyaWJ1dGVzOiAoYXR0cmlidXRlcykgPT4ge1xuICAgIHJldHVybiB7XG4gICAgICBpZDogYXR0cmlidXRlcy5pZCxcbiAgICAgIGVtYWlsOiBhdHRyaWJ1dGVzLmVtYWlsLFxuICAgICAgbmFtZTogYXR0cmlidXRlcy5uYW1lLFxuICAgIH07XG4gIH0sXG59KTtcblxuLy8gRXh0ZW5kIEx1Y2lhIHR5cGVzXG5kZWNsYXJlIG1vZHVsZSAnbHVjaWEnIHtcbiAgaW50ZXJmYWNlIFJlZ2lzdGVyIHtcbiAgICBMdWNpYTogdHlwZW9mIGx1Y2lhO1xuICAgIERhdGFiYXNlVXNlckF0dHJpYnV0ZXM6IERhdGFiYXNlVXNlckF0dHJpYnV0ZXM7XG4gIH1cbn1cblxuaW50ZXJmYWNlIERhdGFiYXNlVXNlckF0dHJpYnV0ZXMge1xuICBpZDogbnVtYmVyO1xuICBlbWFpbDogc3RyaW5nO1xuICBuYW1lOiBzdHJpbmc7XG59Il0sIm5hbWVzIjpbImx1Y2lhIiwiY29ubmVjdGlvblN0cmluZyIsInByb2Nlc3MiLCJlbnYiLCJEQVRBQkFTRV9VUkwiLCJjbGllbnQiLCJwb3N0Z3JlcyIsImFkYXB0ZXIiLCJQb3N0Z3Jlc0pzQWRhcHRlciIsInNlc3Npb24iLCJ1c2VyIiwiTHVjaWEiLCJzZXNzaW9uQ29va2llIiwiZXhwaXJlcyIsImF0dHJpYnV0ZXMiLCJzZWN1cmUiLCJzYW1lU2l0ZSIsImdldFVzZXJBdHRyaWJ1dGVzIiwiaWQiLCJlbWFpbCIsIm5hbWUiXSwibWFwcGluZ3MiOiI7Ozs7K0JBaUJhQTs7O2VBQUFBOzs7UUFqQk47dUJBRWU7bUNBQ1k7aUVBQ2I7Ozs7OztBQUVyQiwyQ0FBMkM7QUFDM0MsTUFBTUMsbUJBQW1CQyxRQUFRQyxHQUFHLENBQUNDLFlBQVksSUFBSTtBQUNyRCxNQUFNQyxTQUFTQyxJQUFBQSxpQkFBUSxFQUFDTDtBQUV4QiwwQ0FBMEM7QUFDMUMsTUFBTU0sVUFBVSxJQUFJQyxvQ0FBaUIsQ0FBQ0gsUUFBUTtJQUM1Q0ksU0FBUztJQUNUQyxNQUFNO0FBQ1I7QUFHTyxNQUFNVixRQUFRLElBQUlXLFlBQUssQ0FBQ0osU0FBUztJQUN0Q0ssZUFBZTtRQUNiQyxTQUFTO1FBQ1RDLFlBQVk7WUFDVkMsUUFBUTtZQUNSQyxVQUFVO1FBQ1o7SUFDRjtJQUNBQyxtQkFBbUIsQ0FBQ0g7UUFDbEIsT0FBTztZQUNMSSxJQUFJSixXQUFXSSxFQUFFO1lBQ2pCQyxPQUFPTCxXQUFXSyxLQUFLO1lBQ3ZCQyxNQUFNTixXQUFXTSxJQUFJO1FBQ3ZCO0lBQ0Y7QUFDRiJ9

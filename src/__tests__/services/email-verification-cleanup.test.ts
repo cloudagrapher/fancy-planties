@@ -1,13 +1,16 @@
 import { EmailVerificationCleanupService } from '@/lib/services/email-verification-cleanup';
 import { emailVerificationCodeService } from '@/lib/services/email-verification-code-service';
 import { emailVerificationRateLimiter } from '@/lib/services/email-verification-rate-limiter';
+import { emailServiceMonitor } from '@/lib/services/email-service-monitor';
 
 // Mock the dependencies
 jest.mock('@/lib/services/email-verification-code-service');
 jest.mock('@/lib/services/email-verification-rate-limiter');
+jest.mock('@/lib/services/email-service-monitor');
 
 const mockEmailVerificationCodeService = emailVerificationCodeService as jest.Mocked<typeof emailVerificationCodeService>;
 const mockEmailVerificationRateLimiter = emailVerificationRateLimiter as jest.Mocked<typeof emailVerificationRateLimiter>;
+const mockEmailServiceMonitor = emailServiceMonitor as jest.Mocked<typeof emailServiceMonitor>;
 
 describe('EmailVerificationCleanupService', () => {
   let cleanupService: EmailVerificationCleanupService;
@@ -42,6 +45,25 @@ describe('EmailVerificationCleanupService', () => {
         securityEvents: 0,
       });
     });
+    
+    mockEmailServiceMonitor.getHealthStatus.mockReturnValue({
+      status: 'healthy',
+      issues: [],
+      recommendations: [],
+    });
+    
+    mockEmailServiceMonitor.getStats.mockReturnValue({
+      totalSent: 100,
+      totalFailed: 5,
+      quotaUsed: 50,
+      quotaLimit: 100,
+      errorsByType: {},
+      successRate: 95,
+      averageResponseTime: 150,
+      lastResetTime: Date.now(),
+    });
+    
+    mockEmailServiceMonitor.getQuotaUsagePercentage.mockReturnValue(50);
   });
   
   describe('runCleanup', () => {
@@ -54,6 +76,9 @@ describe('EmailVerificationCleanupService', () => {
       
       expect(mockEmailVerificationCodeService.cleanupExpiredCodes).toHaveBeenCalledTimes(1);
       expect(mockEmailVerificationRateLimiter.cleanup).toHaveBeenCalledTimes(1);
+      expect(mockEmailServiceMonitor.getHealthStatus).toHaveBeenCalledTimes(1);
+      expect(mockEmailServiceMonitor.getStats).toHaveBeenCalledTimes(1);
+      expect(mockEmailServiceMonitor.getQuotaUsagePercentage).toHaveBeenCalledTimes(1);
     });
     
     it('should prevent concurrent cleanup runs', async () => {
@@ -73,6 +98,35 @@ describe('EmailVerificationCleanupService', () => {
       mockEmailVerificationCodeService.cleanupExpiredCodes.mockRejectedValue(new Error('Database error'));
       
       await expect(cleanupService.runCleanup()).rejects.toThrow('Database error');
+    });
+    
+    it('should log warnings for email service health issues', async () => {
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+      
+      mockEmailServiceMonitor.getHealthStatus.mockReturnValue({
+        status: 'warning',
+        issues: ['High quota usage: 85%'],
+        recommendations: ['Consider upgrading plan'],
+      });
+      
+      const stats = await cleanupService.runCleanup();
+      
+      expect(stats.emailServiceHealth).toEqual({
+        status: 'warning',
+        quotaUsage: 50,
+        successRate: 95,
+        issues: ['High quota usage: 85%'],
+      });
+      
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Email service health: warning'),
+        expect.objectContaining({
+          issues: ['High quota usage: 85%'],
+          recommendations: ['Consider upgrading plan'],
+        })
+      );
+      
+      consoleSpy.mockRestore();
     });
   });
   

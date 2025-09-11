@@ -1,11 +1,18 @@
 import 'server-only';
 import { emailVerificationCodeService } from './email-verification-code-service';
 import { emailVerificationRateLimiter } from './email-verification-rate-limiter';
+import { emailServiceMonitor } from './email-service-monitor';
 
 export interface CleanupStats {
   expiredCodes: number;
   rateLimitData: number;
   timestamp: number;
+  emailServiceHealth?: {
+    status: 'healthy' | 'warning' | 'critical';
+    quotaUsage: number;
+    successRate: number;
+    issues: string[];
+  };
 }
 
 export class EmailVerificationCleanupService {
@@ -44,10 +51,27 @@ export class EmailVerificationCleanupService {
       
       console.log(`[CLEANUP] Cleaned up ${rateLimitDataCleaned} rate limit entries`);
       
+      // Check email service health
+      const emailHealth = emailServiceMonitor.getHealthStatus();
+      const emailStats = emailServiceMonitor.getStats();
+      
+      if (emailHealth.status !== 'healthy') {
+        console.warn(`[CLEANUP] Email service health: ${emailHealth.status}`, {
+          issues: emailHealth.issues,
+          recommendations: emailHealth.recommendations,
+        });
+      }
+      
       const stats: CleanupStats = {
         expiredCodes,
         rateLimitData: rateLimitDataCleaned,
         timestamp: startTime,
+        emailServiceHealth: {
+          status: emailHealth.status,
+          quotaUsage: emailServiceMonitor.getQuotaUsagePercentage(),
+          successRate: emailStats.successRate,
+          issues: emailHealth.issues,
+        },
       };
       
       // Store cleanup stats (keep last 24 entries)
@@ -146,6 +170,16 @@ export class EmailVerificationCleanupService {
       resendCooldowns: number;
       securityEvents: number;
     };
+    emailService: {
+      health: 'healthy' | 'warning' | 'critical';
+      quotaUsage: number;
+      successRate: number;
+      totalSent: number;
+      totalFailed: number;
+      averageResponseTime: number;
+      issues: string[];
+      recommendations: string[];
+    };
     cleanup: {
       lastCleanup: number;
       isRunning: boolean;
@@ -155,6 +189,8 @@ export class EmailVerificationCleanupService {
     const codeStats = await emailVerificationCodeService.getCodeStats();
     const rateLimitStats = emailVerificationRateLimiter.getStats();
     const cleanupStats = this.getCleanupStats();
+    const emailHealth = emailServiceMonitor.getHealthStatus();
+    const emailStats = emailServiceMonitor.getStats();
     
     // Estimate next cleanup time (assuming hourly cleanup)
     const nextCleanupDue = cleanupStats.lastCleanup + (60 * 60 * 1000);
@@ -162,6 +198,16 @@ export class EmailVerificationCleanupService {
     return {
       verificationCodes: codeStats,
       rateLimits: rateLimitStats,
+      emailService: {
+        health: emailHealth.status,
+        quotaUsage: emailServiceMonitor.getQuotaUsagePercentage(),
+        successRate: emailStats.successRate,
+        totalSent: emailStats.totalSent,
+        totalFailed: emailStats.totalFailed,
+        averageResponseTime: emailStats.averageResponseTime,
+        issues: emailHealth.issues,
+        recommendations: emailHealth.recommendations,
+      },
       cleanup: {
         lastCleanup: cleanupStats.lastCleanup,
         isRunning: cleanupStats.isRunning,
@@ -186,11 +232,13 @@ export class EmailVerificationCleanupService {
 // Export singleton instance
 export const emailVerificationCleanupService = new EmailVerificationCleanupService();
 
-// Auto-schedule cleanup when this module is imported
-if (process.env.NODE_ENV === 'production') {
-  // In production, start cleanup automatically
-  emailVerificationCleanupService.scheduleCleanup();
-} else {
-  // In development, run less frequently to avoid noise
-  emailVerificationCleanupService.scheduleCleanup(2 * 60 * 60 * 1000); // 2 hours
+// Auto-schedule cleanup when this module is imported (but not during tests)
+if (process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV === 'production') {
+    // In production, start cleanup automatically
+    emailVerificationCleanupService.scheduleCleanup();
+  } else {
+    // In development, run less frequently to avoid noise
+    emailVerificationCleanupService.scheduleCleanup(2 * 60 * 60 * 1000); // 2 hours
+  }
 }

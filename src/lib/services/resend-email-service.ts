@@ -1,6 +1,7 @@
 import 'server-only';
 import { Resend } from 'resend';
 import { EmailService, EmailConfig, EmailServiceError } from './email-service';
+import { emailServiceMonitor } from './email-service-monitor';
 
 export class ResendEmailService implements EmailService {
   private resend: Resend;
@@ -12,6 +13,8 @@ export class ResendEmailService implements EmailService {
   }
 
   async sendVerificationEmail(email: string, code: string, name: string): Promise<boolean> {
+    const startTime = Date.now();
+    
     try {
       const { data, error } = await this.resend.emails.send({
         from: `${this.config.fromName} <${this.config.fromEmail}>`,
@@ -21,34 +24,57 @@ export class ResendEmailService implements EmailService {
         text: this.generateVerificationEmailText(code, name),
       });
 
+      const responseTime = Date.now() - startTime;
+
       if (error) {
         console.error('Resend API error:', error);
         
         // Map Resend errors to our error types
+        let emailError: EmailServiceError;
         if (error.message?.includes('quota') || error.message?.includes('limit')) {
-          throw new EmailServiceError('Email quota exceeded', 'QUOTA_EXCEEDED');
+          emailError = new EmailServiceError('Email quota exceeded', 'QUOTA_EXCEEDED');
+        } else if (error.message?.includes('invalid') && error.message?.includes('email')) {
+          emailError = new EmailServiceError('Invalid email address', 'INVALID_EMAIL');
+        } else {
+          emailError = new EmailServiceError(`Resend API error: ${error.message}`, 'API_ERROR');
         }
         
-        if (error.message?.includes('invalid') && error.message?.includes('email')) {
-          throw new EmailServiceError('Invalid email address', 'INVALID_EMAIL');
-        }
+        // Record failure in monitor
+        emailServiceMonitor.recordFailure(
+          { message: emailError.message, code: emailError.code },
+          responseTime
+        );
         
-        throw new EmailServiceError(`Resend API error: ${error.message}`, 'API_ERROR');
+        throw emailError;
       }
 
+      // Record success in monitor
+      emailServiceMonitor.recordSuccess(responseTime);
+      
       console.log('Verification email sent successfully:', data?.id);
       return true;
       
     } catch (error) {
+      const responseTime = Date.now() - startTime;
+      
       if (error instanceof EmailServiceError) {
+        // Already recorded in monitor above
         throw error;
       }
       
       console.error('Network error sending email:', error);
-      throw new EmailServiceError(
+      const networkError = new EmailServiceError(
         `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`,
         'NETWORK_ERROR'
       );
+      
+      // Record network error in monitor
+      emailServiceMonitor.recordFailure(
+        { message: networkError.message, code: networkError.code },
+        responseTime
+      );
+      
+      throw networkError;
     }
   }
 

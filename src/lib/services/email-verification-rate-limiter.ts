@@ -385,7 +385,9 @@ export class EmailVerificationRateLimiter {
 // Export singleton instance
 export const emailVerificationRateLimiter = new EmailVerificationRateLimiter();
 
-// Cleanup job - run every hour
-setInterval(() => {
-  emailVerificationRateLimiter.cleanup();
-}, 60 * 60 * 1000);
+// Cleanup job - run every hour (but not during tests)
+if (process.env.NODE_ENV !== 'test') {
+  setInterval(() => {
+    emailVerificationRateLimiter.cleanup();
+  }, 60 * 60 * 1000);
+}
