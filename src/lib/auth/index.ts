@@ -126,7 +126,14 @@ export async function signUpUnverified(email: string, password: string, name: st
   const existingUser = await getUserByEmail(email);
   
   if (existingUser) {
-    throw new Error('User already exists');
+    // If user exists and is already verified, don't allow re-signup
+    if (existingUser.isEmailVerified) {
+      throw new Error('User already exists');
+    }
+    
+    // If user exists but is not verified, return the existing user
+    // This allows them to resend verification email
+    return existingUser;
   }
   
   // Create new unverified user (no session created)
@@ -137,6 +144,15 @@ export async function signUpUnverified(email: string, password: string, name: st
 
 export async function signOut(sessionId: string): Promise<void> {
   await lucia.invalidateSession(sessionId);
+}
+
+export async function updateUserPassword(userId: number, newPassword: string): Promise<void> {
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
+  
+  await db
+    .update(users)
+    .set({ hashedPassword })
+    .where(eq(users.id, userId));
 }
 
 // Re-export utilities from other auth modules  

@@ -1,21 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { signInSchema, type SignInInput } from '@/lib/auth/validation';
+import { passwordResetRequestSchema, type PasswordResetRequestInput } from '@/lib/auth/validation';
 
-export default function SignInForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/dashboard';
-  
-  const [formData, setFormData] = useState<SignInInput>({
+export default function ForgotPasswordForm() {
+  const [formData, setFormData] = useState<PasswordResetRequestInput>({
     email: '',
-    password: '',
   });
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [generalError, setGeneralError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,7 +21,7 @@ export default function SignInForm() {
 
     try {
       // Validate form data
-      const validation = signInSchema.safeParse(formData);
+      const validation = passwordResetRequestSchema.safeParse(formData);
       if (!validation.success) {
         const fieldErrors: Record<string, string> = {};
         validation.error.issues.forEach((issue) => {
@@ -38,7 +33,7 @@ export default function SignInForm() {
       }
 
       // Submit to API
-      const response = await fetch('/api/auth/signin', {
+      const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,24 +47,16 @@ export default function SignInForm() {
         if (result.errors) {
           setErrors(result.errors);
         } else {
-          setGeneralError(result.error || 'Sign in failed');
+          setGeneralError(result.error || 'Failed to send reset email');
         }
         return;
       }
 
-      // Success - check if email verification is required
-      if (result.requiresVerification) {
-        // Redirect to email verification page
-        router.push('/auth/verify-email');
-        router.refresh();
-      } else {
-        // Success - redirect to dashboard or intended page
-        router.push(redirectTo);
-        router.refresh();
-      }
+      // Success
+      setSubmitted(true);
       
     } catch (error) {
-      console.error('Sign in error:', error);
+      console.error('Forgot password error:', error);
       setGeneralError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -86,13 +73,59 @@ export default function SignInForm() {
     }
   };
 
+  if (submitted) {
+    return (
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-mint-200 flex-center mx-auto mb-4">
+          <svg
+            className="w-8 h-8 text-mint-700"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
+        
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          Check your email
+        </h3>
+        
+        <p className="text-gray-600 mb-4">
+          If an account with that email exists, we've sent you a password reset link.
+        </p>
+        
+        <p className="text-sm text-gray-500 mb-6">
+          The link will expire in 1 hour. Check your spam folder if you don't see it.
+        </p>
+        
+        <div className="space-y-3">
+          <button
+            onClick={() => {
+              setSubmitted(false);
+              setFormData({ email: '' });
+            }}
+            className="text-sm text-primary-600 hover:text-primary-500 transition-colors"
+          >
+            Try a different email address
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`${isLoading ? 'form--loading' : ''}`}>
       <form onSubmit={handleSubmit} className="space-y-6" autoComplete="on" noValidate>
         {generalError && (
           <div className="form-validation-summary">
             <div className="form-validation-summary-title">
-              Sign In Failed
+              Reset Failed
             </div>
             <ul className="form-validation-summary-list">
               <li className="form-validation-summary-item">{generalError}</li>
@@ -101,11 +134,11 @@ export default function SignInForm() {
         )}
 
         <div className="form-group">
-          <label htmlFor="signin-email" className="form-label form-label--required">
+          <label htmlFor="forgot-email" className="form-label form-label--required">
             Email Address
           </label>
           <input
-            id="signin-email"
+            id="forgot-email"
             name="email"
             type="email"
             autoComplete="email"
@@ -114,34 +147,11 @@ export default function SignInForm() {
             onChange={handleChange}
             className={`form-input ${errors.email ? 'form-input--error' : ''}`}
             placeholder="Enter your email address"
-            aria-describedby={errors.email ? 'signin-email-error' : undefined}
+            aria-describedby={errors.email ? 'forgot-email-error' : undefined}
           />
           {errors.email && (
-            <div id="signin-email-error" className="form-error" role="alert">
+            <div id="forgot-email-error" className="form-error" role="alert">
               {errors.email}
-            </div>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="signin-password" className="form-label form-label--required">
-            Password
-          </label>
-          <input
-            id="signin-password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={formData.password}
-            onChange={handleChange}
-            className={`form-input ${errors.password ? 'form-input--error' : ''}`}
-            placeholder="Enter your password"
-            aria-describedby={errors.password ? 'signin-password-error' : undefined}
-          />
-          {errors.password && (
-            <div id="signin-password-error" className="form-error" role="alert">
-              {errors.password}
             </div>
           )}
         </div>
@@ -151,24 +161,15 @@ export default function SignInForm() {
             type="submit"
             disabled={isLoading}
             className={`btn btn--primary btn--full ${isLoading ? 'btn--loading' : ''}`}
-            aria-describedby={isLoading ? 'signin-loading' : undefined}
+            aria-describedby={isLoading ? 'forgot-loading' : undefined}
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Sending reset link...' : 'Send Reset Link'}
           </button>
           {isLoading && (
-            <span id="signin-loading" className="sr-only">
-              Please wait while we sign you in
+            <span id="forgot-loading" className="sr-only">
+              Please wait while we send your reset link
             </span>
           )}
-        </div>
-
-        <div className="text-center mt-4">
-          <a 
-            href="/auth/forgot-password" 
-            className="text-sm text-primary-600 hover:text-primary-500 transition-colors"
-          >
-            Forgot your password?
-          </a>
         </div>
       </form>
     </div>

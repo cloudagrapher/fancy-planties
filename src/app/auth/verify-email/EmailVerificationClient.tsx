@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import VerificationCodeInput from '@/components/auth/VerificationCodeInput';
+import dynamic from 'next/dynamic';
+
+// Dynamically import with no SSR to prevent hydration issues
+const VerificationCodeInput = dynamic(
+  () => import('@/components/auth/VerificationCodeInput'),
+  { ssr: false }
+);
 
 export interface EmailVerificationClientProps {
   email: string;

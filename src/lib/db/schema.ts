@@ -32,6 +32,23 @@ export const emailVerificationCodes = pgTable('email_verification_codes', {
   userActiveCodeUnique: uniqueIndex('email_verification_codes_user_active_unique').on(table.userId, table.expiresAt),
 }));
 
+// Password reset tokens table
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  token: text('token').notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  usedAt: timestamp('used_at'),
+}, (table) => ({
+  // Indexes for password reset token queries
+  userIdIdx: index('password_reset_tokens_user_id_idx').on(table.userId),
+  tokenIdx: index('password_reset_tokens_token_idx').on(table.token),
+  expiresAtIdx: index('password_reset_tokens_expires_at_idx').on(table.expiresAt),
+  // Unique constraint to ensure one active token per user
+  userActiveTokenUnique: uniqueIndex('password_reset_tokens_user_active_unique').on(table.userId, table.expiresAt),
+}));
+
 // Sessions table for Lucia auth
 export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
