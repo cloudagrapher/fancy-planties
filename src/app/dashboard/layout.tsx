@@ -1,14 +1,14 @@
 import AuthGuard from '@/components/auth/AuthGuard';
 import { UserProvider } from '@/components/auth/UserProvider';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
-import { requireAuthSession } from '@/lib/auth/server';
+import { requireVerifiedSession } from '@/lib/auth/server';
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = await requireAuthSession();
+  const { user } = await requireVerifiedSession();
 
   return (
     <AuthGuard>

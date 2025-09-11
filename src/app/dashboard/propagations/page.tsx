@@ -1,8 +1,8 @@
-import { requireAuthSession } from '@/lib/auth/server';
+import { requireVerifiedSession } from '@/lib/auth/server';
 import PropagationDashboard from '@/components/propagations/PropagationDashboard';
 
 export default async function PropagationsPage() {
-  const { user } = await requireAuthSession();
+  const { user } = await requireVerifiedSession();
 
   return (
     <div className="min-h-screen pb-16 sm:pb-0 bg-gradient-to-b from-emerald-50 to-white">

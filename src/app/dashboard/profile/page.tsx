@@ -1,10 +1,10 @@
-import { requireAuthSession } from '@/lib/auth/server';
+import { requireVerifiedSession } from '@/lib/auth/server';
 import { DataImport } from '@/components/import/DataImport';
 import LogoutButton from '@/components/auth/LogoutButton';
 import { User, Database, FileText, Download, Upload } from 'lucide-react';
 
 export default async function ProfilePage() {
-  const { user } = await requireAuthSession();
+  const { user } = await requireVerifiedSession();
 
   return (
     <div className="page">

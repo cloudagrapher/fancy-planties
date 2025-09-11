@@ -33,12 +33,27 @@ export async function POST(request: NextRequest) {
       // Set session cookie
       await setSessionCookie(result.session.id);
 
+      // Check if email verification is required
+      if (!result.user.isEmailVerified) {
+        return NextResponse.json({
+          success: true,
+          requiresVerification: true,
+          user: {
+            id: result.user.id,
+            email: result.user.email,
+            name: result.user.name,
+            isEmailVerified: result.user.isEmailVerified,
+          },
+        });
+      }
+
       return NextResponse.json({
         success: true,
         user: {
           id: result.user.id,
           email: result.user.email,
           name: result.user.name,
+          isEmailVerified: result.user.isEmailVerified,
         },
       });
 

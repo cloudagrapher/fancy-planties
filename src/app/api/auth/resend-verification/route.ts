@@ -4,27 +4,20 @@ import { emailVerificationCodeService, VerificationCodeError, VerificationError 
 import { sendEmailWithRetry, EmailServiceError } from '@/lib/services/email-service';
 import { createEmailService } from '@/lib/services/resend-email-service';
 import { getUserByEmail } from '@/lib/auth';
-import { withRateLimit } from '@/lib/auth/middleware';
+import { withResendRateLimit } from '@/lib/auth/email-verification-middleware';
 
 // Validation schema for resend verification request
 const resendVerificationSchema = z.object({
   email: z.string().email('Invalid email address'),
 });
 
-// Note: Rate limiting is handled by the withRateLimit middleware with default settings
-// Additional email-specific rate limiting is implemented with cooldown logic below
-
-// Cooldown between resend requests (60 seconds)
-const RESEND_COOLDOWN_MS = 60 * 1000;
-
-// In-memory store for tracking last resend times (in production, use Redis)
-const lastResendTimes = new Map<string, number>();
+// Note: Rate limiting is handled by the withResendRateLimit middleware with enhanced email verification limits
 
 export async function POST(request: NextRequest) {
-  return withRateLimit(request, async (req) => {
+  return withResendRateLimit(request, async (req) => {
+    // Extract parsed body from middleware
+    const body = (req as any)._parsedBody || await req.json();
     try {
-      const body = await req.json();
-      
       // Validate input
       const validation = resendVerificationSchema.safeParse(body);
       if (!validation.success) {
@@ -42,22 +35,6 @@ export async function POST(request: NextRequest) {
       
       const { email } = validation.data;
       const normalizedEmail = email.toLowerCase();
-      
-      // Check cooldown period
-      const lastResendTime = lastResendTimes.get(normalizedEmail);
-      const now = Date.now();
-      
-      if (lastResendTime && (now - lastResendTime) < RESEND_COOLDOWN_MS) {
-        const remainingCooldown = Math.ceil((RESEND_COOLDOWN_MS - (now - lastResendTime)) / 1000);
-        
-        return NextResponse.json(
-          { 
-            error: 'Please wait before requesting another verification code.',
-            cooldownSeconds: remainingCooldown
-          },
-          { status: 429 }
-        );
-      }
       
       try {
         // Check if user exists
@@ -84,9 +61,6 @@ export async function POST(request: NextRequest) {
         // Generate new verification code (this will invalidate existing codes)
         const verificationCode = await emailVerificationCodeService.generateCode(user.id);
         
-        // Update last resend time
-        lastResendTimes.set(normalizedEmail, now);
-        
         // Send verification email
         try {
           const emailService = createEmailService();
@@ -97,14 +71,11 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({
             success: true,
             message: 'Verification code sent successfully. Please check your email.',
-            cooldownSeconds: RESEND_COOLDOWN_MS / 1000
+            cooldownSeconds: 60 // 60 seconds cooldown
           });
           
         } catch (emailError) {
           console.error('Failed to resend verification email:', emailError);
-          
-          // Remove the resend time since email failed
-          lastResendTimes.delete(normalizedEmail);
           
           if (emailError instanceof EmailServiceError) {
             let errorMessage = 'Failed to send verification email. ';
@@ -196,17 +167,3 @@ export async function POST(request: NextRequest) {
   });
 }
 
-// Cleanup function to remove old resend times (should be called periodically)
-function cleanupResendTimes() {
-  const now = Date.now();
-  const cutoff = now - (24 * 60 * 60 * 1000); // 24 hours ago
-  
-  for (const [email, timestamp] of lastResendTimes.entries()) {
-    if (timestamp < cutoff) {
-      lastResendTimes.delete(email);
-    }
-  }
-}
-
-// Run cleanup periodically (every hour)
-setInterval(cleanupResendTimes, 60 * 60 * 1000);

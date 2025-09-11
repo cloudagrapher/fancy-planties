@@ -50,29 +50,29 @@
   - Update API route protection to return 403 for unverified users
   - _Requirements: 4.1, 4.2_
 
-- [ ] 6. Create email verification frontend components
-- [ ] 6.1 Build VerificationCodeInput component
+- [x] 6. Create email verification frontend components
+- [x] 6.1 Build VerificationCodeInput component
   - Create 6-digit input component with auto-formatting and focus management
   - Add paste support and backspace handling
   - Implement input validation and error display
   - Write component tests for input behavior
   - _Requirements: 5.1, 5.2_
 
-- [ ] 6.2 Create EmailVerificationPage component
+- [x] 6.2 Create EmailVerificationPage component
   - Build verification page with code input and submission logic
   - Add resend functionality with cooldown timer display
   - Implement error message display for different failure scenarios
   - Add success state and automatic redirect to dashboard
   - _Requirements: 5.1, 5.3, 5.4_
 
-- [ ] 7. Implement rate limiting and security measures
+- [x] 7. Implement rate limiting and security measures
   - Add rate limiting middleware for verification and resend endpoints
   - Implement attempt tracking and code invalidation after max attempts
   - Add security logging for failed verification attempts
   - Create cleanup job for expired codes and rate limit data
   - _Requirements: 2.4, 3.3, 3.5, 6.4_
 
-- [ ] 8. Add email verification to signup flow
+- [x] 8. Add email verification to signup flow
   - Update signup page to redirect to verification after successful registration
   - Modify login flow to redirect unverified users to verification page
   - Add verification status checks to dashboard and protected pages

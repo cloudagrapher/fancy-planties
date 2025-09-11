@@ -1,11 +1,11 @@
-import { requireAuthSession } from '@/lib/auth/server';
+import { requireVerifiedSession } from '@/lib/auth/server';
 import HandbookDashboard from '@/components/handbook/HandbookDashboard';
 import { db } from '@/lib/db';
 import { careGuides } from '@/lib/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export default async function HandbookPage() {
-  const { user } = await requireAuthSession();
+  const { user } = await requireVerifiedSession();
   
   // Get user's care guides directly from database
   const userCareGuides = await db

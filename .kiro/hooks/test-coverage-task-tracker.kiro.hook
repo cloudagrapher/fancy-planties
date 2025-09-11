@@ -4,7 +4,7 @@
   "description": "Monitors source file changes to generate test coverage and tracks spec file task completions to automatically commit and push changes with task-based commit messages",
   "version": "1",
   "when": {
-    "type": "userTriggered",
+    "type": "fileEdited",
     "patterns": [
       "src/**/*.ts",
       "src/**/*.tsx",
