@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { db } from '../../lib/db';
-import { users, sessions, emailVerificationCodes } from '../../lib/db/schema';
+import { users, sessions, emailVerificationCodes, plants, plantInstances, propagations, careHistory } from '../../lib/db/schema';
 import { eq } from 'drizzle-orm';
 
 /**
@@ -13,6 +13,10 @@ class DatabaseTestManager {
     this.createdUsers = [];
     this.createdSessions = [];
     this.createdEmailCodes = [];
+    this.createdPlants = [];
+    this.createdPlantInstances = [];
+    this.createdPropagations = [];
+    this.createdCareHistory = [];
   }
 
   /**
@@ -46,6 +50,50 @@ class DatabaseTestManager {
     const [code] = await db.insert(emailVerificationCodes).values(codeData).returning();
     this.createdEmailCodes.push(code.id);
     return code;
+  }
+
+  /**
+   * Create a test plant in the database
+   * @param {Object} plantData - Plant data to insert
+   * @returns {Promise<Object>} Created plant
+   */
+  async createTestPlant(plantData) {
+    const [plant] = await db.insert(plants).values(plantData).returning();
+    this.createdPlants.push(plant.id);
+    return plant;
+  }
+
+  /**
+   * Create a test plant instance in the database
+   * @param {Object} instanceData - Plant instance data to insert
+   * @returns {Promise<Object>} Created plant instance
+   */
+  async createTestPlantInstance(instanceData) {
+    const [instance] = await db.insert(plantInstances).values(instanceData).returning();
+    this.createdPlantInstances.push(instance.id);
+    return instance;
+  }
+
+  /**
+   * Create a test propagation in the database
+   * @param {Object} propagationData - Propagation data to insert
+   * @returns {Promise<Object>} Created propagation
+   */
+  async createTestPropagation(propagationData) {
+    const [propagation] = await db.insert(propagations).values(propagationData).returning();
+    this.createdPropagations.push(propagation.id);
+    return propagation;
+  }
+
+  /**
+   * Create a test care history record in the database
+   * @param {Object} careData - Care history data to insert
+   * @returns {Promise<Object>} Created care history record
+   */
+  async createTestCareHistory(careData) {
+    const [care] = await db.insert(careHistory).values(careData).returning();
+    this.createdCareHistory.push(care.id);
+    return care;
   }
 
   /**
@@ -149,31 +197,104 @@ class DatabaseTestManager {
    */
   async cleanup() {
     try {
-      // Clean up email verification codes first (foreign key constraints)
+      // Clean up in reverse order of dependencies to respect foreign key constraints
+      
+      // 1. Care history (references plant instances and users)
+      for (const careId of this.createdCareHistory) {
+        try {
+          await db.delete(careHistory).where(eq(careHistory.id, careId));
+        } catch (error) {
+          // Ignore if record doesn't exist
+          if (!error.message.includes('no rows')) {
+            console.warn(`Failed to delete care history ${careId}:`, error.message);
+          }
+        }
+      }
+
+      // 2. Propagations (references plant instances, plants, and users)
+      for (const propagationId of this.createdPropagations) {
+        try {
+          await db.delete(propagations).where(eq(propagations.id, propagationId));
+        } catch (error) {
+          if (!error.message.includes('no rows')) {
+            console.warn(`Failed to delete propagation ${propagationId}:`, error.message);
+          }
+        }
+      }
+
+      // 3. Plant instances (references plants and users)
+      for (const instanceId of this.createdPlantInstances) {
+        try {
+          await db.delete(plantInstances).where(eq(plantInstances.id, instanceId));
+        } catch (error) {
+          if (!error.message.includes('no rows')) {
+            console.warn(`Failed to delete plant instance ${instanceId}:`, error.message);
+          }
+        }
+      }
+
+      // 4. Plants (references users)
+      for (const plantId of this.createdPlants) {
+        try {
+          await db.delete(plants).where(eq(plants.id, plantId));
+        } catch (error) {
+          if (!error.message.includes('no rows')) {
+            console.warn(`Failed to delete plant ${plantId}:`, error.message);
+          }
+        }
+      }
+
+      // 5. Email verification codes (references users)
       for (const codeId of this.createdEmailCodes) {
-        await db.delete(emailVerificationCodes).where(eq(emailVerificationCodes.id, codeId));
+        try {
+          await db.delete(emailVerificationCodes).where(eq(emailVerificationCodes.id, codeId));
+        } catch (error) {
+          if (!error.message.includes('no rows')) {
+            console.warn(`Failed to delete email code ${codeId}:`, error.message);
+          }
+        }
       }
 
-      // Clean up sessions
+      // 6. Sessions (references users)
       for (const sessionId of this.createdSessions) {
-        await db.delete(sessions).where(eq(sessions.id, sessionId));
+        try {
+          await db.delete(sessions).where(eq(sessions.id, sessionId));
+        } catch (error) {
+          if (!error.message.includes('no rows')) {
+            console.warn(`Failed to delete session ${sessionId}:`, error.message);
+          }
+        }
       }
 
-      // Clean up users last
+      // 7. Users (no dependencies)
       for (const userId of this.createdUsers) {
-        await db.delete(users).where(eq(users.id, userId));
+        try {
+          await db.delete(users).where(eq(users.id, userId));
+        } catch (error) {
+          if (!error.message.includes('no rows')) {
+            console.warn(`Failed to delete user ${userId}:`, error.message);
+          }
+        }
       }
 
       // Reset tracking arrays
       this.createdUsers = [];
       this.createdSessions = [];
       this.createdEmailCodes = [];
+      this.createdPlants = [];
+      this.createdPlantInstances = [];
+      this.createdPropagations = [];
+      this.createdCareHistory = [];
     } catch (error) {
       console.error('Database cleanup error:', error);
       // Reset tracking arrays even if cleanup fails
       this.createdUsers = [];
       this.createdSessions = [];
       this.createdEmailCodes = [];
+      this.createdPlants = [];
+      this.createdPlantInstances = [];
+      this.createdPropagations = [];
+      this.createdCareHistory = [];
     }
   }
 

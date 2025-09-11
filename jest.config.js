@@ -21,6 +21,13 @@ const customJestConfig = {
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^lodash-es$': 'lodash',
+    '^lodash-es/(.*)$': 'lodash/$1',
+    '^oslo/(.*)$': '<rootDir>/src/test-utils/mocks/oslo-mock.js',
+    '^oslo$': '<rootDir>/src/test-utils/mocks/oslo-mock.js',
+    '^lucia$': '<rootDir>/src/test-utils/mocks/lucia-mock.js',
+    '^lucia/(.*)$': '<rootDir>/src/test-utils/mocks/lucia-mock.js',
+    '^@lucia-auth/adapter-postgresql$': '<rootDir>/src/test-utils/mocks/lucia-mock.js',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': 'identity-obj-proxy',
   },
@@ -52,7 +59,7 @@ const customJestConfig = {
   workerIdleMemoryLimit: '512MB', // Prevent memory leaks in workers
   // Transform node_modules that use ES modules
   transformIgnorePatterns: [
-    'node_modules/(?!(lodash-es|lucide-react|@tanstack/react-query|@hookform|fuse\\.js|oslo|@oslo|@lucia-auth|@hookform/resolvers)/)',
+    'node_modules/(?!(lodash-es|lucide-react|@tanstack|@hookform|fuse\\.js|oslo|@oslo|lucia|@lucia-auth|@hookform/resolvers|@node-rs))',
   ],
   // Improve test isolation
   resetMocks: true,

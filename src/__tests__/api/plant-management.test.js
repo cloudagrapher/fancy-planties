@@ -55,12 +55,12 @@ jest.mock('@/lib/validation/plant-schemas', () => ({
 import { validateRequest, validateVerifiedRequest } from '@/lib/auth/server';
 import { createPlant, getPlantsWithStats, validatePlantTaxonomy } from '@/lib/db/queries/plant-taxonomy';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
-import { 
-  createPlantSchema, 
-  plantFilterSchema, 
-  createPlantInstanceSchema, 
+import {
+  createPlantSchema,
+  plantFilterSchema,
+  createPlantInstanceSchema,
   plantInstanceFilterSchema,
-  updatePlantInstanceSchema 
+  updatePlantInstanceSchema
 } from '@/lib/validation/plant-schemas';
 
 describe('Plant Management API Endpoints', () => {
@@ -70,16 +70,16 @@ describe('Plant Management API Endpoints', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     resetApiMocks();
-    
+
     testUser = createTestUser();
     testSession = createTestSession(testUser);
-    
+
     // Default auth mock
     validateRequest.mockResolvedValue({
       user: testUser,
       session: testSession,
     });
-    
+
     validateVerifiedRequest.mockResolvedValue({
       user: testUser,
       session: testSession,
@@ -569,11 +569,11 @@ describe('Plant Management API Endpoints', () => {
       // Verify fertilizer due date was calculated (should be 2 weeks from now)
       const callArgs = PlantInstanceQueries.create.mock.calls[0][0];
       expect(callArgs.fertilizerDue).toBeInstanceOf(Date);
-      
+
       const now = new Date();
       const expectedDue = new Date(now);
       expectedDue.setDate(expectedDue.getDate() + 14); // 2 weeks
-      
+
       // Allow for small time differences in test execution
       const timeDiff = Math.abs(callArgs.fertilizerDue.getTime() - expectedDue.getTime());
       expect(timeDiff).toBeLessThan(1000); // Less than 1 second difference
@@ -848,7 +848,7 @@ describe('Plant Management API Endpoints', () => {
   describe('Plant Management Integration Tests', () => {
     it('should handle complete plant management workflow: create -> read -> update -> delete', async () => {
       const testPlant = createTestPlant();
-      
+
       // Step 1: Create plant instance
       const createData = {
         plantId: testPlant.id,

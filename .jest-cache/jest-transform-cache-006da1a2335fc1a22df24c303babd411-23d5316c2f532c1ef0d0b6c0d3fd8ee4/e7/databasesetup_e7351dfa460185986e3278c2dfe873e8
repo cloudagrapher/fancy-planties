@@ -1,0 +1,31 @@
+c2682290551693c0612111337711f959
+// Database test setup utilities
+// This file will be implemented in task 3.3
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get cleanupTestDatabase () {
+        return cleanupTestDatabase;
+    },
+    get createTestDatabase () {
+        return createTestDatabase;
+    }
+});
+const createTestDatabase = ()=>{
+    // TODO: Implement in task 3.3
+    throw new Error('Database test setup not yet implemented');
+};
+const cleanupTestDatabase = ()=>{
+    // TODO: Implement in task 3.3
+    throw new Error('Database test cleanup not yet implemented');
+};
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL3Rlc3QtdXRpbHMvc2V0dXAvZGF0YWJhc2Utc2V0dXAuanMiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gRGF0YWJhc2UgdGVzdCBzZXR1cCB1dGlsaXRpZXNcbi8vIFRoaXMgZmlsZSB3aWxsIGJlIGltcGxlbWVudGVkIGluIHRhc2sgMy4zXG5cbmV4cG9ydCBjb25zdCBjcmVhdGVUZXN0RGF0YWJhc2UgPSAoKSA9PiB7XG4gIC8vIFRPRE86IEltcGxlbWVudCBpbiB0YXNrIDMuM1xuICB0aHJvdyBuZXcgRXJyb3IoJ0RhdGFiYXNlIHRlc3Qgc2V0dXAgbm90IHlldCBpbXBsZW1lbnRlZCcpO1xufTtcblxuZXhwb3J0IGNvbnN0IGNsZWFudXBUZXN0RGF0YWJhc2UgPSAoKSA9PiB7XG4gIC8vIFRPRE86IEltcGxlbWVudCBpbiB0YXNrIDMuM1xuICB0aHJvdyBuZXcgRXJyb3IoJ0RhdGFiYXNlIHRlc3QgY2xlYW51cCBub3QgeWV0IGltcGxlbWVudGVkJyk7XG59OyJdLCJuYW1lcyI6WyJjbGVhbnVwVGVzdERhdGFiYXNlIiwiY3JlYXRlVGVzdERhdGFiYXNlIiwiRXJyb3IiXSwibWFwcGluZ3MiOiJBQUFBLGdDQUFnQztBQUNoQyw0Q0FBNEM7Ozs7Ozs7Ozs7OztRQU8vQkE7ZUFBQUE7O1FBTEFDO2VBQUFBOzs7QUFBTixNQUFNQSxxQkFBcUI7SUFDaEMsOEJBQThCO0lBQzlCLE1BQU0sSUFBSUMsTUFBTTtBQUNsQjtBQUVPLE1BQU1GLHNCQUFzQjtJQUNqQyw4QkFBOEI7SUFDOUIsTUFBTSxJQUFJRSxNQUFNO0FBQ2xCIn0=

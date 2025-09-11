@@ -13,6 +13,9 @@ if (typeof global.process === 'undefined') {
   };
 }
 
+// Set database URL for tests to use localhost instead of postgres hostname
+process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+
 // Essential Next.js mocks - moved to test-utils for better organization
 jest.mock('next/navigation', () => require('./src/test-utils/mocks/nextjs-mocks').navigationMock);
 jest.mock('next/image', () => require('./src/test-utils/mocks/nextjs-mocks').imageMock);

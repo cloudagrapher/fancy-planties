@@ -1,0 +1,282 @@
+a8263d73243db8015ea3177812dadfcc
+"use strict";
+
+/* istanbul ignore next */
+function cov_12dwkv6hob() {
+  var path = "/Users/stefanbekker/projects/fancy-planties/src/components/auth/AuthGuard.tsx";
+  var hash = "cd95976fbb676f2ca804c473d93fac6aa6932957";
+  var global = new Function("return this")();
+  var gcv = "__coverage__";
+  var coverageData = {
+    path: "/Users/stefanbekker/projects/fancy-planties/src/components/auth/AuthGuard.tsx",
+    statementMap: {
+      "0": {
+        start: {
+          line: 2,
+          column: 0
+        },
+        end: {
+          line: 4,
+          column: 3
+        }
+      },
+      "1": {
+        start: {
+          line: 5,
+          column: 0
+        },
+        end: {
+          line: 10,
+          column: 3
+        }
+      },
+      "2": {
+        start: {
+          line: 8,
+          column: 8
+        },
+        end: {
+          line: 8,
+          column: 25
+        }
+      },
+      "3": {
+        start: {
+          line: 11,
+          column: 20
+        },
+        end: {
+          line: 11,
+          column: 48
+        }
+      },
+      "4": {
+        start: {
+          line: 12,
+          column: 20
+        },
+        end: {
+          line: 12,
+          column: 46
+        }
+      },
+      "5": {
+        start: {
+          line: 13,
+          column: 16
+        },
+        end: {
+          line: 13,
+          column: 48
+        }
+      },
+      "6": {
+        start: {
+          line: 15,
+          column: 4
+        },
+        end: {
+          line: 23,
+          column: 5
+        }
+      },
+      "7": {
+        start: {
+          line: 16,
+          column: 8
+        },
+        end: {
+          line: 16,
+          column: 48
+        }
+      },
+      "8": {
+        start: {
+          line: 17,
+          column: 8
+        },
+        end: {
+          line: 19,
+          column: 11
+        }
+      },
+      "9": {
+        start: {
+          line: 22,
+          column: 8
+        },
+        end: {
+          line: 22,
+          column: 46
+        }
+      }
+    },
+    fnMap: {
+      "0": {
+        name: "(anonymous_0)",
+        decl: {
+          start: {
+            line: 7,
+            column: 9
+          },
+          end: {
+            line: 7,
+            column: 10
+          }
+        },
+        loc: {
+          start: {
+            line: 7,
+            column: 20
+          },
+          end: {
+            line: 9,
+            column: 5
+          }
+        },
+        line: 7
+      },
+      "1": {
+        name: "AuthGuard",
+        decl: {
+          start: {
+            line: 14,
+            column: 15
+          },
+          end: {
+            line: 14,
+            column: 24
+          }
+        },
+        loc: {
+          start: {
+            line: 14,
+            column: 68
+          },
+          end: {
+            line: 24,
+            column: 1
+          }
+        },
+        line: 14
+      }
+    },
+    branchMap: {
+      "0": {
+        loc: {
+          start: {
+            line: 14,
+            column: 37
+          },
+          end: {
+            line: 14,
+            column: 64
+          }
+        },
+        type: "default-arg",
+        locations: [{
+          start: {
+            line: 14,
+            column: 50
+          },
+          end: {
+            line: 14,
+            column: 64
+          }
+        }],
+        line: 14
+      }
+    },
+    s: {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0,
+      "5": 0,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0
+    },
+    f: {
+      "0": 0,
+      "1": 0
+    },
+    b: {
+      "0": [0]
+    },
+    inputSourceMap: {
+      version: 3,
+      sources: ["/Users/stefanbekker/projects/fancy-planties/src/components/auth/AuthGuard.tsx"],
+      sourcesContent: ["import { redirect } from 'next/navigation';\nimport { requireAuthSession } from '@/lib/auth/server';\n\ninterface AuthGuardProps {\n  children: React.ReactNode;\n  redirectTo?: string;\n}\n\nexport default async function AuthGuard({ \n  children, \n  redirectTo = '/auth/signin' \n}: AuthGuardProps) {\n  try {\n    await requireAuthSession();\n    return <>{children}</>;\n  } catch {\n    // If authentication fails, redirect to sign in\n    redirect(redirectTo);\n  }\n}"],
+      names: ["AuthGuard", "children", "redirectTo", "requireAuthSession", "redirect"],
+      mappings: ";;;;+BAQA;;;eAA8BA;;;;4BARL;wBACU;AAOpB,eAAeA,UAAU,EACtCC,QAAQ,EACRC,aAAa,cAAc,EACZ;IACf,IAAI;QACF,MAAMC,IAAAA,0BAAkB;QACxB,qBAAO;sBAAGF;;IACZ,EAAE,OAAM;QACN,+CAA+C;QAC/CG,IAAAA,oBAAQ,EAACF;IACX;AACF"
+    },
+    _coverageSchema: "1a1c01bbd47fc00a2c39e90264f33305004495a9",
+    hash: "cd95976fbb676f2ca804c473d93fac6aa6932957"
+  };
+  var coverage = global[gcv] || (global[gcv] = {});
+  if (!coverage[path] || coverage[path].hash !== hash) {
+    coverage[path] = coverageData;
+  }
+  var actualCoverage = coverage[path];
+  {
+    // @ts-ignore
+    cov_12dwkv6hob = function () {
+      return actualCoverage;
+    };
+  }
+  return actualCoverage;
+}
+cov_12dwkv6hob();
+cov_12dwkv6hob().s[0]++;
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+/* istanbul ignore next */
+cov_12dwkv6hob().s[1]++;
+Object.defineProperty(exports, "default", {
+  enumerable: true,
+  get: function () {
+    /* istanbul ignore next */
+    cov_12dwkv6hob().f[0]++;
+    cov_12dwkv6hob().s[2]++;
+    return AuthGuard;
+  }
+});
+const _jsxruntime =
+/* istanbul ignore next */
+(cov_12dwkv6hob().s[3]++, require("react/jsx-runtime"));
+const _navigation =
+/* istanbul ignore next */
+(cov_12dwkv6hob().s[4]++, require("next/navigation"));
+const _server =
+/* istanbul ignore next */
+(cov_12dwkv6hob().s[5]++, require("../../lib/auth/server"));
+async function AuthGuard({
+  children,
+  redirectTo =
+  /* istanbul ignore next */
+  (cov_12dwkv6hob().b[0][0]++, '/auth/signin')
+}) {
+  /* istanbul ignore next */
+  cov_12dwkv6hob().f[1]++;
+  cov_12dwkv6hob().s[6]++;
+  try {
+    /* istanbul ignore next */
+    cov_12dwkv6hob().s[7]++;
+    await (0, _server.requireAuthSession)();
+    /* istanbul ignore next */
+    cov_12dwkv6hob().s[8]++;
+    return /*#__PURE__*/(0, _jsxruntime.jsx)(_jsxruntime.Fragment, {
+      children: children
+    });
+  } catch {
+    /* istanbul ignore next */
+    cov_12dwkv6hob().s[9]++;
+    // If authentication fails, redirect to sign in
+    (0, _navigation.redirect)(redirectTo);
+  }
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJjb3ZfMTJkd2t2NmhvYiIsImFjdHVhbENvdmVyYWdlIiwicyIsIkF1dGhHdWFyZCIsImNoaWxkcmVuIiwicmVkaXJlY3RUbyIsImIiLCJmIiwiX3NlcnZlciIsInJlcXVpcmVBdXRoU2Vzc2lvbiIsIl9qc3hydW50aW1lIiwianN4IiwiRnJhZ21lbnQiLCJfbmF2aWdhdGlvbiIsInJlZGlyZWN0Il0sInNvdXJjZXMiOlsiL1VzZXJzL3N0ZWZhbmJla2tlci9wcm9qZWN0cy9mYW5jeS1wbGFudGllcy9zcmMvY29tcG9uZW50cy9hdXRoL0F1dGhHdWFyZC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgcmVkaXJlY3QgfSBmcm9tICduZXh0L25hdmlnYXRpb24nO1xuaW1wb3J0IHsgcmVxdWlyZUF1dGhTZXNzaW9uIH0gZnJvbSAnQC9saWIvYXV0aC9zZXJ2ZXInO1xuXG5pbnRlcmZhY2UgQXV0aEd1YXJkUHJvcHMge1xuICBjaGlsZHJlbjogUmVhY3QuUmVhY3ROb2RlO1xuICByZWRpcmVjdFRvPzogc3RyaW5nO1xufVxuXG5leHBvcnQgZGVmYXVsdCBhc3luYyBmdW5jdGlvbiBBdXRoR3VhcmQoeyBcbiAgY2hpbGRyZW4sIFxuICByZWRpcmVjdFRvID0gJy9hdXRoL3NpZ25pbicgXG59OiBBdXRoR3VhcmRQcm9wcykge1xuICB0cnkge1xuICAgIGF3YWl0IHJlcXVpcmVBdXRoU2Vzc2lvbigpO1xuICAgIHJldHVybiA8PntjaGlsZHJlbn08Lz47XG4gIH0gY2F0Y2gge1xuICAgIC8vIElmIGF1dGhlbnRpY2F0aW9uIGZhaWxzLCByZWRpcmVjdCB0byBzaWduIGluXG4gICAgcmVkaXJlY3QocmVkaXJlY3RUbyk7XG4gIH1cbn0iXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7SUFhSTtJQUFBQSxjQUFBLFlBQUFBLENBQUE7TUFBQSxPQUFBQyxjQUFBO0lBQUE7RUFBQTtFQUFBLE9BQUFBLGNBQUE7QUFBQTtBQUFBRCxjQUFBO0FBQUFBLGNBQUEsR0FBQUUsQ0FBQTs7Ozs7OytCQUxKOzs7Ozs7V0FBOEJDLFNBQUE7Ozs7Ozs7O2tDQVJMOzs7a0NBQ1U7QUFPcEIsZUFBZUEsVUFBVTtFQUN0Q0MsUUFBUTtFQUNSQyxVQUFBO0VBQUE7RUFBQSxDQUFBTCxjQUFBLEdBQUFNLENBQUEsVUFBYSxjQUFjO0FBQUEsQ0FDWjtFQUFBO0VBQUFOLGNBQUEsR0FBQU8sQ0FBQTtFQUFBUCxjQUFBLEdBQUFFLENBQUE7RUFDZixJQUFJO0lBQUE7SUFBQUYsY0FBQSxHQUFBRSxDQUFBO0lBQ0YsTUFBTSxJQUFBTSxPQUFBLENBQUFDLGtCQUFrQjtJQUFBO0lBQUFULGNBQUEsR0FBQUUsQ0FBQTtJQUN4QixvQkFBTyxJQUFBUSxXQUFBLENBQUFDLEdBQUEsRUFBQUQsV0FBQSxDQUFBRSxRQUFBO2dCQUFHUjs7RUFDWixFQUFFLE1BQU07SUFBQTtJQUFBSixjQUFBLEdBQUFFLENBQUE7SUFDTjtJQUNBLElBQUFXLFdBQUEsQ0FBQUMsUUFBUSxFQUFDVCxVQUFBO0VBQ1g7QUFDRiIsImlnbm9yZUxpc3QiOltdfQ==

@@ -16,8 +16,8 @@ import {
   createRealisticCareSchedule,
   resetCareCounter
 } from '../../test-utils/factories/care-factory';
-import { createTestUser } from '../../test-utils/factories/user-factory';
-import { createTestPlant, createTestPlantInstance } from '../../test-utils/factories/plant-factory';
+import { createTestUser, resetUserCounter } from '../../test-utils/factories/user-factory';
+import { createTestPlant, createTestPlantInstance, resetPlantCounters } from '../../test-utils/factories/plant-factory';
 
 describe('Care Data Database Queries', () => {
   let dbManager;
@@ -25,6 +25,8 @@ describe('Care Data Database Queries', () => {
   beforeEach(() => {
     dbManager = createDatabaseTestManager();
     resetCareCounter();
+    resetUserCounter();
+    resetPlantCounters();
   });
 
   afterEach(async () => {
@@ -37,13 +39,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const careData = {
         userId: createdUser.id,
@@ -73,13 +75,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const careData = createTestCareRecord({
         userId: createdUser.id,
@@ -105,13 +107,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const careData = createTestCareRecord({
         userId: createdUser.id,
@@ -142,13 +144,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const careData = createTestCareRecord({
         userId: createdUser.id,
@@ -171,13 +173,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       // Create multiple care records
       const careRecords = [
@@ -217,13 +219,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       // Create care records of different types
       const fertilizerCare = createTestCareRecord({
@@ -257,13 +259,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const now = new Date();
       const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -304,7 +306,7 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       // Create multiple plant instances
       const instance1 = createTestPlantInstance({
@@ -316,8 +318,8 @@ describe('Care Data Database Queries', () => {
         plantId: createdPlant.id,
       });
 
-      const createdInstance1 = await PlantInstanceQueries.create(instance1);
-      const createdInstance2 = await PlantInstanceQueries.create(instance2);
+      const createdInstance1 = await dbManager.createTestPlantInstance(instance1);
+      const createdInstance2 = await dbManager.createTestPlantInstance(instance2);
 
       // Create care records for both instances
       const care1 = createTestCareRecord({
@@ -348,13 +350,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       // Create multiple care records
       const careRecords = [
@@ -407,13 +409,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const now = new Date();
       const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -451,13 +453,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const lastRepotDate = await CareHistoryQueries.getLastCareDate(
         createdInstance.id,
@@ -473,7 +475,7 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       // Create plant instances with different care statuses
       const overdueInstance = createTestPlantInstance({
@@ -497,9 +499,9 @@ describe('Care Data Database Queries', () => {
         isActive: true,
       });
 
-      await PlantInstanceQueries.create(overdueInstance);
-      await PlantInstanceQueries.create(dueTodayInstance);
-      await PlantInstanceQueries.create(dueSoonInstance);
+      await dbManager.createTestPlantInstance(overdueInstance);
+      await dbManager.createTestPlantInstance(dueTodayInstance);
+      await dbManager.createTestPlantInstance(dueSoonInstance);
 
       const dashboardData = await CareHistoryQueries.getCareDashboardData(createdUser.id);
 
@@ -518,13 +520,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const careEntries = [
         {
@@ -567,7 +569,7 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       // Create multiple plant instances
       const instance1 = createTestPlantInstance({
@@ -579,8 +581,8 @@ describe('Care Data Database Queries', () => {
         plantId: createdPlant.id,
       });
 
-      const createdInstance1 = await PlantInstanceQueries.create(instance1);
-      const createdInstance2 = await PlantInstanceQueries.create(instance2);
+      const createdInstance1 = await dbManager.createTestPlantInstance(instance1);
+      const createdInstance2 = await dbManager.createTestPlantInstance(instance2);
 
       // Create care records for both instances
       const care1 = createTestCareRecord({
@@ -613,13 +615,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const fertilizerCare = {
         userId: createdUser.id,
@@ -644,13 +646,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const repotCare = {
         userId: createdUser.id,
@@ -676,13 +678,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const waterCare = {
         userId: createdUser.id,
@@ -719,19 +721,19 @@ describe('Care Data Database Queries', () => {
     });
 
     test('should handle unauthorized care record access', async () => {
-      const testUser1 = createTestUser({ email: 'user1@example.com' });
-      const testUser2 = createTestUser({ email: 'user2@example.com' });
+      const testUser1 = createTestUser();
+      const testUser2 = createTestUser();
       const createdUser1 = await dbManager.createTestUser(testUser1);
       const createdUser2 = await dbManager.createTestUser(testUser2);
 
       const plant = createTestPlant({ createdBy: createdUser1.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser1.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const careData = createTestCareRecord({
         userId: createdUser1.id,
@@ -755,13 +757,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       const careData = {
         userId: createdUser.id,
@@ -781,13 +783,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       // No care records created
       const history = await CareHistoryQueries.getCareHistoryForPlant(
@@ -812,13 +814,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       // Create multiple care records concurrently
       const carePromises = Array.from({ length: 5 }, (_, index) => {
@@ -840,13 +842,13 @@ describe('Care Data Database Queries', () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       const plant = createTestPlant({ createdBy: createdUser.id });
-      const createdPlant = await PlantQueries.create(plant);
+      const createdPlant = await dbManager.createTestPlant(plant);
 
       const plantInstance = createTestPlantInstance({
         userId: createdUser.id,
         plantId: createdPlant.id,
       });
-      const createdInstance = await PlantInstanceQueries.create(plantInstance);
+      const createdInstance = await dbManager.createTestPlantInstance(plantInstance);
 
       // Create many care records
       const careEntries = Array.from({ length: 50 }, (_, index) => ({

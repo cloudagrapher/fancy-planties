@@ -56,9 +56,8 @@ export const createTestCareRecord = (overrides = {}) => {
   const careDate = new Date(Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 30); // Random date within last 30 days
   
   const baseCareRecord = {
-    id: careRecordCounter,
-    userId: overrides.userId || 1,
-    plantInstanceId: overrides.plantInstanceId || 1,
+    // Remove id - let database auto-generate it
+    // userId and plantInstanceId should be provided via overrides
     careType: overrides.careType || careType,
     careDate: overrides.careDate || careDate,
     notes: CARE_NOTES[careRecordCounter % CARE_NOTES.length],

@@ -11,6 +11,7 @@ import SignInForm from '@/components/auth/SignInForm';
 // Mock Next.js navigation
 const mockPush = jest.fn();
 const mockRefresh = jest.fn();
+const mockSearchParamsGet = jest.fn();
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -18,16 +19,19 @@ jest.mock('next/navigation', () => ({
     refresh: mockRefresh,
   }),
   useSearchParams: () => ({
-    get: jest.fn((key) => {
-      if (key === 'redirect') return '/dashboard';
-      return null;
-    }),
+    get: mockSearchParamsGet,
   }),
 }));
 
 describe('SignInForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Set default mock behavior for search params
+    mockSearchParamsGet.mockImplementation((key) => {
+      if (key === 'redirect') return '/dashboard';
+      return null;
+    });
     
     // Mock successful sign-in by default
     mockApiResponses({
@@ -83,7 +87,7 @@ describe('SignInForm', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+        expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument();
         expect(screen.getByText(/password is required/i)).toBeInTheDocument();
       });
 
@@ -130,7 +134,7 @@ describe('SignInForm', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+        expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument();
       });
 
       // Start typing in email field
@@ -138,7 +142,7 @@ describe('SignInForm', () => {
       await user.type(emailInput, 'test');
 
       // Error should be cleared
-      expect(screen.queryByText(/email is required/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/please enter a valid email address/i)).not.toBeInTheDocument();
     });
   });
 
@@ -189,11 +193,9 @@ describe('SignInForm', () => {
       const user = userEvent.setup();
       
       // Mock useSearchParams to return a redirect URL
-      jest.mocked(require('next/navigation').useSearchParams).mockReturnValue({
-        get: jest.fn((key) => {
-          if (key === 'redirect') return '/plants';
-          return null;
-        }),
+      mockSearchParamsGet.mockImplementation((key) => {
+        if (key === 'redirect') return '/plants';
+        return null;
       });
 
       renderWithProviders(<SignInForm />);
@@ -341,7 +343,7 @@ describe('SignInForm', () => {
 
       await waitFor(() => {
         const emailInput = screen.getByLabelText(/email address/i);
-        const emailError = screen.getByText(/email is required/i);
+        const emailError = screen.getByText(/please enter a valid email address/i);
         
         expect(emailInput).toHaveAttribute('aria-describedby', 'signin-email-error');
         expect(emailError).toHaveAttribute('id', 'signin-email-error');

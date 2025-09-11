@@ -3,16 +3,25 @@
  */
 
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders } from '@/test-utils/helpers/render-helpers';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
 
 // Mock Next.js navigation
 const mockPathname = jest.fn();
 
+// Mock usePathname hook specifically for this test
 jest.mock('next/navigation', () => ({
   usePathname: () => mockPathname(),
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+    prefetch: jest.fn(),
+  }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock haptic feedback hook
@@ -32,7 +41,7 @@ describe('BottomNavigation', () => {
 
   describe('Navigation Rendering', () => {
     it('renders all navigation items', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       expect(screen.getByRole('link', { name: /navigate to plants/i })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /navigate to care/i })).toBeInTheDocument();
@@ -42,7 +51,7 @@ describe('BottomNavigation', () => {
     });
 
     it('renders navigation icons', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       expect(screen.getByText('🌱')).toBeInTheDocument(); // Plants
       expect(screen.getByText('💧')).toBeInTheDocument(); // Care
@@ -52,7 +61,7 @@ describe('BottomNavigation', () => {
     });
 
     it('renders navigation labels', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       expect(screen.getByText('Plants')).toBeInTheDocument();
       expect(screen.getByText('Care')).toBeInTheDocument();
@@ -62,7 +71,7 @@ describe('BottomNavigation', () => {
     });
 
     it('has proper navigation structure', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const nav = screen.getByRole('navigation');
       expect(nav).toBeInTheDocument();
@@ -76,7 +85,7 @@ describe('BottomNavigation', () => {
   describe('Active State Management', () => {
     it('marks dashboard as active when on dashboard route', () => {
       mockPathname.mockReturnValue('/dashboard');
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const dashboardLink = screen.getByRole('link', { name: /navigate to dashboard/i });
       expect(dashboardLink).toHaveClass('bottom-nav-item--active');
@@ -84,7 +93,7 @@ describe('BottomNavigation', () => {
 
     it('marks plants as active when on plants route', () => {
       mockPathname.mockReturnValue('/dashboard/plants');
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const plantsLink = screen.getByRole('link', { name: /navigate to plants/i });
       expect(plantsLink).toHaveClass('bottom-nav-item--active');
@@ -92,7 +101,7 @@ describe('BottomNavigation', () => {
 
     it('marks care as active when on care route', () => {
       mockPathname.mockReturnValue('/dashboard/care');
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const careLink = screen.getByRole('link', { name: /navigate to care/i });
       expect(careLink).toHaveClass('bottom-nav-item--active');
@@ -100,7 +109,7 @@ describe('BottomNavigation', () => {
 
     it('marks propagations as active when on propagations route', () => {
       mockPathname.mockReturnValue('/dashboard/propagations');
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const propagationsLink = screen.getByRole('link', { name: /navigate to propagations/i });
       expect(propagationsLink).toHaveClass('bottom-nav-item--active');
@@ -108,7 +117,7 @@ describe('BottomNavigation', () => {
 
     it('marks handbook as active when on handbook route', () => {
       mockPathname.mockReturnValue('/dashboard/handbook');
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const handbookLink = screen.getByRole('link', { name: /navigate to handbook/i });
       expect(handbookLink).toHaveClass('bottom-nav-item--active');
@@ -116,7 +125,7 @@ describe('BottomNavigation', () => {
 
     it('handles nested routes correctly', () => {
       mockPathname.mockReturnValue('/dashboard/plants/123');
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const plantsLink = screen.getByRole('link', { name: /navigate to plants/i });
       expect(plantsLink).toHaveClass('bottom-nav-item--active');
@@ -124,7 +133,7 @@ describe('BottomNavigation', () => {
 
     it('only marks dashboard as active for exact dashboard route', () => {
       mockPathname.mockReturnValue('/dashboard/plants');
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const dashboardLink = screen.getByRole('link', { name: /navigate to dashboard/i });
       expect(dashboardLink).not.toHaveClass('bottom-nav-item--active');
@@ -133,7 +142,7 @@ describe('BottomNavigation', () => {
 
     it('marks inactive items with inactive class', () => {
       mockPathname.mockReturnValue('/dashboard/plants');
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const careLink = screen.getByRole('link', { name: /navigate to care/i });
       const dashboardLink = screen.getByRole('link', { name: /navigate to dashboard/i });
@@ -147,7 +156,7 @@ describe('BottomNavigation', () => {
 
   describe('Navigation Links', () => {
     it('has correct href attributes', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       expect(screen.getByRole('link', { name: /navigate to plants/i })).toHaveAttribute('href', '/dashboard/plants');
       expect(screen.getByRole('link', { name: /navigate to care/i })).toHaveAttribute('href', '/dashboard/care');
@@ -157,7 +166,7 @@ describe('BottomNavigation', () => {
     });
 
     it('has proper title attributes for tooltips', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       expect(screen.getByRole('link', { name: /navigate to plants/i })).toHaveAttribute('title', 'Navigate to Plants');
       expect(screen.getByRole('link', { name: /navigate to care/i })).toHaveAttribute('title', 'Navigate to Care');
@@ -167,13 +176,13 @@ describe('BottomNavigation', () => {
 
   describe('Care Notification Badge', () => {
     it('does not show badge when no notifications', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={0} />);
+      render(<BottomNavigation careNotificationCount={0} />);
 
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
 
     it('shows badge with notification count', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={5} />);
+      render(<BottomNavigation careNotificationCount={5} />);
 
       const badge = screen.getByRole('status', { name: /5 notifications/i });
       expect(badge).toBeInTheDocument();
@@ -182,14 +191,14 @@ describe('BottomNavigation', () => {
     });
 
     it('shows 99+ for counts over 99', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={150} />);
+      render(<BottomNavigation careNotificationCount={150} />);
 
       const badge = screen.getByRole('status', { name: /150 notifications/i });
       expect(badge).toHaveTextContent('99+');
     });
 
     it('updates care link aria-label with notification count', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={3} />);
+      render(<BottomNavigation careNotificationCount={3} />);
 
       const careLink = screen.getByRole('link', { name: /navigate to care \(3 notifications\)/i });
       expect(careLink).toBeInTheDocument();
@@ -197,7 +206,7 @@ describe('BottomNavigation', () => {
     });
 
     it('badge has proper accessibility attributes', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={7} />);
+      render(<BottomNavigation careNotificationCount={7} />);
 
       const badge = screen.getByRole('status');
       expect(badge).toHaveAttribute('aria-label', '7 notifications');
@@ -206,37 +215,34 @@ describe('BottomNavigation', () => {
 
   describe('User Interactions', () => {
     it('triggers haptic feedback on touch', async () => {
-      const user = userEvent.setup();
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const plantsLink = screen.getByRole('link', { name: /navigate to plants/i });
       
-      // Simulate touch start
-      await user.pointer({ keys: '[TouchA>]', target: plantsLink });
+      // Simulate touch start event
+      fireEvent.touchStart(plantsLink);
 
       expect(mockTriggerHaptic).toHaveBeenCalledWith('selection');
     });
 
     it('triggers haptic feedback on mouse down', async () => {
-      const user = userEvent.setup();
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const plantsLink = screen.getByRole('link', { name: /navigate to plants/i });
       
-      // Simulate mouse down
-      await user.pointer({ keys: '[MouseLeft>]', target: plantsLink });
+      // Simulate mouse down event
+      fireEvent.mouseDown(plantsLink);
 
       expect(mockTriggerHaptic).toHaveBeenCalledWith('selection');
     });
 
     it('applies pressed state temporarily', async () => {
-      const user = userEvent.setup();
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const plantsLink = screen.getByRole('link', { name: /navigate to plants/i });
       
-      // Simulate touch start
-      await user.pointer({ keys: '[TouchA>]', target: plantsLink });
+      // Simulate touch start event
+      fireEvent.touchStart(plantsLink);
 
       // Should have pressed class temporarily
       expect(plantsLink).toHaveClass('bottom-nav-item--pressed');
@@ -248,15 +254,14 @@ describe('BottomNavigation', () => {
     });
 
     it('handles multiple rapid taps correctly', async () => {
-      const user = userEvent.setup();
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const plantsLink = screen.getByRole('link', { name: /navigate to plants/i });
       
-      // Rapid taps
-      await user.pointer({ keys: '[TouchA>]', target: plantsLink });
-      await user.pointer({ keys: '[TouchA>]', target: plantsLink });
-      await user.pointer({ keys: '[TouchA>]', target: plantsLink });
+      // Rapid taps using touch events
+      fireEvent.touchStart(plantsLink);
+      fireEvent.touchStart(plantsLink);
+      fireEvent.touchStart(plantsLink);
 
       expect(mockTriggerHaptic).toHaveBeenCalledTimes(3);
     });
@@ -264,14 +269,14 @@ describe('BottomNavigation', () => {
 
   describe('Accessibility', () => {
     it('has proper navigation landmark', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const nav = screen.getByRole('navigation');
       expect(nav).toBeInTheDocument();
     });
 
     it('has descriptive aria-labels for all links', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       expect(screen.getByLabelText(/navigate to plants/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/navigate to care/i)).toBeInTheDocument();
@@ -281,7 +286,7 @@ describe('BottomNavigation', () => {
     });
 
     it('marks icons as decorative with aria-hidden', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const icons = screen.getAllByText(/[🌱💧🏠🌿📖]/);
       icons.forEach(icon => {
@@ -290,7 +295,7 @@ describe('BottomNavigation', () => {
     });
 
     it('provides screen reader context for notification badges', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={5} />);
+      render(<BottomNavigation careNotificationCount={5} />);
 
       const badge = screen.getByRole('status');
       expect(badge).toHaveAttribute('aria-label', '5 notifications');
@@ -298,7 +303,7 @@ describe('BottomNavigation', () => {
 
     it('supports keyboard navigation', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       // Tab through navigation items
       await user.tab();
@@ -319,7 +324,7 @@ describe('BottomNavigation', () => {
 
     it('supports Enter key activation', async () => {
       const user = userEvent.setup();
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const plantsLink = screen.getByRole('link', { name: /navigate to plants/i });
       plantsLink.focus();
@@ -333,7 +338,7 @@ describe('BottomNavigation', () => {
 
   describe('Responsive Behavior', () => {
     it('maintains consistent structure across screen sizes', () => {
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const nav = screen.getByRole('navigation');
       const container = nav.querySelector('.bottom-nav-container');
@@ -352,7 +357,7 @@ describe('BottomNavigation', () => {
         value: 375,
       });
 
-      renderWithProviders(<BottomNavigation />);
+      render(<BottomNavigation />);
 
       const items = screen.getAllByRole('link');
       expect(items).toHaveLength(5);
@@ -362,7 +367,7 @@ describe('BottomNavigation', () => {
   describe('State Consistency', () => {
     it('maintains active state when component re-renders', () => {
       mockPathname.mockReturnValue('/dashboard/plants');
-      const { rerender } = renderWithProviders(<BottomNavigation />);
+      const { rerender } = render(<BottomNavigation />);
 
       let plantsLink = screen.getByRole('link', { name: /navigate to plants/i });
       expect(plantsLink).toHaveClass('bottom-nav-item--active');
@@ -376,7 +381,7 @@ describe('BottomNavigation', () => {
 
     it('updates active state when pathname changes', () => {
       mockPathname.mockReturnValue('/dashboard/plants');
-      const { rerender } = renderWithProviders(<BottomNavigation />);
+      const { rerender } = render(<BottomNavigation />);
 
       let plantsLink = screen.getByRole('link', { name: /navigate to plants/i });
       let careLink = screen.getByRole('link', { name: /navigate to care/i });
@@ -396,7 +401,7 @@ describe('BottomNavigation', () => {
     });
 
     it('updates notification badge when count changes', () => {
-      const { rerender } = renderWithProviders(<BottomNavigation careNotificationCount={3} />);
+      const { rerender } = render(<BottomNavigation careNotificationCount={3} />);
 
       expect(screen.getByRole('status', { name: /3 notifications/i })).toBeInTheDocument();
 
@@ -408,7 +413,7 @@ describe('BottomNavigation', () => {
     });
 
     it('removes badge when notification count becomes zero', () => {
-      const { rerender } = renderWithProviders(<BottomNavigation careNotificationCount={5} />);
+      const { rerender } = render(<BottomNavigation careNotificationCount={5} />);
 
       expect(screen.getByRole('status')).toBeInTheDocument();
 

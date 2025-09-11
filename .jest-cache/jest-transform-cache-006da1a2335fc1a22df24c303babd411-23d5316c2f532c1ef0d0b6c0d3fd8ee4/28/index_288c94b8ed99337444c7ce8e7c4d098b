@@ -1,0 +1,77 @@
+908d02d054afcfcc3efe4b33e4feedd2
+/**
+ * Test Performance Utilities
+ * 
+ * Centralized exports for all test performance monitoring and optimization tools.
+ */ // Performance monitoring
+"use strict";
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get BatchOperations () {
+        return _efficienttestdata.BatchOperations;
+    },
+    get LazyTestData () {
+        return _efficienttestdata.LazyTestData;
+    },
+    get PERFORMANCE_THRESHOLDS () {
+        return _testperformancemonitor.PERFORMANCE_THRESHOLDS;
+    },
+    get assertPerformance () {
+        return _testperformancemonitor.assertPerformance;
+    },
+    get createPlantInstancePool () {
+        return _efficienttestdata.createPlantInstancePool;
+    },
+    get createPlantPool () {
+        return _efficienttestdata.createPlantPool;
+    },
+    get createUserPool () {
+        return _efficienttestdata.createUserPool;
+    },
+    get efficientTestData () {
+        return _efficienttestdata.efficientTestData;
+    },
+    get generateTestData () {
+        return _efficienttestdata.generateTestData;
+    },
+    get measureAsyncOperation () {
+        return _testperformancemonitor.measureAsyncOperation;
+    },
+    get recordBenchmark () {
+        return _testbenchmarking.recordBenchmark;
+    },
+    get saveBenchmarkReport () {
+        return _testbenchmarking.saveBenchmarkReport;
+    },
+    get setupEfficientTestData () {
+        return _efficienttestdata.setupEfficientTestData;
+    },
+    get setupTransactionIsolation () {
+        return _efficienttestdata.setupTransactionIsolation;
+    },
+    get testBenchmarkingSystem () {
+        return _testbenchmarking.testBenchmarkingSystem;
+    },
+    get testPerformanceMonitor () {
+        return _testperformancemonitor.testPerformanceMonitor;
+    },
+    get withBenchmarking () {
+        return _testbenchmarking.withBenchmarking;
+    },
+    get withPerformanceMonitoring () {
+        return _testperformancemonitor.withPerformanceMonitoring;
+    }
+});
+const _testperformancemonitor = require("./test-performance-monitor");
+const _efficienttestdata = require("./efficient-test-data");
+const _testbenchmarking = require("./test-benchmarking");
+
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9zdGVmYW5iZWtrZXIvcHJvamVjdHMvZmFuY3ktcGxhbnRpZXMvc3JjL3Rlc3QtdXRpbHMvcGVyZm9ybWFuY2UvaW5kZXgudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLyoqXG4gKiBUZXN0IFBlcmZvcm1hbmNlIFV0aWxpdGllc1xuICogXG4gKiBDZW50cmFsaXplZCBleHBvcnRzIGZvciBhbGwgdGVzdCBwZXJmb3JtYW5jZSBtb25pdG9yaW5nIGFuZCBvcHRpbWl6YXRpb24gdG9vbHMuXG4gKi9cblxuLy8gUGVyZm9ybWFuY2UgbW9uaXRvcmluZ1xuZXhwb3J0IHtcbiAgdGVzdFBlcmZvcm1hbmNlTW9uaXRvcixcbiAgd2l0aFBlcmZvcm1hbmNlTW9uaXRvcmluZyxcbiAgbWVhc3VyZUFzeW5jT3BlcmF0aW9uLFxuICBQRVJGT1JNQU5DRV9USFJFU0hPTERTLFxuICBhc3NlcnRQZXJmb3JtYW5jZSxcbn0gZnJvbSAnLi90ZXN0LXBlcmZvcm1hbmNlLW1vbml0b3InO1xuXG4vLyBFZmZpY2llbnQgdGVzdCBkYXRhXG5leHBvcnQge1xuICBlZmZpY2llbnRUZXN0RGF0YSxcbiAgc2V0dXBFZmZpY2llbnRUZXN0RGF0YSxcbiAgc2V0dXBUcmFuc2FjdGlvbklzb2xhdGlvbixcbiAgQmF0Y2hPcGVyYXRpb25zLFxuICBnZW5lcmF0ZVRlc3REYXRhLFxuICBMYXp5VGVzdERhdGEsXG4gIGNyZWF0ZVVzZXJQb29sLFxuICBjcmVhdGVQbGFudFBvb2wsXG4gIGNyZWF0ZVBsYW50SW5zdGFuY2VQb29sLFxufSBmcm9tICcuL2VmZmljaWVudC10ZXN0LWRhdGEnO1xuXG4vLyBCZW5jaG1hcmtpbmcgYW5kIGFsZXJ0aW5nXG5leHBvcnQge1xuICB0ZXN0QmVuY2htYXJraW5nU3lzdGVtLFxuICB3aXRoQmVuY2htYXJraW5nLFxuICByZWNvcmRCZW5jaG1hcmssXG4gIHNhdmVCZW5jaG1hcmtSZXBvcnQsXG59IGZyb20gJy4vdGVzdC1iZW5jaG1hcmtpbmcnO1xuXG4vLyBSZS1leHBvcnQgdHlwZXNcbmV4cG9ydCB0eXBlIHtcbiAgVGVzdFBlcmZvcm1hbmNlTWV0cmljcyxcbiAgVGVzdFN1aXRlTWV0cmljcyxcbn0gZnJvbSAnLi90ZXN0LXBlcmZvcm1hbmNlLW1vbml0b3InO1xuXG5leHBvcnQgdHlwZSB7XG4gIFRlc3REYXRhUG9vbCxcbiAgRGF0YWJhc2VUcmFuc2FjdGlvbixcbn0gZnJvbSAnLi9lZmZpY2llbnQtdGVzdC1kYXRhJzsiXSwibmFtZXMiOlsiQmF0Y2hPcGVyYXRpb25zIiwiTGF6eVRlc3REYXRhIiwiUEVSRk9STUFOQ0VfVEhSRVNIT0xEUyIsImFzc2VydFBlcmZvcm1hbmNlIiwiY3JlYXRlUGxhbnRJbnN0YW5jZVBvb2wiLCJjcmVhdGVQbGFudFBvb2wiLCJjcmVhdGVVc2VyUG9vbCIsImVmZmljaWVudFRlc3REYXRhIiwiZ2VuZXJhdGVUZXN0RGF0YSIsIm1lYXN1cmVBc3luY09wZXJhdGlvbiIsInJlY29yZEJlbmNobWFyayIsInNhdmVCZW5jaG1hcmtSZXBvcnQiLCJzZXR1cEVmZmljaWVudFRlc3REYXRhIiwic2V0dXBUcmFuc2FjdGlvbklzb2xhdGlvbiIsInRlc3RCZW5jaG1hcmtpbmdTeXN0ZW0iLCJ0ZXN0UGVyZm9ybWFuY2VNb25pdG9yIiwid2l0aEJlbmNobWFya2luZyIsIndpdGhQZXJmb3JtYW5jZU1vbml0b3JpbmciXSwibWFwcGluZ3MiOiJBQUFBOzs7O0NBSUMsR0FFRCx5QkFBeUI7Ozs7Ozs7Ozs7OztRQWN2QkE7ZUFBQUEsa0NBQWU7O1FBRWZDO2VBQUFBLCtCQUFZOztRQVhaQztlQUFBQSw4Q0FBc0I7O1FBQ3RCQztlQUFBQSx5Q0FBaUI7O1FBYWpCQztlQUFBQSwwQ0FBdUI7O1FBRHZCQztlQUFBQSxrQ0FBZTs7UUFEZkM7ZUFBQUEsaUNBQWM7O1FBTmRDO2VBQUFBLG9DQUFpQjs7UUFJakJDO2VBQUFBLG1DQUFnQjs7UUFYaEJDO2VBQUFBLDZDQUFxQjs7UUFzQnJCQztlQUFBQSxpQ0FBZTs7UUFDZkM7ZUFBQUEscUNBQW1COztRQWZuQkM7ZUFBQUEseUNBQXNCOztRQUN0QkM7ZUFBQUEsNENBQXlCOztRQVd6QkM7ZUFBQUEsd0NBQXNCOztRQXRCdEJDO2VBQUFBLDhDQUFzQjs7UUF1QnRCQztlQUFBQSxrQ0FBZ0I7O1FBdEJoQkM7ZUFBQUEsaURBQXlCOzs7d0NBSXBCO21DQWFBO2tDQVFBIn0=
