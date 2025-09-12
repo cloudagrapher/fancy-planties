@@ -62,9 +62,6 @@ services:
       - HOSTNAME=0.0.0.0
       - PORT=3000
       - DISABLE_SECURE_COOKIES=${DISABLE_SECURE_COOKIES:-false}
-      - RESEND_API_KEY=${RESEND_API_KEY}
-      - FROM_EMAIL=${FROM_EMAIL}
-      - FROM_NAME=${FROM_NAME}
     depends_on:
       postgres:
         condition: service_healthy
