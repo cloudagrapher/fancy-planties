@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     container_name: fancy-planties-db
     environment:
-      POSTGRES_DB: fancy_planties
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-fancy_planties}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5433:5432"
     volumes:

@@ -24,8 +24,9 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
   const [pressedItem, setPressedItem] = useState<string | null>(null);
   const [isCurator, setIsCurator] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [pendingApprovals, setPendingApprovals] = useState(0);
 
-  // Check curator status
+  // Check curator status and fetch pending approvals
   useEffect(() => {
     const checkCuratorStatus = async () => {
       try {
@@ -33,6 +34,15 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
         if (response.ok) {
           const data = await response.json();
           setIsCurator(data.isCurator);
+          
+          // If user is curator, fetch pending approval count
+          if (data.isCurator) {
+            const pendingResponse = await fetch('/api/admin/pending-count');
+            if (pendingResponse.ok) {
+              const pendingData = await pendingResponse.json();
+              setPendingApprovals(pendingData.count || 0);
+            }
+          }
         }
       } catch (error) {
         console.error('Failed to check curator status:', error);
@@ -40,7 +50,23 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
     };
 
     checkCuratorStatus();
-  }, []);
+    
+    // Refresh pending count every 30 seconds for curators
+    const interval = setInterval(() => {
+      if (isCurator) {
+        fetch('/api/admin/pending-count')
+          .then(response => response.ok ? response.json() : null)
+          .then(data => {
+            if (data) {
+              setPendingApprovals(data.count || 0);
+            }
+          })
+          .catch(error => console.error('Failed to refresh pending count:', error));
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [isCurator]);
 
   const allNavigationItems: NavigationItem[] = [
     {
@@ -80,6 +106,7 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
       icon: '⚙️',
       href: '/admin',
       requiresCurator: true,
+      badge: pendingApprovals > 0 ? pendingApprovals : undefined,
     },
   ];
 

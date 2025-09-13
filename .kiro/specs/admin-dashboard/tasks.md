@@ -38,7 +38,7 @@
   - Add curator activity tracking and top plant families analytics
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 6. Implement plant approval workflow
+- [-] 6. Implement plant approval workflow
   - Create plant approval queue with pending submissions display
   - Build plant review interface with approval/rejection actions
   - Implement plant editing before approval with validation
