@@ -25,6 +25,8 @@
     "test:component:open": "cypress open --component",
     "test:all": "npm run test:ci && npm run test:e2e",
     "db:generate": "drizzle-kit generate",
+    "db:generate:local": "DRIZZLE_ENV=local drizzle-kit generate",
+    "db:generate:prod": "DRIZZLE_ENV=production drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:migrate:local": "DRIZZLE_ENV=local drizzle-kit migrate",
     "db:migrate:prod": "DRIZZLE_ENV=production drizzle-kit migrate",
@@ -44,6 +46,7 @@
     "backup:create": "./scripts/backup.sh",
     "backup:restore": "./scripts/restore.sh",
     "db:seed": "DATABASE_URL=\"postgresql://postgres:postgres@localhost:5433/fancy_planties\" npx tsx scripts/seed-plants.ts",
+    "db:seed:local": "DRIZZLE_ENV=local npx tsx scripts/seed-plants.ts",
     "db:verify-email-schema": "node scripts/verify-email-schema.js",
     "db:setup-email-verification": "npx tsx scripts/setup-email-verification.ts"
   },
