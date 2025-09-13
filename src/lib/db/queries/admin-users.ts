@@ -416,4 +416,134 @@ export class AdminUserQueries {
       throw new Error('Failed to get user activity summary');
     }
   }
+
+  // Bulk promote users to curator
+  static async bulkPromoteUsers(
+    userIds: number[], 
+    currentCuratorId: number
+  ): Promise<{ 
+    promotedCount: number; 
+    errors: Array<{ id: number; error: string }> 
+  }> {
+    const errors: Array<{ id: number; error: string }> = [];
+    let promotedCount = 0;
+
+    for (const userId of userIds) {
+      try {
+        if (userId === currentCuratorId) {
+          errors.push({ id: userId, error: 'Cannot promote yourself' });
+          continue;
+        }
+
+        const user = await this.getUserById(userId);
+        if (!user) {
+          errors.push({ id: userId, error: 'User not found' });
+          continue;
+        }
+
+        if (user.isCurator) {
+          errors.push({ id: userId, error: 'User is already a curator' });
+          continue;
+        }
+
+        await this.promoteUserToCurator(userId, currentCuratorId);
+        promotedCount++;
+      } catch (error) {
+        errors.push({
+          id: userId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+
+    return { promotedCount, errors };
+  }
+
+  // Bulk demote curators to users
+  static async bulkDemoteUsers(
+    userIds: number[], 
+    currentCuratorId: number
+  ): Promise<{ 
+    demotedCount: number; 
+    errors: Array<{ id: number; error: string }> 
+  }> {
+    const errors: Array<{ id: number; error: string }> = [];
+    let demotedCount = 0;
+
+    // Check if we would be demoting all curators
+    const curatorCount = await this.getCuratorCount();
+    const curatorsToRemove = userIds.filter(id => id !== currentCuratorId);
+    
+    if (curatorsToRemove.length >= curatorCount) {
+      return {
+        demotedCount: 0,
+        errors: userIds.map(id => ({ 
+          id, 
+          error: 'Cannot demote all curators - at least one must remain' 
+        }))
+      };
+    }
+
+    for (const userId of userIds) {
+      try {
+        if (userId === currentCuratorId) {
+          errors.push({ id: userId, error: 'Cannot demote yourself' });
+          continue;
+        }
+
+        const user = await this.getUserById(userId);
+        if (!user) {
+          errors.push({ id: userId, error: 'User not found' });
+          continue;
+        }
+
+        if (!user.isCurator) {
+          errors.push({ id: userId, error: 'User is not a curator' });
+          continue;
+        }
+
+        await this.demoteCuratorToUser(userId, currentCuratorId);
+        demotedCount++;
+      } catch (error) {
+        errors.push({
+          id: userId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+
+    return { demotedCount, errors };
+  }
+
+  // Export users data
+  static async exportUsers(
+    userIds?: number[], 
+    filters?: UserFilters
+  ): Promise<UserWithStats[]> {
+    try {
+      if (userIds && userIds.length > 0) {
+        // Export specific users
+        const users: UserWithStats[] = [];
+        for (const userId of userIds) {
+          const user = await this.getUserDetails(userId);
+          if (user) {
+            users.push(user);
+          }
+        }
+        return users;
+      } else {
+        // Export all users matching filters
+        const result = await this.getPaginatedUsers(
+          1,
+          10000, // Large limit for export
+          filters || {},
+          { field: 'name', direction: 'asc' }
+        );
+        return result.users;
+      }
+    } catch (error) {
+      console.error('Failed to export users:', error);
+      throw new Error('Failed to export users');
+    }
+  }
 }

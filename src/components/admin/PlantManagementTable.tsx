@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import type { PlantWithDetails, PlantFilters, PlantSortConfig } from '@/lib/db/queries/admin-plants';
+import { useBulkOperations } from '@/hooks/useBulkOperations';
+import BulkOperationsToolbar from './BulkOperationsToolbar';
 
 export interface PlantManagementTableProps {
   initialPlants: PlantWithDetails[];
@@ -23,7 +25,18 @@ export default function PlantManagementTable({
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<PlantWithDetails>>({});
-  const [selectedPlants, setSelectedPlants] = useState<Set<number>>(new Set());
+  
+  // Bulk operations
+  const {
+    selectedItems: selectedPlants,
+    selectItem: selectPlant,
+    selectAll: selectAllPlants,
+    clearSelection,
+    isSelected,
+    selectedCount,
+    progress,
+    executeBulkOperation,
+  } = useBulkOperations<number>();
   
   // Filters and sorting
   const [filters, setFilters] = useState<PlantFilters>({});
@@ -124,51 +137,96 @@ export default function PlantManagementTable({
     setEditForm({});
   };
 
-  // Handle plant selection
-  const togglePlantSelection = (plantId: number) => {
-    setSelectedPlants(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(plantId)) {
-        newSet.delete(plantId);
-      } else {
-        newSet.add(plantId);
-      }
-      return newSet;
-    });
-  };
-
-  // Handle select all
-  const toggleSelectAll = () => {
-    if (selectedPlants.size === plants.length) {
-      setSelectedPlants(new Set());
-    } else {
-      setSelectedPlants(new Set(plants.map(p => p.id)));
-    }
-  };
-
-  // Handle bulk verification
-  const handleBulkVerification = async (isVerified: boolean) => {
-    if (selectedPlants.size === 0) return;
-
-    try {
-      const response = await fetch('/api/admin/plants/bulk-verify', {
+  // Bulk operation handlers
+  const handleBulkAction = async (actionId: string) => {
+    await executeBulkOperation(async (plantIds) => {
+      const response = await fetch('/api/admin/plants/bulk-operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          plantIds: Array.from(selectedPlants),
-          isVerified,
+          operation: actionId,
+          plantIds,
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to update plants');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Operation failed');
+      }
 
-      setSelectedPlants(new Set());
+      const result = await response.json();
+      
+      // Refresh the plant list after successful operation
       await fetchPlants();
+      
+      return {
+        success: result.success,
+        errors: result.errors || [],
+      };
+    });
+  };
+
+  const handleSelectAll = () => {
+    selectAllPlants(plants.map(p => p.id));
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await fetch('/api/admin/plants/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plantIds: selectedCount > 0 ? Array.from(selectedPlants) : undefined,
+          format: 'csv',
+          filters: selectedCount === 0 ? filters : undefined,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `plants-export-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
-      console.error('Failed to bulk update:', error);
-      alert('Failed to update plants');
+      console.error('Export failed:', error);
+      alert('Failed to export plants');
     }
   };
+
+  const bulkActions = [
+    {
+      id: 'verify',
+      label: 'Verify',
+      icon: '✓',
+      variant: 'primary' as const,
+    },
+    {
+      id: 'unverify',
+      label: 'Unverify',
+      icon: '✗',
+      variant: 'secondary' as const,
+    },
+    {
+      id: 'approve',
+      label: 'Approve',
+      icon: '👍',
+      variant: 'primary' as const,
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: '🗑️',
+      variant: 'danger' as const,
+      requiresConfirmation: true,
+      confirmationMessage: `Are you sure you want to delete ${selectedCount} plants? This action cannot be undone.`,
+    },
+  ];
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -226,30 +284,17 @@ export default function PlantManagementTable({
         </select>
       </div>
 
-      {/* Bulk Actions */}
-      {selectedPlants.size > 0 && (
-        <div className="bulk-actions">
-          <span>{selectedPlants.size} plants selected</span>
-          <button
-            onClick={() => handleBulkVerification(true)}
-            className="bulk-action-btn verify"
-          >
-            Verify Selected
-          </button>
-          <button
-            onClick={() => handleBulkVerification(false)}
-            className="bulk-action-btn unverify"
-          >
-            Unverify Selected
-          </button>
-          <button
-            onClick={() => setSelectedPlants(new Set())}
-            className="bulk-action-btn cancel"
-          >
-            Clear Selection
-          </button>
-        </div>
-      )}
+      {/* Bulk Operations Toolbar */}
+      <BulkOperationsToolbar
+        selectedCount={selectedCount}
+        totalCount={totalCount}
+        actions={bulkActions}
+        progress={progress}
+        onAction={handleBulkAction}
+        onSelectAll={handleSelectAll}
+        onClearSelection={clearSelection}
+        onExport={handleExport}
+      />
 
       {/* Table */}
       <div className="plant-table-container">
@@ -259,8 +304,8 @@ export default function PlantManagementTable({
               <th>
                 <input
                   type="checkbox"
-                  checked={plants.length > 0 && selectedPlants.size === plants.length}
-                  onChange={toggleSelectAll}
+                  checked={plants.length > 0 && selectedCount === plants.length}
+                  onChange={handleSelectAll}
                 />
               </th>
               <th 
@@ -311,12 +356,12 @@ export default function PlantManagementTable({
               </tr>
             ) : (
               plants.map(plant => (
-                <tr key={plant.id} className={selectedPlants.has(plant.id) ? 'selected' : ''}>
+                <tr key={plant.id} className={isSelected(plant.id) ? 'selected' : ''}>
                   <td>
                     <input
                       type="checkbox"
-                      checked={selectedPlants.has(plant.id)}
-                      onChange={() => togglePlantSelection(plant.id)}
+                      checked={isSelected(plant.id)}
+                      onChange={() => selectPlant(plant.id)}
                     />
                   </td>
                   <td>

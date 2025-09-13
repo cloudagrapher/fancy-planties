@@ -10,6 +10,8 @@ interface PlantReviewCardProps {
   onProcessed: (plantId: number) => void;
   onProcessingStart: (plantId: number) => void;
   onProcessingEnd: (plantId: number) => void;
+  isSelected?: boolean;
+  onSelect?: () => void;
 }
 
 export default function PlantReviewCard({
@@ -18,6 +20,8 @@ export default function PlantReviewCard({
   onProcessed,
   onProcessingStart,
   onProcessingEnd,
+  isSelected = false,
+  onSelect,
 }: PlantReviewCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
@@ -110,8 +114,18 @@ export default function PlantReviewCard({
   };
 
   return (
-    <div className={`plant-review-card ${isProcessing ? 'processing' : ''}`}>
+    <div className={`plant-review-card ${isProcessing ? 'processing' : ''} ${isSelected ? 'selected' : ''}`}>
       <div className="plant-review-header">
+        {onSelect && (
+          <div className="plant-selection">
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={onSelect}
+              disabled={isProcessing}
+            />
+          </div>
+        )}
         <div className="plant-info">
           <h3 className="plant-name">{plant.commonName}</h3>
           <div className="plant-taxonomy">
