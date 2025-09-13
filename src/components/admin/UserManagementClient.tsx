@@ -10,6 +10,7 @@ import {
 } from '@/lib/db/queries/admin-users';
 import { useBulkOperations } from '@/hooks/useBulkOperations';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
+import { useAdminNotifications, useBulkOperationNotifications, useAuthorizationNotifications } from './AdminNotificationSystem';
 
 export interface UserManagementClientProps {
   initialData: PaginatedUsers;
@@ -30,6 +31,11 @@ export default function UserManagementClient({
   const [sort, setSort] = useState(initialSort);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Notification hooks
+  const { showSuccess, showError } = useAdminNotifications();
+  const { notifyBulkStart, notifyBulkSuccess, notifyBulkPartialSuccess, notifyBulkError } = useBulkOperationNotifications();
+  const { notifyUnauthorized, notifySessionExpired } = useAuthorizationNotifications();
   
   // Bulk operations
   const {
@@ -85,17 +91,28 @@ export default function UserManagementClient({
       const response = await fetch(`/api/admin/users?${params.toString()}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        if (response.status === 401) {
+          notifySessionExpired();
+          return;
+        } else if (response.status === 403) {
+          notifyUnauthorized();
+          return;
+        }
+        
+        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch users' }));
+        throw new Error(errorData.error || 'Failed to fetch users');
       }
       
       const newData = await response.json();
       setData(newData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch users');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch users';
+      setError(errorMessage);
+      showError('Failed to Load Users', errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [data.pageSize, sort, filters]);
+  }, [data.pageSize, sort, filters, showError, notifySessionExpired, notifyUnauthorized]);
   
   // Handle search
   const handleSearch = useCallback((searchTerm: string) => {
@@ -137,16 +154,34 @@ export default function UserManagementClient({
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
+        if (response.status === 401) {
+          notifySessionExpired();
+          return;
+        } else if (response.status === 403) {
+          notifyUnauthorized();
+          return;
+        }
+        
+        const errorData = await response.json().catch(() => ({ error: 'Failed to update curator status' }));
         throw new Error(errorData.error || 'Failed to update curator status');
       }
+      
+      const user = data.users.find(u => u.id === userId);
+      const userName = user?.name || 'User';
+      
+      showSuccess(
+        'Curator Status Updated',
+        `Successfully ${action}d ${userName} ${action === 'promote' ? 'to' : 'from'} curator status.`
+      );
       
       // Refresh the data
       await fetchUsers(data.page);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update curator status');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update curator status';
+      setError(errorMessage);
+      showError('Curator Status Update Failed', errorMessage);
     }
-  }, [data.page, fetchUsers]);
+  }, [data.page, data.users, fetchUsers, showSuccess, showError, notifySessionExpired, notifyUnauthorized]);
   
   // Refresh data when URL changes
   useEffect(() => {
@@ -158,6 +193,11 @@ export default function UserManagementClient({
 
   // Bulk operation handlers
   const handleBulkAction = async (actionId: string) => {
+    const selectedUserIds = Array.from(selectedUsers);
+    
+    // Notify operation start
+    notifyBulkStart(actionId, selectedUserIds.length);
+    
     await executeBulkOperation(async (userIds) => {
       const response = await fetch('/api/admin/users/bulk-operations', {
         method: 'POST',
@@ -169,17 +209,34 @@ export default function UserManagementClient({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Operation failed');
+        if (response.status === 401) {
+          notifySessionExpired();
+          throw new Error('Session expired');
+        } else if (response.status === 403) {
+          notifyUnauthorized();
+          throw new Error('Unauthorized');
+        }
+        
+        const errorData = await response.json().catch(() => ({ error: 'Operation failed' }));
+        throw new Error(errorData.error || 'Operation failed');
       }
 
       const result = await response.json();
       
-      // Refresh the user list after successful operation
+      // Refresh the user list after operation
       await fetchUsers(data.page);
       
+      // Show appropriate notification based on results
+      if (result.errorCount === 0) {
+        notifyBulkSuccess(actionId, result.successCount, selectedUserIds.length);
+      } else if (result.successCount > 0) {
+        notifyBulkPartialSuccess(actionId, result.successCount, result.errorCount, result.errors);
+      } else {
+        notifyBulkError(actionId, 'All operations failed');
+      }
+      
       return {
-        success: result.success,
+        success: result.success || [],
         errors: result.errors || [],
       };
     });
