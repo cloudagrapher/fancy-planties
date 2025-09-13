@@ -2722,3 +2722,608 @@ Admin Dashboard Styles */
     border: 1px solid var(--color-border);
   }
 }
+/* Admi
+n Panel Styles */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.admin-nav {
+  width: 250px;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: 20px 0;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.admin-nav-header {
+  padding: 0 20px 20px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 20px;
+}
+
+.admin-nav-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin-bottom: 8px;
+}
+
+.admin-nav-back {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.admin-nav-back:hover {
+  color: var(--color-primary-600);
+}
+
+.admin-nav-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 12px;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.admin-nav-item:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-foreground);
+}
+
+.admin-nav-item--active {
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+  font-weight: 500;
+}
+
+.admin-nav-icon {
+  font-size: 18px;
+  width: 20px;
+  text-align: center;
+}
+
+.admin-nav-label {
+  font-size: 14px;
+  flex: 1;
+}
+
+.admin-nav-badge {
+  background: var(--color-danger);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.admin-content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.admin-page-header {
+  margin-bottom: 24px;
+}
+
+.admin-page-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin-bottom: 8px;
+}
+
+.admin-page-description {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.admin-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.admin-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.admin-empty-state h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin-bottom: 8px;
+}
+
+.admin-empty-state p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+/* Plant Approval Queue Styles */
+.plant-approval-queue {
+  max-width: 1000px;
+}
+
+.approval-queue-header {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.approval-stats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.approval-count {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-foreground);
+}
+
+.processing-count {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  padding: 4px 8px;
+  background: var(--color-neutral-100);
+  border-radius: 6px;
+}
+
+.approval-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Plant Review Card Styles */
+.plant-review-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.plant-review-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.plant-review-card.processing {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.plant-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 20px;
+}
+
+.plant-info h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin-bottom: 8px;
+}
+
+.plant-taxonomy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.taxonomy-part {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.taxonomy-part.cultivar {
+  color: var(--color-primary-600);
+  font-weight: 500;
+}
+
+.taxonomy-separator {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.plant-meta {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.submission-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.submitted-by {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.submitted-date {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.usage-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.plant-care-instructions {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--color-neutral-50);
+  border-radius: 8px;
+  border-left: 3px solid var(--color-primary-300);
+}
+
+.plant-care-instructions h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin-bottom: 6px;
+}
+
+.plant-care-instructions p {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.plant-review-actions {
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+}
+
+.primary-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Reject Dialog Styles */
+.reject-dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.reject-dialog-content {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.reject-dialog-content h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin-bottom: 8px;
+}
+
+.reject-dialog-content p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 16px;
+}
+
+.reject-reason-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  margin-bottom: 16px;
+}
+
+.reject-reason-input:focus {
+  outline: none;
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.2);
+}
+
+.reject-dialog-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Plant Edit Form Styles */
+.plant-edit-form {
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+}
+
+.form-section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-foreground);
+  margin-bottom: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-foreground);
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 3px rgba(167, 243, 208, 0.2);
+}
+
+.form-group input.error {
+  border-color: var(--color-danger);
+}
+
+.error-message {
+  font-size: 12px;
+  color: var(--color-danger);
+  margin-top: 4px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* Button Variants for Admin */
+.btn-success {
+  background: linear-gradient(135deg, var(--color-mint-500), var(--color-mint-400));
+  color: white;
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, var(--color-mint-600), var(--color-mint-500));
+}
+
+.btn-success:disabled {
+  background: var(--color-neutral-300);
+  color: var(--color-neutral-500);
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--color-salmon-500), var(--color-salmon-400));
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, var(--color-salmon-600), var(--color-salmon-500));
+}
+
+.btn-danger:disabled {
+  background: var(--color-neutral-300);
+  color: var(--color-neutral-500);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-700);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background: var(--color-neutral-200);
+  color: var(--color-neutral-800);
+}
+
+.btn-secondary:disabled {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-400);
+  cursor: not-allowed;
+}
+
+/* Responsive Admin Layout */
+@media (max-width: 768px) {
+  .admin-nav {
+    width: 200px;
+  }
+  
+  .admin-content {
+    margin-left: 200px;
+    padding: 16px;
+  }
+  
+  .plant-review-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .plant-meta {
+    text-align: left;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .primary-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-nav {
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+  
+  .admin-content {
+    margin-left: 0;
+    padding: 12px;
+  }
+  
+  .plant-taxonomy {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .reject-dialog {
+    padding: 12px;
+  }
+  
+  .reject-dialog-content {
+    padding: 20px;
+  }
+}/* Bottom
+ Navigation Burger Menu */
+.bottom-nav-burger {
+  position: relative;
+}
+
+.bottom-nav-burger-button {
+  position: relative;
+}
+
+.bottom-nav-overflow-menu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+  margin-bottom: 8px;
+  min-width: 120px;
+  z-index: 60;
+}
+
+.bottom-nav-overflow-menu .bottom-nav-item {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 4px;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: flex-start;
+  min-width: auto;
+  max-width: none;
+}
+
+.bottom-nav-overflow-menu .bottom-nav-item:last-child {
+  margin-bottom: 0;
+}
+
+.bottom-nav-overflow-menu .bottom-nav-icon {
+  font-size: 18px;
+}
+
+.bottom-nav-overflow-menu .bottom-nav-label {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.bottom-nav-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: transparent;
+}
+
+/* Responsive adjustments for burger menu */
+@media (max-width: 480px) {
+  .bottom-nav-overflow-menu {
+    right: 4px;
+    min-width: 100px;
+  }
+  
+  .bottom-nav-overflow-menu .bottom-nav-item {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  
+  .bottom-nav-overflow-menu .bottom-nav-icon {
+    font-size: 16px;
+  }
+  
+  .bottom-nav-overflow-menu .bottom-nav-label {
+    font-size: 12px;
+  }
+}
