@@ -25,6 +25,22 @@ export interface PlantSortConfig {
 }
 
 export class AdminPlantQueries {
+  // Get a single plant by ID
+  static async getPlantById(id: number): Promise<Plant | null> {
+    try {
+      const [plant] = await db
+        .select()
+        .from(plants)
+        .where(eq(plants.id, id))
+        .limit(1);
+
+      return plant || null;
+    } catch (error) {
+      console.error('Failed to get plant by ID:', error);
+      throw new Error('Failed to get plant by ID');
+    }
+  }
+
   // Get plants with detailed information for admin management
   static async getPlantsWithDetails(
     filters: PlantFilters = {},

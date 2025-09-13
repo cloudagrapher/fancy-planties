@@ -130,6 +130,9 @@ RootLayout
         ├── PlantManagement
         ├── SystemMonitoring
         └── AuditLogs
+            ├── AuditLogTable
+            ├── AuditLogFilters
+            └── AuditLogDetails
 ```
 
 ### State Management Strategy
@@ -222,6 +225,7 @@ erDiagram
     users ||--o{ propagations : owns
     users ||--o{ sessions : has
     users ||--o{ email_verification_codes : has
+    users ||--o{ audit_logs : performs
     plants ||--o{ plant_instances : "instance of"
     plants ||--o{ propagations : "propagated from"
     plant_instances ||--o{ propagations : "parent of"
@@ -293,6 +297,20 @@ erDiagram
         text notes
         timestamp created_at
     }
+
+    audit_logs {
+        int id PK
+        string action
+        string entity_type
+        int entity_id
+        int performed_by FK
+        timestamp timestamp
+        jsonb details
+        string ip_address
+        string user_agent
+        boolean success
+        string error_message
+    }
 ```
 
 #### Indexing Strategy
@@ -303,6 +321,16 @@ CREATE INDEX idx_plant_instances_user_id ON plant_instances(user_id);
 CREATE INDEX idx_plant_instances_fertilizer_due ON plant_instances(fertilizer_due) WHERE is_active = true;
 CREATE INDEX idx_propagations_user_status ON propagations(user_id, status);
 CREATE INDEX idx_care_history_plant_date ON care_history(plant_instance_id, care_date DESC);
+
+-- Audit log indexes for admin queries
+CREATE INDEX idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX idx_audit_logs_entity_type ON audit_logs(entity_type);
+CREATE INDEX idx_audit_logs_entity_id ON audit_logs(entity_id);
+CREATE INDEX idx_audit_logs_performed_by ON audit_logs(performed_by);
+CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp);
+CREATE INDEX idx_audit_logs_success ON audit_logs(success);
+CREATE INDEX idx_audit_logs_entity_type_id ON audit_logs(entity_type, entity_id);
+CREATE INDEX idx_audit_logs_performed_by_timestamp ON audit_logs(performed_by, timestamp);
 
 -- Search indexes
 CREATE INDEX idx_plants_search ON plants USING gin(to_tsvector('english', 
@@ -431,6 +459,86 @@ sequenceDiagram
 ```
 
 ### Security Measures
+
+#### Audit Logging System
+```typescript
+// Comprehensive audit logging for admin actions
+export class AuditLogger {
+  async logAction(
+    action: string,
+    entityType: 'user' | 'plant' | 'plant_instance' | 'propagation' | 'system',
+    entityId: number | null,
+    performedBy: number,
+    details: Record<string, any> = {},
+    request?: NextRequest,
+    success: boolean = true,
+    errorMessage?: string
+  ) {
+    const auditEntry = {
+      action,
+      entityType,
+      entityId,
+      performedBy,
+      timestamp: new Date(),
+      details,
+      ipAddress: this.getClientIP(request),
+      userAgent: request?.headers.get('user-agent') || null,
+      success,
+      errorMessage,
+    };
+
+    await db.insert(auditLogs).values(auditEntry);
+  }
+
+  private getClientIP(request?: NextRequest): string | null {
+    if (!request) return null;
+    
+    return (
+      request.headers.get('x-forwarded-for')?.split(',')[0] ||
+      request.headers.get('x-real-ip') ||
+      request.headers.get('cf-connecting-ip') ||
+      null
+    );
+  }
+}
+
+// Usage in admin endpoints
+export async function POST(request: NextRequest) {
+  const { user } = await requireCuratorSession();
+  
+  try {
+    // Perform admin action
+    const result = await promoteUserToCurator(targetUserId);
+    
+    // Log successful action
+    await auditLogger.logAction(
+      'user_promoted',
+      'user',
+      targetUserId,
+      user.id,
+      { previousRole: 'user', newRole: 'curator' },
+      request,
+      true
+    );
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    // Log failed action
+    await auditLogger.logAction(
+      'user_promotion_failed',
+      'user',
+      targetUserId,
+      user.id,
+      { targetUserId },
+      request,
+      false,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+    
+    throw error;
+  }
+}
+```
 
 #### Input Validation
 ```typescript

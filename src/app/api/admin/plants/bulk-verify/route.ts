@@ -2,6 +2,7 @@ import 'server-only';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCuratorSession } from '@/lib/auth/server';
 import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
+import { AuditLogger, AUDIT_ACTIONS } from '@/lib/services/audit-logger';
 import { z } from 'zod';
 
 const bulkVerifySchema = z.object({
@@ -12,12 +13,25 @@ const bulkVerifySchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Ensure user is a curator
-    await requireCuratorSession();
+    const { user } = await requireCuratorSession();
 
     const body = await request.json();
     const { plantIds, isVerified } = bulkVerifySchema.parse(body);
 
     const updatedCount = await AdminPlantQueries.bulkUpdateVerification(plantIds, isVerified);
+
+    // Log the bulk operation
+    await AuditLogger.logSystemAction(
+      AUDIT_ACTIONS.BULK_OPERATION,
+      user.id,
+      {
+        operation: 'bulk_verify_plants',
+        plantIds,
+        isVerified,
+        updatedCount,
+        totalRequested: plantIds.length,
+      }
+    );
 
     return NextResponse.json({
       success: true,

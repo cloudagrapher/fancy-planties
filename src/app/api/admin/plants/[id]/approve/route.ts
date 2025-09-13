@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCuratorRequest } from '@/lib/auth/server';
 import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
+import { AuditLogger, AUDIT_ACTIONS } from '@/lib/services/audit-logger';
 
 export async function POST(
   request: NextRequest,
@@ -26,10 +27,26 @@ export async function POST(
       );
     }
 
+    // Get plant details before approval for audit log
+    const plantDetails = await AdminPlantQueries.getPlantById(plantId);
+    
     // Approve the plant by setting isVerified to true
     const updatedPlant = await AdminPlantQueries.updatePlant(plantId, {
       isVerified: true,
     });
+
+    // Log the approval action
+    await AuditLogger.logPlantAction(
+      AUDIT_ACTIONS.PLANT_APPROVED,
+      plantId,
+      authResult.user.id,
+      {
+        plantName: `${plantDetails?.genus} ${plantDetails?.species}`,
+        commonName: plantDetails?.commonName,
+        previousStatus: 'pending',
+        newStatus: 'approved',
+      }
+    );
 
     return NextResponse.json({
       success: true,

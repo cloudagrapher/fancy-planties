@@ -646,6 +646,107 @@ GET /api/admin/analytics/system-alerts
 ]
 ```
 
+### Admin Audit Logs
+```http
+GET /api/admin/audit-logs
+```
+
+**Query Parameters:**
+- `action` (string): Filter by action type (e.g., 'user_promoted', 'plant_approved')
+- `entityType` (string): Filter by entity type (user, plant, plant_instance, propagation, system)
+- `entityId` (number): Filter by specific entity ID
+- `performedBy` (number): Filter by curator who performed the action
+- `success` (boolean): Filter by success/failure status
+- `startDate` (string): Filter actions after this date (ISO 8601)
+- `endDate` (string): Filter actions before this date (ISO 8601)
+- `limit` (number): Limit results (default: 50, max: 100)
+- `offset` (number): Pagination offset
+
+**Response:**
+```json
+{
+  "auditLogs": [
+    {
+      "id": 1,
+      "action": "user_promoted",
+      "entityType": "user",
+      "entityId": 42,
+      "performedBy": 1,
+      "timestamp": "2024-01-22T10:30:00Z",
+      "details": {
+        "previousRole": "user",
+        "newRole": "curator",
+        "reason": "Promoted for plant expertise"
+      },
+      "ipAddress": "192.168.1.100",
+      "userAgent": "Mozilla/5.0...",
+      "success": true,
+      "errorMessage": null,
+      "performer": {
+        "id": 1,
+        "name": "Admin User",
+        "email": "admin@example.com"
+      }
+    },
+    {
+      "id": 2,
+      "action": "plant_approved",
+      "entityType": "plant",
+      "entityId": 123,
+      "performedBy": 1,
+      "timestamp": "2024-01-22T09:15:00Z",
+      "details": {
+        "plantName": "Monstera deliciosa 'Thai Constellation'",
+        "submittedBy": 15,
+        "modifications": ["Updated care instructions", "Corrected cultivar name"]
+      },
+      "ipAddress": "192.168.1.100",
+      "userAgent": "Mozilla/5.0...",
+      "success": true,
+      "errorMessage": null,
+      "performer": {
+        "id": 1,
+        "name": "Admin User",
+        "email": "admin@example.com"
+      }
+    }
+  ],
+  "pagination": {
+    "total": 150,
+    "limit": 50,
+    "offset": 0,
+    "hasMore": true
+  }
+}
+```
+
+### Create Audit Log Entry
+```http
+POST /api/admin/audit-logs
+Content-Type: application/json
+
+{
+  "action": "plant_rejected",
+  "entityType": "plant",
+  "entityId": 124,
+  "details": {
+    "reason": "Duplicate entry",
+    "existingPlantId": 45,
+    "submittedBy": 20
+  },
+  "success": true
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "auditLogId": 151,
+  "message": "Audit log entry created successfully"
+}
+```
+
 ## 🏥 System API
 
 ### Health Check

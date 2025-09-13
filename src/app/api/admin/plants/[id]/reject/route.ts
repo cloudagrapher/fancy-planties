@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCuratorRequest } from '@/lib/auth/server';
 import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
+import { AuditLogger, AUDIT_ACTIONS } from '@/lib/services/audit-logger';
 import { z } from 'zod';
 
 const rejectSchema = z.object({
@@ -34,6 +35,9 @@ export async function POST(
     const body = await request.json();
     const validatedData = rejectSchema.parse(body);
 
+    // Get plant details before rejection for audit log
+    const plantDetails = await AdminPlantQueries.getPlantById(plantId);
+
     // For now, we'll delete rejected plants
     // In a more sophisticated system, you might want to:
     // 1. Move to a rejected_plants table
@@ -48,10 +52,18 @@ export async function POST(
       );
     }
 
-    // TODO: In a real system, you would:
-    // 1. Log the rejection in an audit table
-    // 2. Send notification to the plant submitter
-    // 3. Store the rejection reason
+    // Log the rejection action
+    await AuditLogger.logPlantAction(
+      AUDIT_ACTIONS.PLANT_REJECTED,
+      plantId,
+      authResult.user.id,
+      {
+        plantName: `${plantDetails?.genus} ${plantDetails?.species}`,
+        commonName: plantDetails?.commonName,
+        rejectionReason: validatedData.reason,
+        action: 'deleted',
+      }
+    );
     
     return NextResponse.json({
       success: true,

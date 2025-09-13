@@ -93,6 +93,29 @@ services:
       retries: 3
       start_period: 40s
 
+  # Migration utility service - only run when needed for schema changes
+  migration-utils:
+    image: ghcr.io/stefanbekker/fancy-planties:design-modernization
+    container_name: fancy-planties-migration-utils
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - fancy-planties-network
+    # Mount the source code for migration generation
+    volumes:
+      - ./src:/app/src:ro
+      - ./drizzle:/app/drizzle
+      - ./drizzle.config.ts:/app/drizzle.config.ts:ro
+      - ./package.json:/app/package.json:ro
+      - ./package-lock.json:/app/package-lock.json:ro
+    # Override the default command - this service is for manual execution only
+    profiles: ["migration"]
+    command: ["tail", "-f", "/dev/null"]  # Keep container running for exec commands
+
 
 # Note: Volumes are defined as bind mounts in the postgres service
 
