@@ -36,6 +36,7 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
 
 - **CSV Import/Export**: Bulk import existing plant data from spreadsheets
 - **User Authentication**: Secure account system with data segregation
+- **Admin Dashboard**: Curator-level administrative interface for user and plant management
 - **Offline Support**: View and log care activities without internet connection
 - **Backup & Sync**: Automatic data synchronization when connectivity returns
 
@@ -76,21 +77,26 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
    Run the app locally with containerized database:
 
    ```bash
-   # Start only the database (uses port 5433 to avoid conflicts)
-   docker compose -f docker-compose.dev.yml up -d postgres
-   
+   # Start only the database (maps port 5433 externally to 5432 internally)
+   docker compose -f docker-compose.dev.yml --env-file .env.local up -d postgres
+
    # Generate migration files from schema (first time only)
-   npm run db:generate
-   
-   # Run database migrations (automatically applies all pending migrations)
-   # Note: Explicitly set DATABASE_URL since .env.local isn't loaded by drizzle-kit
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/fancy_planties" npm run db:migrate
-   
+   npm run db:generate:local
+
+   # Run database migrations using local environment (.env.local)
+   npm run db:migrate:local
+
    # Seed database with plant taxonomy data (optional but recommended)
    npm run db:seed
-   
+
    # Start development server locally
    npm run dev
+   ```
+
+   **Important**: Ensure your `.env.local` file has the correct DATABASE_URL:
+   ```bash
+   # For development with Docker on port 5433
+   DATABASE_URL=postgresql://postgres:simple_password_123@localhost:5433/fancy_planties
    ```
 
    #### Option B: Fully Containerized Development
@@ -136,7 +142,36 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
    docker compose -f docker-compose.dev.yml restart postgres
    ```
 
-7. **Open the application**
+7. **Environment-Aware Database Configuration**
+
+   The application now supports environment-specific database commands that automatically load the correct configuration:
+
+   ```bash
+   # Local development (uses .env.local)
+   npm run db:generate:local   # Generate migrations for localhost:5433
+   npm run db:migrate:local    # Apply migrations to localhost:5433
+   npm run db:studio:local     # Open studio connected to localhost:5433
+   npm run db:push:local       # Push schema to localhost:5433
+
+   # Production (uses .env.prod)
+   npm run db:generate:prod    # Generate migrations for postgres:5432
+   npm run db:migrate:prod     # Apply migrations to postgres:5432 (Docker hostname)
+   npm run db:studio:prod      # Open studio connected to postgres:5432
+   npm run db:push:prod        # Push schema to postgres:5432
+
+   # Auto-detection (fallback behavior)
+   npm run db:generate         # Uses NODE_ENV or falls back to .env.prod
+   npm run db:migrate          # Same auto-detection logic
+   npm run db:studio           # Same auto-detection logic
+   npm run db:push             # Same auto-detection logic
+   ```
+
+   **Environment Files**:
+   - `.env.local` → `localhost:5433` (for local development with Docker)
+   - `.env.prod` → `postgres:5432` (for Docker Compose environments)
+   - `.env` → Fallback configuration
+
+8. **Open the application**
    - Navigate to [http://localhost:3000](http://localhost:3000)
    - Create an account and start adding plants!
 
@@ -286,24 +321,51 @@ The test suite is configured for optimal performance:
 | `npm run start` | Start production server |
 | `npm test` | Run unit tests |
 | `npm run test:e2e` | Run end-to-end tests |
-| `npm run db:migrate` | Run database migrations (auto-applies all pending) |
-| `npm run db:generate` | Generate migration files from schema changes |
-| `npm run db:studio` | Open Drizzle Studio |
-| `npm run db:status` | Check migration status and database health |
+| `npm run db:generate` | Generate migration files from schema changes (environment auto-detected) |
+| `npm run db:generate:local` | Generate migrations using .env.local |
+| `npm run db:generate:prod` | Generate migrations using .env.prod |
+| `npm run db:migrate` | Run database migrations (environment auto-detected) |
+| `npm run db:migrate:local` | Run migrations using .env.local (local development) |
+| `npm run db:migrate:prod` | Run migrations using .env.prod (production) |
+| `npm run db:push` | Push schema changes directly (environment auto-detected) |
+| `npm run db:push:local` | Push schema changes using .env.local |
+| `npm run db:push:prod` | Push schema changes using .env.prod |
+| `npm run db:studio` | Open Drizzle Studio (environment auto-detected) |
+| `npm run db:studio:local` | Open Drizzle Studio using .env.local |
+| `npm run db:studio:prod` | Open Drizzle Studio using .env.prod |
 | `npm run db:seed` | Seed database with initial plant taxonomy data |
 | `npm run deploy:production` | Deploy to production |
 | `npm run backup:create` | Create database backup |
+
+### Admin Features
+
+The application includes a comprehensive admin dashboard for users with curator privileges:
+
+- **Admin Dashboard**: Access via `/admin` route (curator privileges required)
+- **Analytics & Insights**: Comprehensive dashboard statistics, user growth trends, and plant submission analytics
+- **User Management**: View and manage user accounts and curator privileges
+- **Plant Management**: Oversee plant taxonomy and approve user submissions
+- **System Monitoring**: Email verification system monitoring, system health alerts, and curator activity tracking
+- **Audit Logging**: Complete audit trail of all administrative actions with detailed tracking
+- **Access Control**: Route-level protection with real-time privilege validation
+
+**Admin Access**: Users with curator privileges can access the admin dashboard through the main navigation. The system includes proper authorization checks and graceful handling of privilege changes.
+
+**Analytics Features**: The admin dashboard provides detailed insights including user statistics, plant submission trends, top plant families by usage, curator activity summaries, and system health monitoring with automated alerts.
+
+**Audit Trail**: All administrative actions are logged with comprehensive details including action type, affected entities, performer information, timestamps, IP addresses, and success/failure status for complete accountability and security monitoring.
 
 ## 🔒 Security Features
 
 - **Authentication**: Secure session-based auth with bcrypt password hashing
 - **Email Verification**: Required email verification for new accounts with secure 6-digit codes
+- **Role-Based Access**: Curator privileges for administrative functions with route protection
 - **Data Isolation**: Row-level security ensures user data segregation
 - **Security Headers**: Comprehensive security headers via Nginx
 - **Input Validation**: Zod schema validation on all inputs
 - **HTTPS**: SSL/TLS encryption in production
 - **Rate Limiting**: API rate limiting to prevent abuse
-- **Email Verification**: Secure 6-digit verification codes with rate limiting and attempt tracking
+- **Admin Security**: Protected admin routes with curator session validation
 
 ## 🌍 Browser Support
 

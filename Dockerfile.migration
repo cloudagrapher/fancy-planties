@@ -1,0 +1,45 @@
+# Migration utility Dockerfile - includes dev dependencies for Drizzle
+FROM node:20-alpine AS base
+
+# Install dependencies
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install ALL dependencies including dev dependencies for migration tools
+COPY package.json package-lock.json* ./
+RUN \
+  if [ -f package-lock.json ]; then npm ci --prefer-offline --no-audit; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
+
+# Production image with migration capabilities
+FROM base AS migration-runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Install postgresql-client for psql commands
+RUN apk add --no-cache postgresql-client
+
+# Create a non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json package-lock.json* ./
+
+# Copy source files needed for migration generation
+COPY src ./src
+COPY drizzle.config.ts ./
+COPY drizzle ./drizzle
+
+# Set proper ownership
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
+
+# Default command - keep container running for exec commands
+CMD ["tail", "-f", "/dev/null"]

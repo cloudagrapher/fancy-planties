@@ -24,6 +24,6 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "Source code has been modified. Please review the changes and update the documentation accordingly. Update the README.md file to reflect any new features, API changes, or architectural modifications. If there is a /docs folder, also update relevant documentation files there. Focus on keeping the documentation accurate and up-to-date with the current codebase."
+    "prompt": "Source code has been modified. Please review the changes and update the documentation accordingly. Update the README.md file to reflect any new features, API changes, or architectural modifications. Ensure the CHANGELOG.md is also up to date. If there is a /docs folder, also update relevant documentation files there. Focus on keeping the documentation accurate and up-to-date with the current codebase. Add [docs] to the commit message so that the build does not trigger."
   }
 }

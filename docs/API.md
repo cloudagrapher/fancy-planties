@@ -430,6 +430,323 @@ Content-Type: application/json
 GET /api/search/suggestions?q=mon
 ```
 
+## 🛡️ Admin API
+
+**Note:** All admin endpoints require curator privileges. Access is restricted to users with `isCurator: true`.
+
+### Email Verification System Monitor
+```http
+GET /api/admin/email-verification-monitor
+```
+
+**Response:**
+```json
+{
+  "systemHealth": {
+    "totalUsers": 150,
+    "verifiedUsers": 142,
+    "pendingVerifications": 8,
+    "verificationRate": 94.7
+  },
+  "recentActivity": [
+    {
+      "id": 1,
+      "email": "user@example.com",
+      "status": "verified",
+      "timestamp": "2024-01-22T10:30:00Z",
+      "attempts": 1
+    }
+  ],
+  "systemStats": {
+    "codesGenerated": 1250,
+    "successfulVerifications": 1180,
+    "failedAttempts": 45,
+    "expiredCodes": 25
+  }
+}
+```
+
+### Admin Actions
+```http
+POST /api/admin/email-verification-monitor
+Content-Type: application/json
+
+{
+  "action": "cleanup" | "reset_stats"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Action completed successfully",
+  "details": {
+    "recordsAffected": 25
+  }
+}
+```
+
+### Admin Analytics Dashboard
+```http
+GET /api/admin/analytics/dashboard
+```
+
+**Response:**
+```json
+{
+  "users": {
+    "total": 150,
+    "curators": 5,
+    "newThisMonth": 12,
+    "activeThisWeek": 8,
+    "emailVerified": 142
+  },
+  "plants": {
+    "total": 450,
+    "verified": 420,
+    "pendingApproval": 30,
+    "submittedThisMonth": 25
+  },
+  "activity": {
+    "recentRegistrations": [
+      {
+        "id": 151,
+        "name": "New User",
+        "email": "user@example.com",
+        "createdAt": "2024-01-22T10:30:00Z"
+      }
+    ],
+    "recentSubmissions": [
+      {
+        "id": 451,
+        "genus": "Monstera",
+        "species": "deliciosa",
+        "createdAt": "2024-01-22T09:15:00Z"
+      }
+    ],
+    "totalInstances": 1250,
+    "totalPropagations": 380,
+    "totalCareEntries": 5420
+  },
+  "systemHealth": {
+    "activeSessions": 45,
+    "lastWeekRegistrations": 8,
+    "lastWeekSubmissions": 15
+  }
+}
+```
+
+### Admin Analytics - User Growth
+```http
+GET /api/admin/analytics/user-growth
+```
+
+**Response:**
+```json
+[
+  {
+    "date": "2024-01-01",
+    "count": 3
+  },
+  {
+    "date": "2024-01-02", 
+    "count": 5
+  }
+]
+```
+
+### Admin Analytics - Plant Submission Trends
+```http
+GET /api/admin/analytics/plant-trends
+```
+
+**Response:**
+```json
+[
+  {
+    "date": "2024-01-01",
+    "verified": 8,
+    "pending": 2
+  },
+  {
+    "date": "2024-01-02",
+    "verified": 12,
+    "pending": 3
+  }
+]
+```
+
+### Admin Analytics - Top Plant Families
+```http
+GET /api/admin/analytics/top-families?limit=10
+```
+
+**Response:**
+```json
+[
+  {
+    "family": "Araceae",
+    "count": 125
+  },
+  {
+    "family": "Pothos",
+    "count": 98
+  }
+]
+```
+
+### Admin Analytics - Curator Activity
+```http
+GET /api/admin/analytics/curator-activity
+```
+
+**Response:**
+```json
+[
+  {
+    "curatorId": 1,
+    "curatorName": "Admin User",
+    "plantsApproved": 45,
+    "usersPromoted": 2
+  }
+]
+```
+
+### Admin Analytics - Pending Approval Count
+```http
+GET /api/admin/analytics/pending-count
+```
+
+**Response:**
+```json
+{
+  "count": 30
+}
+```
+
+### Admin Analytics - System Alerts
+```http
+GET /api/admin/analytics/system-alerts
+```
+
+**Response:**
+```json
+[
+  {
+    "type": "warning",
+    "message": "High number of pending plant approvals: 52",
+    "timestamp": "2024-01-22T10:30:00Z"
+  },
+  {
+    "type": "info",
+    "message": "No curator activity in the last 30 days",
+    "timestamp": "2024-01-22T10:30:00Z"
+  }
+]
+```
+
+### Admin Audit Logs
+```http
+GET /api/admin/audit-logs
+```
+
+**Query Parameters:**
+- `action` (string): Filter by action type (e.g., 'user_promoted', 'plant_approved')
+- `entityType` (string): Filter by entity type (user, plant, plant_instance, propagation, system)
+- `entityId` (number): Filter by specific entity ID
+- `performedBy` (number): Filter by curator who performed the action
+- `success` (boolean): Filter by success/failure status
+- `startDate` (string): Filter actions after this date (ISO 8601)
+- `endDate` (string): Filter actions before this date (ISO 8601)
+- `limit` (number): Limit results (default: 50, max: 100)
+- `offset` (number): Pagination offset
+
+**Response:**
+```json
+{
+  "auditLogs": [
+    {
+      "id": 1,
+      "action": "user_promoted",
+      "entityType": "user",
+      "entityId": 42,
+      "performedBy": 1,
+      "timestamp": "2024-01-22T10:30:00Z",
+      "details": {
+        "previousRole": "user",
+        "newRole": "curator",
+        "reason": "Promoted for plant expertise"
+      },
+      "ipAddress": "192.168.1.100",
+      "userAgent": "Mozilla/5.0...",
+      "success": true,
+      "errorMessage": null,
+      "performer": {
+        "id": 1,
+        "name": "Admin User",
+        "email": "admin@example.com"
+      }
+    },
+    {
+      "id": 2,
+      "action": "plant_approved",
+      "entityType": "plant",
+      "entityId": 123,
+      "performedBy": 1,
+      "timestamp": "2024-01-22T09:15:00Z",
+      "details": {
+        "plantName": "Monstera deliciosa 'Thai Constellation'",
+        "submittedBy": 15,
+        "modifications": ["Updated care instructions", "Corrected cultivar name"]
+      },
+      "ipAddress": "192.168.1.100",
+      "userAgent": "Mozilla/5.0...",
+      "success": true,
+      "errorMessage": null,
+      "performer": {
+        "id": 1,
+        "name": "Admin User",
+        "email": "admin@example.com"
+      }
+    }
+  ],
+  "pagination": {
+    "total": 150,
+    "limit": 50,
+    "offset": 0,
+    "hasMore": true
+  }
+}
+```
+
+### Create Audit Log Entry
+```http
+POST /api/admin/audit-logs
+Content-Type: application/json
+
+{
+  "action": "plant_rejected",
+  "entityType": "plant",
+  "entityId": 124,
+  "details": {
+    "reason": "Duplicate entry",
+    "existingPlantId": 45,
+    "submittedBy": 20
+  },
+  "success": true
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "auditLogId": 151,
+  "message": "Audit log entry created successfully"
+}
+```
+
 ## 🏥 System API
 
 ### Health Check
@@ -482,6 +799,7 @@ All API endpoints return consistent error responses:
 |------|--------|-------------|
 | `UNAUTHORIZED` | 401 | Authentication required |
 | `FORBIDDEN` | 403 | Insufficient permissions |
+| `CURATOR_REQUIRED` | 403 | Curator privileges required |
 | `NOT_FOUND` | 404 | Resource not found |
 | `VALIDATION_ERROR` | 400 | Invalid input data |
 | `DUPLICATE_ENTRY` | 409 | Resource already exists |

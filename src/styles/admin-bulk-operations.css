@@ -1,0 +1,312 @@
+/* Bulk Operations Toolbar */
+.bulk-operations-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.bulk-operations-empty {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selected-count {
+  font-weight: 600;
+  color: #495057;
+}
+
+.clear-selection-btn {
+  padding: 0.25rem 0.5rem;
+  background: none;
+  border: 1px solid #6c757d;
+  border-radius: 4px;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.clear-selection-btn:hover {
+  background: #6c757d;
+  color: white;
+}
+
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bulk-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.bulk-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bulk-action-btn.primary {
+  background: #007bff;
+  color: white;
+}
+
+.bulk-action-btn.primary:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.bulk-action-btn.secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.bulk-action-btn.secondary:hover:not(:disabled) {
+  background: #545b62;
+}
+
+.bulk-action-btn.danger {
+  background: #dc3545;
+  color: white;
+}
+
+.bulk-action-btn.danger:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.action-icon {
+  font-size: 1rem;
+}
+
+.select-all-btn, .export-btn {
+  padding: 0.5rem 1rem;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.select-all-btn:hover, .export-btn:hover {
+  background: #0056b3;
+}
+
+/* Bulk Operations Progress */
+.bulk-operations-progress {
+  padding: 1rem;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.progress-header h3 {
+  margin: 0;
+  color: #1976d2;
+}
+
+.progress-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.progress-stats .completed {
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.progress-stats .failed {
+  color: #d32f2f;
+  font-weight: 600;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #2196f3);
+  transition: width 0.3s ease;
+}
+
+.progress-errors {
+  margin-top: 0.5rem;
+}
+
+.progress-errors details {
+  cursor: pointer;
+}
+
+.progress-errors summary {
+  color: #d32f2f;
+  font-weight: 500;
+  padding: 0.25rem 0;
+}
+
+.progress-errors ul {
+  margin: 0.5rem 0 0 1rem;
+  padding: 0;
+}
+
+.progress-errors li {
+  color: #666;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Confirmation Modal */
+.confirmation-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.modal-content p {
+  margin: 0 0 1.5rem 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.cancel-btn, .confirm-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #545b62;
+}
+
+.confirm-btn.danger {
+  background: #dc3545;
+  color: white;
+}
+
+.confirm-btn.danger:hover {
+  background: #c82333;
+}
+
+/* Table Selection Styles */
+.plant-table tr.selected,
+.user-table tr.selected {
+  background-color: #e3f2fd;
+}
+
+.plant-review-card.selected {
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.plant-selection {
+  display: flex;
+  align-items: center;
+  margin-right: 1rem;
+}
+
+.plant-selection input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bulk-operations-toolbar {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .bulk-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .bulk-action-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .progress-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .progress-stats {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+}
