@@ -430,6 +430,63 @@ Content-Type: application/json
 GET /api/search/suggestions?q=mon
 ```
 
+## 🛡️ Admin API
+
+**Note:** All admin endpoints require curator privileges. Access is restricted to users with `isCurator: true`.
+
+### Email Verification System Monitor
+```http
+GET /api/admin/email-verification-monitor
+```
+
+**Response:**
+```json
+{
+  "systemHealth": {
+    "totalUsers": 150,
+    "verifiedUsers": 142,
+    "pendingVerifications": 8,
+    "verificationRate": 94.7
+  },
+  "recentActivity": [
+    {
+      "id": 1,
+      "email": "user@example.com",
+      "status": "verified",
+      "timestamp": "2024-01-22T10:30:00Z",
+      "attempts": 1
+    }
+  ],
+  "systemStats": {
+    "codesGenerated": 1250,
+    "successfulVerifications": 1180,
+    "failedAttempts": 45,
+    "expiredCodes": 25
+  }
+}
+```
+
+### Admin Actions
+```http
+POST /api/admin/email-verification-monitor
+Content-Type: application/json
+
+{
+  "action": "cleanup" | "reset_stats"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Action completed successfully",
+  "details": {
+    "recordsAffected": 25
+  }
+}
+```
+
 ## 🏥 System API
 
 ### Health Check
@@ -482,6 +539,7 @@ All API endpoints return consistent error responses:
 |------|--------|-------------|
 | `UNAUTHORIZED` | 401 | Authentication required |
 | `FORBIDDEN` | 403 | Insufficient permissions |
+| `CURATOR_REQUIRED` | 403 | Curator privileges required |
 | `NOT_FOUND` | 404 | Resource not found |
 | `VALIDATION_ERROR` | 400 | Invalid input data |
 | `DUPLICATE_ENTRY` | 409 | Resource already exists |

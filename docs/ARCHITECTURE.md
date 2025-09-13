@@ -114,10 +114,17 @@ RootLayout
     ├── PropagationTab
     │   ├── PropagationDashboard
     │   └── PropagationCard
-    └── ProfileTab
-        ├── ProfileDashboard
-        ├── DataImport
-        └── SettingsPanel
+    ├── ProfileTab
+    │   ├── ProfileDashboard
+    │   ├── DataImport
+    │   └── SettingsPanel
+    └── AdminSection (Curator Only)
+        ├── AdminLayout
+        ├── AdminGuard
+        ├── UserManagement
+        ├── PlantManagement
+        ├── SystemMonitoring
+        └── AuditLogs
 ```
 
 ### State Management Strategy
@@ -221,6 +228,7 @@ erDiagram
         string hashed_password
         string name
         boolean is_email_verified
+        boolean is_curator
         timestamp created_at
     }
 
@@ -356,6 +364,30 @@ sequenceDiagram
     DB-->>Lucia: Session data
     Lucia-->>API: User context
     API-->>Client: Authorized response
+```
+
+### Admin Authorization Flow
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant AdminRoute
+    participant AuthServer
+    participant DB
+
+    Client->>AdminRoute: Access /admin/*
+    AdminRoute->>AuthServer: requireCuratorSession()
+    AuthServer->>DB: Validate session + curator status
+    
+    alt User is curator
+        DB-->>AuthServer: Valid curator session
+        AuthServer-->>AdminRoute: Authorized user context
+        AdminRoute-->>Client: Admin interface
+    else User is not curator
+        DB-->>AuthServer: Invalid/non-curator session
+        AuthServer->>Client: Redirect to /dashboard
+        Note over Client: Error message displayed
+    end
 ```
 
 ### Email Verification Flow
