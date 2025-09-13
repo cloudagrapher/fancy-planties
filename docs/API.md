@@ -487,6 +487,165 @@ Content-Type: application/json
 }
 ```
 
+### Admin Analytics Dashboard
+```http
+GET /api/admin/analytics/dashboard
+```
+
+**Response:**
+```json
+{
+  "users": {
+    "total": 150,
+    "curators": 5,
+    "newThisMonth": 12,
+    "activeThisWeek": 8,
+    "emailVerified": 142
+  },
+  "plants": {
+    "total": 450,
+    "verified": 420,
+    "pendingApproval": 30,
+    "submittedThisMonth": 25
+  },
+  "activity": {
+    "recentRegistrations": [
+      {
+        "id": 151,
+        "name": "New User",
+        "email": "user@example.com",
+        "createdAt": "2024-01-22T10:30:00Z"
+      }
+    ],
+    "recentSubmissions": [
+      {
+        "id": 451,
+        "genus": "Monstera",
+        "species": "deliciosa",
+        "createdAt": "2024-01-22T09:15:00Z"
+      }
+    ],
+    "totalInstances": 1250,
+    "totalPropagations": 380,
+    "totalCareEntries": 5420
+  },
+  "systemHealth": {
+    "activeSessions": 45,
+    "lastWeekRegistrations": 8,
+    "lastWeekSubmissions": 15
+  }
+}
+```
+
+### Admin Analytics - User Growth
+```http
+GET /api/admin/analytics/user-growth
+```
+
+**Response:**
+```json
+[
+  {
+    "date": "2024-01-01",
+    "count": 3
+  },
+  {
+    "date": "2024-01-02", 
+    "count": 5
+  }
+]
+```
+
+### Admin Analytics - Plant Submission Trends
+```http
+GET /api/admin/analytics/plant-trends
+```
+
+**Response:**
+```json
+[
+  {
+    "date": "2024-01-01",
+    "verified": 8,
+    "pending": 2
+  },
+  {
+    "date": "2024-01-02",
+    "verified": 12,
+    "pending": 3
+  }
+]
+```
+
+### Admin Analytics - Top Plant Families
+```http
+GET /api/admin/analytics/top-families?limit=10
+```
+
+**Response:**
+```json
+[
+  {
+    "family": "Araceae",
+    "count": 125
+  },
+  {
+    "family": "Pothos",
+    "count": 98
+  }
+]
+```
+
+### Admin Analytics - Curator Activity
+```http
+GET /api/admin/analytics/curator-activity
+```
+
+**Response:**
+```json
+[
+  {
+    "curatorId": 1,
+    "curatorName": "Admin User",
+    "plantsApproved": 45,
+    "usersPromoted": 2
+  }
+]
+```
+
+### Admin Analytics - Pending Approval Count
+```http
+GET /api/admin/analytics/pending-count
+```
+
+**Response:**
+```json
+{
+  "count": 30
+}
+```
+
+### Admin Analytics - System Alerts
+```http
+GET /api/admin/analytics/system-alerts
+```
+
+**Response:**
+```json
+[
+  {
+    "type": "warning",
+    "message": "High number of pending plant approvals: 52",
+    "timestamp": "2024-01-22T10:30:00Z"
+  },
+  {
+    "type": "info",
+    "message": "No curator activity in the last 30 days",
+    "timestamp": "2024-01-22T10:30:00Z"
+  }
+]
+```
+
 ## 🏥 System API
 
 ### Health Check
