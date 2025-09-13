@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCuratorRequest } from '@/lib/auth/server';
 import { AdminUserQueries } from '@/lib/db/queries/admin-users';
+import { AuditLogger, AUDIT_ACTIONS } from '@/lib/services/audit-logger';
 import { z } from 'zod';
 
 const curatorStatusSchema = z.object({
@@ -44,10 +45,26 @@ export async function PATCH(
       );
     }
     
+    // Get user details before modification for audit log
+    const userDetails = await AdminUserQueries.getUserById(userId);
+    
     let updatedUser;
     
     if (action === 'promote') {
       updatedUser = await AdminUserQueries.promoteUserToCurator(userId, currentUser.id);
+      
+      // Log the promotion action
+      await AuditLogger.logUserAction(
+        AUDIT_ACTIONS.USER_PROMOTED,
+        userId,
+        currentUser.id,
+        {
+          userName: userDetails?.name,
+          userEmail: userDetails?.email,
+          previousStatus: 'user',
+          newStatus: 'curator',
+        }
+      );
     } else {
       // Check if this is the last curator
       const curatorCount = await AdminUserQueries.getCuratorCount();
@@ -59,6 +76,19 @@ export async function PATCH(
       }
       
       updatedUser = await AdminUserQueries.demoteCuratorToUser(userId, currentUser.id);
+      
+      // Log the demotion action
+      await AuditLogger.logUserAction(
+        AUDIT_ACTIONS.USER_DEMOTED,
+        userId,
+        currentUser.id,
+        {
+          userName: userDetails?.name,
+          userEmail: userDetails?.email,
+          previousStatus: 'curator',
+          newStatus: 'user',
+        }
+      );
     }
     
     return NextResponse.json({

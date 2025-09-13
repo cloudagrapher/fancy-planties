@@ -128,25 +128,25 @@ export async function getTaxonomyHierarchy(): Promise<TaxonomyNode[]> {
       cultivar: plant.cultivar || undefined,
       commonName: plant.commonName,
       isVerified: plant.isVerified,
-      instanceCount: plant.instanceCount,
-      propagationCount: plant.propagationCount,
+      instanceCount: Number(plant.instanceCount),
+      propagationCount: Number(plant.propagationCount),
       createdAt: plant.createdAt,
     };
 
     speciesNode.plants!.push(taxonomyPlant);
 
-    // Update counts
+    // Update counts (ensure numeric conversion)
     speciesNode.plantCount++;
-    speciesNode.instanceCount += plant.instanceCount;
-    speciesNode.propagationCount += plant.propagationCount;
+    speciesNode.instanceCount += Number(plant.instanceCount);
+    speciesNode.propagationCount += Number(plant.propagationCount);
 
     genusNode.plantCount++;
-    genusNode.instanceCount += plant.instanceCount;
-    genusNode.propagationCount += plant.propagationCount;
+    genusNode.instanceCount += Number(plant.instanceCount);
+    genusNode.propagationCount += Number(plant.propagationCount);
 
     familyNode.plantCount++;
-    familyNode.instanceCount += plant.instanceCount;
-    familyNode.propagationCount += plant.propagationCount;
+    familyNode.instanceCount += Number(plant.instanceCount);
+    familyNode.propagationCount += Number(plant.propagationCount);
 
     // Handle cultivars if present
     if (plant.cultivar) {
@@ -165,8 +165,8 @@ export async function getTaxonomyHierarchy(): Promise<TaxonomyNode[]> {
       }
       cultivarNode.plants!.push(taxonomyPlant);
       cultivarNode.plantCount++;
-      cultivarNode.instanceCount += plant.instanceCount;
-      cultivarNode.propagationCount += plant.propagationCount;
+      cultivarNode.instanceCount += Number(plant.instanceCount);
+      cultivarNode.propagationCount += Number(plant.propagationCount);
     }
   });
 
@@ -226,7 +226,24 @@ export async function getTaxonomyStats(): Promise<TaxonomyStats> {
 
 // Find potential duplicate plants
 async function findDuplicateCandidates(): Promise<TaxonomyPlant[]> {
-  const duplicates = await db
+  // First, find genus/species combinations that have duplicates
+  const duplicateGenusSpecies = await db
+    .select({
+      genus: plants.genus,
+      species: plants.species,
+      count: sql<number>`COUNT(*)`,
+    })
+    .from(plants)
+    .groupBy(plants.genus, plants.species)
+    .having(sql`COUNT(*) > 1`)
+    .orderBy(desc(sql`COUNT(*)`));
+
+  if (duplicateGenusSpecies.length === 0) {
+    return [];
+  }
+
+  // Then, fetch all plants that belong to these duplicate combinations
+  const duplicatePlants = await db
     .select({
       id: plants.id,
       family: plants.family,
@@ -237,39 +254,36 @@ async function findDuplicateCandidates(): Promise<TaxonomyPlant[]> {
       isVerified: plants.isVerified,
       createdAt: plants.createdAt,
       instanceCount: sql<number>`(
-        SELECT COUNT(*) FROM ${plantInstances} 
+        SELECT COUNT(*) FROM ${plantInstances}
         WHERE ${plantInstances.plantId} = ${plants.id}
       )`,
       propagationCount: sql<number>`(
-        SELECT COUNT(*) FROM ${propagations} 
+        SELECT COUNT(*) FROM ${propagations}
         WHERE ${propagations.plantId} = ${plants.id}
-      )`,
-      duplicateCount: sql<number>`(
-        SELECT COUNT(*) FROM ${plants} p2 
-        WHERE p2.genus = ${plants.genus} 
-        AND p2.species = ${plants.species}
-        AND p2.id != ${plants.id}
       )`,
     })
     .from(plants)
-    .having(sql`COUNT(*) > 1`)
-    .groupBy(plants.genus, plants.species)
-    .orderBy(desc(sql`duplicateCount`));
+    .where(
+      sql`(${plants.genus}, ${plants.species}) IN ${sql.raw(
+        `(${duplicateGenusSpecies
+          .map((d) => `('${d.genus}', '${d.species}')`)
+          .join(', ')})`
+      )}`
+    )
+    .orderBy(asc(plants.genus), asc(plants.species), asc(plants.commonName));
 
-  return duplicates
-    .filter(plant => plant.duplicateCount > 0)
-    .map(plant => ({
-      id: plant.id,
-      family: plant.family,
-      genus: plant.genus,
-      species: plant.species,
-      cultivar: plant.cultivar || undefined,
-      commonName: plant.commonName,
-      isVerified: plant.isVerified,
-      instanceCount: plant.instanceCount,
-      propagationCount: plant.propagationCount,
-      createdAt: plant.createdAt,
-    }));
+  return duplicatePlants.map(plant => ({
+    id: plant.id,
+    family: plant.family,
+    genus: plant.genus,
+    species: plant.species,
+    cultivar: plant.cultivar || undefined,
+    commonName: plant.commonName,
+    isVerified: plant.isVerified,
+    instanceCount: Number(plant.instanceCount),
+    propagationCount: Number(plant.propagationCount),
+    createdAt: plant.createdAt,
+  }));
 }
 
 // Merge two plants (move all instances and propagations from source to target)
@@ -410,8 +424,8 @@ export async function getPlantsByTaxonomy(
     cultivar: plant.cultivar || undefined,
     commonName: plant.commonName,
     isVerified: plant.isVerified,
-    instanceCount: plant.instanceCount,
-    propagationCount: plant.propagationCount,
+    instanceCount: Number(plant.instanceCount),
+    propagationCount: Number(plant.propagationCount),
     createdAt: plant.createdAt,
   }));
 }

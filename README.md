@@ -346,11 +346,14 @@ The application includes a comprehensive admin dashboard for users with curator 
 - **User Management**: View and manage user accounts and curator privileges
 - **Plant Management**: Oversee plant taxonomy and approve user submissions
 - **System Monitoring**: Email verification system monitoring, system health alerts, and curator activity tracking
+- **Audit Logging**: Complete audit trail of all administrative actions with detailed tracking
 - **Access Control**: Route-level protection with real-time privilege validation
 
 **Admin Access**: Users with curator privileges can access the admin dashboard through the main navigation. The system includes proper authorization checks and graceful handling of privilege changes.
 
 **Analytics Features**: The admin dashboard provides detailed insights including user statistics, plant submission trends, top plant families by usage, curator activity summaries, and system health monitoring with automated alerts.
+
+**Audit Trail**: All administrative actions are logged with comprehensive details including action type, affected entities, performer information, timestamps, IP addresses, and success/failure status for complete accountability and security monitoring.
 
 ## 🔒 Security Features
 

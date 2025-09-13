@@ -55,8 +55,8 @@ export class AdminAnalyticsQueries {
         .select({
           total: sql<number>`count(*)`,
           curators: sql<number>`count(*) filter (where ${users.isCurator} = true)`,
-          newThisMonth: sql<number>`count(*) filter (where ${users.createdAt} >= ${startOfMonth})`,
-          activeThisWeek: sql<number>`count(*) filter (where ${users.createdAt} >= ${startOfWeek})`,
+          newThisMonth: sql<number>`count(*) filter (where ${users.createdAt} >= ${startOfMonth.toISOString()})`,
+          activeThisWeek: sql<number>`count(*) filter (where ${users.createdAt} >= ${startOfWeek.toISOString()})`,
           emailVerified: sql<number>`count(*) filter (where ${users.isEmailVerified} = true)`,
         })
         .from(users);
@@ -67,7 +67,7 @@ export class AdminAnalyticsQueries {
           total: sql<number>`count(*)`,
           verified: sql<number>`count(*) filter (where ${plants.isVerified} = true)`,
           pendingApproval: sql<number>`count(*) filter (where ${plants.isVerified} = false)`,
-          submittedThisMonth: sql<number>`count(*) filter (where ${plants.createdAt} >= ${startOfMonth})`,
+          submittedThisMonth: sql<number>`count(*) filter (where ${plants.createdAt} >= ${startOfMonth.toISOString()})`,
         })
         .from(plants);
 

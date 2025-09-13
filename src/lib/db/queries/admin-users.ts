@@ -45,6 +45,22 @@ export interface PaginatedUsers {
 }
 
 export class AdminUserQueries {
+  // Get a single user by ID
+  static async getUserById(id: number): Promise<User | null> {
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, id))
+        .limit(1);
+
+      return user || null;
+    } catch (error) {
+      console.error('Failed to get user by ID:', error);
+      throw new Error('Failed to get user by ID');
+    }
+  }
+
   // Get paginated users with statistics and filtering
   static async getPaginatedUsers(
     page: number = 1,
