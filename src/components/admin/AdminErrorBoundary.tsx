@@ -163,32 +163,7 @@ function DefaultAdminErrorFallback({ error, errorInfo, resetError }: AdminErrorF
 // Specialized error boundaries for different admin sections
 export function AdminUserErrorBoundary({ children }: { children: ReactNode }) {
   return (
-    <AdminErrorBoundary
-      fallback={({ error, resetError }) => (
-        <div className="admin-error-boundary user-management-error">
-          <div className="error-container">
-            <div className="error-icon">👥</div>
-            <h2>User Management Error</h2>
-            <p>There was a problem loading the user management interface.</p>
-            <div className="error-actions">
-              <button onClick={resetError} className="retry-button primary">
-                Try Again
-              </button>
-              <button 
-                onClick={() => window.location.href = '/admin'}
-                className="home-button secondary"
-              >
-                Return to Dashboard
-              </button>
-            </div>
-            <details className="error-details">
-              <summary>Error Details</summary>
-              <p>{error.message}</p>
-            </details>
-          </div>
-        </div>
-      )}
-    >
+    <AdminErrorBoundary>
       {children}
     </AdminErrorBoundary>
   );
@@ -196,32 +171,7 @@ export function AdminUserErrorBoundary({ children }: { children: ReactNode }) {
 
 export function AdminPlantErrorBoundary({ children }: { children: ReactNode }) {
   return (
-    <AdminErrorBoundary
-      fallback={({ error, resetError }) => (
-        <div className="admin-error-boundary plant-management-error">
-          <div className="error-container">
-            <div className="error-icon">🌱</div>
-            <h2>Plant Management Error</h2>
-            <p>There was a problem loading the plant management interface.</p>
-            <div className="error-actions">
-              <button onClick={resetError} className="retry-button primary">
-                Try Again
-              </button>
-              <button 
-                onClick={() => window.location.href = '/admin/plants'}
-                className="home-button secondary"
-              >
-                Return to Plant Management
-              </button>
-            </div>
-            <details className="error-details">
-              <summary>Error Details</summary>
-              <p>{error.message}</p>
-            </details>
-          </div>
-        </div>
-      )}
-    >
+    <AdminErrorBoundary>
       {children}
     </AdminErrorBoundary>
   );
@@ -229,32 +179,7 @@ export function AdminPlantErrorBoundary({ children }: { children: ReactNode }) {
 
 export function AdminAuditErrorBoundary({ children }: { children: ReactNode }) {
   return (
-    <AdminErrorBoundary
-      fallback={({ error, resetError }) => (
-        <div className="admin-error-boundary audit-error">
-          <div className="error-container">
-            <div className="error-icon">📋</div>
-            <h2>Audit Log Error</h2>
-            <p>There was a problem loading the audit logs.</p>
-            <div className="error-actions">
-              <button onClick={resetError} className="retry-button primary">
-                Try Again
-              </button>
-              <button 
-                onClick={() => window.location.href = '/admin'}
-                className="home-button secondary"
-              >
-                Return to Dashboard
-              </button>
-            </div>
-            <details className="error-details">
-              <summary>Error Details</summary>
-              <p>{error.message}</p>
-            </details>
-          </div>
-        </div>
-      )}
-    >
+    <AdminErrorBoundary>
       {children}
     </AdminErrorBoundary>
   );
