@@ -136,6 +136,49 @@ export async function redirectIfAuthenticated(redirectTo: string = '/dashboard')
   }
 }
 
+// Require curator privileges or redirect
+export async function requireCuratorSession(redirectTo: string = '/dashboard') {
+  const { user, session } = await requireVerifiedSession();
+  
+  if (!user.isCurator) {
+    redirect(redirectTo);
+  }
+  
+  return { user, session };
+}
+
+// Check if user is curator (without redirect)
+export async function isCurator(): Promise<boolean> {
+  const { user } = await validateRequest();
+  return !!(user && user.isCurator);
+}
+
+// Validate request and require curator privileges for API routes
+export async function validateCuratorRequest(): Promise<{ user: User; session: Session } | { user: null; session: null; error: string }> {
+  const result = await validateVerifiedRequest();
+  
+  if ('error' in result) {
+    return result;
+  }
+  
+  if (!result.user.isCurator) {
+    return { user: null, session: null, error: 'Curator privileges required' };
+  }
+  
+  return result;
+}
+
+// Check curator status for conditional UI rendering
+export async function getCuratorStatus(): Promise<{ isCurator: boolean; isAuthenticated: boolean; isVerified: boolean }> {
+  const { user } = await validateRequest();
+  
+  return {
+    isCurator: !!(user && user.isCurator),
+    isAuthenticated: !!user,
+    isVerified: !!(user && user.isEmailVerified),
+  };
+}
+
 // Session cleanup utility
 export async function cleanupExpiredSessions(): Promise<void> {
   try {

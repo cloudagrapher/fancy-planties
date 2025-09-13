@@ -3,6 +3,8 @@ export interface User {
   id: number;
   email: string;
   name: string;
+  isCurator: boolean;
+  isEmailVerified: boolean;
 }
 
 export interface Session {
@@ -100,4 +102,25 @@ export async function getCurrentUser(): Promise<{ user: User; session: Session }
     console.error('Failed to get current user:', error);
     return null;
   }
+}
+
+// Curator status utilities for client components
+export async function checkCuratorStatus(): Promise<{ isCurator: boolean; isAuthenticated: boolean; isVerified: boolean }> {
+  try {
+    const response = await fetch('/api/auth/curator-status');
+    
+    if (!response.ok) {
+      return { isCurator: false, isAuthenticated: false, isVerified: false };
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Failed to check curator status:', error);
+    return { isCurator: false, isAuthenticated: false, isVerified: false };
+  }
+}
+
+// Helper to check if user object has curator privileges
+export function isUserCurator(user: User | null): boolean {
+  return !!(user && user.isCurator);
 }

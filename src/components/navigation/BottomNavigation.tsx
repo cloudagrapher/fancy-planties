@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface NavigationItem {
   id: string;
@@ -11,6 +11,7 @@ interface NavigationItem {
   icon: string;
   href: string;
   badge?: number;
+  requiresCurator?: boolean;
 }
 
 interface BottomNavigationProps {
@@ -21,8 +22,27 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
   const pathname = usePathname();
   const { triggerHaptic } = useHapticFeedback();
   const [pressedItem, setPressedItem] = useState<string | null>(null);
+  const [isCurator, setIsCurator] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const navigationItems: NavigationItem[] = [
+  // Check curator status
+  useEffect(() => {
+    const checkCuratorStatus = async () => {
+      try {
+        const response = await fetch('/api/auth/curator-status');
+        if (response.ok) {
+          const data = await response.json();
+          setIsCurator(data.isCurator);
+        }
+      } catch (error) {
+        console.error('Failed to check curator status:', error);
+      }
+    };
+
+    checkCuratorStatus();
+  }, []);
+
+  const allNavigationItems: NavigationItem[] = [
     {
       id: 'plants',
       label: 'Plants',
@@ -54,7 +74,23 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
       icon: '📖',
       href: '/dashboard/handbook',
     },
+    {
+      id: 'admin',
+      label: 'Admin',
+      icon: '⚙️',
+      href: '/admin',
+      requiresCurator: true,
+    },
   ];
+
+  // Filter items based on curator status and create primary/overflow items
+  const visibleItems = allNavigationItems.filter(item => 
+    !item.requiresCurator || isCurator
+  );
+
+  // Show first 4 items directly, rest in burger menu
+  const primaryItems = visibleItems.slice(0, 4);
+  const overflowItems = visibleItems.slice(4);
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -69,44 +105,83 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
     setTimeout(() => setPressedItem(null), 150);
   };
 
+  const toggleMenu = () => {
+    triggerHaptic('selection');
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const renderNavItem = (item: NavigationItem) => (
+    <Link
+      key={item.id}
+      href={item.href}
+      className={`
+        bottom-nav-item
+        ${isActive(item.href) ? 'bottom-nav-item--active' : 'bottom-nav-item--inactive'}
+        ${pressedItem === item.id ? 'bottom-nav-item--pressed' : ''}
+      `}
+      onTouchStart={() => handleNavPress(item.id)}
+      onMouseDown={() => handleNavPress(item.id)}
+      onClick={() => setIsMenuOpen(false)}
+      aria-label={`Navigate to ${item.label}${item.badge ? ` (${item.badge} notifications)` : ''}`}
+      title={`Navigate to ${item.label}${item.badge ? ` (${item.badge} notifications)` : ''}`}
+    >
+      <div className="relative">
+        <span className="bottom-nav-icon" aria-hidden="true">
+          {item.icon}
+        </span>
+        {item.badge && (
+          <span 
+            className="bottom-nav-badge"
+            role="status"
+            aria-label={`${item.badge} notifications`}
+            suppressHydrationWarning
+          >
+            {item.badge > 99 ? '99+' : item.badge}
+          </span>
+        )}
+      </div>
+      <span className="bottom-nav-label">
+        {item.label}
+      </span>
+    </Link>
+  );
+
   return (
     <nav className="bottom-nav">
       <div className="bottom-nav-container">
-        {navigationItems.map((item) => (
-          <Link
-            key={item.id}
-            href={item.href}
-            className={`
-              bottom-nav-item
-              ${isActive(item.href) ? 'bottom-nav-item--active' : 'bottom-nav-item--inactive'}
-              ${pressedItem === item.id ? 'bottom-nav-item--pressed' : ''}
-            `}
-            onTouchStart={() => handleNavPress(item.id)}
-            onMouseDown={() => handleNavPress(item.id)}
-            aria-label={`Navigate to ${item.label}${item.badge ? ` (${item.badge} notifications)` : ''}`}
-            title={`Navigate to ${item.label}${item.badge ? ` (${item.badge} notifications)` : ''}`}
-          >
-            <div className="relative">
-              <span className="bottom-nav-icon" aria-hidden="true">
-                {item.icon}
-              </span>
-              {item.badge && (
-                <span 
-                  className="bottom-nav-badge"
-                  role="status"
-                  aria-label={`${item.badge} notifications`}
-                  suppressHydrationWarning
-                >
-                  {item.badge > 99 ? '99+' : item.badge}
-                </span>
-              )}
-            </div>
-            <span className="bottom-nav-label">
-              {item.label}
-            </span>
-          </Link>
-        ))}
+        {primaryItems.map((item) => renderNavItem(item))}
+        
+        {overflowItems.length > 0 && (
+          <div className="bottom-nav-burger">
+            <button
+              className={`
+                bottom-nav-item bottom-nav-burger-button
+                ${isMenuOpen ? 'bottom-nav-item--active' : 'bottom-nav-item--inactive'}
+              `}
+              onClick={toggleMenu}
+              aria-label="More navigation options"
+              aria-expanded={isMenuOpen}
+            >
+              <span className="bottom-nav-icon">☰</span>
+              <span className="bottom-nav-label">More</span>
+            </button>
+            
+            {isMenuOpen && (
+              <div className="bottom-nav-overflow-menu">
+                {overflowItems.map((item) => renderNavItem(item))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+      
+      {isMenuOpen && (
+        <div 
+          className="bottom-nav-overlay"
+          onClick={() => setIsMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
     </nav>
   );
 }
