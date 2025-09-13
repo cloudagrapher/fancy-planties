@@ -300,6 +300,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   careHistory: many(careHistory),
   careGuides: many(careGuides),
   emailVerificationCodes: many(emailVerificationCodes),
+  auditLogs: many(auditLogs),
 }));
 
 export const plantsRelations = relations(plants, ({ many, one }) => ({
@@ -371,6 +372,41 @@ export const careGuidesRelations = relations(careGuides, ({ one }) => ({
   }),
 }));
 
+// Audit logs table for tracking admin actions
+export const auditLogs = pgTable('audit_logs', {
+  id: serial('id').primaryKey(),
+  action: text('action').notNull(), // e.g., 'user_promoted', 'plant_approved', 'plant_rejected'
+  entityType: text('entity_type', { 
+    enum: ['user', 'plant', 'plant_instance', 'propagation', 'system'] 
+  }).notNull(),
+  entityId: integer('entity_id'), // ID of the affected entity (nullable for system actions)
+  performedBy: integer('performed_by').notNull().references(() => users.id),
+  timestamp: timestamp('timestamp').defaultNow().notNull(),
+  details: jsonb('details').$type<Record<string, any>>().default({}).notNull(), // Additional context
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  success: boolean('success').default(true).notNull(), // Whether the action succeeded
+  errorMessage: text('error_message'), // Error details if action failed
+}, (table) => ({
+  // Indexes for audit log queries
+  actionIdx: index('audit_logs_action_idx').on(table.action),
+  entityTypeIdx: index('audit_logs_entity_type_idx').on(table.entityType),
+  entityIdIdx: index('audit_logs_entity_id_idx').on(table.entityId),
+  performedByIdx: index('audit_logs_performed_by_idx').on(table.performedBy),
+  timestampIdx: index('audit_logs_timestamp_idx').on(table.timestamp),
+  successIdx: index('audit_logs_success_idx').on(table.success),
+  // Composite indexes for common queries
+  entityTypeIdIdx: index('audit_logs_entity_type_id_idx').on(table.entityType, table.entityId),
+  performedByTimestampIdx: index('audit_logs_performed_by_timestamp_idx').on(table.performedBy, table.timestamp),
+}));
+
+export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
+  performedBy: one(users, {
+    fields: [auditLogs.performedBy],
+    references: [users.id],
+  }),
+}));
+
 // Export types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -388,3 +424,5 @@ export type CareHistory = typeof careHistory.$inferSelect;
 export type NewCareHistory = typeof careHistory.$inferInsert;
 export type CareGuide = typeof careGuides.$inferSelect;
 export type NewCareGuide = typeof careGuides.$inferInsert;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type NewAuditLog = typeof auditLogs.$inferInsert;

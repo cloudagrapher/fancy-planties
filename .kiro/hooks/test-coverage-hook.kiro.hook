@@ -1,19 +1,16 @@
 {
   "enabled": true,
-  "name": "Test Coverage Generator",
-  "description": "Monitors source file changes to identify new or modified functions, checks test coverage, generates missing test cases, runs tests, and updates coverage reports",
+  "name": "Test Coverage Monitor",
+  "description": "Monitors source file changes and ensures corresponding tests exist with adequate coverage. Generates missing tests and updates coverage reports automatically.",
   "version": "1",
   "when": {
     "type": "fileEdited",
     "patterns": [
-      "src/**/*.ts",
-      "src/**/*.tsx",
-      "src/**/*.js",
-      "src/**/*.jsx"
+      "src/**/*.{ts,tsx,js,jsx}"
     ]
   },
   "then": {
     "type": "askAgent",
-    "prompt": "A source file has been modified. Please:\n\n1. Analyze the changed file to identify new or modified functions and methods\n2. Check if corresponding tests exist in the appropriate test directory (__tests__ folders or .test/.spec files)\n3. Evaluate current test coverage for the modified code\n4. If coverage is missing or insufficient:\n   - Generate comprehensive test cases for new/modified functions\n   - Include unit tests, integration tests, and edge cases as appropriate\n   - Follow the existing test patterns and use the test utilities in src/test-utils/\n5. Run the test suite to verify all tests pass\n6. Update coverage reports and highlight any coverage gaps\n7. Provide a summary of:\n   - What was tested\n   - Coverage percentage changes\n   - Any remaining coverage gaps\n   - Recommendations for additional testing\n\nFocus on maintaining high code quality and comprehensive test coverage across the codebase."
+    "prompt": "A source file has been modified. Please:\n\n1. Analyze the changed file to identify new or modified functions and methods\n2. Check if corresponding test files exist in the appropriate test directories (__tests__, .test.ts, .spec.ts)\n3. Verify that existing tests cover the modified functionality\n4. If coverage is missing or insufficient:\n   - Generate comprehensive test cases for new/modified code\n   - Include unit tests, integration tests, and edge cases as appropriate\n   - Follow the project's testing patterns (Jest, React Testing Library)\n   - Ensure tests cover error conditions and boundary cases\n5. Run the test suite to verify all tests pass\n6. Update coverage reports and ensure coverage thresholds are met\n7. If tests fail, debug and fix the issues\n\nFocus on maintaining high test coverage while ensuring tests are meaningful and maintainable. Follow the project's existing test structure and naming conventions."
   }
 }
