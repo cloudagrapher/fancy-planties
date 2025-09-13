@@ -25,7 +25,7 @@
   - Add curator promotion/demotion functionality with self-protection
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
 
-- [ ] 5. Create verified plants management system
+- [x] 5. Create verified plants management system
   - Build plants management table with sorting and filtering
   - Implement inline plant editing with taxonomy validation
   - Add plant search and taxonomy-based filtering
