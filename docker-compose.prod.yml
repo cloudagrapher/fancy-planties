@@ -95,7 +95,9 @@ services:
 
   # Migration utility service - only run when needed for schema changes
   migration-utils:
-    image: ghcr.io/stefanbekker/fancy-planties:design-modernization
+    build:
+      context: .
+      dockerfile: Dockerfile.migration
     container_name: fancy-planties-migration-utils
     environment:
       - DATABASE_URL=${DATABASE_URL}

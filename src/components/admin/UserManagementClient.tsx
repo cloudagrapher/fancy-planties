@@ -8,6 +8,8 @@ import {
   type UserSortConfig, 
   type PaginatedUsers 
 } from '@/lib/db/queries/admin-users';
+import { useBulkOperations } from '@/hooks/useBulkOperations';
+import BulkOperationsToolbar from './BulkOperationsToolbar';
 
 export interface UserManagementClientProps {
   initialData: PaginatedUsers;
@@ -28,6 +30,18 @@ export default function UserManagementClient({
   const [sort, setSort] = useState(initialSort);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Bulk operations
+  const {
+    selectedItems: selectedUsers,
+    selectItem: selectUser,
+    selectAll: selectAllUsers,
+    clearSelection,
+    isSelected,
+    selectedCount,
+    progress,
+    executeBulkOperation,
+  } = useBulkOperations<number>();
   
   // Update URL with current filters and sort
   const updateURL = useCallback((newFilters: UserFilters, newSort: UserSortConfig, page: number = 1) => {
@@ -141,6 +155,85 @@ export default function UserManagementClient({
       fetchUsers(currentPage);
     }
   }, [searchParams, data.page, fetchUsers]);
+
+  // Bulk operation handlers
+  const handleBulkAction = async (actionId: string) => {
+    await executeBulkOperation(async (userIds) => {
+      const response = await fetch('/api/admin/users/bulk-operations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          operation: actionId,
+          userIds,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Operation failed');
+      }
+
+      const result = await response.json();
+      
+      // Refresh the user list after successful operation
+      await fetchUsers(data.page);
+      
+      return {
+        success: result.success,
+        errors: result.errors || [],
+      };
+    });
+  };
+
+  const handleSelectAll = () => {
+    selectAllUsers(data.users.map(u => u.id));
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await fetch('/api/admin/users/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userIds: selectedCount > 0 ? Array.from(selectedUsers) : undefined,
+          format: 'csv',
+          filters: selectedCount === 0 ? filters : undefined,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export users');
+    }
+  };
+
+  const bulkActions = [
+    {
+      id: 'promote',
+      label: 'Promote to Curator',
+      icon: '⬆️',
+      variant: 'primary' as const,
+    },
+    {
+      id: 'demote',
+      label: 'Demote from Curator',
+      icon: '⬇️',
+      variant: 'secondary' as const,
+      requiresConfirmation: true,
+      confirmationMessage: `Are you sure you want to demote ${selectedCount} users from curator status?`,
+    },
+  ];
   
   return (
     <div className="user-management">
@@ -162,6 +255,17 @@ export default function UserManagementClient({
         onFilterChange={handleFilterChange}
       />
       
+      <BulkOperationsToolbar
+        selectedCount={selectedCount}
+        totalCount={data.totalCount}
+        actions={bulkActions}
+        progress={progress}
+        onAction={handleBulkAction}
+        onSelectAll={handleSelectAll}
+        onClearSelection={clearSelection}
+        onExport={handleExport}
+      />
+      
       <UserManagementTable
         data={data}
         sort={sort}
@@ -169,6 +273,9 @@ export default function UserManagementClient({
         onSortChange={handleSortChange}
         onPageChange={handlePageChange}
         onCuratorStatusChange={handleCuratorStatusChange}
+        selectedUsers={selectedUsers}
+        onSelectUser={selectUser}
+        isSelected={isSelected}
       />
     </div>
   );
@@ -238,6 +345,9 @@ interface UserManagementTableProps {
   onSortChange: (field: UserSortConfig['field']) => void;
   onPageChange: (page: number) => void;
   onCuratorStatusChange: (userId: number, action: 'promote' | 'demote') => void;
+  selectedUsers: Set<number>;
+  onSelectUser: (userId: number) => void;
+  isSelected: (userId: number) => boolean;
 }
 
 function UserManagementTable({
@@ -247,6 +357,9 @@ function UserManagementTable({
   onSortChange,
   onPageChange,
   onCuratorStatusChange,
+  selectedUsers,
+  onSelectUser,
+  isSelected,
 }: UserManagementTableProps) {
   const getSortIcon = (field: UserSortConfig['field']) => {
     if (sort.field !== field) return '↕️';
@@ -264,6 +377,23 @@ function UserManagementTable({
       <table className="user-table">
         <thead>
           <tr>
+            <th>
+              <input
+                type="checkbox"
+                checked={data.users.length > 0 && selectedUsers.size === data.users.length}
+                onChange={() => {
+                  if (selectedUsers.size === data.users.length) {
+                    data.users.forEach(user => onSelectUser(user.id));
+                  } else {
+                    data.users.forEach(user => {
+                      if (!isSelected(user.id)) {
+                        onSelectUser(user.id);
+                      }
+                    });
+                  }
+                }}
+              />
+            </th>
             <th onClick={() => onSortChange('name')} className="sortable">
               Name {getSortIcon('name')}
             </th>
@@ -290,6 +420,8 @@ function UserManagementTable({
               key={user.id}
               user={user}
               onCuratorStatusChange={onCuratorStatusChange}
+              isSelected={isSelected(user.id)}
+              onSelect={() => onSelectUser(user.id)}
             />
           ))}
         </tbody>
@@ -308,9 +440,11 @@ function UserManagementTable({
 interface UserTableRowProps {
   user: UserWithStats;
   onCuratorStatusChange: (userId: number, action: 'promote' | 'demote') => void;
+  isSelected: boolean;
+  onSelect: () => void;
 }
 
-function UserTableRow({ user, onCuratorStatusChange }: UserTableRowProps) {
+function UserTableRow({ user, onCuratorStatusChange, isSelected, onSelect }: UserTableRowProps) {
   const formatDate = (date: Date | string) => {
     return new Date(date).toLocaleDateString();
   };
@@ -326,7 +460,14 @@ function UserTableRow({ user, onCuratorStatusChange }: UserTableRowProps) {
   };
   
   return (
-    <tr className={user.isCurator ? 'curator-row' : ''}>
+    <tr className={`${user.isCurator ? 'curator-row' : ''} ${isSelected ? 'selected' : ''}`}>
+      <td>
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={onSelect}
+        />
+      </td>
       <td>
         <div className="user-name">
           {user.name}

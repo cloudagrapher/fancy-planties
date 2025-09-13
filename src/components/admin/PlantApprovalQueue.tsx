@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import type { PlantWithDetails } from '@/lib/db/queries/admin-plants';
 import PlantReviewCard from './PlantReviewCard';
+import { useBulkOperations } from '@/hooks/useBulkOperations';
+import BulkOperationsToolbar from './BulkOperationsToolbar';
 
 interface PlantApprovalQueueProps {
   pendingPlants: PlantWithDetails[];
@@ -16,6 +18,18 @@ export default function PlantApprovalQueue({
   const [plants, setPlants] = useState(initialPlants);
   const [totalCount, setTotalCount] = useState(initialCount);
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
+
+  // Bulk operations
+  const {
+    selectedItems: selectedPlants,
+    selectItem: selectPlant,
+    selectAll: selectAllPlants,
+    clearSelection,
+    isSelected,
+    selectedCount,
+    progress,
+    executeBulkOperation,
+  } = useBulkOperations<number>();
 
   const handlePlantProcessed = (plantId: number) => {
     // Remove the processed plant from the list
@@ -39,6 +53,86 @@ export default function PlantApprovalQueue({
       return newSet;
     });
   };
+
+  // Bulk operation handlers
+  const handleBulkAction = async (actionId: string) => {
+    await executeBulkOperation(async (plantIds) => {
+      const response = await fetch('/api/admin/plants/bulk-operations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          operation: actionId,
+          plantIds,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Operation failed');
+      }
+
+      const result = await response.json();
+      
+      // Remove processed plants from the list
+      setPlants(prev => prev.filter(p => !plantIds.includes(p.id)));
+      setTotalCount(prev => prev - result.processedCount);
+      
+      return {
+        success: result.success,
+        errors: result.errors || [],
+      };
+    });
+  };
+
+  const handleSelectAll = () => {
+    selectAllPlants(plants.map(p => p.id));
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await fetch('/api/admin/plants/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plantIds: selectedCount > 0 ? Array.from(selectedPlants) : plants.map(p => p.id),
+          format: 'csv',
+          filters: { isVerified: false }, // Only pending plants
+        }),
+      });
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pending-plants-export-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export plants');
+    }
+  };
+
+  const bulkActions = [
+    {
+      id: 'approve',
+      label: 'Approve All',
+      icon: '✅',
+      variant: 'primary' as const,
+    },
+    {
+      id: 'reject',
+      label: 'Reject All',
+      icon: '❌',
+      variant: 'danger' as const,
+      requiresConfirmation: true,
+      confirmationMessage: `Are you sure you want to reject ${selectedCount} plants? This will delete them permanently.`,
+    },
+  ];
 
   if (plants.length === 0) {
     return (
@@ -65,6 +159,17 @@ export default function PlantApprovalQueue({
         </div>
       </div>
 
+      <BulkOperationsToolbar
+        selectedCount={selectedCount}
+        totalCount={totalCount}
+        actions={bulkActions}
+        progress={progress}
+        onAction={handleBulkAction}
+        onSelectAll={handleSelectAll}
+        onClearSelection={clearSelection}
+        onExport={handleExport}
+      />
+
       <div className="approval-queue-list">
         {plants.map((plant) => (
           <PlantReviewCard
@@ -74,6 +179,8 @@ export default function PlantApprovalQueue({
             onProcessed={handlePlantProcessed}
             onProcessingStart={handleProcessingStart}
             onProcessingEnd={handleProcessingEnd}
+            isSelected={isSelected(plant.id)}
+            onSelect={() => selectPlant(plant.id)}
           />
         ))}
       </div>

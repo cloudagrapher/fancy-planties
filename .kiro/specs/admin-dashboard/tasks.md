@@ -59,7 +59,7 @@
   - Add action logging for all admin operations
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 9. Add bulk operations functionality
+- [x] 9. Add bulk operations functionality
   - Implement bulk selection for plants and users
   - Create bulk approval/rejection for plant submissions
   - Add bulk operations progress tracking and error handling

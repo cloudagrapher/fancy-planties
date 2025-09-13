@@ -298,4 +298,152 @@ export class AdminPlantQueries {
       throw new Error('Failed to bulk update verification');
     }
   }
+
+  // Bulk delete plants
+  static async bulkDeletePlants(plantIds: number[]): Promise<{ 
+    deletedCount: number; 
+    errors: Array<{ id: number; error: string }> 
+  }> {
+    const errors: Array<{ id: number; error: string }> = [];
+    let deletedCount = 0;
+
+    for (const plantId of plantIds) {
+      try {
+        // Check if plant has instances or propagations
+        const [instanceCount] = await db
+          .select({ count: count() })
+          .from(plantInstances)
+          .where(eq(plantInstances.plantId, plantId));
+
+        const [propagationCount] = await db
+          .select({ count: count() })
+          .from(propagations)
+          .where(eq(propagations.plantId, plantId));
+
+        if (instanceCount.count > 0 || propagationCount.count > 0) {
+          errors.push({
+            id: plantId,
+            error: `Cannot delete: ${instanceCount.count} instances, ${propagationCount.count} propagations`
+          });
+          continue;
+        }
+
+        await db.delete(plants).where(eq(plants.id, plantId));
+        deletedCount++;
+      } catch (error) {
+        errors.push({
+          id: plantId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+
+    return { deletedCount, errors };
+  }
+
+  // Bulk approve plants (verify + update)
+  static async bulkApprovePlants(
+    plantIds: number[], 
+    curatorId: number
+  ): Promise<{ 
+    approvedCount: number; 
+    errors: Array<{ id: number; error: string }> 
+  }> {
+    const errors: Array<{ id: number; error: string }> = [];
+    let approvedCount = 0;
+
+    for (const plantId of plantIds) {
+      try {
+        // Get plant details for validation
+        const plant = await this.getPlantById(plantId);
+        if (!plant) {
+          errors.push({ id: plantId, error: 'Plant not found' });
+          continue;
+        }
+
+        if (plant.isVerified) {
+          errors.push({ id: plantId, error: 'Plant already verified' });
+          continue;
+        }
+
+        // Check for duplicate taxonomy
+        const conditions = [
+          eq(plants.family, plant.family),
+          eq(plants.genus, plant.genus),
+          eq(plants.species, plant.species),
+          sql`${plants.id} != ${plantId}`,
+          eq(plants.isVerified, true), // Only check against verified plants
+        ];
+
+        if (plant.cultivar) {
+          conditions.push(eq(plants.cultivar, plant.cultivar));
+        } else {
+          conditions.push(sql`${plants.cultivar} IS NULL`);
+        }
+
+        const existingPlant = await db
+          .select()
+          .from(plants)
+          .where(and(...conditions))
+          .limit(1);
+
+        if (existingPlant.length > 0) {
+          errors.push({ 
+            id: plantId, 
+            error: 'Duplicate taxonomy already exists in verified plants' 
+          });
+          continue;
+        }
+
+        // Approve the plant
+        await db
+          .update(plants)
+          .set({ 
+            isVerified: true, 
+            updatedAt: new Date() 
+          })
+          .where(eq(plants.id, plantId));
+
+        approvedCount++;
+      } catch (error) {
+        errors.push({
+          id: plantId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
+
+    return { approvedCount, errors };
+  }
+
+  // Export plants data
+  static async exportPlants(
+    plantIds?: number[], 
+    filters?: PlantFilters
+  ): Promise<PlantWithDetails[]> {
+    try {
+      if (plantIds && plantIds.length > 0) {
+        // Export specific plants
+        const { plants } = await this.getPlantsWithDetails(
+          { ...filters },
+          { field: 'commonName', direction: 'asc' },
+          plantIds.length,
+          0
+        );
+        return plants.filter(p => plantIds.includes(p.id));
+      } else {
+        // Export all plants matching filters
+        const { plants } = await this.getPlantsWithDetails(
+          filters || {},
+          { field: 'commonName', direction: 'asc' },
+          10000, // Large limit for export
+          0
+        );
+        return plants;
+      }
+    } catch (error) {
+      console.error('Failed to export plants:', error);
+      throw new Error('Failed to export plants');
+    }
+  }
 }
