@@ -18,7 +18,7 @@ function loadEnvironmentConfig() {
   for (const envFile of envFiles) {
     if (existsSync(envFile)) {
       console.log(`Loading Drizzle config from: ${envFile}`);
-      dotenv.config({ path: envFile });
+      dotenv.config({ path: envFile, override: true });
       break;
     }
   }
