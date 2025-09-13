@@ -3327,3 +3327,283 @@ n Panel Styles */
     font-size: 12px;
   }
 }
+
+/* Admin Taxonomy Management Styles */
+.admin-taxonomy-page {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-page-header {
+  margin-bottom: 2rem;
+}
+
+.admin-page-header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-mint-800);
+  margin-bottom: 0.5rem;
+}
+
+.admin-page-header p {
+  color: var(--color-gray-600);
+}
+
+.taxonomy-stats {
+  margin-bottom: 2rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-200);
+  text-align: center;
+}
+
+.stat-card h3 {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+  margin-bottom: 0.5rem;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--color-mint-700);
+}
+
+.view-mode-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-gray-200);
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  padding: 0.75rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  color: var(--color-gray-600);
+}
+
+.tab.active {
+  color: var(--color-mint-700);
+  border-bottom-color: var(--color-mint-500);
+}
+
+.taxonomy-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.search-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.search-input, .filter-select {
+  padding: 0.5rem;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 4px;
+}
+
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bulk-actions button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-gray-300);
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.bulk-actions button:hover {
+  background: var(--color-gray-50);
+}
+
+.bulk-actions button.danger {
+  background: var(--color-salmon-50);
+  border-color: var(--color-salmon-300);
+  color: var(--color-salmon-700);
+}
+
+.taxonomy-hierarchy {
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.taxonomy-node {
+  border-bottom: 1px solid var(--color-gray-100);
+}
+
+.taxonomy-node:last-child {
+  border-bottom: none;
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+.node-header:hover {
+  background: var(--color-gray-50);
+}
+
+.level-family .node-header {
+  background: var(--color-mint-50);
+  font-weight: 600;
+}
+
+.level-genus .node-header {
+  background: var(--color-lavender-50);
+  padding-left: 2rem;
+}
+
+.level-species .node-header {
+  background: var(--color-salmon-50);
+  padding-left: 3rem;
+}
+
+.expand-icon {
+  width: 1rem;
+  text-align: center;
+  color: var(--color-gray-500);
+}
+
+.node-name {
+  flex: 1;
+  font-style: italic;
+}
+
+.node-stats {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+}
+
+.node-content {
+  background: var(--color-gray-25);
+}
+
+.child-nodes {
+  border-left: 2px solid var(--color-gray-200);
+  margin-left: 1rem;
+}
+
+.node-plants {
+  padding: 0.5rem 1rem;
+  padding-left: 4rem;
+}
+
+.plant-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.plant-item:hover {
+  background: white;
+}
+
+.plant-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.cultivar {
+  font-style: italic;
+  color: var(--color-lavender-600);
+}
+
+.usage {
+  font-size: 0.75rem;
+  color: var(--color-gray-500);
+}
+
+.verification.verified {
+  color: var(--color-mint-600);
+}
+
+.verification.unverified {
+  color: var(--color-salmon-500);
+}
+
+.duplicates-view {
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.duplicates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.duplicate-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-salmon-200);
+  border-radius: 8px;
+  background: var(--color-salmon-50);
+}
+
+.plant-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.taxonomy {
+  font-style: italic;
+  color: var(--color-gray-700);
+}
+
+.stats {
+  font-size: 0.875rem;
+  color: var(--color-gray-600);
+}
+
+.status.verified {
+  color: var(--color-mint-600);
+  font-weight: 500;
+}
+
+.status.unverified {
+  color: var(--color-salmon-600);
+  font-weight: 500;
+}
+
+.validation-tools {
+  background: white;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  padding: 1.5rem;
+}

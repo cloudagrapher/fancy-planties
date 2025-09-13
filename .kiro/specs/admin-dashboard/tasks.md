@@ -38,14 +38,14 @@
   - Add curator activity tracking and top plant families analytics
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [-] 6. Implement plant approval workflow
+- [x] 6. Implement plant approval workflow
   - Create plant approval queue with pending submissions display
   - Build plant review interface with approval/rejection actions
   - Implement plant editing before approval with validation
   - Add notification system for pending approvals
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
 
-- [ ] 7. Add taxonomy management capabilities
+- [x] 7. Add taxonomy management capabilities
   - Create taxonomy hierarchy viewer organized by family/genus/species
   - Implement plant relationship tracking (instances and propagations)
   - Add taxonomy merging and duplicate handling

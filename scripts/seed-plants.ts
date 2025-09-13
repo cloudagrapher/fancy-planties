@@ -1,11 +1,12 @@
 #!/usr/bin/env tsx
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { parse } from 'csv-parse/sync';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { pgTable, serial, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { eq, and, isNull } from 'drizzle-orm';
 import postgres from 'postgres';
+import * as dotenv from 'dotenv';
 
 // Define the plants table schema directly (avoiding server-only imports)
 const plants = pgTable('plants', {
@@ -23,8 +24,34 @@ const plants = pgTable('plants', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Load environment configuration similar to drizzle.config.ts
+function loadEnvironmentConfig() {
+  // Check for explicit environment variable
+  const environment = process.env.DRIZZLE_ENV || process.env.NODE_ENV;
+
+  // Define environment file priority
+  const envFiles = [
+    environment === 'production' ? '.env.prod' : null,
+    environment === 'local' || environment === 'development' ? '.env.local' : null,
+    '.env', // fallback
+  ].filter(Boolean) as string[];
+
+  // Load the first existing environment file
+  for (const envFile of envFiles) {
+    if (existsSync(envFile)) {
+      console.log(`🔧 Loading seeding config from: ${envFile}`);
+      dotenv.config({ path: envFile, override: true });
+      break;
+    }
+  }
+
+  // Fallback to default if no DATABASE_URL is found
+  return process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+}
+
 // Create database connection
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+const connectionString = loadEnvironmentConfig();
+console.log(`🔌 Connecting to database: ${connectionString.replace(/\/\/[^@]+@/, '//***:***@')}`);
 const sql = postgres(connectionString);
 const db = drizzle(sql);
 
