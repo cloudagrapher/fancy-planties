@@ -4,6 +4,81 @@ inclusion: always
 
 # Coding Standards and Error Prevention
 
+## Code Conciseness and Context Window Optimization
+
+### CRITICAL: Claude Sonnet 4 Context Window Constraints
+
+**MANDATORY**: All code generated must be optimized for Claude Sonnet 4's 1 million token context window (~750,000 words).
+
+#### Code Brevity Requirements
+
+- **Minimal implementations only**: Write the absolute minimum code needed to solve the problem
+- **No verbose patterns**: Avoid unnecessary abstractions, comments, or boilerplate
+- **Single responsibility**: Each function/component should do one thing well
+- **Concise naming**: Use clear but short variable and function names
+- **Remove redundancy**: Eliminate duplicate code patterns immediately
+
+#### Context Window Management
+
+```typescript
+// ❌ WRONG - Verbose, hard to maintain in context
+export interface ExtendedPlantInstanceWithDetailedCareHistoryAndUserInformation {
+  plantInstanceId: number;
+  plantInstanceName: string;
+  plantInstanceDescription: string;
+  // ... 20+ more fields
+}
+
+// ✅ CORRECT - Concise, essential fields only
+export interface PlantInstance {
+  id: number;
+  name: string;
+  plantId: number;
+  userId: number;
+  status: PropagationStatus;
+}
+```
+
+#### Maintainability Rules
+
+1. **Keep functions under 20 lines** - Easier to understand and modify
+2. **Limit file size to 200 lines** - Fits better in context window
+3. **Use composition over inheritance** - Simpler mental model
+4. **Prefer explicit over implicit** - Clear intent without extra context
+5. **Minimize dependencies** - Fewer imports to track
+
+#### Code Generation Patterns
+
+```typescript
+// ❌ WRONG - Complex, hard to maintain
+export class PlantCareManager {
+  private careHistory: CareHistoryEntry[] = [];
+  private notifications: NotificationService;
+  
+  constructor(private plantService: PlantService) {
+    this.notifications = new NotificationService();
+  }
+  
+  async performCareAction(action: CareAction): Promise<CareResult> {
+    // 50+ lines of complex logic
+  }
+}
+
+// ✅ CORRECT - Simple, focused functions
+export async function addCareEntry(
+  plantId: number, 
+  careType: CareType, 
+  notes?: string
+) {
+  return await db.insert(careHistory).values({
+    plantInstanceId: plantId,
+    careType,
+    careDate: new Date(),
+    notes
+  });
+}
+```
+
 ## TypeScript Strict Type Safety
 
 ### Next.js Route Parameters
@@ -267,19 +342,25 @@ npm run test   # Verify functionality
 
 ### ALWAYS DO
 
-1. **Check interface compatibility** before adding props to components
-2. **Use .issues not .errors** for Zod error handling  
-3. **Await params** in Next.js 15 route handlers
-4. **Add index signatures** for dynamic object access
-5. **Validate TypeScript compilation** before suggesting code
+1. **Write minimal code** - Only what's absolutely necessary
+2. **Keep functions under 20 lines** - Easier to maintain in context
+3. **Use concise naming** - Clear but brief identifiers
+4. **Check interface compatibility** before adding props to components
+5. **Use .issues not .errors** for Zod error handling  
+6. **Await params** in Next.js 15 route handlers
+7. **Add index signatures** for dynamic object access
+8. **Validate TypeScript compilation** before suggesting code
 
 ### NEVER DO
 
-1. Use `params: { id: string }` directly in Next.js 15 routes
-2. Access `.errors` property on ZodError objects
-3. Pass props not defined in component interfaces
-4. Create components without proper TypeScript interfaces
-5. Submit code that fails `npm run build`
+1. **Write verbose implementations** - Avoid unnecessary complexity
+2. **Create large files** - Keep under 200 lines when possible
+3. **Add redundant code** - Remove duplication immediately
+4. Use `params: { id: string }` directly in Next.js 15 routes
+5. Access `.errors` property on ZodError objects
+6. Pass props not defined in component interfaces
+7. Create components without proper TypeScript interfaces
+8. Submit code that fails `npm run build`
 
 ### Debugging Build Errors
 
@@ -321,6 +402,7 @@ await db.insert(careHistory).values({
 ### Schema Field Verification
 
 Before database operations:
+
 1. **Check schema definition** - Verify required vs optional fields
 2. **Match field names exactly** - `careDate` not `createdAt`
 3. **Include all required fields** - TypeScript will show missing ones
@@ -423,6 +505,7 @@ describe('Component', () => {
 ## Critical Error Patterns to Avoid
 
 ### Database Operations
+
 ```typescript
 // ❌ These will cause build failures
 await db.insert(table).values({ unknownField: value });
@@ -430,6 +513,7 @@ await db.insert(table).values({ missingRequiredField });
 ```
 
 ### Error Handling
+
 ```typescript
 // ❌ These will cause TypeScript errors  
 catch (error) {
@@ -439,10 +523,52 @@ catch (error) {
 ```
 
 ### Testing
+
 ```typescript
 // ❌ These will cause test failures
 delete navigator.vibrate;           // Cannot delete
 expect(globalState).toBe(value);    // State pollution
 ```
 
-This document prevents the most common build failures and ensures code quality standards.
+## Context Window Optimization Guidelines
+
+### File Organization for AI Maintenance
+
+- **Split large components** into focused, single-purpose files
+- **Use barrel exports** to simplify imports: `export * from './components'`
+- **Prefer functional components** over class components (less boilerplate)
+- **Keep API routes simple** - one operation per endpoint
+- **Use utility functions** instead of inline complex logic
+
+### Code Review Checklist for AI Context
+
+Before finalizing any code:
+
+1. **Can this be shorter?** - Remove unnecessary lines
+2. **Is the intent clear?** - No hidden complexity
+3. **Are dependencies minimal?** - Fewer imports to track
+4. **Is it self-contained?** - Minimal external context needed
+5. **Can AI easily modify this?** - Simple, predictable patterns
+
+### Optimal Patterns for AI Maintenance
+
+```typescript
+// ✅ GOOD - Easy to understand and modify
+export function PlantCard({ plant, onSelect }: PlantCardProps) {
+  return (
+    <div onClick={() => onSelect(plant)}>
+      <h3>{plant.name}</h3>
+      <p>{plant.species}</p>
+    </div>
+  );
+}
+
+// ✅ GOOD - Simple API route
+export async function POST(request: NextRequest) {
+  const { plantId } = await request.json();
+  const result = await addPlant(plantId);
+  return NextResponse.json(result);
+}
+```
+
+This document prevents build failures, ensures code quality, and optimizes for AI maintainability within Claude Sonnet 4's context window constraints.

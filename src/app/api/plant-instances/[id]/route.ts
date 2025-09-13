@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { updatePlantInstanceSchema } from '@/lib/validation/plant-schemas';
 import { validateRequest } from '@/lib/auth/server';
@@ -155,6 +156,13 @@ export async function PUT(
     return NextResponse.json(enhancedInstance);
   } catch (error) {
     console.error('Failed to update plant instance:', error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid plant instance data', details: error.issues },
+        { status: 400 }
+      );
+    }
 
     if (error instanceof Error && error.message.includes('validation')) {
       return NextResponse.json(
