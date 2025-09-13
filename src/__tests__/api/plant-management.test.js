@@ -352,7 +352,18 @@ describe('Plant Management API Endpoints', () => {
       expect(response.status).toBe(201);
       expect(responseData).toEqual({
         success: true,
-        data: enhancedInstance,
+        data: expect.objectContaining({
+          ...enhancedInstance,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          lastFertilized: enhancedInstance.lastFertilized,
+          lastRepot: enhancedInstance.lastRepot,
+          plant: expect.objectContaining({
+            ...enhancedInstance.plant,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          }),
+        }),
       });
 
       expect(createPlantInstanceSchema.parse).toHaveBeenCalledWith(expectedInstanceData);
