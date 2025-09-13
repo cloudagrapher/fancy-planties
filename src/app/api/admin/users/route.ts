@@ -1,26 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { validateCuratorRequest } from '@/lib/auth/server';
+import { validateApiPermission, logAdminAction } from '@/lib/auth/admin-auth';
 import { AdminUserQueries, type UserFilters, type UserSortConfig } from '@/lib/db/queries/admin-users';
-import { z } from 'zod';
-
-const getUsersSchema = z.object({
-  page: z.coerce.number().min(1).default(1),
-  pageSize: z.coerce.number().min(1).max(100).default(20),
-  search: z.string().optional(),
-  curatorStatus: z.enum(['all', 'curators', 'users']).default('all'),
-  emailVerified: z.coerce.boolean().optional(),
-  sortField: z.enum(['name', 'email', 'createdAt', 'plantCount', 'lastActive']).default('createdAt'),
-  sortDirection: z.enum(['asc', 'desc']).default('desc'),
-});
+import { safeValidate, paginationSchema, userFiltersSchema, userSortSchema } from '@/lib/validation/admin-schemas';
 
 export async function GET(request: NextRequest) {
   try {
-    // Validate curator access
-    const authResult = await validateCuratorRequest();
-    if ('error' in authResult) {
+    // Validate admin permission
+    const authResult = await validateApiPermission('manage_users');
+    if (!authResult.success) {
       return NextResponse.json(
-        { error: authResult.error },
-        { status: authResult.error === 'Unauthorized' ? 401 : 403 }
+        { error: authResult.error.message },
+        { status: authResult.status }
       );
     }
 
@@ -28,42 +18,59 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const params = Object.fromEntries(url.searchParams.entries());
     
-    const validatedParams = getUsersSchema.parse(params);
+    // Validate pagination
+    const paginationValidation = safeValidate(paginationSchema, params);
+    if (!paginationValidation.success) {
+      return NextResponse.json(
+        { error: 'Invalid pagination parameters', details: paginationValidation.errors },
+        { status: 400 }
+      );
+    }
     
-    // Build filters
-    const filters: UserFilters = {
-      search: validatedParams.search,
-      curatorStatus: validatedParams.curatorStatus,
-      emailVerified: validatedParams.emailVerified,
-    };
+    // Validate filters
+    const filtersValidation = safeValidate(userFiltersSchema, {
+      ...params,
+      emailVerified: params.emailVerified ? params.emailVerified === 'true' : undefined,
+    });
+    if (!filtersValidation.success) {
+      return NextResponse.json(
+        { error: 'Invalid filter parameters', details: filtersValidation.errors },
+        { status: 400 }
+      );
+    }
     
-    // Build sort config
-    const sort: UserSortConfig = {
-      field: validatedParams.sortField,
-      direction: validatedParams.sortDirection,
-    };
+    // Validate sort
+    const sortValidation = safeValidate(userSortSchema, params);
+    if (!sortValidation.success) {
+      return NextResponse.json(
+        { error: 'Invalid sort parameters', details: sortValidation.errors },
+        { status: 400 }
+      );
+    }
     
     // Get paginated users
     const result = await AdminUserQueries.getPaginatedUsers(
-      validatedParams.page,
-      validatedParams.pageSize,
-      filters,
-      sort
+      paginationValidation.data.page,
+      paginationValidation.data.pageSize,
+      filtersValidation.data,
+      sortValidation.data
     );
+    
+    // Log the action
+    await logAdminAction('list_users', 'user', undefined, {
+      filters: filtersValidation.data,
+      sort: sortValidation.data,
+      resultCount: result.users.length,
+    });
     
     return NextResponse.json(result);
   } catch (error) {
     console.error('Failed to get users:', error);
     
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid parameters', details: error.issues },
-        { status: 400 }
-      );
-    }
+    const errorMessage = error instanceof Error ? error.message : 'Failed to get users';
     
     return NextResponse.json(
-      { error: 'Failed to get users' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

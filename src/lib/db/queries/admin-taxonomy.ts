@@ -475,3 +475,24 @@ export async function bulkDeletePlants(plantIds: number[]): Promise<{ deleted: n
 
   return { deleted, errors };
 }
+
+// Export all functions as AdminTaxonomyQueries object
+export const AdminTaxonomyQueries = {
+  getTaxonomyHierarchy,
+  getTaxonomyStats,
+  mergePlants,
+  validateTaxonomyEntry,
+  getPlantsByTaxonomy,
+  bulkDeletePlants,
+};
+
+// Export types for filters (for consistency with other admin query files)
+export interface TaxonomyFilters {
+  search?: string;
+  family?: string;
+  genus?: string;
+  species?: string;
+  hasInstances?: boolean;
+  hasPropagations?: boolean;
+  isVerified?: boolean;
+}

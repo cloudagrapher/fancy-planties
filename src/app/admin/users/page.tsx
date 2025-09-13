@@ -1,6 +1,9 @@
 import 'server-only';
 import { AdminUserQueries } from '@/lib/db/queries/admin-users';
 import UserManagementClient from '@/components/admin/UserManagementClient';
+import { AdminUserErrorBoundary } from '@/components/admin/AdminErrorBoundary';
+import { requirePermission } from '@/lib/auth/admin-auth';
+import { safeValidate, paginationSchema, userFiltersSchema, userSortSchema } from '@/lib/validation/admin-schemas';
 
 // Force dynamic rendering for search params
 export const dynamic = 'force-dynamic';
@@ -20,59 +23,57 @@ export default async function UserManagementPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  try {
-    const params = await searchParams;
-    
-    // Parse search parameters with defaults
-    const page = parseInt(params.page || '1');
-    const pageSize = parseInt(params.pageSize || '20');
-    const search = params.search;
-    const curatorStatus = params.curatorStatus || 'all';
-    const emailVerified = params.emailVerified ? params.emailVerified === 'true' : undefined;
-    const sortField = params.sortField || 'createdAt';
-    const sortDirection = params.sortDirection || 'desc';
-    
-    // Build filters
-    const filters = {
-      search,
-      curatorStatus,
-      emailVerified,
-    };
-    
-    // Build sort config
-    const sort = {
-      field: sortField,
-      direction: sortDirection,
-    };
-    
-    // Get paginated users
-    const usersData = await AdminUserQueries.getPaginatedUsers(
-      page,
-      pageSize,
-      filters,
-      sort
-    );
-    
-    return (
+  // Require user management permission
+  await requirePermission('manage_users');
+  
+  const params = await searchParams;
+  
+  // Validate pagination parameters
+  const paginationValidation = safeValidate(paginationSchema, {
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+  
+  if (!paginationValidation.success) {
+    throw new Error('Invalid pagination parameters');
+  }
+  
+  // Validate filter parameters
+  const filtersValidation = safeValidate(userFiltersSchema, {
+    search: params.search,
+    curatorStatus: params.curatorStatus,
+    emailVerified: params.emailVerified ? params.emailVerified === 'true' : undefined,
+  });
+  
+  if (!filtersValidation.success) {
+    throw new Error('Invalid filter parameters');
+  }
+  
+  // Validate sort parameters
+  const sortValidation = safeValidate(userSortSchema, {
+    field: params.sortField,
+    direction: params.sortDirection,
+  });
+  
+  if (!sortValidation.success) {
+    throw new Error('Invalid sort parameters');
+  }
+  
+  // Get paginated users with validated parameters
+  const usersData = await AdminUserQueries.getPaginatedUsers(
+    paginationValidation.data.page,
+    paginationValidation.data.pageSize,
+    filtersValidation.data,
+    sortValidation.data
+  );
+  
+  return (
+    <AdminUserErrorBoundary>
       <UserManagementClient 
         initialData={usersData}
-        initialFilters={filters}
-        initialSort={sort}
+        initialFilters={filtersValidation.data}
+        initialSort={sortValidation.data}
       />
-    );
-  } catch (error) {
-    console.error('Failed to load user management page:', error);
-    
-    return (
-      <div className="user-management-error">
-        <h1>User Management</h1>
-        <div className="error-message">
-          <p>Failed to load user data. Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()}>
-            Refresh Page
-          </button>
-        </div>
-      </div>
-    );
-  }
+    </AdminUserErrorBoundary>
+  );
 }
