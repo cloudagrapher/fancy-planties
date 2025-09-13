@@ -3,6 +3,7 @@ import { requireAdminAuth } from '@/lib/auth/admin-auth';
 import AdminNavigation from '@/components/navigation/AdminNavigation';
 import AdminErrorBoundary from '@/components/admin/AdminErrorBoundary';
 import { AdminNotificationProvider } from '@/components/admin/AdminNotificationSystem';
+import AdminQueryProvider from '@/components/admin/AdminQueryProvider';
 
 export default async function AdminLayout({
   children,
@@ -13,15 +14,17 @@ export default async function AdminLayout({
   await requireAdminAuth();
 
   return (
-    <AdminNotificationProvider>
-      <AdminErrorBoundary>
-        <div className="admin-layout">
-          <AdminNavigation />
-          <main className="admin-content">
-            {children}
-          </main>
-        </div>
-      </AdminErrorBoundary>
-    </AdminNotificationProvider>
+    <AdminQueryProvider>
+      <AdminNotificationProvider>
+        <AdminErrorBoundary>
+          <div className="admin-layout">
+            <AdminNavigation />
+            <main className="admin-content">
+              {children}
+            </main>
+          </div>
+        </AdminErrorBoundary>
+      </AdminNotificationProvider>
+    </AdminQueryProvider>
   );
 }

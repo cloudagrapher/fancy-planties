@@ -21,7 +21,7 @@ services:
     build: .
     container_name: fancy-planties-app
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/fancy_planties
       - NODE_ENV=development
