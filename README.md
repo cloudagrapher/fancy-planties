@@ -300,12 +300,15 @@ The test suite is configured for optimal performance:
 The application includes a comprehensive admin dashboard for users with curator privileges:
 
 - **Admin Dashboard**: Access via `/admin` route (curator privileges required)
+- **Analytics & Insights**: Comprehensive dashboard statistics, user growth trends, and plant submission analytics
 - **User Management**: View and manage user accounts and curator privileges
 - **Plant Management**: Oversee plant taxonomy and approve user submissions
-- **System Monitoring**: Email verification system monitoring and administration
+- **System Monitoring**: Email verification system monitoring, system health alerts, and curator activity tracking
 - **Access Control**: Route-level protection with real-time privilege validation
 
 **Admin Access**: Users with curator privileges can access the admin dashboard through the main navigation. The system includes proper authorization checks and graceful handling of privilege changes.
+
+**Analytics Features**: The admin dashboard provides detailed insights including user statistics, plant submission trends, top plant families by usage, curator activity summaries, and system health monitoring with automated alerts.
 
 ## 🔒 Security Features
 

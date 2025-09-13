@@ -31,6 +31,13 @@
   - Add plant search and taxonomy-based filtering
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
 
+- [x] 5.1. Implement admin analytics and dashboard statistics
+  - Create comprehensive analytics queries for dashboard overview
+  - Build user growth tracking and plant submission trend analysis
+  - Implement system health monitoring with automated alerts
+  - Add curator activity tracking and top plant families analytics
+  - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
+
 - [ ] 6. Implement plant approval workflow
   - Create plant approval queue with pending submissions display
   - Build plant review interface with approval/rejection actions

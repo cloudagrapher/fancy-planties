@@ -121,6 +121,11 @@ RootLayout
     └── AdminSection (Curator Only)
         ├── AdminLayout
         ├── AdminGuard
+        ├── AdminDashboard
+        │   ├── AnalyticsOverview
+        │   ├── UserGrowthChart
+        │   ├── PlantTrendsChart
+        │   └── SystemHealthPanel
         ├── UserManagement
         ├── PlantManagement
         ├── SystemMonitoring
@@ -595,6 +600,20 @@ export async function getPlantInstancesWithCareStatus(userId: number) {
     .leftJoin(plants, eq(plantInstances.plantId, plants.id))
     .where(eq(plantInstances.userId, userId))
     .orderBy(plantInstances.fertilizerDue);
+}
+
+// Admin analytics queries with aggregations
+export async function getDashboardStats() {
+  const [userStats] = await db
+    .select({
+      total: sql<number>`count(*)`,
+      curators: sql<number>`count(*) filter (where ${users.isCurator} = true)`,
+      newThisMonth: sql<number>`count(*) filter (where ${users.createdAt} >= ${startOfMonth})`,
+      emailVerified: sql<number>`count(*) filter (where ${users.isEmailVerified} = true)`,
+    })
+    .from(users);
+    
+  return userStats;
 }
 ```
 
