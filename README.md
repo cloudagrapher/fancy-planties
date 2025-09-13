@@ -36,6 +36,7 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
 
 - **CSV Import/Export**: Bulk import existing plant data from spreadsheets
 - **User Authentication**: Secure account system with data segregation
+- **Admin Dashboard**: Curator-level administrative interface for user and plant management
 - **Offline Support**: View and log care activities without internet connection
 - **Backup & Sync**: Automatic data synchronization when connectivity returns
 
@@ -294,16 +295,29 @@ The test suite is configured for optimal performance:
 | `npm run deploy:production` | Deploy to production |
 | `npm run backup:create` | Create database backup |
 
+### Admin Features
+
+The application includes a comprehensive admin dashboard for users with curator privileges:
+
+- **Admin Dashboard**: Access via `/admin` route (curator privileges required)
+- **User Management**: View and manage user accounts and curator privileges
+- **Plant Management**: Oversee plant taxonomy and approve user submissions
+- **System Monitoring**: Email verification system monitoring and administration
+- **Access Control**: Route-level protection with real-time privilege validation
+
+**Admin Access**: Users with curator privileges can access the admin dashboard through the main navigation. The system includes proper authorization checks and graceful handling of privilege changes.
+
 ## 🔒 Security Features
 
 - **Authentication**: Secure session-based auth with bcrypt password hashing
 - **Email Verification**: Required email verification for new accounts with secure 6-digit codes
+- **Role-Based Access**: Curator privileges for administrative functions with route protection
 - **Data Isolation**: Row-level security ensures user data segregation
 - **Security Headers**: Comprehensive security headers via Nginx
 - **Input Validation**: Zod schema validation on all inputs
 - **HTTPS**: SSL/TLS encryption in production
 - **Rate Limiting**: API rate limiting to prevent abuse
-- **Email Verification**: Secure 6-digit verification codes with rate limiting and attempt tracking
+- **Admin Security**: Protected admin routes with curator session validation
 
 ## 🌍 Browser Support
 
