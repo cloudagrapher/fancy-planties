@@ -13,12 +13,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get pending approval count
-    const count = await AdminAnalyticsQueries.getPendingApprovalCount();
+    // Get dashboard statistics
+    const stats = await AdminAnalyticsQueries.getDashboardStats();
 
-    return NextResponse.json({ count });
+    return NextResponse.json(stats);
   } catch (error) {
-    console.error('Failed to get pending approval count:', error);
+    console.error('Failed to get dashboard stats:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -6,20 +6,20 @@
   - Add curator status checking utilities
   - _Requirements: 1.1, 1.4_
 
-- [-] 2. Create admin layout and navigation structure
+- [x] 2. Create admin layout and navigation structure
   - Build admin layout component with navigation sidebar
   - if the navbar already has 5 items create a "burger menu" as to not overcrowd the navbar
   - Implement admin navigation with active states and pending counts
   - Create admin route structure under `/admin/`
   - _Requirements: 1.3_
 
-- [ ] 3. Implement admin dashboard overview page
+- [x] 3. Implement admin dashboard overview page
   - Create admin dashboard server component with analytics data fetching
   - Build dashboard client component with system metrics display
   - Implement user, plant, and activity statistics
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 4. Build user management interface
+- [x] 4. Build user management interface
   - Create user management table with pagination and search
   - Implement user statistics aggregation queries
   - Add curator promotion/demotion functionality with self-protection
