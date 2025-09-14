@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Replaced manual error object creation with proper ZodError constructor usage
   - Ensures test mocks accurately reflect real Zod validation behavior
   - Applied to plant management API validation tests for consistent error handling patterns
+- **Test Assertions**: Improved test reliability by replacing object spread assertions with explicit field validation
+  - Enhanced plant management API tests with explicit field assertions for better test clarity
+  - Replaced `...enhancedInstance` spread patterns with individual field expectations
+  - Ensures more precise validation of API response structures and prevents false positives
 
 ### Enhanced
 - **CSV Import for Propagations**: Enhanced CSV import functionality with improved form UX

@@ -292,6 +292,7 @@ Our testing strategy follows a hierarchical approach:
 - **Performance Optimized**: Parallel execution and proper cleanup for fast feedback cycles
 - **Mock Strategy**: Proper separation of auth functions (`validateRequest` vs `validateVerifiedRequest`)
 - **Response Format Validation**: Tests verify actual API response structures and data serialization
+- **Explicit Assertions**: Use explicit field validation instead of object spread patterns for better test reliability and clarity
 
 ### Test Performance Optimization
 
