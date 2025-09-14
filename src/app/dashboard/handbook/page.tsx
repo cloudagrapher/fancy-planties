@@ -15,9 +15,11 @@ export default async function HandbookPage() {
     .orderBy(desc(careGuides.updatedAt));
   
   return (
-    <div className="min-h-screen pb-16 sm:pb-0 bg-gradient-to-b from-emerald-50 to-white">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <HandbookDashboard careGuides={userCareGuides} userId={user.id} />
+    <div className="page">
+      <div className="container">
+        <div className="page-content">
+          <HandbookDashboard careGuides={userCareGuides} userId={user.id} />
+        </div>
       </div>
     </div>
   );
