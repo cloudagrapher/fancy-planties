@@ -1,7 +1,7 @@
 import 'server-only';
 import { db } from '../index';
 import { plants, users, plantInstances, propagations } from '../schema';
-import { eq, and, or, ilike, desc, asc, sql, count } from 'drizzle-orm';
+import { eq, and, or, ilike, desc, asc, sql, count, inArray } from 'drizzle-orm';
 import type { Plant, NewPlant } from '../schema';
 import { queryOptimization } from '@/lib/utils/performance';
 
@@ -319,7 +319,7 @@ export class AdminPlantQueries {
       const result = await db
         .update(plants)
         .set({ isVerified, updatedAt: new Date() })
-        .where(sql`${plants.id} = ANY(${plantIds})`)
+        .where(inArray(plants.id, plantIds))
         .returning({ id: plants.id });
 
       return result.length;
