@@ -3,11 +3,13 @@ import { db } from '../index';
 import { plants, users, plantInstances, propagations } from '../schema';
 import { eq, and, or, ilike, desc, asc, sql, count } from 'drizzle-orm';
 import type { Plant, NewPlant } from '../schema';
+import { queryOptimization } from '@/lib/utils/performance';
 
-export interface PlantWithDetails extends Plant {
+export interface PlantWithDetails extends Omit<Plant, 'defaultImage'> {
   createdByName: string | null;
   instanceCount: number;
   propagationCount: number;
+  defaultImage?: string | null; // Optional since we load it progressively
 }
 
 export interface PlantFilters {
@@ -23,6 +25,15 @@ export interface PlantSortConfig {
   field: 'commonName' | 'family' | 'genus' | 'species' | 'createdAt' | 'updatedAt';
   direction: 'asc' | 'desc';
 }
+
+// Create cache instances for expensive operations
+const taxonomyCache = queryOptimization.createQueryCache<{
+  families: string[];
+  genera: string[];
+  species: string[];
+}>(10 * 60 * 1000); // 10 minutes
+
+const plantCountCache = queryOptimization.createQueryCache<number>(5 * 60 * 1000); // 5 minutes
 
 export class AdminPlantQueries {
   // Get a single plant by ID
@@ -119,7 +130,7 @@ export class AdminPlantQueries {
           break;
       }
 
-      // Get plants with details
+      // Get plants with details using optimized joins for counts
       const plantsWithDetails = await db
         .select({
           id: plants.id,
@@ -129,23 +140,32 @@ export class AdminPlantQueries {
           cultivar: plants.cultivar,
           commonName: plants.commonName,
           careInstructions: plants.careInstructions,
-          defaultImage: plants.defaultImage,
           createdBy: plants.createdBy,
           isVerified: plants.isVerified,
           createdAt: plants.createdAt,
           updatedAt: plants.updatedAt,
           createdByName: users.name,
-          instanceCount: sql<number>`(
-            SELECT COUNT(*) FROM ${plantInstances} 
-            WHERE ${plantInstances.plantId} = ${plants.id}
-          )`,
-          propagationCount: sql<number>`(
-            SELECT COUNT(*) FROM ${propagations} 
-            WHERE ${propagations.plantId} = ${plants.id}
-          )`,
+          instanceCount: sql<number>`COALESCE(instance_counts.count, 0)`,
+          propagationCount: sql<number>`COALESCE(propagation_counts.count, 0)`,
         })
         .from(plants)
         .leftJoin(users, eq(plants.createdBy, users.id))
+        .leftJoin(
+          sql`(
+            SELECT plant_id, COUNT(*) as count
+            FROM ${plantInstances}
+            GROUP BY plant_id
+          ) as instance_counts`,
+          sql`${plants.id} = instance_counts.plant_id`
+        )
+        .leftJoin(
+          sql`(
+            SELECT plant_id, COUNT(*) as count
+            FROM ${propagations}
+            GROUP BY plant_id
+          ) as propagation_counts`,
+          sql`${plants.id} = propagation_counts.plant_id`
+        )
         .where(whereClause)
         .orderBy(orderByClause)
         .limit(limit)
@@ -219,13 +239,20 @@ export class AdminPlantQueries {
     }
   }
 
-  // Get unique taxonomy values for filtering
+  // Get unique taxonomy values for filtering with caching
   static async getTaxonomyOptions(): Promise<{
     families: string[];
     genera: string[];
     species: string[];
   }> {
     try {
+      const cacheKey = 'taxonomy-options';
+      const cached = taxonomyCache.get(cacheKey);
+
+      if (cached) {
+        return cached;
+      }
+
       const [families, genera, species] = await Promise.all([
         db
           .selectDistinct({ family: plants.family })
@@ -241,11 +268,14 @@ export class AdminPlantQueries {
           .orderBy(asc(plants.species)),
       ]);
 
-      return {
+      const result = {
         families: families.map(f => f.family),
         genera: genera.map(g => g.genus),
         species: species.map(s => s.species),
       };
+
+      taxonomyCache.set(cacheKey, result);
+      return result;
     } catch (error) {
       console.error('Failed to get taxonomy options:', error);
       throw new Error('Failed to get taxonomy options');
