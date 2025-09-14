@@ -11,6 +11,6 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "Stage all files using `git add .`, then analyze the staged changes to generate an appropriate commit message following conventional commit format (feat/fix/docs/style/refactor/test/chore), commit the changes with the generated message, and push to the remote repository. Ensure the commit message is descriptive and follows the project's commit standards."
+    "prompt": "Stage all files using `git add .`, then analyze the staged changes to generate an appropriate commit message following conventional commit format (feat/fix/docs/style/refactor/test/chore), commit the changes with the generated message, and push to the remote repository. Ensure the commit message is descriptive and follows the project's commit standards.\n**important** do not utilize commands that require user input"
   }
 }
