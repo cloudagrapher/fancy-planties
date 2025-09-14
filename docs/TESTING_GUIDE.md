@@ -682,6 +682,39 @@ describe('Plant Creation', () => {
 });
 ```
 
+### Zod Validation Error Testing
+
+When testing Zod validation errors, use the proper ZodError constructor for accurate mocking:
+
+```javascript
+// ✅ Good: Use actual ZodError constructor
+import { ZodError } from 'zod';
+
+it('should return validation errors for invalid data', async () => {
+  const validationError = new ZodError([
+    { path: ['plantId'], message: 'Plant ID must be a number', code: 'invalid_type' },
+    { path: ['nickname'], message: 'Nickname is required', code: 'invalid_type' },
+  ]);
+
+  mockValidationSchema.parse.mockImplementation(() => {
+    throw validationError;
+  });
+
+  // Test implementation
+});
+
+// ❌ Avoid: Manual error object creation
+it('should return validation errors for invalid data', async () => {
+  const validationError = new Error('Validation failed');
+  validationError.name = 'ZodError';
+  validationError.issues = [
+    { path: ['plantId'], message: 'Plant ID must be a number' },
+  ];
+
+  // This doesn't accurately reflect real ZodError behavior
+});
+```
+
 ### Async Testing
 
 Handle async operations properly:

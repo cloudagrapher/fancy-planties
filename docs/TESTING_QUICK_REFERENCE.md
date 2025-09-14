@@ -196,6 +196,23 @@ it('should handle errors', async () => {
 });
 ```
 
+### Zod Validation Error Testing
+```javascript
+import { ZodError } from 'zod';
+
+it('should handle validation errors', async () => {
+  const validationError = new ZodError([
+    { path: ['field'], message: 'Field is required', code: 'invalid_type' },
+  ]);
+  
+  mockValidation.mockImplementation(() => {
+    throw validationError;
+  });
+  
+  // Test validation error handling
+});
+```
+
 ### Authentication Testing
 ```javascript
 const { getByText } = renderWithAuth(<Component />, { user: testUser });
