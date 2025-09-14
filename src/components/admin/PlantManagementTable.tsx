@@ -42,7 +42,7 @@ export default function PlantManagementTable({
   const [filters, setFilters] = useState<PlantFilters>({});
   const [sort, setSort] = useState<PlantSortConfig>({ field: 'updatedAt', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 20;
+  const pageSize = 10;
 
   // Fetch plants with current filters and sorting
   const fetchPlants = async () => {
