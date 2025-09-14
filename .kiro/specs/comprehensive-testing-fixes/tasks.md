@@ -25,7 +25,7 @@
   - Establish consistent export patterns
   - _Requirements: 3.1, 3.2, 4.1_
 
-- [x] 3. Build standardized test utilities and helpers
+- [ ] 3. Build standardized test utilities and helpers
 - [x] 3.1 Create test data factories for consistent test data
   - Implement user factory with authentication helpers
   - Implement plant and plant instance factories
@@ -50,109 +50,117 @@
   - Implement selective mocking utilities for specific test needs
   - _Requirements: 3.4, 5.1, 5.3_
 
-- [x] 4. Implement core integration tests for critical workflows
+- [ ] 4. Implement core integration tests for critical workflows
 - [x] 4.1 Create authentication flow integration tests
   - Test complete signup workflow from form submission to authenticated state
   - Test login workflow with session persistence
   - Test logout and session cleanup
   - _Requirements: 6.1, 2.1, 2.2_
 
+- [x] 4.1.1 Fix authentication component integration issues
+  - Debug and fix form submission handling in SignUpForm and SignInForm components
+  - Resolve API response handling that prevents proper redirects after successful authentication
+  - Fix async/await patterns in authentication forms to ensure proper state management
+  - Ensure authentication components properly handle mocked API responses in tests
+  - _Requirements: 6.1, 2.1, 2.2_
+
 - [x] 4.2 Build plant management integration tests
   - Test plant creation workflow from form to database
   - Test plant editing and updating workflows
   - Test plant deletion with proper cleanup
+  - Cleanup any redundant tests
   - _Requirements: 6.2, 2.1, 2.2_
 
-- [x] 4.3 Implement care tracking integration tests
+- [ ] 4.3 Implement care tracking integration tests
   - Test care record creation and logging workflow
   - Test care history viewing and filtering
   - Test care statistics calculation and display
   - _Requirements: 6.3, 2.1, 2.2_
 
-- [x] 4.4 Create data import integration tests
+- [ ] 4.4 Create data import integration tests
   - Test CSV file upload and parsing workflow
   - Test data validation and error handling during import
   - Test successful import completion and data persistence
   - _Requirements: 6.4, 2.1, 2.2_
 
-- [x] 5. Build focused component tests for user interactions
-- [x] 5.1 Create form component tests
+- [ ] 5. Build focused component tests for user interactions
+- [ ] 5.1 Create form component tests
   - ✅ Test PlantInstanceForm validation and submission behavior (26 comprehensive tests implemented)
   - Test authentication forms (SignIn, SignUp) with proper error handling
   - Test care logging forms with date and validation logic
   - _Requirements: 2.3, 3.1, 3.2_
 
-- [x] 5.2 Implement navigation component tests
+- [ ] 5.2 Implement navigation component tests
   - Test BottomNavigation routing and active state management
   - Test page navigation and route protection
   - Test breadcrumb and navigation state consistency
   - _Requirements: 2.3, 3.1, 3.2_
 
-- [x] 5.3 Build shared component tests
+- [ ] 5.3 Build shared component tests
   - Test Modal component behavior and accessibility
   - Test loading states and error display components
   - Test image upload and file handling components
   - _Requirements: 2.3, 3.1, 3.2_
 
-- [x] 6. Create API endpoint tests for backend functionality
-- [x] 6.1 Test authentication API endpoints
+- [ ] 6. Create API endpoint tests for backend functionality
+- [ ] 6.1 Test authentication API endpoints
   - Test POST /api/auth/signup with validation and user creation
   - Test POST /api/auth/signin with credential verification
   - Test POST /api/auth/logout with session cleanup
   - _Requirements: 3.2, 3.3, 6.1_
 
-- [x] 6.2 Test plant management API endpoints
+- [ ] 6.2 Test plant management API endpoints
   - Test GET /api/plants with filtering and pagination
   - Test POST /api/plant-instances with data validation
   - Test PUT /api/plant-instances/[id] with authorization checks
   - _Requirements: 3.2, 3.3, 6.2_
 
-- [x] 6.3 Test care tracking API endpoints
+- [ ] 6.3 Test care tracking API endpoints
   - Test POST /api/care with care record creation
   - Test GET /api/care with history retrieval and filtering
   - Test GET /api/dashboard with statistics calculation
   - _Requirements: 3.2, 3.3, 6.3_
 
-- [x] 7. Implement database query tests with proper isolation
-- [x] 7.1 Create user and authentication query tests
+- [ ] 7. Implement database query tests with proper isolation
+- [ ] 7.1 Create user and authentication query tests
   - Test user creation and retrieval functions
   - Test session management and validation queries
   - Test password hashing and verification logic
   - _Requirements: 3.3, 5.1, 5.2_
 
-- [x] 7.2 Build plant data query tests
+- [ ] 7.2 Build plant data query tests
   - Test plant and plant instance CRUD operations
   - Test plant search and filtering queries
   - Test plant relationship and taxonomy queries
   - _Requirements: 3.3, 5.1, 5.2_
 
-- [x] 7.3 Implement care data query tests
+- [ ] 7.3 Implement care data query tests
   - Test care record creation and retrieval
   - Test care history aggregation and statistics
   - Test care reminder and scheduling logic
   - _Requirements: 3.3, 5.1, 5.2_
 
-- [x] 8. Set up test performance optimization and monitoring
-- [x] 8.1 Optimize test execution speed
+- [ ] 8. Set up test performance optimization and monitoring
+- [ ] 8.1 Optimize test execution speed
   - Configure parallel test execution with proper isolation
   - Implement efficient test data setup and teardown
   - Add test performance monitoring and reporting
   - _Requirements: 7.1, 7.2, 7.3_
 
-- [x] 8.2 Implement test debugging and error reporting
+- [ ] 8.2 Implement test debugging and error reporting
   - Add detailed error context collection for test failures
   - Implement test retry logic for flaky tests
   - Create test failure analysis and reporting tools
   - _Requirements: 8.1, 8.2, 8.3_
 
-- [x] 8.3 Configure CI/CD test integration
+- [ ] 8.3 Configure CI/CD test integration
   - Set up test environment configuration for CI
   - Implement test result reporting and coverage tracking
   - Add test performance benchmarking and alerts
   - _Requirements: 1.5, 7.4, 8.4_
 
-- [x] 9. Create comprehensive test documentation and guidelines
-- [x] 9.1 Write testing patterns and best practices documentation
+- [ ] 9. Create comprehensive test documentation and guidelines
+- [ ] 9.1 Write testing patterns and best practices documentation
   - Document test organization and naming conventions
   - Create guidelines for writing maintainable tests
   - Provide examples of common testing patterns

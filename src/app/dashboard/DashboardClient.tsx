@@ -30,13 +30,13 @@ export default function DashboardClient({ user }: DashboardClientProps) {
           setIsCurator(data.isCurator);
           
           // If user is curator, fetch pending approval count
-          if (data.isCurator) {
-            const pendingResponse = await fetch('/api/admin/pending-count');
-            if (pendingResponse.ok) {
-              const pendingData = await pendingResponse.json();
-              setPendingApprovals(pendingData.count || 0);
-            }
-          }
+          // if (data.isCurator) {
+          //   const pendingResponse = await fetch('/api/admin/pending-count');
+          //   if (pendingResponse.ok) {
+          //     const pendingData = await pendingResponse.json();
+          //     setPendingApprovals(pendingData.count || 0);
+          //   }
+          // }
         }
       } catch (error) {
         console.error('Failed to check curator status:', error);
