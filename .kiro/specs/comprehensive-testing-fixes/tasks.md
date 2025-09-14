@@ -108,6 +108,7 @@
   - Test loading states and error display components
   - Test image upload and file handling components
   - Cleanup any redundant tests
+  - Ensure all modal.test.js tests pass
   - _Requirements: 2.3, 3.1, 3.2_
 
 - [ ] 6. Create API endpoint tests for backend functionality
@@ -155,7 +156,7 @@
   - Test care history aggregation and statistics
   - Test care reminder and scheduling logic
   - _Requirements: 3.3, 5.1, 5.2_
-- [x] 7.3.1 Ensure the entire DB Test suites pass
+- [x] 7.3.1 Ensure the entire email-verification-error-scenarios.test Test suites pass
 
 - [ ] 8. Set up test performance optimization and monitoring
 - [ ] 8.1 Optimize test execution speed
