@@ -88,7 +88,7 @@ export default function SignUpForm() {
 
   return (
     <div className={`${isLoading ? 'form--loading' : ''}`}>
-      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="on" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="on" noValidate role="form">
         {generalError && (
           <div className="form-validation-summary">
             <div className="form-validation-summary-title">

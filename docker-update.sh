@@ -26,9 +26,9 @@ docker compose -f "$COMPOSE_FILE" down
 echo -e "${YELLOW}📥 Pulling latest images...${NC}"
 docker compose -f "$COMPOSE_FILE" pull
 
-# Build migration utils if needed
+# # Build migration utils if needed
 echo -e "${YELLOW}🔨 Building migration utilities...${NC}"
-docker compose -f "$COMPOSE_FILE" --profile migration build migration-utils
+docker compose -f "$COMPOSE_FILE" --profile migration build db-migrate
 
 # Start core services (postgres and app)
 echo -e "${YELLOW}🚀 Starting core services...${NC}"
@@ -44,16 +44,16 @@ if [ -d "./drizzle" ] && [ "$(find ./drizzle -name "*.sql" -newer ./scripts/.las
     echo -e "${YELLOW}🔄 New migrations found, applying...${NC}"
 
     # Start migration container temporarily
-    docker compose -f "$COMPOSE_FILE" --profile migration up -d migration-utils
+    docker compose -f "$COMPOSE_FILE" --profile migration up -d db-migrate
 
     # Wait for migration container
     sleep 5
 
     # Apply migrations
-    docker compose -f "$COMPOSE_FILE" exec migration-utils npm run db:migrate
+    docker compose -f "$COMPOSE_FILE" exec db-migrate npm run db:migrate
 
     # Stop migration container
-    docker compose -f "$COMPOSE_FILE" --profile migration down migration-utils
+    docker compose -f "$COMPOSE_FILE" --profile migration down db-migrate
 
     # Touch file to track last migration
     mkdir -p ./scripts

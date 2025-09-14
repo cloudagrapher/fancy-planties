@@ -33,23 +33,43 @@ jest.mock('@/lib/db/queries/plant-instances', () => ({
 }));
 
 // Mock validation schemas
-jest.mock('@/lib/validation/plant-schemas', () => ({
-  createPlantSchema: {
-    parse: jest.fn(),
-  },
-  plantFilterSchema: {
-    parse: jest.fn(),
-  },
-  createPlantInstanceSchema: {
-    parse: jest.fn(),
-  },
-  plantInstanceFilterSchema: {
-    parse: jest.fn(),
-  },
-  updatePlantInstanceSchema: {
-    parse: jest.fn(),
-  },
-}));
+jest.mock('@/lib/validation/plant-schemas', () => {
+  const { createMockZodSchema } = require('@/test-utils/mocks/validation-mocks');
+
+  return {
+    createPlantSchema: createMockZodSchema({
+      family: 'Araceae',
+      genus: 'Monstera',
+      species: 'deliciosa',
+      commonName: 'Swiss Cheese Plant',
+    }),
+    plantFilterSchema: createMockZodSchema({
+      limit: 20,
+      offset: 0,
+      family: undefined,
+      genus: undefined,
+      search: undefined,
+    }),
+    createPlantInstanceSchema: createMockZodSchema({
+      plantId: 1,
+      nickname: 'Test Plant',
+      location: 'Living Room',
+      fertilizerSchedule: 'monthly',
+    }),
+    plantInstanceFilterSchema: createMockZodSchema({
+      limit: 20,
+      offset: 0,
+      location: undefined,
+      fertilizerSchedule: undefined,
+      isActive: true,
+    }),
+    updatePlantInstanceSchema: createMockZodSchema({
+      nickname: 'Updated Plant',
+      location: 'Kitchen',
+      fertilizerSchedule: 'bi-weekly',
+    }),
+  };
+});
 
 // Import mocked functions
 import { validateRequest, validateVerifiedRequest } from '@/lib/auth/server';
@@ -84,6 +104,17 @@ describe('Plant Management API Endpoints', () => {
       user: testUser,
       session: testSession,
     });
+
+    // Default database query mocks
+    getPlantsWithStats.mockResolvedValue([]);
+    createPlant.mockResolvedValue({ id: 1 });
+    validatePlantTaxonomy.mockResolvedValue(true);
+
+    PlantInstanceQueries.getWithFilters.mockResolvedValue([]);
+    PlantInstanceQueries.create.mockResolvedValue({ id: 1 });
+    PlantInstanceQueries.getEnhancedById.mockResolvedValue({ id: 1 });
+    PlantInstanceQueries.update.mockResolvedValue({ id: 1 });
+    PlantInstanceQueries.delete.mockResolvedValue({ success: true });
   });
 
   afterEach(() => {
