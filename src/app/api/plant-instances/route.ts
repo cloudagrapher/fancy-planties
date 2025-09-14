@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     // Check if request is FormData or JSON
     const contentType = request.headers.get('content-type');
-    let body: any;
+    let body: Record<string, unknown>;
     
     if (contentType?.includes('multipart/form-data')) {
       // Handle FormData (for file uploads)
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
             { status: 400 }
           );
         }
-      } catch (jsonError) {
+      } catch {
         return NextResponse.json(
           { 
             success: false,
@@ -145,8 +145,8 @@ export async function POST(request: NextRequest) {
       ...body,
       userId: user.id,
       // Convert date strings to Date objects if they exist and are not empty
-      lastFertilized: body.lastFertilized && body.lastFertilized !== '' ? new Date(body.lastFertilized) : null,
-      lastRepot: body.lastRepot && body.lastRepot !== '' ? new Date(body.lastRepot) : null,
+      lastFertilized: body.lastFertilized && body.lastFertilized !== '' ? new Date(body.lastFertilized as string) : null,
+      lastRepot: body.lastRepot && body.lastRepot !== '' ? new Date(body.lastRepot as string) : null,
     };
 
     // Validate the plant instance data
