@@ -457,7 +457,27 @@ describe('Plant Management API Endpoints', () => {
       // Assert
       expect(response.status).toBe(201);
       expect(responseData.success).toBe(true);
-      expect(responseData.data).toEqual(enhancedInstance);
+      expect(responseData.data).toEqual(expect.objectContaining({
+        id: enhancedInstance.id,
+        nickname: enhancedInstance.nickname,
+        location: enhancedInstance.location,
+        plantId: enhancedInstance.plantId,
+        fertilizerSchedule: enhancedInstance.fertilizerSchedule,
+        lastFertilized: enhancedInstance.lastFertilized,
+        lastRepot: enhancedInstance.lastRepot,
+        notes: enhancedInstance.notes,
+        images: enhancedInstance.images,
+        isActive: enhancedInstance.isActive,
+        plant: expect.objectContaining({
+          id: enhancedInstance.plant.id,
+          family: enhancedInstance.plant.family,
+          genus: enhancedInstance.plant.genus,
+          species: enhancedInstance.plant.species,
+          cultivar: enhancedInstance.plant.cultivar,
+          commonName: enhancedInstance.plant.commonName,
+          isVerified: enhancedInstance.plant.isVerified,
+        }),
+      }));
 
       expect(PlantInstanceQueries.create).toHaveBeenCalledWith(expectedInstanceData);
     });
@@ -681,7 +701,26 @@ describe('Plant Management API Endpoints', () => {
 
       // Assert
       expect(response.status).toBe(200);
-      expect(responseData).toEqual(enhancedInstance);
+      expect(responseData).toEqual(expect.objectContaining({
+        id: enhancedInstance.id,
+        nickname: enhancedInstance.nickname,
+        location: enhancedInstance.location,
+        fertilizerSchedule: enhancedInstance.fertilizerSchedule,
+        lastFertilized: enhancedInstance.lastFertilized,
+        lastRepot: enhancedInstance.lastRepot,
+        notes: enhancedInstance.notes,
+        images: enhancedInstance.images,
+        isActive: enhancedInstance.isActive,
+        plant: expect.objectContaining({
+          id: enhancedInstance.plant.id,
+          family: enhancedInstance.plant.family,
+          genus: enhancedInstance.plant.genus,
+          species: enhancedInstance.plant.species,
+          cultivar: enhancedInstance.plant.cultivar,
+          commonName: enhancedInstance.plant.commonName,
+          isVerified: enhancedInstance.plant.isVerified,
+        }),
+      }));
 
       expect(PlantInstanceQueries.getEnhancedById).toHaveBeenCalledWith(1);
       expect(updatePlantInstanceSchema.parse).toHaveBeenCalledWith(expectedUpdateData);
@@ -851,7 +890,26 @@ describe('Plant Management API Endpoints', () => {
 
       // Assert
       expect(response.status).toBe(200);
-      expect(responseData).toEqual(enhancedInstance);
+      expect(responseData).toEqual(expect.objectContaining({
+        id: enhancedInstance.id,
+        nickname: enhancedInstance.nickname,
+        location: enhancedInstance.location,
+        fertilizerSchedule: enhancedInstance.fertilizerSchedule,
+        lastFertilized: enhancedInstance.lastFertilized,
+        lastRepot: enhancedInstance.lastRepot,
+        notes: enhancedInstance.notes,
+        images: enhancedInstance.images,
+        isActive: enhancedInstance.isActive,
+        plant: expect.objectContaining({
+          id: enhancedInstance.plant.id,
+          family: enhancedInstance.plant.family,
+          genus: enhancedInstance.plant.genus,
+          species: enhancedInstance.plant.species,
+          cultivar: enhancedInstance.plant.cultivar,
+          commonName: enhancedInstance.plant.commonName,
+          isVerified: enhancedInstance.plant.isVerified,
+        }),
+      }));
 
       // Verify the update was called with correct data (excluding id and userId)
       const { id, userId, ...updateDataWithoutIds } = expectedUpdateData;

@@ -332,9 +332,29 @@ describe('Plant Instances API', () => {
         .send(plantData)
         .expect(201);
 
-      expect(response.body.data).toMatchObject({
-        commonName: plantData.commonName,
-        userId: testUser.id,
+      // Use explicit field assertions for better test reliability
+      expect(response.body).toEqual({
+        success: true,
+        data: expect.objectContaining({
+          id: expect.any(Number),
+          nickname: plantData.nickname,
+          location: plantData.location,
+          plantId: plantData.plantId,
+          fertilizerSchedule: plantData.fertilizerSchedule,
+          userId: testUser.id,
+          isActive: true,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+          plant: expect.objectContaining({
+            id: expect.any(Number),
+            family: plantData.plant.family,
+            genus: plantData.plant.genus,
+            species: plantData.plant.species,
+            commonName: plantData.plant.commonName,
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          }),
+        }),
       });
     });
 
@@ -653,9 +673,36 @@ expect(response.body.data).toMatchObject({
 });
 expect(response.body.data.id).toBeDefined();
 
+// ✅ Best: Explicit field assertions for complex objects
+expect(responseData).toEqual({
+  success: true,
+  data: expect.objectContaining({
+    id: expectedInstance.id,
+    nickname: expectedInstance.nickname,
+    location: expectedInstance.location,
+    plantId: expectedInstance.plantId,
+    fertilizerSchedule: expectedInstance.fertilizerSchedule,
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    plant: expect.objectContaining({
+      id: expectedInstance.plant.id,
+      family: expectedInstance.plant.family,
+      genus: expectedInstance.plant.genus,
+      species: expectedInstance.plant.species,
+      commonName: expectedInstance.plant.commonName,
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    }),
+  }),
+});
+
 // ❌ Avoid: Vague or overly broad assertions
 expect(response).toBeTruthy();
 expect(response.body).toMatchSnapshot(); // Brittle
+expect(response.body.data).toMatchObject({
+  ...expectedInstance, // Can hide missing or extra fields
+  createdAt: expect.any(String),
+});
 ```
 
 ### Error Testing
@@ -714,6 +761,63 @@ it('should return validation errors for invalid data', async () => {
   // This doesn't accurately reflect real ZodError behavior
 });
 ```
+
+### Object Assertion Patterns
+
+When testing complex API responses or object structures, use explicit field assertions rather than object spread patterns:
+
+```javascript
+// ✅ Best Practice: Explicit field assertions
+expect(responseData).toEqual({
+  success: true,
+  data: expect.objectContaining({
+    // Explicitly list each expected field
+    id: expectedData.id,
+    nickname: expectedData.nickname,
+    location: expectedData.location,
+    plantId: expectedData.plantId,
+    fertilizerSchedule: expectedData.fertilizerSchedule,
+    lastFertilized: expectedData.lastFertilized,
+    notes: expectedData.notes,
+    isActive: expectedData.isActive,
+    // Dynamic fields that change
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    // Nested objects with explicit fields
+    plant: expect.objectContaining({
+      id: expectedData.plant.id,
+      family: expectedData.plant.family,
+      genus: expectedData.plant.genus,
+      species: expectedData.plant.species,
+      commonName: expectedData.plant.commonName,
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    }),
+  }),
+});
+
+// ❌ Avoid: Object spread in assertions
+expect(responseData).toEqual({
+  success: true,
+  data: expect.objectContaining({
+    ...expectedData, // Hides missing fields and extra properties
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+    plant: expect.objectContaining({
+      ...expectedData.plant, // Can mask validation issues
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    }),
+  }),
+});
+```
+
+**Benefits of Explicit Field Assertions:**
+- **Clarity**: Each expected field is clearly visible in the test
+- **Precision**: Catches missing fields that spread assertions might miss
+- **Maintainability**: Easy to see what the API contract expects
+- **Debugging**: Failed assertions show exactly which field is problematic
+- **Documentation**: Tests serve as clear API documentation
 
 ### Async Testing
 
