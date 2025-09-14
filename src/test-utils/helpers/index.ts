@@ -2,5 +2,4 @@
 
 // Re-export helper utilities
 export * from './render-helpers';
-export * from './api-helpers';
-export * from './interaction-helpers';
+// Note: api-helpers.ts and interaction-helpers.js are imported separately if needed

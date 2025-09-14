@@ -5,7 +5,7 @@
 import React from 'react';
 import { screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, mockApiResponses, mockApiError } from '@/test-utils/helpers/render-helpers';
+import { renderWithProviders, mockApiResponses, mockApiError } from '@/test-utils';
 import { createTestUser } from '@/test-utils/factories/user-factory';
 import { createTestPlant, createTestPlantInstance } from '@/test-utils/factories/plant-factory';
 import PlantInstanceForm from '@/components/plants/PlantInstanceForm';
@@ -44,7 +44,7 @@ jest.mock('@/components/plants/PlantTaxonomySelector', () => {
 jest.mock('@/components/shared/ImageUpload', () => {
   return function MockImageUpload({ onImagesChange, maxImages = 10 }) {
     const [files, setFiles] = React.useState([]);
-    
+
     return (
       <div data-testid="image-upload">
         <input
@@ -75,7 +75,7 @@ describe('PlantInstanceForm', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock successful API responses by default
     mockApiResponses({
       '/api/plant-instances/locations': ['Living Room', 'Kitchen', 'Bedroom'],
@@ -102,6 +102,15 @@ describe('PlantInstanceForm', () => {
         location: 'Living Room',
       });
 
+      // Add the plant data that the component expects
+      plantInstance.plant = {
+        id: 1,
+        family: 'Testaceae',
+        genus: 'Testus',
+        species: 'testicus',
+        commonName: 'Test Plant',
+      };
+
       renderWithProviders(
         <PlantInstanceForm {...defaultProps} plantInstance={plantInstance} />
       );
@@ -113,7 +122,7 @@ describe('PlantInstanceForm', () => {
 
     it('shows modal when isOpen is true', () => {
       renderWithProviders(<PlantInstanceForm {...defaultProps} />);
-      
+
       // The modal doesn't have a dialog role, but we can check for the modal container
       expect(screen.getByText('Add New Plant')).toBeInTheDocument();
       expect(screen.getByLabelText(/close form/i)).toBeInTheDocument();
@@ -121,7 +130,7 @@ describe('PlantInstanceForm', () => {
 
     it('does not render when isOpen is false', () => {
       renderWithProviders(<PlantInstanceForm {...defaultProps} isOpen={false} />);
-      
+
       expect(screen.queryByText('Add New Plant')).not.toBeInTheDocument();
     });
   });
@@ -132,10 +141,10 @@ describe('PlantInstanceForm', () => {
       renderWithProviders(<PlantInstanceForm {...defaultProps} />);
 
       const submitButton = screen.getByRole('button', { name: /add plant/i });
-      
+
       // Button should be disabled when required fields are empty
       expect(submitButton).toBeDisabled();
-      
+
       // Should show message about filling required fields
       expect(screen.getByText(/fill in required fields to continue/i)).toBeInTheDocument();
     });
@@ -184,7 +193,7 @@ describe('PlantInstanceForm', () => {
       // Find the date input by name attribute
       const dateInputs = screen.getAllByDisplayValue('');
       const lastFertilizedDateInput = dateInputs.find(input => input.name === 'lastFertilized');
-      
+
       if (lastFertilizedDateInput) {
         await user.clear(lastFertilizedDateInput);
         await user.type(lastFertilizedDateInput, futureDateString);
@@ -210,7 +219,7 @@ describe('PlantInstanceForm', () => {
 
       // Select a plant
       await user.click(screen.getByTestId('select-plant'));
-      
+
       // Fill required fields
       await user.type(screen.getByLabelText(/nickname/i), 'My Test Plant');
       await user.type(screen.getByLabelText(/location/i), 'Living Room');
@@ -349,7 +358,16 @@ describe('PlantInstanceForm', () => {
     it('submits form with correct data for editing', async () => {
       const user = userEvent.setup();
       const plantInstance = createTestPlantInstance({ id: 1 });
-      
+
+      // Add the plant data that the component expects
+      plantInstance.plant = {
+        id: 1,
+        family: 'Testaceae',
+        genus: 'Testus',
+        species: 'testicus',
+        commonName: 'Test Plant',
+      };
+
       renderWithProviders(
         <PlantInstanceForm {...defaultProps} plantInstance={plantInstance} />
       );
@@ -389,10 +407,10 @@ describe('PlantInstanceForm', () => {
 
     it('shows loading state during submission', async () => {
       const user = userEvent.setup();
-      
+
       // Mock a delayed response
-      global.fetch = jest.fn(() => 
-        new Promise(resolve => 
+      global.fetch = jest.fn(() =>
+        new Promise(resolve =>
           setTimeout(() => resolve({
             ok: true,
             json: () => Promise.resolve({ success: true })
@@ -406,7 +424,7 @@ describe('PlantInstanceForm', () => {
       await user.click(screen.getByTestId('select-plant'));
       await user.type(screen.getByLabelText(/nickname/i), 'Test Plant');
       await user.type(screen.getByLabelText(/location/i), 'Living Room');
-      
+
       const submitButton = screen.getByRole('button', { name: /add plant/i });
       await user.click(submitButton);
 
@@ -437,10 +455,10 @@ describe('PlantInstanceForm', () => {
 
     it('warns about unsaved changes when closing', async () => {
       const user = userEvent.setup();
-      
+
       // Mock window.confirm
       const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
-      
+
       renderWithProviders(<PlantInstanceForm {...defaultProps} />);
 
       // Make changes to form
@@ -494,7 +512,7 @@ describe('PlantInstanceForm', () => {
 
       // Check for modal elements instead of dialog role
       expect(screen.getByLabelText(/close form/i)).toBeInTheDocument();
-      
+
       // Check required field indicators
       expect(screen.getByText(/nickname.*\*/i)).toBeInTheDocument();
       expect(screen.getByText(/location.*\*/i)).toBeInTheDocument();
@@ -506,10 +524,10 @@ describe('PlantInstanceForm', () => {
       // Check that form fields have proper labels and accessibility attributes
       const nicknameInput = screen.getByLabelText(/nickname/i);
       const locationInput = screen.getByLabelText(/location/i);
-      
+
       expect(nicknameInput).toHaveAttribute('id', 'nickname');
       expect(locationInput).toHaveAttribute('id', 'location');
-      
+
       // Check that required fields are marked
       expect(screen.getByText(/nickname.*\*/i)).toBeInTheDocument();
       expect(screen.getByText(/location.*\*/i)).toBeInTheDocument();

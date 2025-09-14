@@ -1,57 +1,79 @@
-import { eq, and, desc, asc, isNotNull, lte, gte, ilike, or, sql, inArray } from 'drizzle-orm';
-import { db } from '../index';
-import { plantInstances, plants, type PlantInstance, type NewPlantInstance } from '../schema';
-import type { 
-  PlantInstanceFilter, 
-  PlantInstanceSearch,
-  BulkPlantInstanceOperation,
-  EnhancedPlantInstanceFilter
-} from '@/lib/validation/plant-schemas';
-import type { 
-  EnhancedPlantInstance, 
-  PlantInstanceSearchResult,
-  CareDashboardData,
+import type {
   BulkOperationResult,
-  PlantInstanceOperationResult
-} from '@/lib/types/plant-instance-types';
-import { plantInstanceHelpers } from '@/lib/types/plant-instance-types';
+  CareDashboardData,
+  EnhancedPlantInstance,
+  PlantInstanceSearchResult,
+} from "@/lib/types/plant-instance-types";
+import { plantInstanceHelpers } from "@/lib/types/plant-instance-types";
+import type {
+  BulkPlantInstanceOperation,
+  PlantInstanceFilter,
+  PlantInstanceSearch,
+} from "@/lib/validation/plant-schemas";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  ilike,
+  isNotNull,
+  lte,
+  or,
+  sql,
+} from "drizzle-orm";
+import { db } from "../index";
+import {
+  plantInstances,
+  plants,
+  type NewPlantInstance,
+  type PlantInstance,
+} from "../schema";
 
 // Plant instance CRUD operations
 export class PlantInstanceQueries {
   // Create a new plant instance
   static async create(instanceData: NewPlantInstance): Promise<PlantInstance> {
     try {
-      const [instance] = await db.insert(plantInstances).values(instanceData).returning();
+      const [instance] = await db
+        .insert(plantInstances)
+        .values(instanceData)
+        .returning();
       return instance;
     } catch (error) {
-      console.error('Failed to create plant instance:', error);
-      throw new Error('Failed to create plant instance');
+      console.error("Failed to create plant instance:", error);
+      throw new Error("Failed to create plant instance");
     }
   }
 
   // Get plant instance by ID with plant taxonomy data
-  static async getById(id: number): Promise<(PlantInstance & { plant: typeof plants.$inferSelect }) | null> {
+  static async getById(
+    id: number
+  ): Promise<(PlantInstance & { plant: typeof plants.$inferSelect }) | null> {
     try {
       const [instance] = await db
         .select()
         .from(plantInstances)
         .leftJoin(plants, eq(plantInstances.plantId, plants.id))
         .where(eq(plantInstances.id, id));
-      
+
       if (!instance) return null;
-      
+
       return {
         ...instance.plant_instances,
-        plant: instance.plants!
+        plant: instance.plants!,
       };
     } catch (error) {
-      console.error('Failed to get plant instance by ID:', error);
-      throw new Error('Failed to get plant instance');
+      console.error("Failed to get plant instance by ID:", error);
+      throw new Error("Failed to get plant instance");
     }
   }
 
   // Get all plant instances for a user
-  static async getByUserId(userId: number, activeOnly: boolean = true): Promise<(PlantInstance & { plant: typeof plants.$inferSelect })[]> {
+  static async getByUserId(
+    userId: number,
+    activeOnly: boolean = true
+  ): Promise<(PlantInstance & { plant: typeof plants.$inferSelect })[]> {
     try {
       const conditions = [eq(plantInstances.userId, userId)];
       if (activeOnly) {
@@ -65,18 +87,20 @@ export class PlantInstanceQueries {
         .where(and(...conditions))
         .orderBy(desc(plantInstances.createdAt));
 
-      return instances.map(instance => ({
+      return instances.map((instance) => ({
         ...instance.plant_instances,
-        plant: instance.plants!
+        plant: instance.plants!,
       }));
     } catch (error) {
-      console.error('Failed to get plant instances by user ID:', error);
-      throw new Error('Failed to get plant instances');
+      console.error("Failed to get plant instances by user ID:", error);
+      throw new Error("Failed to get plant instances");
     }
   }
 
   // Get plant instances with overdue fertilizer
-  static async getOverdueFertilizer(userId: number): Promise<(PlantInstance & { plant: typeof plants.$inferSelect })[]> {
+  static async getOverdueFertilizer(
+    userId: number
+  ): Promise<(PlantInstance & { plant: typeof plants.$inferSelect })[]> {
     try {
       const now = new Date();
       const instances = await db
@@ -93,18 +117,21 @@ export class PlantInstanceQueries {
         )
         .orderBy(asc(plantInstances.fertilizerDue));
 
-      return instances.map(instance => ({
+      return instances.map((instance) => ({
         ...instance.plant_instances,
-        plant: instance.plants!
+        plant: instance.plants!,
       }));
     } catch (error) {
-      console.error('Failed to get overdue fertilizer instances:', error);
-      throw new Error('Failed to get overdue fertilizer instances');
+      console.error("Failed to get overdue fertilizer instances:", error);
+      throw new Error("Failed to get overdue fertilizer instances");
     }
   }
 
   // Get plant instances with fertilizer due soon
-  static async getFertilizerDueSoon(userId: number, daysAhead: number = 7): Promise<(PlantInstance & { plant: typeof plants.$inferSelect })[]> {
+  static async getFertilizerDueSoon(
+    userId: number,
+    daysAhead: number = 7
+  ): Promise<(PlantInstance & { plant: typeof plants.$inferSelect })[]> {
     try {
       const now = new Date();
       const futureDate = new Date();
@@ -125,21 +152,24 @@ export class PlantInstanceQueries {
         )
         .orderBy(asc(plantInstances.fertilizerDue));
 
-      return instances.map(instance => ({
+      return instances.map((instance) => ({
         ...instance.plant_instances,
-        plant: instance.plants!
+        plant: instance.plants!,
       }));
     } catch (error) {
-      console.error('Failed to get fertilizer due soon instances:', error);
-      throw new Error('Failed to get fertilizer due soon instances');
+      console.error("Failed to get fertilizer due soon instances:", error);
+      throw new Error("Failed to get fertilizer due soon instances");
     }
   }
 
   // Search plant instances by nickname, location, or notes
-  static async search(userId: number, query: string): Promise<(PlantInstance & { plant: typeof plants.$inferSelect })[]> {
+  static async search(
+    userId: number,
+    query: string
+  ): Promise<(PlantInstance & { plant: typeof plants.$inferSelect })[]> {
     try {
       const searchTerm = `%${query.toLowerCase()}%`;
-      
+
       const instances = await db
         .select()
         .from(plantInstances)
@@ -160,67 +190,81 @@ export class PlantInstanceQueries {
         )
         .orderBy(desc(plantInstances.createdAt));
 
-      return instances.map(instance => ({
+      return instances.map((instance) => ({
         ...instance.plant_instances,
-        plant: instance.plants!
+        plant: instance.plants!,
       }));
     } catch (error) {
-      console.error('Failed to search plant instances:', error);
-      throw new Error('Failed to search plant instances');
+      console.error("Failed to search plant instances:", error);
+      throw new Error("Failed to search plant instances");
     }
   }
 
   // Update plant instance
-  static async update(id: number, instanceData: Partial<NewPlantInstance>): Promise<PlantInstance> {
+  static async update(
+    id: number,
+    instanceData: Partial<NewPlantInstance>
+  ): Promise<PlantInstance> {
     try {
       const [instance] = await db
         .update(plantInstances)
         .set({ ...instanceData, updatedAt: new Date() })
         .where(eq(plantInstances.id, id))
         .returning();
-      
+
       if (!instance) {
-        throw new Error('Plant instance not found');
+        throw new Error("Plant instance not found");
       }
-      
+
       return instance;
     } catch (error) {
-      console.error('Failed to update plant instance:', error);
-      throw new Error('Failed to update plant instance');
+      console.error("Failed to update plant instance:", error);
+      if (
+        error instanceof Error &&
+        error.message === "Plant instance not found"
+      ) {
+        throw error;
+      }
+      throw new Error("Failed to update plant instance");
     }
   }
 
   // Log fertilizer application and calculate next due date
-  static async logFertilizer(id: number, fertilizerDate?: Date): Promise<PlantInstance> {
+  static async logFertilizer(
+    id: number,
+    fertilizerDate?: Date
+  ): Promise<PlantInstance> {
     try {
       const now = fertilizerDate || new Date();
-      
+
       // Get current instance to calculate next due date
       const [currentInstance] = await db
         .select()
         .from(plantInstances)
         .where(eq(plantInstances.id, id));
-      
+
       if (!currentInstance) {
-        throw new Error('Plant instance not found');
+        throw new Error("Plant instance not found");
       }
 
       // Calculate next fertilizer due date based on schedule
       let nextDue: Date | null = null;
       if (currentInstance.fertilizerSchedule) {
-        const scheduleMatch = currentInstance.fertilizerSchedule.match(/(\d+)\s*(day|week|month)s?/i);
+        const scheduleMatch = currentInstance.fertilizerSchedule.match(
+          /(\d+)\s*(day|week|month)s?/i
+        );
         if (scheduleMatch) {
           const [, amount, unit] = scheduleMatch;
           nextDue = new Date(now);
-          
+
           switch (unit.toLowerCase()) {
-            case 'day':
+            case "day":
               nextDue.setDate(nextDue.getDate() + parseInt(amount, 10));
               break;
-            case 'week':
-              nextDue.setDate(nextDue.getDate() + (parseInt(amount, 10) * 7));
+            case "week":
+              nextDue.setDate(nextDue.getDate() + parseInt(amount, 10) * 7);
               break;
-            case 'month':
+            case "month":
               nextDue.setMonth(nextDue.getMonth() + parseInt(amount, 10));
               break;
           }
@@ -232,26 +276,36 @@ export class PlantInstanceQueries {
         .set({
           lastFertilized: now,
           fertilizerDue: nextDue,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(plantInstances.id, id))
         .returning();
-      
+
       return instance;
     } catch (error) {
-      console.error('Failed to log fertilizer:', error);
-      throw new Error('Failed to log fertilizer');
+      console.error("Failed to log fertilizer:", error);
+      if (
+        error instanceof Error &&
+        error.message === "Plant instance not found"
+      ) {
+        throw error;
+      }
+      throw new Error("Failed to log fertilizer");
     }
   }
 
   // Log repotting
-  static async logRepot(id: number, repotDate?: Date, notes?: string): Promise<PlantInstance> {
+  static async logRepot(
+    id: number,
+    repotDate?: Date,
+    notes?: string
+  ): Promise<PlantInstance> {
     try {
       const now = repotDate || new Date();
-      
+
       const updateData: Partial<NewPlantInstance> = {
         lastRepot: now,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       if (notes) {
@@ -260,11 +314,13 @@ export class PlantInstanceQueries {
           .select()
           .from(plantInstances)
           .where(eq(plantInstances.id, id));
-        
+
         if (currentInstance) {
-          const existingNotes = currentInstance.notes || '';
+          const existingNotes = currentInstance.notes || "";
           const repotNote = `Repotted on ${now.toDateString()}: ${notes}`;
-          updateData.notes = existingNotes ? `${existingNotes}\n${repotNote}` : repotNote;
+          updateData.notes = existingNotes
+            ? `${existingNotes}\n${repotNote}`
+            : repotNote;
         }
       }
 
@@ -273,15 +329,15 @@ export class PlantInstanceQueries {
         .set(updateData)
         .where(eq(plantInstances.id, id))
         .returning();
-      
+
       if (!instance) {
-        throw new Error('Plant instance not found');
+        throw new Error("Plant instance not found");
       }
-      
+
       return instance;
     } catch (error) {
-      console.error('Failed to log repot:', error);
-      throw new Error('Failed to log repot');
+      console.error("Failed to log repot:", error);
+      throw new Error("Failed to log repot");
     }
   }
 
@@ -293,15 +349,21 @@ export class PlantInstanceQueries {
         .set({ isActive: false, updatedAt: new Date() })
         .where(eq(plantInstances.id, id))
         .returning();
-      
+
       if (!instance) {
-        throw new Error('Plant instance not found');
+        throw new Error("Plant instance not found");
       }
-      
+
       return instance;
     } catch (error) {
-      console.error('Failed to deactivate plant instance:', error);
-      throw new Error('Failed to deactivate plant instance');
+      console.error("Failed to deactivate plant instance:", error);
+      if (
+        error instanceof Error &&
+        error.message === "Plant instance not found"
+      ) {
+        throw error;
+      }
+      throw new Error("Failed to deactivate plant instance");
     }
   }
 
@@ -313,26 +375,28 @@ export class PlantInstanceQueries {
         .set({ isActive: true, updatedAt: new Date() })
         .where(eq(plantInstances.id, id))
         .returning();
-      
+
       if (!instance) {
-        throw new Error('Plant instance not found');
+        throw new Error("Plant instance not found");
       }
-      
+
       return instance;
     } catch (error) {
-      console.error('Failed to reactivate plant instance:', error);
-      throw new Error('Failed to reactivate plant instance');
+      console.error("Failed to reactivate plant instance:", error);
+      throw new Error("Failed to reactivate plant instance");
     }
   }
 
   // Delete plant instance permanently
   static async delete(id: number): Promise<boolean> {
     try {
-      const result = await db.delete(plantInstances).where(eq(plantInstances.id, id));
+      const result = await db
+        .delete(plantInstances)
+        .where(eq(plantInstances.id, id));
       return result.length > 0;
     } catch (error) {
-      console.error('Failed to delete plant instance:', error);
-      throw new Error('Failed to delete plant instance');
+      console.error("Failed to delete plant instance:", error);
+      throw new Error("Failed to delete plant instance");
     }
   }
 
@@ -348,32 +412,69 @@ export class PlantInstanceQueries {
       const weekFromNow = new Date();
       weekFromNow.setDate(now.getDate() + 7);
 
-      const [stats] = await db
+      // Get total and active plants
+      const [totalStats] = await db
         .select({
           totalPlants: sql<number>`count(*)`,
           activePlants: sql<number>`count(*) filter (where ${plantInstances.isActive} = true)`,
-          overdueFertilizer: sql<number>`count(*) filter (where ${plantInstances.isActive} = true and ${plantInstances.fertilizerDue} <= ${now})`,
-          dueSoon: sql<number>`count(*) filter (where ${plantInstances.isActive} = true and ${plantInstances.fertilizerDue} > ${now} and ${plantInstances.fertilizerDue} <= ${weekFromNow})`
         })
         .from(plantInstances)
         .where(eq(plantInstances.userId, userId));
 
-      return stats;
+      // Get overdue fertilizer count
+      const [overdueStats] = await db
+        .select({
+          overdueFertilizer: sql<number>`count(*)`,
+        })
+        .from(plantInstances)
+        .where(
+          and(
+            eq(plantInstances.userId, userId),
+            eq(plantInstances.isActive, true),
+            isNotNull(plantInstances.fertilizerDue),
+            lte(plantInstances.fertilizerDue, now)
+          )
+        );
+
+      // Get due soon count
+      const [dueSoonStats] = await db
+        .select({
+          dueSoon: sql<number>`count(*)`,
+        })
+        .from(plantInstances)
+        .where(
+          and(
+            eq(plantInstances.userId, userId),
+            eq(plantInstances.isActive, true),
+            isNotNull(plantInstances.fertilizerDue),
+            gte(plantInstances.fertilizerDue, now),
+            lte(plantInstances.fertilizerDue, weekFromNow)
+          )
+        );
+
+      return {
+        totalPlants: Number(totalStats.totalPlants),
+        activePlants: Number(totalStats.activePlants),
+        overdueFertilizer: Number(overdueStats.overdueFertilizer),
+        dueSoon: Number(dueSoonStats.dueSoon),
+      };
     } catch (error) {
-      console.error('Failed to get care stats:', error);
-      throw new Error('Failed to get care stats');
+      console.error("Failed to get care stats:", error);
+      throw new Error("Failed to get care stats");
     }
   }
 
   // Enhanced search with filters
-  static async searchWithFilters(searchParams: PlantInstanceSearch): Promise<PlantInstanceSearchResult> {
+  static async searchWithFilters(
+    searchParams: PlantInstanceSearch
+  ): Promise<PlantInstanceSearchResult> {
     try {
       const startTime = Date.now();
       const { query, userId, activeOnly, limit, offset } = searchParams;
       const searchTerm = `%${query.toLowerCase()}%`;
-      
+
       const conditions = [eq(plantInstances.userId, userId)];
-      
+
       if (activeOnly) {
         conditions.push(eq(plantInstances.isActive, true));
       }
@@ -410,8 +511,11 @@ export class PlantInstanceQueries {
         .limit(limit)
         .offset(offset);
 
-      const enhancedInstances = instances.map(instance => 
-        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      const enhancedInstances = instances.map((instance) =>
+        plantInstanceHelpers.enhancePlantInstance(
+          instance.plant_instances,
+          instance.plants!
+        )
       );
 
       const searchTime = Date.now() - startTime;
@@ -427,41 +531,43 @@ export class PlantInstanceQueries {
         },
       };
     } catch (error) {
-      console.error('Failed to search plant instances with filters:', error);
-      throw new Error('Failed to search plant instances');
+      console.error("Failed to search plant instances with filters:", error);
+      throw new Error("Failed to search plant instances");
     }
   }
 
   // Advanced filtering
-  static async getWithFilters(filterParams: PlantInstanceFilter): Promise<PlantInstanceSearchResult> {
+  static async getWithFilters(
+    filterParams: PlantInstanceFilter
+  ): Promise<PlantInstanceSearchResult> {
     try {
       const startTime = Date.now();
-      const { 
-        userId, 
-        location, 
-        plantId, 
-        isActive, 
-        overdueOnly, 
+      const {
+        userId,
+        location,
+        plantId,
+        isActive,
+        overdueOnly,
         dueSoonDays,
         createdAfter,
         createdBefore,
         lastFertilizedAfter,
         lastFertilizedBefore,
-        limit, 
-        offset 
+        limit,
+        offset,
       } = filterParams;
 
       const conditions = [eq(plantInstances.userId, userId)];
-      
+
       // Apply filters
       if (location) {
         conditions.push(ilike(plantInstances.location, `%${location}%`));
       }
-      
+
       if (plantId) {
         conditions.push(eq(plantInstances.plantId, plantId));
       }
-      
+
       if (isActive !== undefined) {
         conditions.push(eq(plantInstances.isActive, isActive));
       }
@@ -531,15 +637,18 @@ export class PlantInstanceQueries {
         .leftJoin(plants, eq(plantInstances.plantId, plants.id))
         .where(and(...conditions))
         .orderBy(
-          overdueOnly || dueSoonDays 
+          overdueOnly || dueSoonDays
             ? asc(plantInstances.fertilizerDue)
             : desc(plantInstances.createdAt)
         )
         .limit(limit)
         .offset(offset);
 
-      const enhancedInstances = instances.map(instance => 
-        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      const enhancedInstances = instances.map((instance) =>
+        plantInstanceHelpers.enhancePlantInstance(
+          instance.plant_instances,
+          instance.plants!
+        )
       );
 
       const searchTime = Date.now() - startTime;
@@ -552,13 +661,16 @@ export class PlantInstanceQueries {
         filters: filterParams,
       };
     } catch (error) {
-      console.error('Failed to get plant instances with filters:', error);
-      throw new Error('Failed to get plant instances with filters');
+      console.error("Failed to get plant instances with filters:", error);
+      throw new Error("Failed to get plant instances with filters");
     }
   }
 
   // Get enhanced plant instances for a user
-  static async getEnhancedByUserId(userId: number, activeOnly: boolean = true): Promise<EnhancedPlantInstance[]> {
+  static async getEnhancedByUserId(
+    userId: number,
+    activeOnly: boolean = true
+  ): Promise<EnhancedPlantInstance[]> {
     try {
       const conditions = [eq(plantInstances.userId, userId)];
       if (activeOnly) {
@@ -572,17 +684,22 @@ export class PlantInstanceQueries {
         .where(and(...conditions))
         .orderBy(desc(plantInstances.createdAt));
 
-      return instances.map(instance => 
-        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      return instances.map((instance) =>
+        plantInstanceHelpers.enhancePlantInstance(
+          instance.plant_instances,
+          instance.plants!
+        )
       );
     } catch (error) {
-      console.error('Failed to get enhanced plant instances:', error);
-      throw new Error('Failed to get enhanced plant instances');
+      console.error("Failed to get enhanced plant instances:", error);
+      throw new Error("Failed to get enhanced plant instances");
     }
   }
 
   // Get care dashboard data
-  static async getCareDashboardData(userId: number): Promise<CareDashboardData> {
+  static async getCareDashboardData(
+    userId: number
+  ): Promise<CareDashboardData> {
     try {
       const now = new Date();
       const tomorrow = new Date();
@@ -594,14 +711,22 @@ export class PlantInstanceQueries {
       const instances = await this.getEnhancedByUserId(userId, true);
 
       // Categorize by care status
-      const overdue = instances.filter(instance => instance.careStatus === 'overdue');
-      const dueToday = instances.filter(instance => instance.careStatus === 'due_today');
-      const dueSoon = instances.filter(instance => instance.careStatus === 'due_soon');
-      
+      const overdue = instances.filter(
+        (instance) => instance.careStatus === "overdue"
+      );
+      const dueToday = instances.filter(
+        (instance) => instance.careStatus === "due_today"
+      );
+      const dueSoon = instances.filter(
+        (instance) => instance.careStatus === "due_soon"
+      );
+
       // Get recently cared for plants (fertilized in last 7 days)
-      const recentlyCared = instances.filter(instance => {
+      const recentlyCared = instances.filter((instance) => {
         if (!instance.lastFertilized) return false;
-        const daysSince = plantInstanceHelpers.calculateDaysSinceLastFertilized(instance.lastFertilized);
+        const daysSince = plantInstanceHelpers.calculateDaysSinceLastFertilized(
+          instance.lastFertilized
+        );
         return daysSince !== null && daysSince <= 7;
       });
 
@@ -622,8 +747,8 @@ export class PlantInstanceQueries {
         },
       };
     } catch (error) {
-      console.error('Failed to get care dashboard data:', error);
-      throw new Error('Failed to get care dashboard data');
+      console.error("Failed to get care dashboard data:", error);
+      throw new Error("Failed to get care dashboard data");
     }
   }
 
@@ -651,14 +776,15 @@ export class PlantInstanceQueries {
       // Simple streak calculation based on recent fertilizer applications
       let streak = 0;
       const now = new Date();
-      
+
       for (const instance of instances) {
         if (!instance.lastFertilized) break;
-        
+
         const daysSince = Math.floor(
-          (now.getTime() - instance.lastFertilized.getTime()) / (1000 * 60 * 60 * 24)
+          (now.getTime() - instance.lastFertilized.getTime()) /
+            (1000 * 60 * 60 * 24)
         );
-        
+
         if (daysSince <= 1) {
           streak = Math.max(streak, 1);
         }
@@ -666,35 +792,42 @@ export class PlantInstanceQueries {
 
       return streak;
     } catch (error) {
-      console.error('Failed to calculate care streak:', error);
+      console.error("Failed to calculate care streak:", error);
       return 0;
     }
   }
 
   // Bulk operations
-  static async bulkOperation(operation: BulkPlantInstanceOperation): Promise<BulkOperationResult> {
+  static async bulkOperation(
+    operation: BulkPlantInstanceOperation
+  ): Promise<BulkOperationResult> {
     try {
-      const { plantInstanceIds, operation: op, fertilizerDate, notes } = operation;
-      const results: BulkOperationResult['results'] = [];
+      const {
+        plantInstanceIds,
+        operation: op,
+        fertilizerDate,
+        notes,
+      } = operation;
+      const results: BulkOperationResult["results"] = [];
       let successCount = 0;
       let failureCount = 0;
 
       for (const id of plantInstanceIds) {
         try {
           let result: PlantInstance;
-          
+
           switch (op) {
-            case 'activate':
+            case "activate":
               result = await this.reactivate(id);
               break;
-            case 'deactivate':
+            case "deactivate":
               result = await this.deactivate(id);
               break;
-            case 'delete':
+            case "delete":
               await this.delete(id);
               result = { id } as PlantInstance; // Placeholder for deleted item
               break;
-            case 'fertilize':
+            case "fertilize":
               result = await this.logFertilizer(id, fertilizerDate);
               break;
             default:
@@ -704,10 +837,10 @@ export class PlantInstanceQueries {
           results.push({ plantInstanceId: id, success: true });
           successCount++;
         } catch (error) {
-          results.push({ 
-            plantInstanceId: id, 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Unknown error'
+          results.push({
+            plantInstanceId: id,
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error",
           });
           failureCount++;
         }
@@ -720,13 +853,16 @@ export class PlantInstanceQueries {
         results,
       };
     } catch (error) {
-      console.error('Failed to perform bulk operation:', error);
-      throw new Error('Failed to perform bulk operation');
+      console.error("Failed to perform bulk operation:", error);
+      throw new Error("Failed to perform bulk operation");
     }
   }
 
   // Get plant instances by location
-  static async getByLocation(userId: number, location: string): Promise<EnhancedPlantInstance[]> {
+  static async getByLocation(
+    userId: number,
+    location: string
+  ): Promise<EnhancedPlantInstance[]> {
     try {
       const instances = await db
         .select()
@@ -741,12 +877,15 @@ export class PlantInstanceQueries {
         )
         .orderBy(plantInstances.nickname);
 
-      return instances.map(instance => 
-        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      return instances.map((instance) =>
+        plantInstanceHelpers.enhancePlantInstance(
+          instance.plant_instances,
+          instance.plants!
+        )
       );
     } catch (error) {
-      console.error('Failed to get plant instances by location:', error);
-      throw new Error('Failed to get plant instances by location');
+      console.error("Failed to get plant instances by location:", error);
+      throw new Error("Failed to get plant instances by location");
     }
   }
 
@@ -764,43 +903,50 @@ export class PlantInstanceQueries {
         )
         .orderBy(plantInstances.location);
 
-      return locations.map(l => l.location).filter(Boolean);
+      return locations.map((l) => l.location).filter(Boolean);
     } catch (error) {
-      console.error('Failed to get user locations:', error);
-      throw new Error('Failed to get user locations');
+      console.error("Failed to get user locations:", error);
+      throw new Error("Failed to get user locations");
     }
   }
 
   // Get enhanced plant instance by ID
-  static async getEnhancedById(id: number): Promise<EnhancedPlantInstance | null> {
+  static async getEnhancedById(
+    id: number
+  ): Promise<EnhancedPlantInstance | null> {
     try {
       const [instance] = await db
         .select()
         .from(plantInstances)
         .leftJoin(plants, eq(plantInstances.plantId, plants.id))
         .where(eq(plantInstances.id, id));
-      
+
       if (!instance || !instance.plants) return null;
-      
-      return plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants);
+
+      return plantInstanceHelpers.enhancePlantInstance(
+        instance.plant_instances,
+        instance.plants
+      );
     } catch (error) {
-      console.error('Failed to get enhanced plant instance by ID:', error);
-      throw new Error('Failed to get enhanced plant instance');
+      console.error("Failed to get enhanced plant instance by ID:", error);
+      throw new Error("Failed to get enhanced plant instance");
     }
   }
 
   // Enhanced search with advanced filtering capabilities
-  static async enhancedSearch(filterParams: import('@/lib/validation/plant-schemas').EnhancedPlantInstanceFilter): Promise<PlantInstanceSearchResult> {
+  static async enhancedSearch(
+    filterParams: import("@/lib/validation/plant-schemas").EnhancedPlantInstanceFilter
+  ): Promise<PlantInstanceSearchResult> {
     try {
       const startTime = Date.now();
-      const { 
-        userId, 
+      const {
+        userId,
         searchQuery,
         searchFields,
-        location, 
-        plantId, 
-        isActive, 
-        overdueOnly, 
+        location,
+        plantId,
+        isActive,
+        overdueOnly,
         dueSoonDays,
         hasImages,
         imageCount,
@@ -811,23 +957,23 @@ export class PlantInstanceQueries {
         lastFertilizedBefore,
         sortBy,
         sortOrder,
-        limit, 
+        limit,
         offset,
         includeStats,
-        includeFacets
+        includeFacets,
       } = filterParams;
 
       const conditions = [eq(plantInstances.userId, userId)];
-      
+
       // Basic filters
       if (location) {
         conditions.push(ilike(plantInstances.location, `%${location}%`));
       }
-      
+
       if (plantId) {
         conditions.push(eq(plantInstances.plantId, plantId));
       }
-      
+
       if (isActive !== undefined) {
         conditions.push(eq(plantInstances.isActive, isActive));
       }
@@ -859,23 +1005,23 @@ export class PlantInstanceQueries {
       if (searchQuery) {
         const searchTerm = `%${searchQuery.toLowerCase()}%`;
         const searchConditions = [];
-        
-        if (!searchFields || searchFields.includes('nickname')) {
+
+        if (!searchFields || searchFields.includes("nickname")) {
           searchConditions.push(ilike(plantInstances.nickname, searchTerm));
         }
-        if (!searchFields || searchFields.includes('location')) {
+        if (!searchFields || searchFields.includes("location")) {
           searchConditions.push(ilike(plantInstances.location, searchTerm));
         }
-        if (!searchFields || searchFields.includes('notes')) {
+        if (!searchFields || searchFields.includes("notes")) {
           searchConditions.push(ilike(plantInstances.notes, searchTerm));
         }
-        if (!searchFields || searchFields.includes('plant_name')) {
+        if (!searchFields || searchFields.includes("plant_name")) {
           searchConditions.push(ilike(plants.commonName, searchTerm));
           searchConditions.push(ilike(plants.genus, searchTerm));
           searchConditions.push(ilike(plants.species, searchTerm));
           searchConditions.push(ilike(plants.family, searchTerm));
         }
-        
+
         if (searchConditions.length > 0) {
           conditions.push(or(...searchConditions)!);
         }
@@ -892,34 +1038,38 @@ export class PlantInstanceQueries {
 
       if (imageCount) {
         if (imageCount.min !== undefined) {
-          conditions.push(sql`json_array_length(${plantInstances.images}) >= ${imageCount.min}`);
+          conditions.push(
+            sql`json_array_length(${plantInstances.images}) >= ${imageCount.min}`
+          );
         }
         if (imageCount.max !== undefined) {
-          conditions.push(sql`json_array_length(${plantInstances.images}) <= ${imageCount.max}`);
+          conditions.push(
+            sql`json_array_length(${plantInstances.images}) <= ${imageCount.max}`
+          );
         }
       }
 
       // Fertilizer frequency filters
       if (fertilizerFrequency) {
         const { unit, min, max } = fertilizerFrequency;
-        
+
         // This is a simplified implementation - in a real app you might want to parse the schedule more robustly
         if (min !== undefined || max !== undefined) {
           const scheduleConditions = [];
-          
+
           if (min !== undefined) {
             scheduleConditions.push(
               ilike(plantInstances.fertilizerSchedule, `%${min}%${unit}%`)
             );
           }
-          
+
           if (max !== undefined) {
             // This is a basic implementation - you might want more sophisticated schedule parsing
             scheduleConditions.push(
               ilike(plantInstances.fertilizerSchedule, `%${max}%${unit}%`)
             );
           }
-          
+
           if (scheduleConditions.length > 0) {
             conditions.push(or(...scheduleConditions)!);
           }
@@ -965,28 +1115,46 @@ export class PlantInstanceQueries {
       // Determine sort order
       let orderBy;
       switch (sortBy) {
-        case 'nickname':
-          orderBy = sortOrder === 'asc' ? asc(plantInstances.nickname) : desc(plantInstances.nickname);
+        case "nickname":
+          orderBy =
+            sortOrder === "asc"
+              ? asc(plantInstances.nickname)
+              : desc(plantInstances.nickname);
           break;
-        case 'location':
-          orderBy = sortOrder === 'asc' ? asc(plantInstances.location) : desc(plantInstances.location);
+        case "location":
+          orderBy =
+            sortOrder === "asc"
+              ? asc(plantInstances.location)
+              : desc(plantInstances.location);
           break;
-        case 'last_fertilized':
-          orderBy = sortOrder === 'asc' ? asc(plantInstances.lastFertilized) : desc(plantInstances.lastFertilized);
+        case "last_fertilized":
+          orderBy =
+            sortOrder === "asc"
+              ? asc(plantInstances.lastFertilized)
+              : desc(plantInstances.lastFertilized);
           break;
-        case 'fertilizer_due':
-          orderBy = sortOrder === 'asc' ? asc(plantInstances.fertilizerDue) : desc(plantInstances.fertilizerDue);
+        case "fertilizer_due":
+          orderBy =
+            sortOrder === "asc"
+              ? asc(plantInstances.fertilizerDue)
+              : desc(plantInstances.fertilizerDue);
           break;
-        case 'plant_name':
-          orderBy = sortOrder === 'asc' ? asc(plants.commonName) : desc(plants.commonName);
+        case "plant_name":
+          orderBy =
+            sortOrder === "asc"
+              ? asc(plants.commonName)
+              : desc(plants.commonName);
           break;
-        case 'care_urgency':
+        case "care_urgency":
           // Sort by care urgency (overdue first, then due soon, then by due date)
           orderBy = asc(plantInstances.fertilizerDue);
           break;
-        case 'created_at':
+        case "created_at":
         default:
-          orderBy = sortOrder === 'asc' ? asc(plantInstances.createdAt) : desc(plantInstances.createdAt);
+          orderBy =
+            sortOrder === "asc"
+              ? asc(plantInstances.createdAt)
+              : desc(plantInstances.createdAt);
           break;
       }
 
@@ -1000,8 +1168,11 @@ export class PlantInstanceQueries {
         .limit(limit)
         .offset(offset);
 
-      const enhancedInstances = instances.map(instance => 
-        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      const enhancedInstances = instances.map((instance) =>
+        plantInstanceHelpers.enhancePlantInstance(
+          instance.plant_instances,
+          instance.plants!
+        )
       );
 
       const searchTime = Date.now() - startTime;
@@ -1032,8 +1203,8 @@ export class PlantInstanceQueries {
 
       return result;
     } catch (error) {
-      console.error('Failed to perform enhanced search:', error);
-      throw new Error('Failed to perform enhanced search');
+      console.error("Failed to perform enhanced search:", error);
+      throw new Error("Failed to perform enhanced search");
     }
   }
 }

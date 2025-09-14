@@ -5,7 +5,7 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithProviders, mockApiResponses, mockApiError } from '@/test-utils/helpers/render-helpers';
+import { renderWithProviders, mockApiResponses, mockApiError } from '@/test-utils';
 import QuickCareForm from '@/components/care/QuickCareForm';
 import { useOffline } from '@/hooks/useOffline';
 

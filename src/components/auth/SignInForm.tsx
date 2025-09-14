@@ -20,6 +20,9 @@ export default function SignInForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLoading) return;
+    
     setIsLoading(true);
     setErrors({});
     setGeneralError('');
@@ -34,6 +37,7 @@ export default function SignInForm() {
           fieldErrors[field] = issue.message;
         });
         setErrors(fieldErrors);
+        setIsLoading(false);
         return;
       }
 
@@ -54,6 +58,7 @@ export default function SignInForm() {
         } else {
           setGeneralError(result.error || 'Sign in failed');
         }
+        setIsLoading(false);
         return;
       }
 
@@ -71,7 +76,6 @@ export default function SignInForm() {
     } catch (error) {
       console.error('Sign in error:', error);
       setGeneralError('An unexpected error occurred. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };

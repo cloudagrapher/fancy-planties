@@ -1,30 +1,27 @@
 // Plant test data factory
+import type { NewPlant, NewPlantInstance, Plant, PlantInstance } from '@/lib/db/schema';
 
 // Counter for unique test data
 let plantCounter = 0;
 let plantInstanceCounter = 0;
-let careRecordCounter = 0;
 
 /**
  * Creates a test plant object with realistic data
- * @param {Object} overrides - Properties to override in the generated plant
- * @returns {Object} Test plant object
+ * @param overrides - Properties to override in the generated plant
+ * @returns Test plant object
  */
-export const createTestPlant = (overrides = {}) => {
+export const createTestPlant = (overrides: Partial<NewPlant> = {}): NewPlant => {
   plantCounter++;
   const timestamp = Date.now();
   const randomSuffix = Math.floor(Math.random() * 10000);
   
-  const basePlant = {
-    // Remove id - let database auto-generate it
+  const basePlant: NewPlant = {
     family: `Testaceae${plantCounter}_${timestamp}`,
     genus: `Testus${plantCounter}_${timestamp}`,
     species: `testicus${plantCounter}_${timestamp}`,
     cultivar: plantCounter % 2 === 0 ? `'Variegata${plantCounter}_${randomSuffix}'` : null,
     commonName: `Test Plant ${plantCounter}_${timestamp}`,
     isVerified: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
   };
   
   return {
@@ -35,15 +32,16 @@ export const createTestPlant = (overrides = {}) => {
 
 /**
  * Creates a test plant instance object with realistic data
- * @param {Object} overrides - Properties to override in the generated plant instance
- * @returns {Object} Test plant instance object
+ * @param overrides - Properties to override in the generated plant instance
+ * @returns Test plant instance object
  */
-export const createTestPlantInstance = (overrides = {}) => {
+export const createTestPlantInstance = (overrides: Partial<NewPlantInstance> = {}): NewPlantInstance => {
   plantInstanceCounter++;
   
-  const basePlantInstance = {
-    // Remove id - let database auto-generate it
-    // plantId and userId should be provided via overrides
+  const basePlantInstance: NewPlantInstance = {
+    // userId and plantId should be provided via overrides
+    userId: 1, // Default user ID, should be overridden
+    plantId: 1, // Default plant ID, should be overridden
     nickname: `My Test Plant ${plantInstanceCounter}`,
     location: `Test Location ${plantInstanceCounter}`,
     fertilizerSchedule: 'every_4_weeks',
@@ -52,8 +50,6 @@ export const createTestPlantInstance = (overrides = {}) => {
     notes: `Test notes for plant instance ${plantInstanceCounter}`,
     images: [],
     isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
   };
   
   return {
@@ -64,30 +60,31 @@ export const createTestPlantInstance = (overrides = {}) => {
 
 /**
  * Creates a test plant suggestion object (for search/selection)
- * @param {Object} overrides - Properties to override
- * @returns {Object} Test plant suggestion object
+ * @param overrides - Properties to override
+ * @returns Test plant suggestion object
  */
-export const createTestPlantSuggestion = (overrides = {}) => {
+export const createTestPlantSuggestion = (overrides: Partial<Plant> = {}): Partial<Plant> => {
   const plant = createTestPlant(overrides);
   
   return {
-    id: plant.id,
+    id: Math.floor(Math.random() * 10000) + 1,
     family: plant.family,
     genus: plant.genus,
     species: plant.species,
     cultivar: plant.cultivar,
     commonName: plant.commonName,
     isVerified: plant.isVerified,
+    ...overrides,
   };
 };
 
 /**
  * Creates multiple test plants
- * @param {number} count - Number of plants to create
- * @param {Object} baseOverrides - Base properties to apply to all plants
- * @returns {Array} Array of test plant objects
+ * @param count - Number of plants to create
+ * @param baseOverrides - Base properties to apply to all plants
+ * @returns Array of test plant objects
  */
-export const createTestPlants = (count = 3, baseOverrides = {}) => {
+export const createTestPlants = (count = 3, baseOverrides: Partial<NewPlant> = {}): NewPlant[] => {
   return Array.from({ length: count }, (_, index) => 
     createTestPlant({
       ...baseOverrides,
@@ -98,11 +95,11 @@ export const createTestPlants = (count = 3, baseOverrides = {}) => {
 
 /**
  * Creates multiple test plant instances
- * @param {number} count - Number of plant instances to create
- * @param {Object} baseOverrides - Base properties to apply to all plant instances
- * @returns {Array} Array of test plant instance objects
+ * @param count - Number of plant instances to create
+ * @param baseOverrides - Base properties to apply to all plant instances
+ * @returns Array of test plant instance objects
  */
-export const createTestPlantInstances = (count = 3, baseOverrides = {}) => {
+export const createTestPlantInstances = (count = 3, baseOverrides: Partial<NewPlantInstance> = {}): NewPlantInstance[] => {
   return Array.from({ length: count }, (_, index) => 
     createTestPlantInstance({
       ...baseOverrides,
@@ -113,11 +110,20 @@ export const createTestPlantInstances = (count = 3, baseOverrides = {}) => {
 
 /**
  * Creates a test plant with specific taxonomy
- * @param {Object} taxonomy - Taxonomy data (family, genus, species, etc.)
- * @param {Object} overrides - Additional properties to override
- * @returns {Object} Test plant with specified taxonomy
+ * @param taxonomy - Taxonomy data (family, genus, species, etc.)
+ * @param overrides - Additional properties to override
+ * @returns Test plant with specified taxonomy
  */
-export const createTestPlantWithTaxonomy = (taxonomy, overrides = {}) => {
+export const createTestPlantWithTaxonomy = (
+  taxonomy: {
+    family?: string;
+    genus?: string;
+    species?: string;
+    cultivar?: string | null;
+    commonName?: string;
+  },
+  overrides: Partial<NewPlant> = {}
+): NewPlant => {
   return createTestPlant({
     family: taxonomy.family || 'Testaceae',
     genus: taxonomy.genus || 'Testus',
@@ -130,17 +136,21 @@ export const createTestPlantWithTaxonomy = (taxonomy, overrides = {}) => {
 
 /**
  * Creates a test plant instance with care history
- * @param {Object} overrides - Properties to override
- * @param {number} careRecordCount - Number of care records to create
- * @returns {Object} Test plant instance with care history
+ * @param overrides - Properties to override
+ * @param careRecordCount - Number of care records to create
+ * @returns Test plant instance with care history
  */
-export const createTestPlantInstanceWithCareHistory = (overrides = {}, careRecordCount = 5) => {
+export const createTestPlantInstanceWithCareHistory = (
+  overrides: Partial<NewPlantInstance> = {}, 
+  careRecordCount = 5
+): NewPlantInstance & { careHistory: any[] } => {
   const plantInstance = createTestPlantInstance(overrides);
   
   // Create care history
   const careHistory = Array.from({ length: careRecordCount }, (_, index) => ({
     id: index + 1,
-    plantInstanceId: plantInstance.id,
+    plantInstanceId: 1, // Will be set when plant instance is created
+    userId: plantInstance.userId,
     careType: ['fertilizer', 'water', 'repot', 'prune', 'inspect'][index % 5],
     careDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * (index + 1)), // Days ago
     notes: `Care record ${index + 1}`,
@@ -155,11 +165,14 @@ export const createTestPlantInstanceWithCareHistory = (overrides = {}, careRecor
 
 /**
  * Creates a test plant instance with images
- * @param {Object} overrides - Properties to override
- * @param {number} imageCount - Number of images to create
- * @returns {Object} Test plant instance with images
+ * @param overrides - Properties to override
+ * @param imageCount - Number of images to create
+ * @returns Test plant instance with images
  */
-export const createTestPlantInstanceWithImages = (overrides = {}, imageCount = 3) => {
+export const createTestPlantInstanceWithImages = (
+  overrides: Partial<NewPlantInstance> = {}, 
+  imageCount = 3
+): NewPlantInstance => {
   const images = Array.from({ length: imageCount }, (_, index) => 
     `/uploads/plants/test-image-${index + 1}.jpg`
   );
@@ -172,11 +185,11 @@ export const createTestPlantInstanceWithImages = (overrides = {}, imageCount = 3
 
 /**
  * Creates a test plant instance for a specific user
- * @param {number} userId - User ID to associate with the plant instance
- * @param {Object} overrides - Properties to override
- * @returns {Object} Test plant instance for the specified user
+ * @param userId - User ID to associate with the plant instance
+ * @param overrides - Properties to override
+ * @returns Test plant instance for the specified user
  */
-export const createTestPlantInstanceForUser = (userId, overrides = {}) => {
+export const createTestPlantInstanceForUser = (userId: number, overrides: Partial<NewPlantInstance> = {}): NewPlantInstance => {
   return createTestPlantInstance({
     userId,
     ...overrides,
@@ -185,10 +198,12 @@ export const createTestPlantInstanceForUser = (userId, overrides = {}) => {
 
 /**
  * Creates test plant instances with different fertilizer schedules
- * @param {Array} schedules - Array of fertilizer schedules
- * @returns {Array} Array of plant instances with different schedules
+ * @param schedules - Array of fertilizer schedules
+ * @returns Array of plant instances with different schedules
  */
-export const createTestPlantInstancesWithSchedules = (schedules = ['weekly', 'biweekly', 'every_4_weeks']) => {
+export const createTestPlantInstancesWithSchedules = (
+  schedules: string[] = ['weekly', 'biweekly', 'every_4_weeks']
+): NewPlantInstance[] => {
   return schedules.map((schedule, index) => 
     createTestPlantInstance({
       nickname: `Plant with ${schedule} schedule`,
@@ -199,24 +214,25 @@ export const createTestPlantInstancesWithSchedules = (schedules = ['weekly', 'bi
 
 /**
  * Creates a test plant instance that needs care
- * @param {string} careType - Type of care needed
- * @param {number} daysOverdue - Number of days overdue (default: 1)
- * @param {Object} overrides - Properties to override
- * @returns {Object} Test plant instance that needs care
+ * @param careType - Type of care needed
+ * @param daysOverdue - Number of days overdue (default: 1)
+ * @param overrides - Properties to override
+ * @returns Test plant instance that needs care
  */
-export const createTestPlantInstanceNeedingCare = (careType = 'fertilizer', daysOverdue = 1, overrides = {}) => {
+export const createTestPlantInstanceNeedingCare = (
+  careType: 'fertilizer' | 'water' = 'fertilizer', 
+  daysOverdue = 1, 
+  overrides: Partial<NewPlantInstance> = {}
+): NewPlantInstance => {
   const lastCareDate = new Date();
   
   // Calculate when care was last done based on schedule and overdue days
   if (careType === 'fertilizer') {
     lastCareDate.setDate(lastCareDate.getDate() - (28 + daysOverdue)); // 4 weeks + overdue
-  } else if (careType === 'water') {
-    lastCareDate.setDate(lastCareDate.getDate() - (7 + daysOverdue)); // 1 week + overdue
   }
   
   return createTestPlantInstance({
     lastFertilized: careType === 'fertilizer' ? lastCareDate : null,
-    lastWatered: careType === 'water' ? lastCareDate : null,
     fertilizerSchedule: 'every_4_weeks',
     ...overrides,
   });
@@ -224,11 +240,16 @@ export const createTestPlantInstanceNeedingCare = (careType = 'fertilizer', days
 
 /**
  * Creates test data for plant search/filtering
- * @param {Object} searchCriteria - Search criteria to match
- * @returns {Array} Array of plants that match search criteria
+ * @param searchCriteria - Search criteria to match
+ * @returns Array of plants that match search criteria
  */
-export const createTestPlantsForSearch = (searchCriteria = {}) => {
-  const plants = [];
+export const createTestPlantsForSearch = (searchCriteria: {
+  family?: string;
+  genus?: string;
+  species?: string;
+  commonName?: string;
+} = {}): NewPlant[] => {
+  const plants: NewPlant[] = [];
   
   // Create plants that match search criteria
   if (searchCriteria.family) {
@@ -261,73 +282,18 @@ export const createTestPlantsForSearch = (searchCriteria = {}) => {
 };
 
 /**
- * Creates a test care record object with realistic data
- * @param {Object} overrides - Properties to override in the generated care record
- * @returns {Object} Test care record object
- */
-export const createTestCareRecord = (overrides = {}) => {
-  careRecordCounter++;
-  
-  const baseCareRecord = {
-    id: careRecordCounter,
-    plantInstanceId: 1,
-    userId: 1,
-    careType: 'watering',
-    careDate: new Date(),
-    notes: `Test care record ${careRecordCounter}`,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-  
-  return {
-    ...baseCareRecord,
-    ...overrides,
-  };
-};
-
-/**
- * Creates multiple test care records
- * @param {number} count - Number of care records to create
- * @param {Object} baseOverrides - Base properties to apply to all care records
- * @returns {Array} Array of test care record objects
- */
-export const createTestCareRecords = (count = 3, baseOverrides = {}) => {
-  return Array.from({ length: count }, (_, index) => 
-    createTestCareRecord({
-      ...baseOverrides,
-      careType: ['watering', 'fertilizing', 'repotting'][index % 3],
-      careDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * (index + 1)), // Days ago
-    })
-  );
-};
-
-/**
- * Creates a test care record for a specific plant instance
- * @param {number} plantInstanceId - Plant instance ID
- * @param {Object} overrides - Properties to override
- * @returns {Object} Test care record for the specified plant instance
- */
-export const createTestCareRecordForPlant = (plantInstanceId, overrides = {}) => {
-  return createTestCareRecord({
-    plantInstanceId,
-    ...overrides,
-  });
-};
-
-/**
  * Reset the plant counters (useful for test isolation)
  */
 export const resetPlantCounters = () => {
   plantCounter = 0;
   plantInstanceCounter = 0;
-  careRecordCounter = 0;
 };
 
 /**
  * Creates realistic plant data for specific plant types
  */
 export const createRealisticPlants = {
-  monstera: () => createTestPlant({
+  monstera: (): NewPlant => createTestPlant({
     family: 'Araceae',
     genus: 'Monstera',
     species: 'deliciosa',
@@ -335,7 +301,7 @@ export const createRealisticPlants = {
     commonName: 'Monstera Deliciosa',
   }),
   
-  pothos: () => createTestPlant({
+  pothos: (): NewPlant => createTestPlant({
     family: 'Araceae',
     genus: 'Epipremnum',
     species: 'aureum',
@@ -343,7 +309,7 @@ export const createRealisticPlants = {
     commonName: 'Golden Pothos',
   }),
   
-  snakePlant: () => createTestPlant({
+  snakePlant: (): NewPlant => createTestPlant({
     family: 'Asparagaceae',
     genus: 'Sansevieria',
     species: 'trifasciata',
@@ -351,7 +317,7 @@ export const createRealisticPlants = {
     commonName: 'Snake Plant',
   }),
   
-  fiddle: () => createTestPlant({
+  fiddle: (): NewPlant => createTestPlant({
     family: 'Moraceae',
     genus: 'Ficus',
     species: 'lyrata',
@@ -364,7 +330,9 @@ export const createRealisticPlants = {
  * Creates realistic plant instances for specific scenarios
  */
 export const createRealisticPlantInstances = {
-  thriving: () => createTestPlantInstance({
+  thriving: (userId = 1, plantId = 1): NewPlantInstance => createTestPlantInstance({
+    userId,
+    plantId,
     nickname: 'My Thriving Plant',
     location: 'Living Room Window',
     notes: 'Growing beautifully, lots of new growth',
@@ -372,7 +340,9 @@ export const createRealisticPlantInstances = {
     fertilizerSchedule: 'every_4_weeks',
   }),
   
-  struggling: () => createTestPlantInstance({
+  struggling: (userId = 1, plantId = 1): NewPlantInstance => createTestPlantInstance({
+    userId,
+    plantId,
     nickname: 'Struggling Plant',
     location: 'Dark Corner',
     notes: 'Yellowing leaves, might need more light',
@@ -380,7 +350,9 @@ export const createRealisticPlantInstances = {
     fertilizerSchedule: 'every_4_weeks',
   }),
   
-  newPlant: () => createTestPlantInstance({
+  newPlant: (userId = 1, plantId = 1): NewPlantInstance => createTestPlantInstance({
+    userId,
+    plantId,
     nickname: 'New Addition',
     location: 'Kitchen Counter',
     notes: 'Just brought home from nursery',
@@ -388,4 +360,69 @@ export const createRealisticPlantInstances = {
     lastRepot: new Date(), // Just repotted
     fertilizerSchedule: 'every_4_weeks',
   }),
+};
+
+/**
+ * Creates test data for plant management workflows
+ * @param userId - User ID to associate with the data
+ * @returns Complete test data set for plant management testing
+ */
+export const createPlantManagementTestData = (userId = 1) => {
+  const plants = [
+    createRealisticPlants.monstera(),
+    createRealisticPlants.pothos(),
+    createRealisticPlants.snakePlant(),
+  ];
+  
+  const plantInstances = [
+    createRealisticPlantInstances.thriving(userId, 1),
+    createRealisticPlantInstances.struggling(userId, 2),
+    createRealisticPlantInstances.newPlant(userId, 3),
+  ];
+  
+  return {
+    plants,
+    plantInstances,
+    searchableData: createTestPlantsForSearch({
+      family: 'Araceae',
+      genus: 'Monstera',
+      commonName: 'Test Search Plant',
+    }),
+  };
+};
+
+/**
+ * Creates test data for plant taxonomy validation
+ * @returns Test data for taxonomy validation scenarios
+ */
+export const createTaxonomyTestData = () => {
+  return {
+    validTaxonomy: {
+      family: 'Araceae',
+      genus: 'Monstera',
+      species: 'deliciosa',
+      cultivar: null,
+      commonName: 'Monstera Deliciosa',
+    },
+    taxonomyWithCultivar: {
+      family: 'Araceae',
+      genus: 'Monstera',
+      species: 'deliciosa',
+      cultivar: 'Variegata',
+      commonName: 'Variegated Monstera Deliciosa',
+    },
+    incompleteTaxonomy: {
+      family: 'Araceae',
+      genus: 'Monstera',
+      // Missing species
+      commonName: 'Incomplete Monstera',
+    },
+    duplicateTaxonomy: {
+      family: 'Araceae',
+      genus: 'Monstera',
+      species: 'deliciosa',
+      cultivar: null,
+      commonName: 'Another Monstera Deliciosa', // Different common name, same taxonomy
+    },
+  };
 };

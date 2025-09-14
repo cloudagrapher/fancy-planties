@@ -1,6 +1,6 @@
-import { eq, ilike, or, and, desc, sql } from 'drizzle-orm';
-import { db } from '../index';
-import { plants, type Plant, type NewPlant } from '../schema';
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { db } from "../index";
+import { plants, type NewPlant, type Plant } from "../schema";
 
 // Plant taxonomy CRUD operations
 export class PlantQueries {
@@ -10,8 +10,8 @@ export class PlantQueries {
       const [plant] = await db.insert(plants).values(plantData).returning();
       return plant;
     } catch (error) {
-      console.error('Failed to create plant:', error);
-      throw new Error('Failed to create plant');
+      console.error("Failed to create plant:", error);
+      throw new Error("Failed to create plant");
     }
   }
 
@@ -21,8 +21,8 @@ export class PlantQueries {
       const [plant] = await db.select().from(plants).where(eq(plants.id, id));
       return plant || null;
     } catch (error) {
-      console.error('Failed to get plant by ID:', error);
-      throw new Error('Failed to get plant');
+      console.error("Failed to get plant by ID:", error);
+      throw new Error("Failed to get plant");
     }
   }
 
@@ -30,7 +30,7 @@ export class PlantQueries {
   static async search(query: string, limit: number = 20): Promise<Plant[]> {
     try {
       const searchTerm = `%${query.toLowerCase()}%`;
-      
+
       return await db
         .select()
         .from(plants)
@@ -46,13 +46,16 @@ export class PlantQueries {
         .orderBy(desc(plants.isVerified), plants.commonName)
         .limit(limit);
     } catch (error) {
-      console.error('Failed to search plants:', error);
-      throw new Error('Failed to search plants');
+      console.error("Failed to search plants:", error);
+      throw new Error("Failed to search plants");
     }
   }
 
   // Get all plants with pagination
-  static async getAll(offset: number = 0, limit: number = 50): Promise<Plant[]> {
+  static async getAll(
+    offset: number = 0,
+    limit: number = 50
+  ): Promise<Plant[]> {
     try {
       return await db
         .select()
@@ -61,8 +64,8 @@ export class PlantQueries {
         .offset(offset)
         .limit(limit);
     } catch (error) {
-      console.error('Failed to get plants:', error);
-      throw new Error('Failed to get plants');
+      console.error("Failed to get plants:", error);
+      throw new Error("Failed to get plants");
     }
   }
 
@@ -75,55 +78,66 @@ export class PlantQueries {
         .where(eq(plants.family, family))
         .orderBy(plants.genus, plants.species);
     } catch (error) {
-      console.error('Failed to get plants by family:', error);
-      throw new Error('Failed to get plants by family');
+      console.error("Failed to get plants by family:", error);
+      throw new Error("Failed to get plants by family");
     }
   }
 
   // Check if plant taxonomy already exists (including cultivar)
-  static async taxonomyExists(family: string, genus: string, species: string, cultivar?: string): Promise<Plant | null> {
+  static async taxonomyExists(
+    family: string,
+    genus: string,
+    species: string,
+    cultivar?: string
+  ): Promise<Plant | null> {
     try {
       const conditions = [
         eq(plants.family, family),
         eq(plants.genus, genus),
-        eq(plants.species, species)
+        eq(plants.species, species),
       ];
-      
+
       // Add cultivar condition - both null or both matching
       if (cultivar) {
         conditions.push(eq(plants.cultivar, cultivar));
       } else {
         conditions.push(sql`${plants.cultivar} IS NULL`);
       }
-      
+
       const [plant] = await db
         .select()
         .from(plants)
         .where(and(...conditions));
       return plant || null;
     } catch (error) {
-      console.error('Failed to check taxonomy existence:', error);
-      throw new Error('Failed to check taxonomy');
+      console.error("Failed to check taxonomy existence:", error);
+      throw new Error("Failed to check taxonomy");
     }
   }
 
   // Update plant
-  static async update(id: number, plantData: Partial<NewPlant>): Promise<Plant> {
+  static async update(
+    id: number,
+    plantData: Partial<NewPlant>
+  ): Promise<Plant> {
     try {
       const [plant] = await db
         .update(plants)
         .set({ ...plantData, updatedAt: new Date() })
         .where(eq(plants.id, id))
         .returning();
-      
+
       if (!plant) {
-        throw new Error('Plant not found');
+        throw new Error("Plant not found");
       }
-      
+
       return plant;
     } catch (error) {
-      console.error('Failed to update plant:', error);
-      throw new Error('Failed to update plant');
+      console.error("Failed to update plant:", error);
+      if (error instanceof Error && error.message === "Plant not found") {
+        throw error;
+      }
+      throw new Error("Failed to update plant");
     }
   }
 
@@ -133,8 +147,8 @@ export class PlantQueries {
       const result = await db.delete(plants).where(eq(plants.id, id));
       return result.length > 0;
     } catch (error) {
-      console.error('Failed to delete plant:', error);
-      throw new Error('Failed to delete plant');
+      console.error("Failed to delete plant:", error);
+      throw new Error("Failed to delete plant");
     }
   }
 
@@ -160,13 +174,16 @@ export class PlantQueries {
         .orderBy(desc(plants.isVerified), plants.commonName)
         .limit(limit);
     } catch (error) {
-      console.error('Failed to get popular plants:', error);
-      throw new Error('Failed to get popular plants');
+      console.error("Failed to get popular plants:", error);
+      throw new Error("Failed to get popular plants");
     }
   }
 
   // Full-text search using PostgreSQL's built-in search
-  static async fullTextSearch(query: string, limit: number = 20): Promise<Plant[]> {
+  static async fullTextSearch(
+    query: string,
+    limit: number = 20
+  ): Promise<Plant[]> {
     try {
       return await db
         .select()
@@ -177,7 +194,7 @@ export class PlantQueries {
         .orderBy(desc(plants.isVerified), plants.commonName)
         .limit(limit);
     } catch (error) {
-      console.error('Failed to perform full-text search:', error);
+      console.error("Failed to perform full-text search:", error);
       // Fallback to regular search
       return this.search(query, limit);
     }
