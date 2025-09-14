@@ -729,7 +729,11 @@ describe('Plant Management API Endpoints', () => {
 
       expect(PlantInstanceQueries.getEnhancedById).toHaveBeenCalledWith(1);
       expect(updatePlantInstanceSchema.parse).toHaveBeenCalledWith(expectedUpdateData);
-      expect(PlantInstanceQueries.update).toHaveBeenCalledWith(1, updateData);
+      expect(PlantInstanceQueries.update).toHaveBeenCalledWith(1, {
+        ...updateData,
+        lastFertilized: null,
+        lastRepot: null,
+      });
     });
 
     it('should return forbidden error when user does not own plant instance', async () => {
