@@ -57,7 +57,7 @@ export default function PlantsGrid({
     userId,
     overdueOnly: false,
     isActive: true,
-    limit: 50, // Increased from 20 to 50 to show more plants initially
+    limit: 20, // Increased from 20 to 50 to show more plants initially
     offset: 0,
     ...initialFilters,
   });

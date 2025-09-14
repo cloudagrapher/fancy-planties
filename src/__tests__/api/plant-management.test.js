@@ -646,14 +646,14 @@ describe('Plant Management API Endpoints', () => {
 
       // Verify fertilizer due date was calculated (should be 2 weeks from now)
       const callArgs = PlantInstanceQueries.create.mock.calls[0][0];
-      expect(new Date(callArgs.fertilizerDue)).toBeInstanceOf(Date);
+      expect(callArgs.fertilizerDue).toBeInstanceOf(Date);
 
       const now = new Date();
       const expectedDue = new Date(now);
       expectedDue.setDate(expectedDue.getDate() + 14); // 2 weeks
 
       // Allow for small time differences in test execution
-      const timeDiff = Math.abs(callArgs.fertilizerDue.getTime() - expectedDue.getTime());
+      const timeDiff = Math.abs(new Date(callArgs.fertilizerDue).getTime() - expectedDue.getTime());
       expect(timeDiff).toBeLessThan(1000); // Less than 1 second difference
     });
   });
