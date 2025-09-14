@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Health check endpoint with performance metrics
 - Complete documentation suite (API, deployment, contributing, architecture)
 
+### Changed
+- **Development Environment**: Updated VS Code configuration to disable TypeScript auto-closing tags for better JSX development experience
+  - Disabled `typescript.autoClosingTags` to prevent interference with manual JSX tag management
+  - Maintains existing Kiro Agent MCP configuration as disabled
+
 ### Enhanced
 - **CSV Import for Propagations**: Enhanced CSV import functionality with improved form UX
   - Better validation and error handling for propagation data imports
