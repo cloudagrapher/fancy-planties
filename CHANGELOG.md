@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Maintains existing Kiro Agent MCP configuration as disabled
 
 ### Improved
+
 - **Test Quality**: Enhanced ZodError mocking in API tests for better reliability and accuracy
   - Replaced manual error object creation with proper ZodError constructor usage
   - Ensures test mocks accurately reflect real Zod validation behavior
@@ -34,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced plant management API tests with explicit field assertions for better test clarity
   - Replaced `...enhancedInstance` spread patterns with individual field expectations
   - Ensures more precise validation of API response structures and prevents false positives
+- **Test Data Consistency**: Fixed test plant object structure in plant management API tests
+  - Ensured test plant objects have proper ID field structure for consistent test behavior
+  - Applied to plant instance update tests for better test reliability and data integrity
 
 ### Enhanced
 - **CSV Import for Propagations**: Enhanced CSV import functionality with improved form UX
