@@ -119,8 +119,12 @@ The project includes VS Code configuration in `.vscode/settings.json`:
 ```
 
 **Key Settings:**
-- **TypeScript Auto-Closing Tags**: Disabled to prevent automatic tag completion that can interfere with JSX development
+- **TypeScript Auto-Closing Tags**: Disabled to prevent automatic tag completion that can interfere with manual JSX tag management and provide better control over component structure
 - **Kiro Agent MCP**: Disabled for this project's development workflow
+
+**Why These Settings:**
+- Disabling auto-closing tags gives developers full control over JSX structure and prevents unwanted tag completions that can disrupt the development flow
+- Manual tag management is preferred for React components to maintain code clarity and prevent formatting conflicts
 
 **Recommended VS Code Extensions:**
 - **ES7+ React/Redux/React-Native snippets**: React development shortcuts

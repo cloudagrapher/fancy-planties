@@ -15,7 +15,7 @@ import type {
   AdvancedSearchResult
 } from '@/lib/types/plant-instance-types';
 import type {
-  PlantInstanceFilter
+  EnhancedPlantInstanceFilter
 } from '@/lib/validation/plant-schemas';
 
 interface PlantsGridProps {
@@ -30,7 +30,7 @@ interface PlantsGridProps {
   showSearchResults?: boolean;
   showPresets?: boolean;
   showHistory?: boolean;
-  initialFilters?: Partial<PlantInstanceFilter>;
+  initialFilters?: Partial<EnhancedPlantInstanceFilter>;
   cardSize?: 'small' | 'medium' | 'large';
   className?: string;
 }
@@ -51,17 +51,18 @@ export default function PlantsGrid({
   cardSize = 'medium',
   className = '',
 }: PlantsGridProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<PlantInstanceFilter>({
+  const [enhancedFilters, setEnhancedFilters] = useState<EnhancedPlantInstanceFilter>({
     userId,
     overdueOnly: false,
     isActive: true,
-    limit: 20, // Increased from 20 to 50 to show more plants initially
+    limit: 20,
     offset: 0,
+    sortBy: 'created_at',
+    sortOrder: 'desc',
+    includeStats: false,
+    includeFacets: false,
     ...initialFilters,
   });
-  const [sortBy, setSortBy] = useState<PlantInstanceSortField>('created_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedPlants, setSelectedPlants] = useState<number[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
@@ -69,7 +70,9 @@ export default function PlantsGrid({
   const { triggerHaptic } = useHapticFeedback();
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Fetch plants with infinite query
+
+
+  // Fetch plants with infinite query using enhanced filters
   const {
     data,
     fetchNextPage,
@@ -80,38 +83,79 @@ export default function PlantsGrid({
     error,
     refetch,
   } = useInfiniteQuery({
-    queryKey: ['plant-instances', userId, searchQuery, filters, sortBy, sortOrder],
+    queryKey: ['plant-instances-enhanced', userId, enhancedFilters],
     queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams({
-        ...Object.fromEntries(
-          Object.entries(filters).map(([key, value]) => [
-            key,
-            value instanceof Date ? value.toISOString() : String(value)
-          ])
-        ),
-        offset: String(pageParam),
-        sortBy,
-        sortOrder,
-      });
+      const currentFilters = {
+        ...enhancedFilters,
+        offset: pageParam,
+      };
 
-      if (searchQuery) {
-        const response = await fetch(`/api/plant-instances/search?query=${encodeURIComponent(searchQuery)}&${params}`);
-        if (!response.ok) throw new Error('Failed to search plants');
-        return response.json() as Promise<PlantInstanceSearchResult>;
+      // Check if we have advanced features that require the enhanced endpoint
+      const hasAdvancedFeatures = enhancedFilters.searchQuery || 
+                                  enhancedFilters.hasImages !== undefined ||
+                                  enhancedFilters.imageCount ||
+                                  enhancedFilters.fertilizerFrequency ||
+                                  enhancedFilters.datePreset;
+
+      let endpoint: string;
+      let params: URLSearchParams;
+
+      if (hasAdvancedFeatures) {
+        // Use enhanced search endpoint
+        endpoint = '/api/plant-instances/enhanced-search';
+        params = new URLSearchParams();
+        
+        // Add all enhanced filter parameters
+        Object.entries(currentFilters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            if (value instanceof Date) {
+              params.append(key, value.toISOString());
+            } else if (typeof value === 'object') {
+              params.append(key, JSON.stringify(value));
+            } else {
+              params.append(key, String(value));
+            }
+          }
+        });
       } else {
-        const response = await fetch(`/api/plant-instances?${params}`);
-        if (!response.ok) throw new Error('Failed to fetch plants');
-        return response.json() as Promise<PlantInstanceSearchResult>;
+        // Use regular endpoint with basic filters
+        endpoint = '/api/plant-instances';
+        params = new URLSearchParams({
+          userId: String(currentFilters.userId),
+          offset: String(currentFilters.offset),
+          limit: String(currentFilters.limit),
+          sortBy: currentFilters.sortBy,
+          sortOrder: currentFilters.sortOrder,
+        });
+
+        // Add optional basic filters
+        if (currentFilters.location) params.append('location', currentFilters.location);
+        if (currentFilters.plantId) params.append('plantId', String(currentFilters.plantId));
+        if (currentFilters.isActive !== undefined) params.append('isActive', String(currentFilters.isActive));
+        if (currentFilters.overdueOnly) params.append('overdueOnly', 'true');
+        if (currentFilters.dueSoonDays) params.append('dueSoonDays', String(currentFilters.dueSoonDays));
+        if (currentFilters.createdAfter) params.append('createdAfter', currentFilters.createdAfter.toISOString());
+        if (currentFilters.createdBefore) params.append('createdBefore', currentFilters.createdBefore.toISOString());
+        if (currentFilters.lastFertilizedAfter) params.append('lastFertilizedAfter', currentFilters.lastFertilizedAfter.toISOString());
+        if (currentFilters.lastFertilizedBefore) params.append('lastFertilizedBefore', currentFilters.lastFertilizedBefore.toISOString());
       }
+
+      console.log('Fetching plants:', { endpoint, params: params.toString(), hasAdvancedFeatures });
+
+      const response = await fetch(`${endpoint}?${params}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to fetch plants:', response.status, errorText);
+        throw new Error(`Failed to fetch plants: ${response.status}`);
+      }
+      return response.json() as Promise<PlantInstanceSearchResult>;
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
-      const nextOffset = lastPage.hasMore ? lastPage.filters.offset + lastPage.filters.limit : undefined;
-
-      return nextOffset;
+      return lastPage.hasMore ? lastPage.filters.offset + lastPage.filters.limit : undefined;
     },
-    staleTime: 1000 * 5, // 5 seconds (much more responsive to changes)
-    gcTime: 1000 * 60 * 2, // Keep cached data for 2 minutes
+    staleTime: 1000 * 5,
+    gcTime: 1000 * 60 * 2,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true,
@@ -147,9 +191,13 @@ export default function PlantsGrid({
     return result;
   }, [data, searchResults, useSearchResults, hasNextPage, isFetchingNextPage]);
 
-  // Handle search
+  // Handle search - now integrated into enhanced filters
   const handleSearch = useCallback((query: string) => {
-    setSearchQuery(query);
+    setEnhancedFilters(prev => ({
+      ...prev,
+      searchQuery: query || undefined,
+      offset: 0, // Reset pagination
+    }));
     setSelectedPlants([]);
     setIsSelectionMode(false);
     setUseSearchResults(false);
@@ -164,9 +212,9 @@ export default function PlantsGrid({
     setIsSelectionMode(false);
   }, []);
 
-  // Handle filter changes
-  const handleFilterChange = useCallback((newFilters: Partial<PlantInstanceFilter>) => {
-    setFilters(prev => ({
+  // Handle enhanced filter changes
+  const handleFilterChange = useCallback((newFilters: Partial<EnhancedPlantInstanceFilter>) => {
+    setEnhancedFilters(prev => ({
       ...prev,
       ...newFilters,
       offset: 0, // Reset pagination
@@ -175,10 +223,14 @@ export default function PlantsGrid({
     setIsSelectionMode(false);
   }, []);
 
-  // Handle sort changes
+  // Handle sort changes - now integrated into enhanced filters
   const handleSortChange = useCallback((field: PlantInstanceSortField, order: 'asc' | 'desc') => {
-    setSortBy(field);
-    setSortOrder(order);
+    setEnhancedFilters(prev => ({
+      ...prev,
+      sortBy: field,
+      sortOrder: order,
+      offset: 0, // Reset pagination
+    }));
     setSelectedPlants([]);
     setIsSelectionMode(false);
   }, []);
@@ -338,10 +390,10 @@ export default function PlantsGrid({
             onSortChange={handleSortChange}
             onSearchResults={handleSearchResults}
             onPlantSelect={onPlantSelect}
-            searchQuery={searchQuery}
-            filters={filters}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
+            searchQuery={enhancedFilters.searchQuery || ''}
+            filters={enhancedFilters}
+            sortBy={enhancedFilters.sortBy}
+            sortOrder={enhancedFilters.sortOrder}
             showSearch={showSearch}
             showFilters={showFilters}
             showAdvancedSearch={showAdvancedSearch}
@@ -352,6 +404,57 @@ export default function PlantsGrid({
             onRefresh={() => refetch()}
             isRefreshing={isRefreshing}
           />
+
+          {/* Active Filters Indicator */}
+          {(enhancedFilters.searchQuery ||
+            enhancedFilters.hasImages !== undefined ||
+            enhancedFilters.imageCount ||
+            enhancedFilters.fertilizerFrequency ||
+            enhancedFilters.datePreset ||
+            enhancedFilters.location ||
+            enhancedFilters.plantId ||
+            enhancedFilters.overdueOnly) && (
+              <div className="flex items-center gap-2 mt-2 p-2 bg-mint-50 rounded-lg">
+                <span className="text-xs font-medium text-mint-700">Active filters:</span>
+                <div className="flex flex-wrap gap-1">
+                  {enhancedFilters.searchQuery && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
+                      Search: &quot;{enhancedFilters.searchQuery}&quot;
+                      <button onClick={() => handleSearch('')} className="text-mint-600 hover:text-mint-800">×</button>
+                    </span>
+                  )}
+                  {enhancedFilters.datePreset && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
+                      {enhancedFilters.datePreset.replace('_', ' ')}
+                      <button onClick={() => handleFilterChange({ datePreset: undefined })} className="text-mint-600 hover:text-mint-800">×</button>
+                    </span>
+                  )}
+                  {enhancedFilters.hasImages !== undefined && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
+                      {enhancedFilters.hasImages ? 'Has images' : 'No images'}
+                      <button onClick={() => handleFilterChange({ hasImages: undefined })} className="text-mint-600 hover:text-mint-800">×</button>
+                    </span>
+                  )}
+                  {enhancedFilters.overdueOnly && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
+                      Overdue only
+                      <button onClick={() => handleFilterChange({ overdueOnly: false })} className="text-mint-600 hover:text-mint-800">×</button>
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleFilterChange({
+                    searchQuery: undefined,
+                    datePreset: undefined,
+                    hasImages: undefined,
+                    overdueOnly: false
+                  })}
+                  className="ml-auto text-xs text-mint-600 hover:text-mint-800 underline"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
         </div>
       )}
 
@@ -426,7 +529,7 @@ export default function PlantsGrid({
             </div>
             <h3 className="empty-state-title">No plants found</h3>
             <p className="empty-state-message">
-              {searchQuery ? 'Try adjusting your search or filters' : 'Add your first plant to get started'}
+              {enhancedFilters.searchQuery ? 'Try adjusting your search or filters' : 'Add your first plant to get started'}
             </p>
           </div>
         ) : (
