@@ -4,20 +4,13 @@
  */
 
 import { CareHistoryQueries } from '../../lib/db/queries/care-history';
-import { PlantQueries } from '../../lib/db/queries/plants';
-import { PlantInstanceQueries } from '../../lib/db/queries/plant-instances';
-import { createDatabaseTestManager } from '../../test-utils/setup/database-test-manager';
-import { 
+import {
   createTestCareRecord,
-  createTestFertilizerRecord,
-  createTestWateringRecord,
-  createTestRepottingRecord,
-  createTestCareHistory,
-  createRealisticCareSchedule,
   resetCareCounter
 } from '../../test-utils/factories/care-factory';
-import { createTestUser, resetUserCounter } from '../../test-utils/factories/user-factory';
-import { createTestPlant, createTestPlantInstance, resetPlantCounters } from '../../test-utils/factories/plant-factory';
+import { createTestPlant, createTestPlantInstance, resetPlantCounters } from '../../test-utils/factories/plant-factory.ts';
+import { createTestUser, resetUserCounter } from '../../test-utils/factories/user-factory.ts';
+import { createDatabaseTestManager } from '../../test-utils/setup/database-test-manager';
 
 describe('Care Data Database Queries', () => {
   let dbManager;
@@ -291,9 +284,9 @@ describe('Care Data Database Queries', () => {
       const recentHistory = await CareHistoryQueries.getCareHistoryForPlant(
         createdInstance.id,
         createdUser.id,
-        { 
+        {
           startDate: oneWeekAgo,
-          endDate: now 
+          endDate: now
         }
       );
 
