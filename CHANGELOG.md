@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Created benchmark comparison testing for component rendering performance
   - Added performance test configuration with appropriate timeouts and resource limits
 
+### Changed
+- **Development Environment**: Updated VS Code configuration to disable TypeScript auto-closing tags for better JSX development experience
+  - Disabled `typescript.autoClosingTags` to prevent interference with manual JSX tag management
+  - Maintains existing Kiro Agent MCP configuration as disabled
+
 ### Enhanced
 - **CSV Import for Propagations**: Enhanced CSV import functionality with improved form UX
   - Better validation and error handling for propagation data imports

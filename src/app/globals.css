@@ -1,7 +1,3 @@
-@import "../styles/admin-bulk-operations.css";
-@import "../styles/admin-error-handling.css";
-@import "../styles/admin-optimized.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -513,22 +509,28 @@ select {
 }
 
 /* Stats Grid */
-.stats-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-  margin-bottom: 24px;
+.stats-grid,
+.dashboard-stats-grid,
+.card-body .dashboard-stats-grid {
+  display: grid !important;
+  gap: 16px !important;
+  grid-template-columns: 1fr !important;
+  margin-bottom: 24px !important;
 }
 
 @media (min-width: 640px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .stats-grid,
+  .dashboard-stats-grid,
+  .card-body .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
 @media (min-width: 1024px) {
-  .stats-grid {
-    grid-template-columns: repeat(4, 1fr);
+  .stats-grid,
+  .dashboard-stats-grid,
+  .card-body .dashboard-stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
   }
 }
 
@@ -3364,11 +3366,7 @@ n Panel Styles */
   margin-bottom: 2rem;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-}
+
 
 .stat-card {
   background: white;
