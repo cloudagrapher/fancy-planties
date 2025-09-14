@@ -15,8 +15,7 @@ import type {
   AdvancedSearchResult
 } from '@/lib/types/plant-instance-types';
 import type {
-  PlantInstanceFilter,
-  EnhancedPlantInstanceFilter
+  PlantInstanceFilter
 } from '@/lib/validation/plant-schemas';
 
 interface PlantsGridProps {
@@ -265,20 +264,20 @@ export default function PlantsGrid({
       (entries) => {
         const [entry] = entries;
         if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-
           fetchNextPage();
         }
       },
       { threshold: 0.1 }
     );
 
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (loadMoreRef.current) {
-        observer.unobserve(loadMoreRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
@@ -479,19 +478,6 @@ export default function PlantsGrid({
               >
                 Load More Plants ({plants.length} of {data?.pages?.[0]?.totalCount || 0})
               </button>
-            )}
-          </div>
-        )}
-
-        {/* Debug info for infinite scroll */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="p-4 bg-gray-100 text-xs text-gray-600 border-t">
-            <div>Plants loaded: {plants.length}</div>
-            <div>Has next page: {hasNextPage ? 'Yes' : 'No'}</div>
-            <div>Is fetching: {isFetchingNextPage ? 'Yes' : 'No'}</div>
-            <div>Total pages: {data?.pages?.length || 0}</div>
-            {data?.pages?.[data.pages.length - 1] && (
-              <div>Last page total: {data.pages[data.pages.length - 1].totalCount}</div>
             )}
           </div>
         )}
