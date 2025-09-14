@@ -33,6 +33,16 @@ This guide provides comprehensive documentation for testing patterns, best pract
    - Edge cases
    - Performance scenarios
    - Email service reliability
+
+### Performance Testing
+
+Performance tests ensure the application meets speed and efficiency requirements:
+
+- **Response Time Tests**: API endpoint performance under load
+- **Memory Usage Tests**: Component rendering and cleanup efficiency
+- **Database Query Performance**: Query optimization and indexing validation
+- **Bundle Size Monitoring**: JavaScript bundle size regression detection
+- **Rendering Performance**: Component mount/unmount timing
 ```
 
 ## Test Organization
@@ -790,4 +800,228 @@ it('should create admin user', async () => {
 });
 ```
 
-This testing guide provides the foundation for writing reliable, maintainable tests that focus on user value and system behavior rather than implementation details.
+## Performance Testing
+
+### Performance Test Pattern
+
+Performance tests measure application speed, memory usage, and efficiency to ensure optimal user experience.
+
+```javascript
+// Example: API response time testing
+describe('API Performance', () => {
+  it('should respond to plant queries within acceptable time', async () => {
+    const startTime = performance.now();
+    
+    const response = await testContext.apiClient
+      .get('/api/plants')
+      .expect(200);
+    
+    const endTime = performance.now();
+    const responseTime = endTime - startTime;
+    
+    expect(responseTime).toBeLessThan(500); // 500ms threshold
+    expect(response.body.data).toBeDefined();
+  });
+
+  it('should handle concurrent requests efficiently', async () => {
+    const concurrentRequests = 10;
+    const startTime = performance.now();
+    
+    const promises = Array.from({ length: concurrentRequests }, () =>
+      testContext.apiClient.get('/api/plants')
+    );
+    
+    const responses = await Promise.all(promises);
+    const endTime = performance.now();
+    const totalTime = endTime - startTime;
+    
+    expect(responses).toHaveLength(concurrentRequests);
+    expect(totalTime).toBeLessThan(2000); // 2s for 10 concurrent requests
+    responses.forEach(response => {
+      expect(response.status).toBe(200);
+    });
+  });
+});
+```
+
+### Memory Usage Testing
+
+```javascript
+// Example: Component memory leak detection
+describe('Component Memory Usage', () => {
+  it('should not leak memory on mount/unmount cycles', async () => {
+    const { unmount } = renderWithProviders(<PlantList plants={largePlantList} />);
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+    }
+    
+    const initialMemory = process.memoryUsage().heapUsed;
+    
+    // Mount and unmount component multiple times
+    for (let i = 0; i < 100; i++) {
+      const { unmount: currentUnmount } = renderWithProviders(
+        <PlantList plants={largePlantList} />
+      );
+      currentUnmount();
+    }
+    
+    if (global.gc) {
+      global.gc();
+    }
+    
+    const finalMemory = process.memoryUsage().heapUsed;
+    const memoryIncrease = finalMemory - initialMemory;
+    
+    // Memory increase should be minimal (less than 10MB)
+    expect(memoryIncrease).toBeLessThan(10 * 1024 * 1024);
+  });
+});
+```
+
+### Database Query Performance
+
+```javascript
+// Example: Database query optimization testing
+describe('Database Query Performance', () => {
+  beforeEach(async () => {
+    // Create large dataset for performance testing
+    await createLargeTestDataset();
+  });
+
+  it('should execute complex plant queries efficiently', async () => {
+    const startTime = performance.now();
+    
+    const result = await getUserPlantsWithCareHistory(testUser.id, {
+      limit: 50,
+      includeImages: true,
+      includeCareHistory: true
+    });
+    
+    const endTime = performance.now();
+    const queryTime = endTime - startTime;
+    
+    expect(queryTime).toBeLessThan(100); // 100ms threshold
+    expect(result).toHaveLength(50);
+    expect(result[0].careHistory).toBeDefined();
+  });
+
+  it('should use proper indexing for search queries', async () => {
+    const startTime = performance.now();
+    
+    const result = await searchPlants('monstera', {
+      userId: testUser.id,
+      limit: 20
+    });
+    
+    const endTime = performance.now();
+    const searchTime = endTime - startTime;
+    
+    expect(searchTime).toBeLessThan(50); // 50ms for indexed search
+    expect(result.length).toBeGreaterThan(0);
+  });
+});
+```
+
+### Bundle Size Monitoring
+
+```javascript
+// Example: Bundle size regression testing
+describe('Bundle Size Performance', () => {
+  it('should maintain acceptable bundle sizes', async () => {
+    const bundleStats = await getBundleStats();
+    
+    expect(bundleStats.mainBundle.size).toBeLessThan(250 * 1024); // 250KB
+    expect(bundleStats.vendorBundle.size).toBeLessThan(500 * 1024); // 500KB
+    expect(bundleStats.totalSize).toBeLessThan(1024 * 1024); // 1MB total
+  });
+
+  it('should properly code-split dynamic imports', async () => {
+    const chunkStats = await getChunkStats();
+    
+    // Admin dashboard should be in separate chunk
+    expect(chunkStats.chunks.some(chunk => 
+      chunk.name.includes('admin') && chunk.size < 100 * 1024
+    )).toBe(true);
+    
+    // Plant management should be in separate chunk
+    expect(chunkStats.chunks.some(chunk => 
+      chunk.name.includes('plants') && chunk.size < 150 * 1024
+    )).toBe(true);
+  });
+});
+```
+
+### Running Performance Tests
+
+```bash
+# Run all performance tests
+npm run test:performance
+
+# Run specific performance test patterns
+npm run test:performance -- --testPathPatterns="performance|benchmark"
+
+# Run with detailed timing output
+npm run test:performance -- --verbose --maxWorkers=1
+
+# Generate performance report
+npm run test:performance -- --json --outputFile=performance-results.json
+```
+
+### Performance Test Configuration
+
+Performance tests should be configured with appropriate timeouts and resource limits:
+
+```javascript
+// jest.performance.config.js
+module.exports = {
+  testEnvironment: 'node',
+  testMatch: ['**/__tests__/**/*.(performance|benchmark).test.js'],
+  testTimeout: 30000, // 30 seconds for performance tests
+  maxWorkers: 1, // Run performance tests sequentially
+  setupFilesAfterEnv: ['<rootDir>/test-utils/performance-setup.js'],
+  collectCoverage: false, // Disable coverage for performance tests
+};
+```
+
+### Performance Benchmarking
+
+```javascript
+// Example: Benchmark comparison testing
+describe('Performance Benchmarks', () => {
+  const benchmarkResults = [];
+
+  afterAll(() => {
+    // Log benchmark results for tracking
+    console.table(benchmarkResults);
+  });
+
+  it('should benchmark plant list rendering', async () => {
+    const plantCounts = [10, 50, 100, 500];
+    
+    for (const count of plantCounts) {
+      const plants = createTestPlantList(count);
+      const startTime = performance.now();
+      
+      const { unmount } = renderWithProviders(<PlantList plants={plants} />);
+      
+      const endTime = performance.now();
+      const renderTime = endTime - startTime;
+      
+      benchmarkResults.push({
+        plantCount: count,
+        renderTime: `${renderTime.toFixed(2)}ms`,
+        memoryUsage: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB`
+      });
+      
+      unmount();
+      
+      // Ensure render time scales reasonably
+      expect(renderTime).toBeLessThan(count * 2); // 2ms per plant max
+    }
+  });
+});
+```
+
+This testing guide provides the foundation for writing reliable, maintainable tests that focus on user value and system behavior rather than implementation details, including comprehensive performance testing to ensure optimal application performance.

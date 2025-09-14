@@ -10,7 +10,7 @@ on:
       run_performance_tests:
         description: 'Run performance benchmarks'
         required: false
-        default: 'false'
+        default: false
         type: boolean
       test_timeout:
         description: 'Test timeout in minutes'
@@ -108,7 +108,7 @@ jobs:
     - name: Run unit tests with performance monitoring
       run: |
         npm run test:ci -- \
-          --testPathPattern="src/__tests__/${{ matrix.test-group }}" \
+          --testPathPatterns="src/__tests__/${{ matrix.test-group }}" \
           --maxWorkers=2 \
           --coverage \
           --coverageDirectory=coverage/${{ matrix.test-group }} \
@@ -179,7 +179,7 @@ jobs:
     - name: Run integration tests
       run: |
         npm run test:ci -- \
-          --testPathPattern="src/__tests__/integration" \
+          --testPathPatterns="src/__tests__/integration" \
           --maxWorkers=1 \
           --coverage \
           --coverageDirectory=coverage/integration \
@@ -206,8 +206,8 @@ jobs:
     needs: pre-flight
     if: |
       needs.pre-flight.outputs.should-run-tests == 'true' && 
-      (github.event.inputs.run_performance_tests == 'true' || 
-       github.event_name == 'push' && github.ref == 'refs/heads/main')
+      (github.event.inputs.run_performance_tests == true || 
+       (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     
     steps:
     - name: Checkout code
@@ -225,7 +225,7 @@ jobs:
     - name: Run performance tests
       run: |
         npm run test:performance -- \
-          --testPathPattern="performance|benchmark" \
+          --testPathPatterns="performance|benchmark" \
           --maxWorkers=1 \
           --verbose
       env:

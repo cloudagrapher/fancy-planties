@@ -154,7 +154,19 @@ describe('Authentication Core Logic', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
+    // Default auth function mocks
+    const testUser = createTestUser();
+    const testSession = createTestSession(testUser);
+
+    signUp.mockResolvedValue({ user: testUser, session: testSession });
+    signIn.mockResolvedValue({ user: testUser, session: testSession });
+    signOut.mockResolvedValue({ success: true });
+    validateInput.mockReturnValue({ success: true, data: {} });
+    setSessionCookie.mockResolvedValue(undefined);
+    clearSessionCookie.mockResolvedValue(undefined);
+    validateRequest.mockResolvedValue({ user: testUser, session: testSession });
+
     // Create handlers for each test
     signupHandler = createSignupHandler();
     signinHandler = createSigninHandler();
