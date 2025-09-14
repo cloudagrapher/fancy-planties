@@ -1,10 +1,10 @@
-@import "../styles/admin-bulk-operations.css";
-@import "../styles/admin-error-handling.css";
-@import "../styles/admin-optimized.css";
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import "../styles/admin-bulk-operations.css";
+@import "../styles/admin-error-handling.css";
+@import "../styles/admin-optimized.css";
 
 /* Color Design Tokens - Mint Green & Salmon Palette */
 :root {
@@ -514,24 +514,27 @@ select {
 
 /* Stats Grid */
 .stats-grid,
-.dashboard-stats-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-  margin-bottom: 24px;
+.dashboard-stats-grid,
+.card-body .dashboard-stats-grid {
+  display: grid !important;
+  gap: 16px !important;
+  grid-template-columns: 1fr !important;
+  margin-bottom: 24px !important;
 }
 
 @media (min-width: 640px) {
   .stats-grid,
-  .dashboard-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .dashboard-stats-grid,
+  .card-body .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
 
 @media (min-width: 1024px) {
   .stats-grid,
-  .dashboard-stats-grid {
-    grid-template-columns: repeat(4, 1fr);
+  .dashboard-stats-grid,
+  .card-body .dashboard-stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
   }
 }
 
