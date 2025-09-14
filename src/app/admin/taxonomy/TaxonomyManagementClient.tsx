@@ -127,7 +127,7 @@ export default function TaxonomyManagementClient({
     <div className="taxonomy-management">
       {/* Stats Overview */}
       <div className="taxonomy-stats">
-        <div className="stats-grid">
+        <div className="admin-stats-grid">
           <div className="stat-card">
             <h3>Families</h3>
             <p className="stat-number">{stats.totalFamilies}</p>
