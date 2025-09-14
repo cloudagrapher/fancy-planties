@@ -285,11 +285,10 @@ describe('Plant Management API Endpoints', () => {
 
     it('should return validation error for invalid filter parameters', async () => {
       // Arrange
-      const validationError = new Error('Validation failed');
-      validationError.name = 'ZodError';
-      validationError.issues = [
-        { path: ['limit'], message: 'Limit must be a positive number' }
-      ];
+      const { ZodError } = require('zod');
+      const validationError = new ZodError([
+        { path: ['limit'], message: 'Limit must be a positive number', code: 'invalid_type' }
+      ]);
 
       plantFilterSchema.parse.mockImplementation(() => {
         throw validationError;
@@ -458,12 +457,11 @@ describe('Plant Management API Endpoints', () => {
         location: '',
       };
 
-      const validationError = new Error('Validation failed');
-      validationError.name = 'ZodError';
-      validationError.issues = [
-        { path: ['plantId'], message: 'Plant ID must be a number' },
-        { path: ['nickname'], message: 'Nickname is required' },
-      ];
+      const { ZodError } = require('zod');
+      const validationError = new ZodError([
+        { path: ['plantId'], message: 'Plant ID must be a number', code: 'invalid_type' },
+        { path: ['nickname'], message: 'Nickname is required', code: 'invalid_type' },
+      ]);
 
       createPlantInstanceSchema.parse.mockImplementation(() => {
         throw validationError;
@@ -854,11 +852,10 @@ describe('Plant Management API Endpoints', () => {
         userId: testUser.id,
       });
 
-      const validationError = new Error('Validation failed');
-      validationError.name = 'ZodError';
-      validationError.issues = [
-        { path: ['nickname'], message: 'Nickname is required' }
-      ];
+      const { ZodError } = require('zod');
+      const validationError = new ZodError([
+        { path: ['nickname'], message: 'Nickname is required', code: 'invalid_type' }
+      ]);
 
       PlantInstanceQueries.getEnhancedById.mockResolvedValue(existingInstance);
       updatePlantInstanceSchema.parse.mockImplementation(() => {
