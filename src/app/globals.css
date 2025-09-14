@@ -513,7 +513,8 @@ select {
 }
 
 /* Stats Grid */
-.stats-grid {
+.stats-grid,
+.dashboard-stats-grid {
   display: grid;
   gap: 16px;
   grid-template-columns: 1fr;
@@ -521,13 +522,15 @@ select {
 }
 
 @media (min-width: 640px) {
-  .stats-grid {
+  .stats-grid,
+  .dashboard-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
-  .stats-grid {
+  .stats-grid,
+  .dashboard-stats-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 }
