@@ -41,7 +41,7 @@ export default function OptimizedDashboard() {
       {/* User Statistics */}
       <div className="stats-section">
         <h2>User Statistics</h2>
-        <div className="stats-grid">
+        <div className="admin-stats-grid">
           <div className="stat-card">
             <div className="stat-icon user-icon">👥</div>
             <div className="stat-content">
@@ -79,7 +79,7 @@ export default function OptimizedDashboard() {
       {/* Plant Statistics */}
       <div className="stats-section">
         <h2>Plant Statistics</h2>
-        <div className="stats-grid">
+        <div className="admin-stats-grid">
           <div className="stat-card">
             <div className="stat-icon plant-icon">🌱</div>
             <div className="stat-content">

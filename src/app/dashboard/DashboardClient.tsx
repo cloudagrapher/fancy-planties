@@ -121,7 +121,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
             <div className="card-body">
 
               {/* Stats Grid */}
-              <div className="stats-grid">
+              <div className="dashboard-stats-grid">
                 <div className="stat-card card--mint">
                   <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🌱</div>
                   <h3 className="text-lg font-semibold text-mint-900">Plants</h3>

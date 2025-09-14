@@ -52,6 +52,7 @@ We use labels to categorize issues:
 - **Node.js 20+**: [Download here](https://nodejs.org/)
 - **Docker**: [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - **Git**: [Install Git](https://git-scm.com/downloads)
+- **VS Code** (recommended): [Download here](https://code.visualstudio.com/)
 
 ### Fork and Clone
 
@@ -103,6 +104,46 @@ We use labels to categorize issues:
    ```
 
 6. **Open the app**: [http://localhost:3000](http://localhost:3000)
+
+### IDE Configuration
+
+#### VS Code Setup (Recommended)
+
+The project includes VS Code configuration in `.vscode/settings.json`:
+
+```json
+{
+  "kiroAgent.configureMCP": "Disabled",
+  "typescript.autoClosingTags": false
+}
+```
+
+**Key Settings:**
+- **TypeScript Auto-Closing Tags**: Disabled to prevent automatic tag completion that can interfere with JSX development
+- **Kiro Agent MCP**: Disabled for this project's development workflow
+
+**Recommended VS Code Extensions:**
+- **ES7+ React/Redux/React-Native snippets**: React development shortcuts
+- **Tailwind CSS IntelliSense**: Autocomplete for Tailwind classes
+- **TypeScript Importer**: Auto-import TypeScript modules
+- **Prettier**: Code formatting (should auto-format on save)
+- **ESLint**: JavaScript/TypeScript linting with inline error display
+- **GitLens**: Enhanced Git capabilities
+- **Thunder Client**: API testing (alternative to Postman)
+
+**Optional Extensions:**
+- **Auto Rename Tag**: Automatically rename paired HTML/JSX tags
+- **Bracket Pair Colorizer**: Color-code matching brackets
+- **Path Intellisense**: Autocomplete file paths
+- **Import Cost**: Display import/require package sizes
+
+#### Other IDEs
+
+The project works with any TypeScript-compatible IDE:
+- **WebStorm**: Full TypeScript and React support
+- **Vim/Neovim**: With TypeScript LSP and React plugins
+- **Sublime Text**: With TypeScript and JSX packages
+- **Atom**: With appropriate TypeScript packages
 
 ## 🔧 Development Guidelines
 
