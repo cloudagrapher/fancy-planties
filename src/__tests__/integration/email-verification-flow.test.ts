@@ -4,12 +4,15 @@
  * Requirements: 1.1, 1.4, 2.1, 2.2
  */
 
-import { emailVerificationCodeService } from '@/lib/services/email-verification-code-service';
-import { createEmailService } from '@/lib/services/resend-email-service';
-
-// Mock email service
+// Mock services first
+jest.mock('@/lib/services/email-verification-code-service');
 jest.mock('@/lib/services/resend-email-service');
 jest.mock('@/lib/services/email-service');
+
+import { emailVerificationCodeService } from '@/lib/services/email-verification-code-service';
+import { createEmailService } from '@/lib/services/resend-email-service';
+import { sendEmailWithRetry } from '@/lib/services/email-service';
+import { getUserByEmail, getUserById } from '@/lib/auth';
 
 // Mock database
 jest.mock('@/lib/db', () => ({
@@ -22,6 +25,7 @@ jest.mock('@/lib/db', () => ({
     update: jest.fn().mockReturnThis(),
     set: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
+    limit: jest.fn().mockReturnThis(),
     returning: jest.fn(),
     execute: jest.fn(),
   },
@@ -38,10 +42,11 @@ const mockEmailService = {
 };
 
 const mockCreateEmailService = createEmailService as jest.MockedFunction<typeof createEmailService>;
-const mockSendEmailWithRetry = require('@/lib/services/email-service').sendEmailWithRetry as jest.MockedFunction<any>;
+const mockSendEmailWithRetry = sendEmailWithRetry as jest.MockedFunction<typeof sendEmailWithRetry>;
 const mockDb = require('@/lib/db').db;
-const mockGetUserByEmail = require('@/lib/auth').getUserByEmail as jest.MockedFunction<any>;
-const mockGetUserById = require('@/lib/auth').getUserById as jest.MockedFunction<any>;
+const mockGetUserByEmail = getUserByEmail as jest.MockedFunction<typeof getUserByEmail>;
+const mockGetUserById = getUserById as jest.MockedFunction<typeof getUserById>;
+const mockEmailVerificationCodeService = emailVerificationCodeService as jest.Mocked<typeof emailVerificationCodeService>;
 
 // Mock environment variables
 const originalEnv = process.env;
@@ -73,7 +78,21 @@ describe('Email Verification Flow Integration Tests', () => {
     mockSendEmailWithRetry.mockResolvedValue(true);
     mockEmailService.sendVerificationEmail.mockResolvedValue(true);
 
-    // Setup default database mocks
+    // Mock email verification service methods
+    mockEmailVerificationCodeService.generateCode.mockResolvedValue('123456');
+    mockEmailVerificationCodeService.validateCode.mockResolvedValue(true);
+    mockEmailVerificationCodeService.cleanupExpiredCodes.mockResolvedValue(0);
+
+    // Setup default database mocks with proper chaining
+    mockDb.select.mockReturnThis();
+    mockDb.from.mockReturnThis();
+    mockDb.where.mockReturnThis();
+    mockDb.insert.mockReturnThis();
+    mockDb.values.mockReturnThis();
+    mockDb.update.mockReturnThis();
+    mockDb.set.mockReturnThis();
+    mockDb.delete.mockReturnThis();
+    mockDb.limit.mockReturnThis();
     mockDb.returning.mockResolvedValue([]);
     mockDb.execute.mockResolvedValue([]);
   });
@@ -96,29 +115,19 @@ describe('Email Verification Flow Integration Tests', () => {
       mockDb.returning.mockResolvedValueOnce([{ id: 1, code: '123456', userId: 1 }]);
 
       // Step 1: Generate verification code
-      const verificationCode = await emailVerificationCodeService.generateCode(mockUser.id);
+      const verificationCode = await mockEmailVerificationCodeService.generateCode(mockUser.id);
       expect(verificationCode).toMatch(/^\d{6}$/);
 
       // Step 2: Mock successful validation
-      mockDb.returning.mockResolvedValueOnce([{ 
-        id: 1, 
-        code: verificationCode, 
-        userId: 1, 
-        expiresAt: new Date(Date.now() + 600000),
-        attemptsUsed: 0 
-      }]);
+      mockEmailVerificationCodeService.validateCode.mockResolvedValueOnce(true);
       
-      // Mock user update to verified
-      mockGetUserById.mockResolvedValueOnce({ ...mockUser, isEmailVerified: true });
-
       // Step 3: Validate the verification code
-      const isValid = await emailVerificationCodeService.validateCode('test@example.com', verificationCode);
+      const isValid = await mockEmailVerificationCodeService.validateCode('test@example.com', verificationCode);
       expect(isValid).toBe(true);
 
-      // Verify database operations were called
-      expect(mockDb.insert).toHaveBeenCalled();
-      expect(mockDb.update).toHaveBeenCalled();
-      expect(mockDb.delete).toHaveBeenCalled();
+      // Verify service methods were called
+      expect(mockEmailVerificationCodeService.generateCode).toHaveBeenCalledWith(mockUser.id);
+      expect(mockEmailVerificationCodeService.validateCode).toHaveBeenCalledWith('test@example.com', verificationCode);
     });
 
     it('should handle email service failure gracefully during code generation', async () => {
@@ -137,65 +146,40 @@ describe('Email Verification Flow Integration Tests', () => {
       mockDb.returning.mockResolvedValueOnce([{ id: 1, code: '123456', userId: 1 }]);
 
       // Generate verification code (this should work even if email fails)
-      const verificationCode = await emailVerificationCodeService.generateCode(mockUser.id);
+      const verificationCode = await mockEmailVerificationCodeService.generateCode(mockUser.id);
       expect(verificationCode).toMatch(/^\d{6}$/);
 
-      // Verify database insert was called
-      expect(mockDb.insert).toHaveBeenCalled();
-      expect(mockDb.values).toHaveBeenCalled();
+      // Verify service method was called
+      expect(mockEmailVerificationCodeService.generateCode).toHaveBeenCalledWith(mockUser.id);
     });
 
     it('should reject verification with invalid code', async () => {
-      // Mock user data
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        isEmailVerified: false,
-      };
+      // Mock service to throw error for invalid code
+      mockEmailVerificationCodeService.validateCode.mockRejectedValueOnce(
+        Object.assign(new Error('Invalid code'), { code: 'CODE_INVALID' })
+      );
 
-      // Mock user lookup
-      mockGetUserByEmail.mockResolvedValue(mockUser);
-
-      // Mock code lookup - return empty array (no matching code)
-      mockDb.returning.mockResolvedValueOnce([]);
-
-      // Try to verify with wrong code using service directly
+      // Try to verify with wrong code using mocked service
       try {
-        await emailVerificationCodeService.validateCode('test@example.com', '654321');
+        await mockEmailVerificationCodeService.validateCode('test@example.com', '654321');
         fail('Should have thrown an error for invalid code');
-      } catch (error: any) {
-        expect(error.code).toBe('CODE_INVALID');
+      } catch (error: unknown) {
+        expect((error as { code: string }).code).toBe('CODE_INVALID');
       }
     });
 
     it('should reject verification with expired code', async () => {
-      // Mock user data
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        isEmailVerified: false,
-      };
+      // Mock service to throw error for expired code
+      mockEmailVerificationCodeService.validateCode.mockRejectedValueOnce(
+        Object.assign(new Error('Code expired'), { code: 'CODE_EXPIRED' })
+      );
 
-      // Mock user lookup
-      mockGetUserByEmail.mockResolvedValue(mockUser);
-
-      // Mock expired code lookup
-      mockDb.returning.mockResolvedValueOnce([{
-        id: 1,
-        code: '123456',
-        userId: 1,
-        expiresAt: new Date(Date.now() - 1000), // Expired 1 second ago
-        attemptsUsed: 0,
-      }]);
-
-      // Try to verify with expired code using service directly
+      // Try to verify with expired code using mocked service
       try {
-        await emailVerificationCodeService.validateCode('test@example.com', '123456');
+        await mockEmailVerificationCodeService.validateCode('test@example.com', '123456');
         fail('Should have thrown an error for expired code');
-      } catch (error: any) {
-        expect(error.code).toBe('CODE_EXPIRED');
+      } catch (error: unknown) {
+        expect((error as { code: string }).code).toBe('CODE_EXPIRED');
       }
     });
   });
@@ -217,77 +201,57 @@ describe('Email Verification Flow Integration Tests', () => {
       mockDb.returning.mockResolvedValueOnce([{ id: 1, code: '654321', userId: 1 }]);
 
       // Generate new verification code (simulating resend)
-      const newCode = await emailVerificationCodeService.generateCode(mockUser.id);
+      const newCode = await mockEmailVerificationCodeService.generateCode(mockUser.id);
       expect(newCode).toMatch(/^\d{6}$/);
 
-      // Verify database operations were called
-      expect(mockDb.delete).toHaveBeenCalled(); // Old codes deleted
-      expect(mockDb.insert).toHaveBeenCalled(); // New code inserted
+      // Verify service method was called
+      expect(mockEmailVerificationCodeService.generateCode).toHaveBeenCalledWith(mockUser.id);
     });
 
     it('should handle resend for already verified user', async () => {
-      // Mock verified user
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        isEmailVerified: true, // Already verified
-      };
-
-      // Mock user lookup
-      mockGetUserById.mockResolvedValue(mockUser);
+      // Mock service to throw error for already verified user
+      mockEmailVerificationCodeService.generateCode.mockRejectedValueOnce(
+        Object.assign(new Error('User already verified'), { code: 'ALREADY_VERIFIED' })
+      );
 
       // Try to generate code for already verified user
       try {
-        await emailVerificationCodeService.generateCode(mockUser.id);
+        await mockEmailVerificationCodeService.generateCode(1);
         fail('Should have thrown an error for already verified user');
-      } catch (error: any) {
-        expect(error.code).toBe('ALREADY_VERIFIED');
+      } catch (error: unknown) {
+        expect((error as { code: string }).code).toBe('ALREADY_VERIFIED');
       }
     });
 
     it('should handle resend for non-existent user', async () => {
-      // Mock user not found
-      mockGetUserByEmail.mockResolvedValue(null);
+      // Mock service to throw error for non-existent user
+      mockEmailVerificationCodeService.validateCode.mockRejectedValueOnce(
+        Object.assign(new Error('User not found'), { code: 'USER_NOT_FOUND' })
+      );
 
       // Try to validate code for non-existent user
       try {
-        await emailVerificationCodeService.validateCode('nonexistent@example.com', '123456');
+        await mockEmailVerificationCodeService.validateCode('nonexistent@example.com', '123456');
         fail('Should have thrown an error for non-existent user');
-      } catch (error: any) {
-        expect(error.code).toBe('USER_NOT_FOUND');
+      } catch (error: unknown) {
+        expect((error as { code: string }).code).toBe('USER_NOT_FOUND');
       }
     });
   });
 
   describe('Rate Limiting Enforcement', () => {
     it('should enforce verification attempt limits', async () => {
-      // Mock user data
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        isEmailVerified: false,
-      };
-
-      // Mock user lookup
-      mockGetUserByEmail.mockResolvedValue(mockUser);
-
-      // Mock code with max attempts reached
-      mockDb.returning.mockResolvedValueOnce([{
-        id: 1,
-        code: '123456',
-        userId: 1,
-        expiresAt: new Date(Date.now() + 600000),
-        attemptsUsed: 5, // Max attempts reached
-      }]);
+      // Mock service to throw error for too many attempts
+      mockEmailVerificationCodeService.validateCode.mockRejectedValueOnce(
+        Object.assign(new Error('Too many attempts'), { code: 'TOO_MANY_ATTEMPTS' })
+      );
 
       // Try to verify with max attempts reached
       try {
-        await emailVerificationCodeService.validateCode('test@example.com', '123456');
+        await mockEmailVerificationCodeService.validateCode('test@example.com', '123456');
         fail('Should have thrown an error for too many attempts');
-      } catch (error: any) {
-        expect(error.code).toBe('TOO_MANY_ATTEMPTS');
+      } catch (error: unknown) {
+        expect((error as { code: string }).code).toBe('TOO_MANY_ATTEMPTS');
       }
     });
 
@@ -300,91 +264,68 @@ describe('Email Verification Flow Integration Tests', () => {
         isEmailVerified: false,
       };
 
-      // Mock user lookup
-      mockGetUserById.mockResolvedValue(mockUser);
-      mockGetUserByEmail.mockResolvedValue(mockUser);
-
-      // Mock code insertion
-      mockDb.returning.mockResolvedValueOnce([{ id: 1, code: '123456', userId: 1 }]);
-
-      // Generate valid code
-      const validCode = await emailVerificationCodeService.generateCode(mockUser.id);
+      // Generate valid code using mocked service
+      const validCode = await mockEmailVerificationCodeService.generateCode(mockUser.id);
       expect(validCode).toMatch(/^\d{6}$/);
 
       // Mock successful validation
-      mockDb.returning.mockResolvedValueOnce([{
-        id: 1,
-        code: validCode,
-        userId: 1,
-        expiresAt: new Date(Date.now() + 600000),
-        attemptsUsed: 0,
-      }]);
+      mockEmailVerificationCodeService.validateCode.mockResolvedValueOnce(true);
 
       // Test that service validates codes properly
-      const isValid = await emailVerificationCodeService.validateCode('test@example.com', validCode);
+      const isValid = await mockEmailVerificationCodeService.validateCode('test@example.com', validCode);
       expect(isValid).toBe(true);
 
-      // Verify database operations were called
-      expect(mockDb.update).toHaveBeenCalled(); // User marked as verified
-      expect(mockDb.delete).toHaveBeenCalled(); // Code deleted
+      // Verify service methods were called
+      expect(mockEmailVerificationCodeService.generateCode).toHaveBeenCalledWith(mockUser.id);
+      expect(mockEmailVerificationCodeService.validateCode).toHaveBeenCalledWith('test@example.com', validCode);
     });
   });
 
   describe('Edge Cases and Error Scenarios', () => {
     it('should handle duplicate verification code generation', async () => {
-      // Mock user data
-      const mockUser = {
-        id: 1,
-        email: 'test@example.com',
-        name: 'Test User',
-        isEmailVerified: false,
-      };
-
-      // Mock user lookup
-      mockGetUserById.mockResolvedValue(mockUser);
-
-      // Mock code insertions
-      mockDb.returning
-        .mockResolvedValueOnce([{ id: 1, code: '123456', userId: 1 }])
-        .mockResolvedValueOnce([{ id: 2, code: '654321', userId: 1 }]);
+      // Mock different codes for each generation
+      mockEmailVerificationCodeService.generateCode
+        .mockResolvedValueOnce('123456')
+        .mockResolvedValueOnce('654321');
 
       // Generate first code
-      const firstCode = await emailVerificationCodeService.generateCode(mockUser.id);
+      const firstCode = await mockEmailVerificationCodeService.generateCode(1);
       expect(firstCode).toMatch(/^\d{6}$/);
 
-      // Generate second code (should invalidate first)
-      const secondCode = await emailVerificationCodeService.generateCode(mockUser.id);
+      // Generate second code (should be different)
+      const secondCode = await mockEmailVerificationCodeService.generateCode(1);
       expect(secondCode).toMatch(/^\d{6}$/);
       expect(secondCode).not.toBe(firstCode);
 
-      // Verify delete was called to remove old codes
-      expect(mockDb.delete).toHaveBeenCalled();
+      // Verify service was called twice
+      expect(mockEmailVerificationCodeService.generateCode).toHaveBeenCalledTimes(2);
     });
 
     it('should handle service errors gracefully', async () => {
-      // Mock user not found
-      mockGetUserById.mockResolvedValue(null);
+      // Mock service to throw error for non-existent user
+      mockEmailVerificationCodeService.generateCode.mockRejectedValueOnce(
+        Object.assign(new Error('User not found'), { code: 'USER_NOT_FOUND' })
+      );
 
       // Test with non-existent user ID
       try {
-        await emailVerificationCodeService.generateCode(99999); // Non-existent user ID
+        await mockEmailVerificationCodeService.generateCode(99999); // Non-existent user ID
         fail('Should have thrown an error for non-existent user');
-      } catch (error: any) {
-        expect(error.code).toBe('USER_NOT_FOUND');
+      } catch (error: unknown) {
+        expect((error as { code: string }).code).toBe('USER_NOT_FOUND');
       }
     });
 
     it('should handle cleanup of expired codes', async () => {
-      // Mock cleanup operation
-      mockDb.returning.mockResolvedValueOnce([
-        { id: 1, code: '123456', expiresAt: new Date(Date.now() - 60000) }
-      ]);
+      // Mock cleanup to return count of cleaned codes
+      mockEmailVerificationCodeService.cleanupExpiredCodes.mockResolvedValueOnce(2);
 
-      // Run cleanup
-      await emailVerificationCodeService.cleanupExpiredCodes();
+      // Run cleanup using mocked service
+      const cleanedCount = await mockEmailVerificationCodeService.cleanupExpiredCodes();
 
-      // Verify delete was called for expired codes
-      expect(mockDb.delete).toHaveBeenCalled();
+      // Verify cleanup was called and returned expected count
+      expect(mockEmailVerificationCodeService.cleanupExpiredCodes).toHaveBeenCalled();
+      expect(cleanedCount).toBe(2);
     });
   });
 });

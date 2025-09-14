@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { PlantWithDetails, PlantFilters, PlantSortConfig } from '@/lib/db/queries/admin-plants';
 import { useBulkOperations } from '@/hooks/useBulkOperations';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
+import { VirtualScrollTable } from '@/components/shared/VirtualScrollTable';
+import { PlantDetailModal } from './PlantDetailModal';
+import { reactOptimization } from '@/lib/utils/performance';
 
 export interface PlantManagementTableProps {
   initialPlants: PlantWithDetails[];
@@ -25,6 +28,7 @@ export default function PlantManagementTable({
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<Partial<PlantWithDetails>>({});
+  const [selectedPlantForDetail, setSelectedPlantForDetail] = useState<PlantWithDetails | null>(null);
   
   // Bulk operations
   const {
@@ -73,10 +77,18 @@ export default function PlantManagementTable({
     }
   };
 
-  // Refetch when filters, sort, or page changes
+  // Refetch when filters, sort, or page changes (excluding search for debouncing)
   useEffect(() => {
-    fetchPlants();
-  }, [filters, sort, currentPage]);
+    if (filters.search === undefined || filters.search === '') {
+      fetchPlants();
+    } else {
+      // For search, rely on debounced handler
+      const nonSearchFilters = Object.keys(filters).filter(k => k !== 'search');
+      if (nonSearchFilters.some(k => filters[k as keyof PlantFilters] !== undefined)) {
+        fetchPlants();
+      }
+    }
+  }, [filters.family, filters.genus, filters.species, filters.isVerified, filters.createdBy, sort, currentPage]);
 
   // Handle sorting
   const handleSort = (field: PlantSortConfig['field']) => {
@@ -87,10 +99,25 @@ export default function PlantManagementTable({
     setCurrentPage(1);
   };
 
+  // Debounced filter change handler for better performance
+  const debouncedFilterUpdate = useMemo(
+    () => reactOptimization.debouncedStateUpdate(() => {
+      fetchPlants();
+    }, 300),
+    [fetchPlants]
+  );
+
   // Handle filter changes
   const handleFilterChange = (key: keyof PlantFilters, value: string | boolean | undefined) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setCurrentPage(1);
+    reactOptimization.optimizedStateUpdate(() => {
+      setFilters(prev => ({ ...prev, [key]: value }));
+      setCurrentPage(1);
+    });
+
+    // Debounce the actual search for text inputs
+    if (key === 'search') {
+      debouncedFilterUpdate();
+    }
   };
 
   // Handle edit start
@@ -230,6 +257,118 @@ export default function PlantManagementTable({
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
+  // Memoized table row renderer for virtual scrolling
+  const renderTableRow = useMemo(() => {
+    const PlantTableRow = (plant: PlantWithDetails) => (
+      <tr key={plant.id} className={isSelected(plant.id) ? 'selected' : ''}>
+        <td>
+          <input
+            type="checkbox"
+            checked={isSelected(plant.id)}
+            onChange={() => selectPlant(plant.id)}
+          />
+        </td>
+        <td>
+          {editingId === plant.id ? (
+            <input
+              type="text"
+              value={editForm.commonName || ''}
+              onChange={(e) => setEditForm(prev => ({ ...prev, commonName: e.target.value }))}
+              className="edit-input"
+            />
+          ) : (
+            <button
+              onClick={() => setSelectedPlantForDetail(plant)}
+              className="plant-name-link"
+              title="Click to view plant details and image"
+            >
+              {plant.commonName}
+            </button>
+          )}
+        </td>
+        <td>
+          {editingId === plant.id ? (
+            <input
+              type="text"
+              value={editForm.family || ''}
+              onChange={(e) => setEditForm(prev => ({ ...prev, family: e.target.value }))}
+              className="edit-input"
+            />
+          ) : (
+            plant.family
+          )}
+        </td>
+        <td>
+          {editingId === plant.id ? (
+            <input
+              type="text"
+              value={editForm.genus || ''}
+              onChange={(e) => setEditForm(prev => ({ ...prev, genus: e.target.value }))}
+              className="edit-input"
+            />
+          ) : (
+            plant.genus
+          )}
+        </td>
+        <td>
+          {editingId === plant.id ? (
+            <input
+              type="text"
+              value={editForm.species || ''}
+              onChange={(e) => setEditForm(prev => ({ ...prev, species: e.target.value }))}
+              className="edit-input"
+            />
+          ) : (
+            plant.species
+          )}
+        </td>
+        <td>
+          {editingId === plant.id ? (
+            <input
+              type="text"
+              value={editForm.cultivar || ''}
+              onChange={(e) => setEditForm(prev => ({ ...prev, cultivar: e.target.value }))}
+              className="edit-input"
+              placeholder="Optional"
+            />
+          ) : (
+            plant.cultivar || '-'
+          )}
+        </td>
+        <td>
+          <span className={`status-badge ${plant.isVerified ? 'verified' : 'unverified'}`}>
+            {plant.isVerified ? 'Verified' : 'Unverified'}
+          </span>
+        </td>
+        <td>
+          <div className="usage-stats">
+            <span>{plant.instanceCount} instances</span>
+            <span>{plant.propagationCount} propagations</span>
+          </div>
+        </td>
+        <td>{plant.createdByName || 'Unknown'}</td>
+        <td>{new Date(plant.updatedAt).toLocaleDateString()}</td>
+        <td>
+          {editingId === plant.id ? (
+            <div className="edit-actions">
+              <button onClick={saveEdit} className="save-btn">Save</button>
+              <button onClick={cancelEdit} className="cancel-btn">Cancel</button>
+            </div>
+          ) : (
+            <button
+              onClick={() => startEdit(plant)}
+              className="edit-btn"
+            >
+              Edit
+            </button>
+          )}
+        </td>
+      </tr>
+    );
+    PlantTableRow.displayName = 'PlantTableRow';
+    return PlantTableRow;
+  }, [isSelected, selectPlant, editingId, editForm, saveEdit, cancelEdit, startEdit, setSelectedPlantForDetail]);
+
   return (
     <div className="plant-management">
       <div className="plant-management-header">
@@ -355,106 +494,17 @@ export default function PlantManagementTable({
                 <td colSpan={11} className="empty-cell">No plants found</td>
               </tr>
             ) : (
-              plants.map(plant => (
-                <tr key={plant.id} className={isSelected(plant.id) ? 'selected' : ''}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={isSelected(plant.id)}
-                      onChange={() => selectPlant(plant.id)}
-                    />
-                  </td>
-                  <td>
-                    {editingId === plant.id ? (
-                      <input
-                        type="text"
-                        value={editForm.commonName || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, commonName: e.target.value }))}
-                        className="edit-input"
-                      />
-                    ) : (
-                      plant.commonName
-                    )}
-                  </td>
-                  <td>
-                    {editingId === plant.id ? (
-                      <input
-                        type="text"
-                        value={editForm.family || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, family: e.target.value }))}
-                        className="edit-input"
-                      />
-                    ) : (
-                      plant.family
-                    )}
-                  </td>
-                  <td>
-                    {editingId === plant.id ? (
-                      <input
-                        type="text"
-                        value={editForm.genus || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, genus: e.target.value }))}
-                        className="edit-input"
-                      />
-                    ) : (
-                      plant.genus
-                    )}
-                  </td>
-                  <td>
-                    {editingId === plant.id ? (
-                      <input
-                        type="text"
-                        value={editForm.species || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, species: e.target.value }))}
-                        className="edit-input"
-                      />
-                    ) : (
-                      plant.species
-                    )}
-                  </td>
-                  <td>
-                    {editingId === plant.id ? (
-                      <input
-                        type="text"
-                        value={editForm.cultivar || ''}
-                        onChange={(e) => setEditForm(prev => ({ ...prev, cultivar: e.target.value }))}
-                        className="edit-input"
-                        placeholder="Optional"
-                      />
-                    ) : (
-                      plant.cultivar || '-'
-                    )}
-                  </td>
-                  <td>
-                    <span className={`status-badge ${plant.isVerified ? 'verified' : 'unverified'}`}>
-                      {plant.isVerified ? 'Verified' : 'Unverified'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="usage-stats">
-                      <span>{plant.instanceCount} instances</span>
-                      <span>{plant.propagationCount} propagations</span>
-                    </div>
-                  </td>
-                  <td>{plant.createdByName || 'Unknown'}</td>
-                  <td>{new Date(plant.updatedAt).toLocaleDateString()}</td>
-                  <td>
-                    {editingId === plant.id ? (
-                      <div className="edit-actions">
-                        <button onClick={saveEdit} className="save-btn">Save</button>
-                        <button onClick={cancelEdit} className="cancel-btn">Cancel</button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => startEdit(plant)}
-                        className="edit-btn"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))
+              <tr>
+                <td colSpan={11} style={{ padding: 0 }}>
+                  <VirtualScrollTable
+                    items={plants}
+                    itemHeight={60}
+                    containerHeight={Math.min(600, plants.length * 60)}
+                    renderItem={(plant) => renderTableRow(plant)}
+                    className="virtual-table-body"
+                  />
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
@@ -484,6 +534,13 @@ export default function PlantManagementTable({
           </button>
         </div>
       )}
+
+      {/* Plant Detail Modal */}
+      <PlantDetailModal
+        plant={selectedPlantForDetail}
+        isOpen={selectedPlantForDetail !== null}
+        onClose={() => setSelectedPlantForDetail(null)}
+      />
     </div>
   );
 }

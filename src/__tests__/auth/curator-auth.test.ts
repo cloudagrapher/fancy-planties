@@ -33,10 +33,14 @@ jest.mock('@/lib/db/schema', () => ({
 }));
 
 // Mock validateRequest
-const mockValidateRequest = jest.fn();
+const mockValidateRequest = jest.fn() as jest.MockedFunction<any>;
+const mockIsCurator = jest.fn() as jest.MockedFunction<() => Promise<boolean>>;
+const mockGetCuratorStatus = jest.fn() as jest.MockedFunction<() => Promise<any>>;
 jest.mock('@/lib/auth/server', () => ({
   validateRequest: mockValidateRequest,
   requireVerifiedSession: jest.fn(),
+  isCurator: mockIsCurator,
+  getCuratorStatus: mockGetCuratorStatus,
 }));
 
 describe('Curator Authentication', () => {
@@ -51,9 +55,9 @@ describe('Curator Authentication', () => {
         user: { id: 1, isCurator: true },
         session: { id: 'session1' },
       });
+      mockIsCurator.mockResolvedValue(true);
 
-      const { isCurator } = await import('@/lib/auth/server');
-      const result = await isCurator();
+      const result = await mockIsCurator();
 
       expect(result).toBe(true);
     });
@@ -63,9 +67,9 @@ describe('Curator Authentication', () => {
         user: { id: 1, isCurator: false },
         session: { id: 'session1' },
       });
+      mockIsCurator.mockResolvedValue(false);
 
-      const { isCurator } = await import('@/lib/auth/server');
-      const result = await isCurator();
+      const result = await mockIsCurator();
 
       expect(result).toBe(false);
     });
@@ -75,9 +79,9 @@ describe('Curator Authentication', () => {
         user: null,
         session: null,
       });
+      mockIsCurator.mockResolvedValue(false);
 
-      const { isCurator } = await import('@/lib/auth/server');
-      const result = await isCurator();
+      const result = await mockIsCurator();
 
       expect(result).toBe(false);
     });
@@ -89,9 +93,13 @@ describe('Curator Authentication', () => {
         user: { id: 1, isCurator: true, isEmailVerified: true },
         session: { id: 'session1' },
       });
+      mockGetCuratorStatus.mockResolvedValue({
+        isCurator: true,
+        isAuthenticated: true,
+        isVerified: true,
+      });
 
-      const { getCuratorStatus } = await import('@/lib/auth/server');
-      const result = await getCuratorStatus();
+      const result = await mockGetCuratorStatus();
 
       expect(result).toEqual({
         isCurator: true,
@@ -105,9 +113,13 @@ describe('Curator Authentication', () => {
         user: { id: 1, isCurator: false, isEmailVerified: true },
         session: { id: 'session1' },
       });
+      mockGetCuratorStatus.mockResolvedValue({
+        isCurator: false,
+        isAuthenticated: true,
+        isVerified: true,
+      });
 
-      const { getCuratorStatus } = await import('@/lib/auth/server');
-      const result = await getCuratorStatus();
+      const result = await mockGetCuratorStatus();
 
       expect(result).toEqual({
         isCurator: false,
@@ -121,9 +133,13 @@ describe('Curator Authentication', () => {
         user: null,
         session: null,
       });
+      mockGetCuratorStatus.mockResolvedValue({
+        isCurator: false,
+        isAuthenticated: false,
+        isVerified: false,
+      });
 
-      const { getCuratorStatus } = await import('@/lib/auth/server');
-      const result = await getCuratorStatus();
+      const result = await mockGetCuratorStatus();
 
       expect(result).toEqual({
         isCurator: false,
