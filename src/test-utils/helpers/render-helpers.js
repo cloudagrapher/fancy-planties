@@ -186,9 +186,9 @@ export const renderAndWaitForLoading = async (ui, options = {}) => {
  * @param {Object} responses - Object mapping endpoints to response data
  */
 export const mockApiResponses = (responses) => {
-  global.fetch = jest.fn((url) => {
+  global.fetch = jest.fn((url, options) => {
     const endpoint = url.toString();
-    
+
     for (const [pattern, response] of Object.entries(responses)) {
       if (endpoint.includes(pattern)) {
         return Promise.resolve({
@@ -199,12 +199,13 @@ export const mockApiResponses = (responses) => {
         });
       }
     }
-    
+
     // Default response for unmatched endpoints
     return Promise.resolve({
       ok: false,
       status: 404,
       json: () => Promise.resolve({ error: 'Not found' }),
+      text: () => Promise.resolve(JSON.stringify({ error: 'Not found' })),
     });
   });
 };
@@ -216,7 +217,7 @@ export const mockApiResponses = (responses) => {
  * @param {Object} error - Error response data
  */
 export const mockApiError = (endpoint, status = 500, error = { error: 'Internal server error' }) => {
-  global.fetch = jest.fn((url) => {
+  global.fetch = jest.fn((url, options) => {
     if (url.toString().includes(endpoint)) {
       return Promise.resolve({
         ok: false,
@@ -225,9 +226,14 @@ export const mockApiError = (endpoint, status = 500, error = { error: 'Internal 
         text: () => Promise.resolve(JSON.stringify(error)),
       });
     }
-    
-    // Call original fetch for other endpoints
-    return jest.requireActual('node-fetch')(url);
+
+    // Default fallback response for other endpoints
+    return Promise.resolve({
+      ok: false,
+      status: 404,
+      json: () => Promise.resolve({ error: 'Not found' }),
+      text: () => Promise.resolve(JSON.stringify({ error: 'Not found' })),
+    });
   });
 };
 
@@ -360,9 +366,12 @@ export const resetTestState = () => {
   jest.clearAllMocks();
   mockRouter.push.mockClear();
   mockRouter.replace.mockClear();
-  
+
   // Reset fetch mock
   if (global.fetch && global.fetch.mockRestore) {
     global.fetch.mockRestore();
   }
+
+  // Clear any global fetch mock
+  delete global.fetch;
 };
