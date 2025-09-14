@@ -1,15 +1,16 @@
 // Care Tracking API Endpoint Tests
 // Tests POST /api/care, GET /api/care/history, GET /api/dashboard endpoints
 
-import { NextRequest, NextResponse } from 'next/server';
+import { GET as getCareDashboardHandler } from '@/app/api/care/dashboard/route';
+import { GET as getCareHistoryHandler } from '@/app/api/care/history/[plantInstanceId]/route';
 import { POST as logCareHandler } from '@/app/api/care/log/route';
 import { POST as quickLogCareHandler } from '@/app/api/care/quick-log/route';
-import { GET as getCareHistoryHandler } from '@/app/api/care/history/[plantInstanceId]/route';
-import { GET as getCareDashboardHandler } from '@/app/api/care/dashboard/route';
 import { GET as getDashboardHandler } from '@/app/api/dashboard/route';
-import { createTestUser, createTestSession } from '@/test-utils/factories/user-factory';
-import { createTestPlantInstance, createTestCareRecord } from '@/test-utils/factories/plant-factory';
+import { createTestCareRecord } from '@/test-utils/factories/care-factory';
+import { createTestPlantInstance } from '@/test-utils/factories/plant-factory';
+import { createTestSession, createTestUser } from '@/test-utils/factories/user-factory';
 import { resetApiMocks } from '@/test-utils/helpers/api-helpers';
+import { NextRequest } from 'next/server';
 
 // Mock the auth functions
 jest.mock('@/lib/auth/server', () => ({
@@ -66,10 +67,10 @@ jest.mock('@/lib/validation/care-schemas', () => ({
 
 // Import mocked functions
 import { requireAuthSession, validateRequest } from '@/lib/auth/server';
-import { CareService } from '@/lib/services/care-service';
-import { CareHistoryQueries } from '@/lib/db/queries/care-history';
-import { careValidation } from '@/lib/validation/care-schemas';
 import { db } from '@/lib/db';
+import { CareHistoryQueries } from '@/lib/db/queries/care-history';
+import { CareService } from '@/lib/services/care-service';
+import { careValidation } from '@/lib/validation/care-schemas';
 
 describe('Care Tracking API Endpoints', () => {
   let testUser;
@@ -832,7 +833,7 @@ describe('Care Tracking API Endpoints', () => {
   describe('Care Tracking Integration Tests', () => {
     it('should handle complete care workflow: log -> history -> dashboard', async () => {
       const plantInstanceId = 1;
-      
+
       // Step 1: Log care event
       const careData = {
         plantInstanceId,

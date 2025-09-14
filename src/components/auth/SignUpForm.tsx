@@ -19,6 +19,9 @@ export default function SignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isLoading) return;
+    
     setIsLoading(true);
     setErrors({});
     setGeneralError('');
@@ -33,6 +36,7 @@ export default function SignUpForm() {
           fieldErrors[field] = issue.message;
         });
         setErrors(fieldErrors);
+        setIsLoading(false);
         return;
       }
 
@@ -53,6 +57,7 @@ export default function SignUpForm() {
         } else {
           setGeneralError(result.error || 'Sign up failed');
         }
+        setIsLoading(false);
         return;
       }
 
@@ -71,7 +76,6 @@ export default function SignUpForm() {
     } catch (error) {
       console.error('Sign up error:', error);
       setGeneralError('An unexpected error occurred. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
