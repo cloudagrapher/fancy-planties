@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Disabled `typescript.autoClosingTags` to prevent interference with manual JSX tag management
   - Maintains existing Kiro Agent MCP configuration as disabled
 
+### Improved
+- **Test Quality**: Enhanced ZodError mocking in API tests for better reliability and accuracy
+  - Replaced manual error object creation with proper ZodError constructor usage
+  - Ensures test mocks accurately reflect real Zod validation behavior
+  - Applied to plant management API validation tests for consistent error handling patterns
+
 ### Enhanced
 - **CSV Import for Propagations**: Enhanced CSV import functionality with improved form UX
   - Better validation and error handling for propagation data imports
