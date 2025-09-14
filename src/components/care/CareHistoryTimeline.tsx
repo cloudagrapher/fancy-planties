@@ -85,22 +85,22 @@ export default function CareHistoryTimeline({
                   {/* Care details */}
                   <div className="space-y-1">
                     {care.fertilizerType && (
-                      <p className="text-xs text-gray-500">
+                      <p key="fertilizer-type" className="text-xs text-gray-500">
                         <span className="font-medium">Fertilizer:</span> {care.fertilizerType}
                       </p>
                     )}
                     {care.potSize && (
-                      <p className="text-xs text-gray-500">
+                      <p key="pot-size" className="text-xs text-gray-500">
                         <span className="font-medium">Pot Size:</span> {care.potSize}
                       </p>
                     )}
                     {care.soilType && (
-                      <p className="text-xs text-gray-500">
+                      <p key="soil-type" className="text-xs text-gray-500">
                         <span className="font-medium">Soil Type:</span> {care.soilType}
                       </p>
                     )}
                     {care.notes && (
-                      <p className="text-xs text-gray-700 bg-gray-50 rounded p-2 mt-2">
+                      <p key="notes" className="text-xs text-gray-700 bg-gray-50 rounded p-2 mt-2">
                         {care.notes}
                       </p>
                     )}
@@ -118,7 +118,7 @@ export default function CareHistoryTimeline({
                         />
                       ))}
                       {care.images.length > 3 && (
-                        <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                        <div key="more-images" className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
                           <span className="text-xs text-gray-500">+{care.images.length - 3}</span>
                         </div>
                       )}

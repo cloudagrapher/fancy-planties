@@ -71,29 +71,35 @@
   - Cleanup any redundant tests
   - _Requirements: 6.2, 2.1, 2.2_
 
-- [ ] 4.3 Implement care tracking integration tests
+- [x] 4.3 Implement care tracking integration tests
   - Test care record creation and logging workflow
   - Test care history viewing and filtering
   - Test care statistics calculation and display
+  - Cleanup any redundant tests
   - _Requirements: 6.3, 2.1, 2.2_
 
-- [ ] 4.4 Create data import integration tests
+- [x] 4.4 Create data import integration tests
   - Test CSV file upload and parsing workflow
   - Test data validation and error handling during import
   - Test successful import completion and data persistence
+  - Cleanup any redundant tests
   - _Requirements: 6.4, 2.1, 2.2_
 
 - [ ] 5. Build focused component tests for user interactions
-- [ ] 5.1 Create form component tests
+- [x] 5.1 Create form component tests
+  - Remove problematic existing tests that cause cascading failures
+  - Audit current test files and identify which ones to keep vs removeq 
   - ✅ Test PlantInstanceForm validation and submission behavior (26 comprehensive tests implemented)
   - Test authentication forms (SignIn, SignUp) with proper error handling
   - Test care logging forms with date and validation logic
+  - Cleanup any redundant tests
   - _Requirements: 2.3, 3.1, 3.2_
 
 - [ ] 5.2 Implement navigation component tests
   - Test BottomNavigation routing and active state management
   - Test page navigation and route protection
   - Test breadcrumb and navigation state consistency
+  - Cleanup any redundant tests
   - _Requirements: 2.3, 3.1, 3.2_
 
 - [ ] 5.3 Build shared component tests
