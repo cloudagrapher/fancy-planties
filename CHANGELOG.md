@@ -58,6 +58,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added proper File-to-Base64 conversion in form submission handler
   - Ensures compatibility with JSONB images field in database schema
   - Resolves "Invalid input: expected string, received object" validation errors
+- **TypeScript Compilation**: Fixed type safety issues in plant instances API route
+  - Removed unused `jsonError` variable to eliminate compiler warnings
+  - Added proper type assertions for date field conversions to resolve type errors
+  - Ensures clean TypeScript compilation without build warnings or errors
 
 ## [0.1.0] - 2025-09-07
 
