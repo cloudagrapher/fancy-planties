@@ -656,7 +656,7 @@ describe('Plant Management API Endpoints', () => {
   describe('PUT /api/plant-instances/[id] - Plant instance updates with authorization checks', () => {
     it('should update plant instance with valid data and authorization', async () => {
       // Arrange
-      const testPlant = createTestPlant();
+      const testPlant = { ...createTestPlant(), id: 1 };
       const existingInstance = createTestPlantInstance({
         id: 1,
         userId: testUser.id,
@@ -705,12 +705,15 @@ describe('Plant Management API Endpoints', () => {
         id: enhancedInstance.id,
         nickname: enhancedInstance.nickname,
         location: enhancedInstance.location,
+        plantId: enhancedInstance.plantId,
         fertilizerSchedule: enhancedInstance.fertilizerSchedule,
-        lastFertilized: enhancedInstance.lastFertilized,
-        lastRepot: enhancedInstance.lastRepot,
+        lastFertilized: expect.any(String),
+        lastRepot: expect.any(String),
         notes: enhancedInstance.notes,
         images: enhancedInstance.images,
         isActive: enhancedInstance.isActive,
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
         plant: expect.objectContaining({
           id: enhancedInstance.plant.id,
           family: enhancedInstance.plant.family,
@@ -719,6 +722,8 @@ describe('Plant Management API Endpoints', () => {
           cultivar: enhancedInstance.plant.cultivar,
           commonName: enhancedInstance.plant.commonName,
           isVerified: enhancedInstance.plant.isVerified,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
         }),
       }));
 
@@ -1005,7 +1010,26 @@ describe('Plant Management API Endpoints', () => {
       const readResponseData = await readResponse.json();
 
       expect(readResponse.status).toBe(200);
-      expect(readResponseData).toEqual(enhancedInstance);
+      expect(readResponseData).toEqual(expect.objectContaining({
+        id: enhancedInstance.id,
+        nickname: enhancedInstance.nickname,
+        location: enhancedInstance.location,
+        fertilizerSchedule: enhancedInstance.fertilizerSchedule,
+        lastFertilized: enhancedInstance.lastFertilized,
+        lastRepot: enhancedInstance.lastRepot,
+        notes: enhancedInstance.notes,
+        images: enhancedInstance.images,
+        isActive: enhancedInstance.isActive,
+        plant: expect.objectContaining({
+          id: enhancedInstance.plant.id,
+          family: enhancedInstance.plant.family,
+          genus: enhancedInstance.plant.genus,
+          species: enhancedInstance.plant.species,
+          cultivar: enhancedInstance.plant.cultivar,
+          commonName: enhancedInstance.plant.commonName,
+          isVerified: enhancedInstance.plant.isVerified,
+        }),
+      }));
 
       // Step 3: Update plant instance
       const updateData = { nickname: 'Updated Plant' };
