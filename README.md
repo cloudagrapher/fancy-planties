@@ -8,6 +8,7 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
 
 - **Plant Collection**: Organize your plants with detailed taxonomy (family, genus, species, cultivar)
 - **Plant Instances**: Track individual plants with custom nicknames, locations, and care history
+- **Enhanced Search**: Advanced search with filtering by images, care frequency, date ranges, and more
 - **Smart Search**: Fuzzy search across all plant data with autocomplete suggestions
 - **Image Gallery**: Upload and manage multiple photos per plant with Base64 storage
 

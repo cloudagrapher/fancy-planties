@@ -90,34 +90,64 @@ export default function PlantsGrid({
         offset: pageParam,
       };
 
-      const params = new URLSearchParams();
-      
-      // Add all filter parameters
-      Object.entries(currentFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          if (value instanceof Date) {
-            params.append(key, value.toISOString());
-          } else if (typeof value === 'object') {
-            params.append(key, JSON.stringify(value));
-          } else {
-            params.append(key, String(value));
-          }
-        }
-      });
-
-      // Use enhanced search endpoint if we have search query or advanced filters
+      // Check if we have advanced features that require the enhanced endpoint
       const hasAdvancedFeatures = enhancedFilters.searchQuery || 
                                   enhancedFilters.hasImages !== undefined ||
                                   enhancedFilters.imageCount ||
                                   enhancedFilters.fertilizerFrequency ||
                                   enhancedFilters.datePreset;
 
-      const endpoint = hasAdvancedFeatures 
-        ? '/api/plant-instances/enhanced-search'
-        : '/api/plant-instances';
+      let endpoint: string;
+      let params: URLSearchParams;
+
+      if (hasAdvancedFeatures) {
+        // Use enhanced search endpoint
+        endpoint = '/api/plant-instances/enhanced-search';
+        params = new URLSearchParams();
+        
+        // Add all enhanced filter parameters
+        Object.entries(currentFilters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            if (value instanceof Date) {
+              params.append(key, value.toISOString());
+            } else if (typeof value === 'object') {
+              params.append(key, JSON.stringify(value));
+            } else {
+              params.append(key, String(value));
+            }
+          }
+        });
+      } else {
+        // Use regular endpoint with basic filters
+        endpoint = '/api/plant-instances';
+        params = new URLSearchParams({
+          userId: String(currentFilters.userId),
+          offset: String(currentFilters.offset),
+          limit: String(currentFilters.limit),
+          sortBy: currentFilters.sortBy,
+          sortOrder: currentFilters.sortOrder,
+        });
+
+        // Add optional basic filters
+        if (currentFilters.location) params.append('location', currentFilters.location);
+        if (currentFilters.plantId) params.append('plantId', String(currentFilters.plantId));
+        if (currentFilters.isActive !== undefined) params.append('isActive', String(currentFilters.isActive));
+        if (currentFilters.overdueOnly) params.append('overdueOnly', 'true');
+        if (currentFilters.dueSoonDays) params.append('dueSoonDays', String(currentFilters.dueSoonDays));
+        if (currentFilters.createdAfter) params.append('createdAfter', currentFilters.createdAfter.toISOString());
+        if (currentFilters.createdBefore) params.append('createdBefore', currentFilters.createdBefore.toISOString());
+        if (currentFilters.lastFertilizedAfter) params.append('lastFertilizedAfter', currentFilters.lastFertilizedAfter.toISOString());
+        if (currentFilters.lastFertilizedBefore) params.append('lastFertilizedBefore', currentFilters.lastFertilizedBefore.toISOString());
+      }
+
+      console.log('Fetching plants:', { endpoint, params: params.toString(), hasAdvancedFeatures });
 
       const response = await fetch(`${endpoint}?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch plants');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to fetch plants:', response.status, errorText);
+        throw new Error(`Failed to fetch plants: ${response.status}`);
+      }
       return response.json() as Promise<PlantInstanceSearchResult>;
     },
     initialPageParam: 0,
@@ -374,9 +404,9 @@ export default function PlantsGrid({
             onRefresh={() => refetch()}
             isRefreshing={isRefreshing}
           />
-          
+
           {/* Active Filters Indicator */}
-          {(enhancedFilters.searchQuery || 
+          {(enhancedFilters.searchQuery ||
             enhancedFilters.hasImages !== undefined ||
             enhancedFilters.imageCount ||
             enhancedFilters.fertilizerFrequency ||
@@ -384,42 +414,47 @@ export default function PlantsGrid({
             enhancedFilters.location ||
             enhancedFilters.plantId ||
             enhancedFilters.overdueOnly) && (
-            <div className="flex items-center gap-2 mt-2 p-2 bg-mint-50 rounded-lg">
-              <span className="text-xs font-medium text-mint-700">Active filters:</span>
-              <div className="flex flex-wrap gap-1">
-                {enhancedFilters.searchQuery && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
-                    Search: "{enhancedFilters.searchQuery}"
-                    <button onClick={() => handleSearch('')} className="text-mint-600 hover:text-mint-800">×</button>
-                  </span>
-                )}
-                {enhancedFilters.datePreset && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
-                    {enhancedFilters.datePreset.replace('_', ' ')}
-                    <button onClick={() => setDatePreset(undefined as any)} className="text-mint-600 hover:text-mint-800">×</button>
-                  </span>
-                )}
-                {enhancedFilters.hasImages !== undefined && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
-                    {enhancedFilters.hasImages ? 'Has images' : 'No images'}
-                    <button onClick={() => setImageFilter(undefined)} className="text-mint-600 hover:text-mint-800">×</button>
-                  </span>
-                )}
-                {enhancedFilters.overdueOnly && (
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
-                    Overdue only
-                    <button onClick={() => handleFilterChange({ overdueOnly: false })} className="text-mint-600 hover:text-mint-800">×</button>
-                  </span>
-                )}
+              <div className="flex items-center gap-2 mt-2 p-2 bg-mint-50 rounded-lg">
+                <span className="text-xs font-medium text-mint-700">Active filters:</span>
+                <div className="flex flex-wrap gap-1">
+                  {enhancedFilters.searchQuery && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
+                      Search: &quot;{enhancedFilters.searchQuery}&quot;
+                      <button onClick={() => handleSearch('')} className="text-mint-600 hover:text-mint-800">×</button>
+                    </span>
+                  )}
+                  {enhancedFilters.datePreset && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
+                      {enhancedFilters.datePreset.replace('_', ' ')}
+                      <button onClick={() => handleFilterChange({ datePreset: undefined })} className="text-mint-600 hover:text-mint-800">×</button>
+                    </span>
+                  )}
+                  {enhancedFilters.hasImages !== undefined && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
+                      {enhancedFilters.hasImages ? 'Has images' : 'No images'}
+                      <button onClick={() => handleFilterChange({ hasImages: undefined })} className="text-mint-600 hover:text-mint-800">×</button>
+                    </span>
+                  )}
+                  {enhancedFilters.overdueOnly && (
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-mint-100 text-mint-800 text-xs rounded">
+                      Overdue only
+                      <button onClick={() => handleFilterChange({ overdueOnly: false })} className="text-mint-600 hover:text-mint-800">×</button>
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleFilterChange({
+                    searchQuery: undefined,
+                    datePreset: undefined,
+                    hasImages: undefined,
+                    overdueOnly: false
+                  })}
+                  className="ml-auto text-xs text-mint-600 hover:text-mint-800 underline"
+                >
+                  Clear all
+                </button>
               </div>
-              <button 
-                onClick={clearAllFilters}
-                className="ml-auto text-xs text-mint-600 hover:text-mint-800 underline"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
+            )}
         </div>
       )}
 

@@ -153,10 +153,38 @@ GET /api/plant-instances
 - `location` (string): Filter by location
 - `search` (string): Search plant nicknames and taxonomy
 
+### Enhanced Search Plant Instances
+```http
+GET /api/plant-instances/enhanced-search
+```
+
+**Query Parameters:**
+- `searchQuery` (string): Text search across multiple fields
+- `searchFields` (array): Specific fields to search (nickname, location, notes, plant_name)
+- `location` (string): Filter by location
+- `plantId` (number): Filter by specific plant type
+- `isActive` (boolean): Filter by active status
+- `overdueOnly` (boolean): Show only overdue plants
+- `dueSoonDays` (number): Show plants due within X days
+- `hasImages` (boolean): Filter by image presence
+- `imageCount` (object): Filter by image count range `{"min": 1, "max": 5}`
+- `fertilizerFrequency` (object): Filter by fertilizer frequency `{"unit": "weeks", "min": 1, "max": 4}`
+- `datePreset` (string): Date range preset (today, this_week, this_month, last_month, last_3_months)
+- `createdAfter` (string): Filter by creation date (ISO 8601)
+- `createdBefore` (string): Filter by creation date (ISO 8601)
+- `lastFertilizedAfter` (string): Filter by last fertilized date (ISO 8601)
+- `lastFertilizedBefore` (string): Filter by last fertilized date (ISO 8601)
+- `sortBy` (string): Sort field (nickname, location, created_at, last_fertilized, fertilizer_due, care_urgency, plant_name)
+- `sortOrder` (string): Sort order (asc, desc)
+- `limit` (number): Results per page (default: 20, max: 100)
+- `offset` (number): Pagination offset
+- `includeStats` (boolean): Include care statistics
+- `includeFacets` (boolean): Include search facets
+
 **Response:**
 ```json
 {
-  "plantInstances": [
+  "instances": [
     {
       "id": 1,
       "userId": 1,
@@ -178,9 +206,49 @@ GET /api/plant-instances
         "species": "deliciosa",
         "cultivar": "Thai Constellation",
         "commonName": "Swiss Cheese Plant"
-      }
+      },
+      "careStatus": "due_soon",
+      "careUrgency": "medium",
+      "daysUntilFertilizerDue": 2,
+      "daysSinceLastFertilized": 5,
+      "displayName": "Monty",
+      "primaryImage": "base64_image_data"
     }
-  ]
+  ],
+  "totalCount": 25,
+  "hasMore": true,
+  "searchTime": 45,
+  "filters": {
+    "userId": 1,
+    "isActive": true,
+    "limit": 20,
+    "offset": 0,
+    "sortBy": "created_at",
+    "sortOrder": "desc"
+  }
+}
+```
+
+**Enhanced Search Response (with stats and facets):**
+```json
+{
+  "instances": [...],
+  "totalCount": 25,
+  "hasMore": true,
+  "searchTime": 67,
+  "filters": {...},
+  "stats": {
+    "totalActivePlants": 25,
+    "overdueCount": 3,
+    "dueTodayCount": 2,
+    "dueSoonCount": 5
+  },
+  "facets": {
+    "locations": [
+      {"value": "Living room", "count": 8},
+      {"value": "Bedroom", "count": 5}
+    ]
+  }
 }
 ```
 

@@ -8,12 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Production deployment configuration with Docker and Nginx
 - Comprehensive security headers and SSL/TLS support
 - Database backup and restore scripts
 - Application monitoring and logging system
 - Health check endpoint with performance metrics
 - Complete documentation suite (API, deployment, contributing, architecture)
+- **Enhanced Search System**: Advanced plant instance search with comprehensive filtering capabilities
+  - Added enhanced search API endpoint (`/api/plant-instances/enhanced-search`) with advanced filtering options
+  - Implemented search by text query across multiple fields (nickname, location, notes, plant names)
+  - Added image-based filtering (has images, image count ranges)
+  - Implemented fertilizer frequency filtering with unit-based ranges
+  - Added date preset filters (today, this week, this month, last month, last 3 months)
+  - Enhanced sorting options including care urgency prioritization
+  - Added optional statistics and facets in search results
+  - Integrated enhanced search into PlantsGrid component with filter indicators
 - **Performance Testing Framework**: Enhanced testing suite with comprehensive performance benchmarking
   - Added performance test patterns for API response times, memory usage, and database query optimization
   - Implemented bundle size monitoring and regression detection
