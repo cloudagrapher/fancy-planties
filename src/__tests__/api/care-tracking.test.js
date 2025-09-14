@@ -128,11 +128,15 @@ describe('Care Tracking API Endpoints', () => {
         careDate: new Date(requestBody.careDate),
       };
 
-      const createdCareRecord = createTestCareRecord({
-        ...validatedData,
+      const createdCareRecord = {
+        ...createTestCareRecord({
+          ...validatedData,
+          userId: testUser.id,
+        }),
         id: 1,
-        userId: testUser.id,
-      });
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
       careValidation.validateCareForm.mockReturnValue({
         success: true,
@@ -315,9 +319,9 @@ describe('Care Tracking API Endpoints', () => {
       };
 
       const careRecords = [
-        createTestCareRecord({ id: 1, plantInstanceId: 1 }),
-        createTestCareRecord({ id: 2, plantInstanceId: 2 }),
-        createTestCareRecord({ id: 3, plantInstanceId: 3 }),
+        { ...createTestCareRecord({ plantInstanceId: 1 }), id: 1, createdAt: new Date(), updatedAt: new Date() },
+        { ...createTestCareRecord({ plantInstanceId: 2 }), id: 2, createdAt: new Date(), updatedAt: new Date() },
+        { ...createTestCareRecord({ plantInstanceId: 3 }), id: 3, createdAt: new Date(), updatedAt: new Date() },
       ];
 
       careValidation.validateQuickCareLog.mockReturnValue({
@@ -444,8 +448,8 @@ describe('Care Tracking API Endpoints', () => {
       // Arrange
       const plantInstanceId = 1;
       const careHistory = [
-        createTestCareRecord({ id: 1, plantInstanceId, careType: 'watering' }),
-        createTestCareRecord({ id: 2, plantInstanceId, careType: 'fertilizing' }),
+        { ...createTestCareRecord({ plantInstanceId, careType: 'watering' }), id: 1, createdAt: new Date(), updatedAt: new Date() },
+        { ...createTestCareRecord({ plantInstanceId, careType: 'fertilizing' }), id: 2, createdAt: new Date(), updatedAt: new Date() },
       ];
 
       CareHistoryQueries.getCareHistoryForPlant.mockResolvedValue(careHistory);
@@ -487,7 +491,7 @@ describe('Care Tracking API Endpoints', () => {
       // Arrange
       const plantInstanceId = 1;
       const careHistory = [
-        createTestCareRecord({ id: 1, plantInstanceId, careType: 'watering' }),
+        { ...createTestCareRecord({ plantInstanceId, careType: 'watering' }), id: 1, createdAt: new Date(), updatedAt: new Date() },
       ];
 
       CareHistoryQueries.getCareHistoryForPlant.mockResolvedValue(careHistory);
@@ -846,6 +850,8 @@ describe('Care Tracking API Endpoints', () => {
         id: 1,
         ...careData,
         careDate: new Date(careData.careDate),
+        createdAt: new Date(),
+        updatedAt: new Date(),
         userId: testUser.id,
       });
 
