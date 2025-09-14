@@ -21,11 +21,17 @@ jobs:
     - name: Check if build should be skipped
       id: check
       run: |
-        # Get the commit message
-        COMMIT_MSG="${{ github.event.head_commit.message }}"
+        # Get the commit message (handle both push and PR events)
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          COMMIT_MSG="${{ github.event.pull_request.title }}"
+        else
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+        fi
         
-        # Check if commit message starts with skip keywords
-        if [[ "$COMMIT_MSG" =~ ^(\[skip ci\]|\[ci skip\]|\[skip build\]|\[build skip\]|\[docs\]|\[readme\]) ]]; then
+        echo "Checking commit message: $COMMIT_MSG"
+        
+        # Check if commit message starts with skip keywords (case insensitive)
+        if [[ "$COMMIT_MSG" =~ ^(\[skip ci\]|\[ci skip\]|\[skip build\]|\[build skip\]|\[docs\]|\[readme\]|\[Skip CI\]|\[CI Skip\]|\[Skip Build\]|\[Build Skip\]|\[Docs\]|\[README\]) ]]; then
           echo "skip=true" >> $GITHUB_OUTPUT
           echo "🚫 Build skipped due to commit message: $COMMIT_MSG"
         else
@@ -34,6 +40,8 @@ jobs:
         fi
   test-build:
     runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
     permissions:
       contents: read
 
@@ -81,3 +89,24 @@ jobs:
         echo "### ➡️ Next steps:" >> $GITHUB_STEP_SUMMARY
         echo "- Create a PR to main branch to build and push the image" >> $GITHUB_STEP_SUMMARY
         echo "- After merge, use \`./deploy.sh\` to deploy" >> $GITHUB_STEP_SUMMARY
+
+  skip-notification:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.skip == 'true'
+    steps:
+    - name: Generate skip summary
+      run: |
+        echo "## 🚫 Build Skipped" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Build was skipped due to commit message.**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📝 Commit Message" >> $GITHUB_STEP_SUMMARY
+        echo "\`${{ github.event.head_commit.message }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🏷️ Skip Keywords" >> $GITHUB_STEP_SUMMARY
+        echo "Builds are skipped when commit messages start with:" >> $GITHUB_STEP_SUMMARY
+        echo "- \`[skip ci]\` or \`[ci skip]\`" >> $GITHUB_STEP_SUMMARY
+        echo "- \`[skip build]\` or \`[build skip]\`" >> $GITHUB_STEP_SUMMARY
+        echo "- \`[docs]\` - for documentation changes" >> $GITHUB_STEP_SUMMARY
+        echo "- \`[readme]\` - for README updates" >> $GITHUB_STEP_SUMMARY

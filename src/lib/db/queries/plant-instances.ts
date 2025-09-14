@@ -4,7 +4,8 @@ import { plantInstances, plants, type PlantInstance, type NewPlantInstance } fro
 import type { 
   PlantInstanceFilter, 
   PlantInstanceSearch,
-  BulkPlantInstanceOperation 
+  BulkPlantInstanceOperation,
+  EnhancedPlantInstanceFilter
 } from '@/lib/validation/plant-schemas';
 import type { 
   EnhancedPlantInstance, 
@@ -785,6 +786,254 @@ export class PlantInstanceQueries {
     } catch (error) {
       console.error('Failed to get enhanced plant instance by ID:', error);
       throw new Error('Failed to get enhanced plant instance');
+    }
+  }
+
+  // Enhanced search with advanced filtering capabilities
+  static async enhancedSearch(filterParams: import('@/lib/validation/plant-schemas').EnhancedPlantInstanceFilter): Promise<PlantInstanceSearchResult> {
+    try {
+      const startTime = Date.now();
+      const { 
+        userId, 
+        searchQuery,
+        searchFields,
+        location, 
+        plantId, 
+        isActive, 
+        overdueOnly, 
+        dueSoonDays,
+        hasImages,
+        imageCount,
+        fertilizerFrequency,
+        createdAfter,
+        createdBefore,
+        lastFertilizedAfter,
+        lastFertilizedBefore,
+        sortBy,
+        sortOrder,
+        limit, 
+        offset,
+        includeStats,
+        includeFacets
+      } = filterParams;
+
+      const conditions = [eq(plantInstances.userId, userId)];
+      
+      // Basic filters
+      if (location) {
+        conditions.push(ilike(plantInstances.location, `%${location}%`));
+      }
+      
+      if (plantId) {
+        conditions.push(eq(plantInstances.plantId, plantId));
+      }
+      
+      if (isActive !== undefined) {
+        conditions.push(eq(plantInstances.isActive, isActive));
+      }
+
+      if (overdueOnly) {
+        const now = new Date();
+        conditions.push(
+          and(
+            isNotNull(plantInstances.fertilizerDue),
+            lte(plantInstances.fertilizerDue, now)
+          )!
+        );
+      }
+
+      if (dueSoonDays) {
+        const now = new Date();
+        const futureDate = new Date();
+        futureDate.setDate(now.getDate() + dueSoonDays);
+        conditions.push(
+          and(
+            isNotNull(plantInstances.fertilizerDue),
+            gte(plantInstances.fertilizerDue, now),
+            lte(plantInstances.fertilizerDue, futureDate)
+          )!
+        );
+      }
+
+      // Enhanced search query
+      if (searchQuery) {
+        const searchTerm = `%${searchQuery.toLowerCase()}%`;
+        const searchConditions = [];
+        
+        if (!searchFields || searchFields.includes('nickname')) {
+          searchConditions.push(ilike(plantInstances.nickname, searchTerm));
+        }
+        if (!searchFields || searchFields.includes('location')) {
+          searchConditions.push(ilike(plantInstances.location, searchTerm));
+        }
+        if (!searchFields || searchFields.includes('notes')) {
+          searchConditions.push(ilike(plantInstances.notes, searchTerm));
+        }
+        if (!searchFields || searchFields.includes('plant_name')) {
+          searchConditions.push(ilike(plants.commonName, searchTerm));
+          searchConditions.push(ilike(plants.genus, searchTerm));
+          searchConditions.push(ilike(plants.species, searchTerm));
+          searchConditions.push(ilike(plants.family, searchTerm));
+        }
+        
+        if (searchConditions.length > 0) {
+          conditions.push(or(...searchConditions)!);
+        }
+      }
+
+      // Image filters
+      if (hasImages !== undefined) {
+        if (hasImages) {
+          conditions.push(sql`json_array_length(${plantInstances.images}) > 0`);
+        } else {
+          conditions.push(sql`json_array_length(${plantInstances.images}) = 0`);
+        }
+      }
+
+      if (imageCount) {
+        if (imageCount.min !== undefined) {
+          conditions.push(sql`json_array_length(${plantInstances.images}) >= ${imageCount.min}`);
+        }
+        if (imageCount.max !== undefined) {
+          conditions.push(sql`json_array_length(${plantInstances.images}) <= ${imageCount.max}`);
+        }
+      }
+
+      // Fertilizer frequency filters
+      if (fertilizerFrequency) {
+        const { unit, min, max } = fertilizerFrequency;
+        
+        // This is a simplified implementation - in a real app you might want to parse the schedule more robustly
+        if (min !== undefined || max !== undefined) {
+          const scheduleConditions = [];
+          
+          if (min !== undefined) {
+            scheduleConditions.push(
+              ilike(plantInstances.fertilizerSchedule, `%${min}%${unit}%`)
+            );
+          }
+          
+          if (max !== undefined) {
+            // This is a basic implementation - you might want more sophisticated schedule parsing
+            scheduleConditions.push(
+              ilike(plantInstances.fertilizerSchedule, `%${max}%${unit}%`)
+            );
+          }
+          
+          if (scheduleConditions.length > 0) {
+            conditions.push(or(...scheduleConditions)!);
+          }
+        }
+      }
+
+      // Date range filters
+      if (createdAfter) {
+        conditions.push(gte(plantInstances.createdAt, createdAfter));
+      }
+
+      if (createdBefore) {
+        conditions.push(lte(plantInstances.createdAt, createdBefore));
+      }
+
+      if (lastFertilizedAfter) {
+        conditions.push(
+          and(
+            isNotNull(plantInstances.lastFertilized),
+            gte(plantInstances.lastFertilized, lastFertilizedAfter)
+          )!
+        );
+      }
+
+      if (lastFertilizedBefore) {
+        conditions.push(
+          and(
+            isNotNull(plantInstances.lastFertilized),
+            lte(plantInstances.lastFertilized, lastFertilizedBefore)
+          )!
+        );
+      }
+
+      // Get total count
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(plantInstances)
+        .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+        .where(and(...conditions));
+
+      const totalCount = countResult.count;
+
+      // Determine sort order
+      let orderBy;
+      switch (sortBy) {
+        case 'nickname':
+          orderBy = sortOrder === 'asc' ? asc(plantInstances.nickname) : desc(plantInstances.nickname);
+          break;
+        case 'location':
+          orderBy = sortOrder === 'asc' ? asc(plantInstances.location) : desc(plantInstances.location);
+          break;
+        case 'last_fertilized':
+          orderBy = sortOrder === 'asc' ? asc(plantInstances.lastFertilized) : desc(plantInstances.lastFertilized);
+          break;
+        case 'fertilizer_due':
+          orderBy = sortOrder === 'asc' ? asc(plantInstances.fertilizerDue) : desc(plantInstances.fertilizerDue);
+          break;
+        case 'plant_name':
+          orderBy = sortOrder === 'asc' ? asc(plants.commonName) : desc(plants.commonName);
+          break;
+        case 'care_urgency':
+          // Sort by care urgency (overdue first, then due soon, then by due date)
+          orderBy = asc(plantInstances.fertilizerDue);
+          break;
+        case 'created_at':
+        default:
+          orderBy = sortOrder === 'asc' ? asc(plantInstances.createdAt) : desc(plantInstances.createdAt);
+          break;
+      }
+
+      // Get instances with plant data
+      const instances = await db
+        .select()
+        .from(plantInstances)
+        .leftJoin(plants, eq(plantInstances.plantId, plants.id))
+        .where(and(...conditions))
+        .orderBy(orderBy)
+        .limit(limit)
+        .offset(offset);
+
+      const enhancedInstances = instances.map(instance => 
+        plantInstanceHelpers.enhancePlantInstance(instance.plant_instances, instance.plants!)
+      );
+
+      const searchTime = Date.now() - startTime;
+
+      // Build result with optional stats and facets
+      const result: PlantInstanceSearchResult = {
+        instances: enhancedInstances,
+        totalCount,
+        hasMore: offset + limit < totalCount,
+        searchTime,
+        filters: filterParams,
+      };
+
+      // Add stats if requested
+      if (includeStats) {
+        const stats = await this.getCareStats(userId);
+        (result as any).stats = stats;
+      }
+
+      // Add facets if requested (simplified implementation)
+      if (includeFacets) {
+        const locations = await this.getUserLocations(userId);
+        (result as any).facets = {
+          locations,
+          // You could add more facets here like plant families, care status, etc.
+        };
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Failed to perform enhanced search:', error);
+      throw new Error('Failed to perform enhanced search');
     }
   }
 }

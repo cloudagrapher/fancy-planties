@@ -13,12 +13,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const searchParams = smartSearchSchema.parse(body);
+    
+    // Add userId from authenticated user
+    const searchParams = smartSearchSchema.parse({
+      ...body,
+      userId: user.id,
+    });
 
     // Perform smart search
     const result = await advancedSearchService.smartSearch(
       searchParams.query,
-      user.id,
+      searchParams.userId,
       {
         limit: searchParams.limit,
         offset: searchParams.offset,
