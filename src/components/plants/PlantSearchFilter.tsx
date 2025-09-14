@@ -7,23 +7,23 @@ import SearchResults from '@/components/search/SearchResults';
 import SearchPresetManager from '@/components/search/SearchPresetManager';
 import SearchHistory from '@/components/search/SearchHistory';
 import type { PlantInstanceSortField } from '@/lib/types/plant-instance-types';
-import type { 
-  PlantInstanceFilter, 
-  EnhancedPlantInstanceFilter 
+import type {
+  PlantInstanceFilter,
+  EnhancedPlantInstanceFilter
 } from '@/lib/validation/plant-schemas';
-import type { 
+import type {
   AdvancedSearchResult,
-  EnhancedPlantInstance 
+  EnhancedPlantInstance
 } from '@/lib/types/plant-instance-types';
 
 interface PlantSearchFilterProps {
   onSearch: (query: string) => void;
-  onFilterChange: (filters: Partial<PlantInstanceFilter>) => void;
+  onFilterChange: (filters: Partial<EnhancedPlantInstanceFilter>) => void;
   onSortChange: (field: PlantInstanceSortField, order: 'asc' | 'desc') => void;
   onSearchResults?: (results: AdvancedSearchResult) => void;
   onPlantSelect?: (plant: EnhancedPlantInstance) => void;
   searchQuery: string;
-  filters: PlantInstanceFilter;
+  filters: EnhancedPlantInstanceFilter;
   sortBy: PlantInstanceSortField;
   sortOrder: 'asc' | 'desc';
   showSearch?: boolean;
@@ -66,7 +66,7 @@ export default function PlantSearchFilter({
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
-  
+
   // Enhanced filters for advanced search
   const [enhancedFilters, setEnhancedFilters] = useState<EnhancedPlantInstanceFilter>({
     userId: filters.userId,
@@ -97,22 +97,22 @@ export default function PlantSearchFilter({
   // Handle search input with debouncing
   const handleSearchInput = useCallback((value: string) => {
     setLocalSearchQuery(value);
-    
+
     // Clear existing timeout
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     // Set new timeout
     const timeout = setTimeout(() => {
       onSearch(value);
     }, 300);
-    
+
     setSearchTimeout(timeout);
   }, [onSearch, searchTimeout]);
 
   // Handle filter changes
-  const handleFilterChange = useCallback((key: keyof PlantInstanceFilter, value: string | number | boolean | Date | undefined) => {
+  const handleFilterChange = useCallback((key: keyof EnhancedPlantInstanceFilter, value: string | number | boolean | Date | undefined) => {
     onFilterChange({ [key]: value });
   }, [onFilterChange]);
 
@@ -131,27 +131,17 @@ export default function PlantSearchFilter({
   // Handle enhanced filter changes
   const handleEnhancedFiltersChange = useCallback((newFilters: EnhancedPlantInstanceFilter) => {
     setEnhancedFilters(newFilters);
-    
-    // Update basic filters for backward compatibility
-    onFilterChange({
-      location: newFilters.location,
-      overdueOnly: newFilters.overdueOnly,
-      dueSoonDays: newFilters.dueSoonDays,
-      isActive: newFilters.isActive,
-    });
-    
-    // Update sort
-    if (newFilters.sortBy !== sortBy || newFilters.sortOrder !== sortOrder) {
-      onSortChange(newFilters.sortBy, newFilters.sortOrder);
-    }
-  }, [onFilterChange, onSortChange, sortBy, sortOrder]);
+
+    // Update all filters directly since we're now using EnhancedPlantInstanceFilter
+    onFilterChange(newFilters);
+  }, [onFilterChange]);
 
   // Handle preset selection
   const handlePresetSelect = useCallback(async (presetId: string) => {
     try {
       const response = await fetch(`/api/search/presets/${presetId}`);
       if (!response.ok) throw new Error('Failed to load preset');
-      
+
       const data = await response.json();
       handleSearchResults(data.data);
     } catch (error) {
@@ -167,29 +157,23 @@ export default function PlantSearchFilter({
 
   // Clear all filters
   const clearFilters = useCallback(() => {
-    onFilterChange({
-      location: undefined,
-      plantId: undefined,
-      overdueOnly: false,
-      dueSoonDays: undefined,
-      createdAfter: undefined,
-      createdBefore: undefined,
-      lastFertilizedAfter: undefined,
-      lastFertilizedBefore: undefined,
-    });
-    setLocalSearchQuery('');
-    onSearch('');
-    setSearchResults(null);
-    setEnhancedFilters({
+    const clearedFilters: EnhancedPlantInstanceFilter = {
       userId: filters.userId,
       overdueOnly: false,
+      isActive: true,
       limit: 20,
       offset: 0,
       sortBy: 'created_at',
       sortOrder: 'desc',
       includeStats: false,
       includeFacets: false,
-    });
+    };
+
+    onFilterChange(clearedFilters);
+    setLocalSearchQuery('');
+    onSearch('');
+    setSearchResults(null);
+    setEnhancedFilters(clearedFilters);
   }, [onFilterChange, onSearch, filters.userId]);
 
   // Count active filters
@@ -272,8 +256,8 @@ export default function PlantSearchFilter({
             onClick={() => setShowFilterPanel(!showFilterPanel)}
             className={`
               relative flex-shrink-0 px-2 py-2 border rounded-lg text-xs font-medium transition-colors whitespace-nowrap
-              ${showFilterPanel 
-                ? 'bg-primary-50 border-primary-300 text-primary-700' 
+              ${showFilterPanel
+                ? 'bg-primary-50 border-primary-300 text-primary-700'
                 : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
               }
             `}
@@ -282,11 +266,11 @@ export default function PlantSearchFilter({
               <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
             </svg>
             Filters
-            {activeFilterCount > 0 && (
+            {/* {activeFilterCount > 0 && (
               <span className="badge--notification">
                 {activeFilterCount}
               </span>
-            )}
+            )} */}
           </button>
         )}
 
@@ -298,8 +282,8 @@ export default function PlantSearchFilter({
               onClick={() => setShowAdvancedPanel(!showAdvancedPanel)}
               className={`
                 flex-shrink-0 px-2 py-2 border rounded-lg text-xs font-medium transition-colors whitespace-nowrap
-                ${showAdvancedPanel 
-                  ? 'bg-primary-50 border-primary-300 text-primary-700' 
+                ${showAdvancedPanel
+                  ? 'bg-primary-50 border-primary-300 text-primary-700'
                   : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                 }
               `}
@@ -317,8 +301,8 @@ export default function PlantSearchFilter({
               onClick={() => setShowPresetsPanel(!showPresetsPanel)}
               className={`
                 flex-shrink-0 px-2 py-2 border rounded-lg text-xs font-medium transition-colors whitespace-nowrap
-                ${showPresetsPanel 
-                  ? 'bg-primary-50 border-primary-300 text-primary-700' 
+                ${showPresetsPanel
+                  ? 'bg-primary-50 border-primary-300 text-primary-700'
                   : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                 }
               `}
@@ -336,8 +320,8 @@ export default function PlantSearchFilter({
               onClick={() => setShowHistoryPanel(!showHistoryPanel)}
               className={`
                 flex-shrink-0 px-2 py-2 border rounded-lg text-xs font-medium transition-colors whitespace-nowrap
-                ${showHistoryPanel 
-                  ? 'bg-primary-50 border-primary-300 text-primary-700' 
+                ${showHistoryPanel
+                  ? 'bg-primary-50 border-primary-300 text-primary-700'
                   : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                 }
               `}
@@ -356,9 +340,9 @@ export default function PlantSearchFilter({
               disabled={isRefreshing}
               className="flex-shrink-0 p-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
             >
-              <svg 
-                className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} 
-                fill="currentColor" 
+              <svg
+                className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
+                fill="currentColor"
                 viewBox="0 0 20 20"
               >
                 <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
@@ -374,8 +358,8 @@ export default function PlantSearchFilter({
               onClick={() => setShowMoreMenu(!showMoreMenu)}
               className={`
                 flex-shrink-0 p-2 border rounded-lg text-xs font-medium transition-colors
-                ${showMoreMenu 
-                  ? 'bg-primary-50 border-primary-300 text-primary-700' 
+                ${showMoreMenu
+                  ? 'bg-primary-50 border-primary-300 text-primary-700'
                   : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                 }
               `}
@@ -406,7 +390,7 @@ export default function PlantSearchFilter({
                       Smart Search
                     </button>
                   )}
-                  
+
                   {showPresets && (
                     <button
                       onClick={() => {
@@ -424,7 +408,7 @@ export default function PlantSearchFilter({
                       Saved
                     </button>
                   )}
-                  
+
                   {showHistory && (
                     <button
                       onClick={() => {
@@ -442,7 +426,7 @@ export default function PlantSearchFilter({
                       History
                     </button>
                   )}
-                  
+
                   {onRefresh && (
                     <button
                       onClick={() => {
@@ -452,9 +436,9 @@ export default function PlantSearchFilter({
                       disabled={isRefreshing}
                       className="w-full flex items-center px-3 py-2 text-sm text-left hover:bg-gray-50 text-gray-700 disabled:opacity-50"
                     >
-                      <svg 
-                        className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} 
-                        fill="currentColor" 
+                      <svg
+                        className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`}
+                        fill="currentColor"
                         viewBox="0 0 20 20"
                       >
                         <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
-import { createPlantInstanceSchema, plantInstanceFilterSchema } from '@/lib/validation/plant-schemas';
+import { createPlantInstanceSchema, plantInstanceFilterSchema, type EnhancedPlantInstanceFilter } from '@/lib/validation/plant-schemas';
 import { validateVerifiedRequest } from '@/lib/auth/server';
 
 // GET /api/plant-instances - Get plant instances with optional filtering
@@ -38,8 +38,42 @@ export async function GET(request: NextRequest) {
     // Validate filter parameters
     const validatedFilters = plantInstanceFilterSchema.parse(filterParams);
     
-    // Get plant instances with filters
-    const result = await PlantInstanceQueries.getWithFilters(validatedFilters);
+    // Get sorting parameters (not part of the schema but needed for the query)
+    const sortBy = (searchParams.get('sortBy') as any) || 'created_at';
+    const sortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc';
+    
+    // Check if we need custom sorting (different from default)
+    const needsCustomSorting = sortBy !== 'created_at' || sortOrder !== 'desc';
+    
+    console.log('Plant instances API:', { 
+      userId: user.id, 
+      sortBy, 
+      sortOrder, 
+      needsCustomSorting,
+      filterCount: Object.keys(validatedFilters).length 
+    });
+    
+    let result;
+    if (needsCustomSorting) {
+      // Use enhanced search for custom sorting
+      const enhancedFilters: EnhancedPlantInstanceFilter = {
+        ...validatedFilters,
+        sortBy,
+        sortOrder,
+        includeStats: false,
+        includeFacets: false,
+      };
+      result = await PlantInstanceQueries.enhancedSearch(enhancedFilters);
+    } else {
+      // Use regular filtering for default sorting
+      result = await PlantInstanceQueries.getWithFilters(validatedFilters);
+    }
+    
+    console.log('Plant instances result:', { 
+      instanceCount: result.instances.length, 
+      totalCount: result.totalCount,
+      hasMore: result.hasMore 
+    });
     
     return NextResponse.json(result);
   } catch (error) {
