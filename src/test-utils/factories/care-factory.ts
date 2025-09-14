@@ -67,8 +67,8 @@ const CARE_NOTES = [
  * @returns Test care record object
  */
 export const createTestCareRecord = (
-  overrides: Partial<CareHistory> = {}
-): CareHistory => {
+  overrides: Partial<NewCareHistory> = {}
+): NewCareHistory => {
   careRecordCounter++;
 
   const careType = CARE_TYPES[careRecordCounter % CARE_TYPES.length];
@@ -76,9 +76,8 @@ export const createTestCareRecord = (
     Date.now() - Math.random() * 1000 * 60 * 60 * 24 * 30
   ); // Random date within last 30 days
 
-  const baseCareRecord: CareHistory = {
-    id: careRecordCounter,
-    // userId and plantInstanceId should be provided via overrides
+  const baseCareRecord: NewCareHistory = {
+    // Don't include id - let database auto-generate
     userId: 1, // Default user ID, should be overridden
     plantInstanceId: 1, // Default plant instance ID, should be overridden
     careType: overrides.careType || careType,
@@ -97,8 +96,6 @@ export const createTestCareRecord = (
         ? SOIL_TYPES[careRecordCounter % SOIL_TYPES.length]
         : null,
     images: [],
-    createdAt: new Date(),
-    updatedAt: new Date(),
   };
 
   return {
@@ -481,7 +478,7 @@ export const createCareValidationTestData = () => {
       careType: "invalid_type" as any,
       careDate: new Date(),
       notes: "Invalid care type",
-    },
+    } as NewCareHistory,
 
     futureCareDate: createTestCareRecord({
       careType: "fertilizer",
@@ -492,7 +489,7 @@ export const createCareValidationTestData = () => {
     missingRequiredFields: {
       // Missing careType and careDate
       notes: "Missing required fields",
-    },
+    } as Partial<NewCareHistory>,
 
     fertilizerWithoutType: createTestCareRecord({
       careType: "fertilizer",
