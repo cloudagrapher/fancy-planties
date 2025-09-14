@@ -266,6 +266,9 @@ npm run test:coverage
 # Watch mode for development
 npm run test:watch
 
+# Performance and benchmark tests
+npm run test:performance
+
 # Email verification specific tests
 npm test -- --testPathPattern="email" --verbose
 
@@ -321,6 +324,7 @@ The test suite is configured for optimal performance:
 | `npm run start` | Start production server |
 | `npm test` | Run unit tests |
 | `npm run test:e2e` | Run end-to-end tests |
+| `npm run test:performance` | Run performance and benchmark tests |
 | `npm run db:generate` | Generate migration files from schema changes (environment auto-detected) |
 | `npm run db:generate:local` | Generate migrations using .env.local |
 | `npm run db:generate:prod` | Generate migrations using .env.prod |
