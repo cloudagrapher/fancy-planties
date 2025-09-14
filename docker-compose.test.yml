@@ -1,0 +1,107 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fancy-planties-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fancy_planties}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - /mnt/user/appdata/fancy-planties-volumes/postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - fancy-planties-network
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+
+  db-migrate:
+    image: postgres:16-alpine
+    container_name: fancy-planties-db-migrate
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-fancy_planties}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./scripts/init-db.sh:/init-db.sh:ro
+      - ./drizzle:/app/drizzle:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - fancy-planties-network
+    command: ["/init-db.sh"]
+    restart: "no"
+
+  app:
+    # Use the pre-built image from GitHub Container Registry
+    image: ghcr.io/cloudagrapher/fancy-planties:latest
+    container_name: fancy-planties-app-prod
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3001}:3000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
+      - DISABLE_SECURE_COOKIES=${DISABLE_SECURE_COOKIES:-false}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    networks:
+      - fancy-planties-network
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
+# Note: Volumes are defined as bind mounts in the postgres service
+
+networks:
+  fancy-planties-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

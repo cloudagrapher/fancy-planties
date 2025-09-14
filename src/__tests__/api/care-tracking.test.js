@@ -78,20 +78,33 @@ describe('Care Tracking API Endpoints', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     resetApiMocks();
-    
+
     testUser = createTestUser();
     testSession = createTestSession(testUser);
-    
+
     // Default auth mocks
     requireAuthSession.mockResolvedValue({
       user: testUser,
       session: testSession,
     });
-    
+
     validateRequest.mockResolvedValue({
       user: testUser,
       session: testSession,
     });
+
+    // Default service mocks
+    CareService.logCareEvent.mockResolvedValue({ id: 1, success: true });
+    CareService.quickCareLog.mockResolvedValue({ id: 1, success: true });
+    CareService.getCareDashboard.mockResolvedValue({
+      upcomingTasks: [],
+      overdueTasks: [],
+      recentCareEvents: [],
+      careStatistics: { thisWeek: 0, thisMonth: 0, total: 0 },
+    });
+
+    // Default query mocks
+    CareHistoryQueries.getCareHistoryForPlant.mockResolvedValue([]);
   });
 
   afterEach(() => {
