@@ -44,20 +44,24 @@ describe('Authentication Flow Integration Tests', () => {
         name: 'John Doe',
         email: 'john@example.com',
       });
-      
-      mockApiResponse({
-        'POST /api/auth/signup': {
-          status: 200,
-          data: {
-            success: true,
-            user: {
-              id: testUser.id,
-              email: testUser.email,
-              name: testUser.name,
-            },
-          },
-        },
-      });
+
+      // Mock with delay to ensure loading state is visible
+      global.fetch = jest.fn().mockImplementation(() =>
+        new Promise(resolve =>
+          setTimeout(() => resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+              success: true,
+              user: {
+                id: testUser.id,
+                email: testUser.email,
+                name: testUser.name,
+              },
+            }),
+          }), 100) // 100ms delay
+        )
+      );
 
       const { user } = renderWithProviders(<SignUpForm />);
 
@@ -68,8 +72,14 @@ describe('Authentication Flow Integration Tests', () => {
         'Password': 'SecurePass123!',
       }, user);
 
-      // Submit form
-      await userInteractions.submitForm(user, 'Create Account');
+      // Submit form and verify loading state appears
+      const submitButton = screen.getByRole('button', { name: /create account/i });
+      await user.click(submitButton);
+
+      // Assert - Verify form shows loading state during submission
+      await waitFor(() => {
+        expect(screen.getByText('Creating account...')).toBeInTheDocument();
+      });
 
       // Assert - Verify API call was made with correct data
       await waitFor(() => {
@@ -84,9 +94,6 @@ describe('Authentication Flow Integration Tests', () => {
           })
         );
       });
-
-      // Assert - Verify form shows loading state during submission
-      expect(screen.getByText('Creating account...')).toBeInTheDocument();
     });
 
     it('should handle signup validation errors properly', async () => {
