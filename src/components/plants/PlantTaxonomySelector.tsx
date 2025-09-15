@@ -83,6 +83,10 @@ export default function PlantTaxonomySelector({
     abortControllerRef.current = new AbortController();
 
     try {
+      // Clear any pending loading delay
+      if (loadingDelayRef.current) {
+        clearTimeout(loadingDelayRef.current);
+      }
       setSearchState(prev => ({ ...prev, isLoading: true }));
 
       const response = await fetch(
@@ -132,20 +136,37 @@ export default function PlantTaxonomySelector({
 
   // Custom debounce hook for better React performance
   const debouncedSearchRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const loadingDelayRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  
   const debouncedSearch = useCallback((query: string) => {
     if (debouncedSearchRef.current) {
       clearTimeout(debouncedSearchRef.current);
     }
+    if (loadingDelayRef.current) {
+      clearTimeout(loadingDelayRef.current);
+    }
+    
+    // Show loading state only after a delay to avoid flickering during fast typing
+    loadingDelayRef.current = setTimeout(() => {
+      setSearchState(prev => ({ ...prev, isLoading: true }));
+    }, 200);
+    
     debouncedSearchRef.current = setTimeout(() => {
+      if (loadingDelayRef.current) {
+        clearTimeout(loadingDelayRef.current);
+      }
       performSearch(query);
-    }, 300);
+    }, 500);
   }, [performSearch]);
 
-  // Cleanup timeout on unmount
+  // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
       if (debouncedSearchRef.current) {
         clearTimeout(debouncedSearchRef.current);
+      }
+      if (loadingDelayRef.current) {
+        clearTimeout(loadingDelayRef.current);
       }
     };
   }, []);
