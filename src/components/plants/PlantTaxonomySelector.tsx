@@ -182,7 +182,9 @@ export default function PlantTaxonomySelector({
       showDropdown: query.length > 0,
     }));
 
-    if (query !== selectedPlant?.commonName) {
+    // Only clear selection if the field is completely empty
+    // This prevents clearing when user is just typing to search for a different plant
+    if (query.trim() === '') {
       onSelect(null);
     }
 
