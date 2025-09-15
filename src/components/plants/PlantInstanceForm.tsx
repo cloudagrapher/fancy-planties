@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import Image from 'next/image';
 import PlantTaxonomySelector from './PlantTaxonomySelector';
 import ImageUpload from '../shared/ImageUpload';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
@@ -106,7 +107,6 @@ export default function PlantInstanceForm({
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [existingImages, setExistingImages] = useState<string[]>([]);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
-  const [locationInput, setLocationInput] = useState('');
   const [isCreatingPlant, setIsCreatingPlant] = useState(false);
   const [showTaxonomyForm, setShowTaxonomyForm] = useState(false);
   const [taxonomyData, setTaxonomyData] = useState<PlantTaxonomyFormData>({
@@ -193,7 +193,7 @@ export default function PlantInstanceForm({
 
   // Create new plant mutation
   const createPlantMutation = useMutation({
-    mutationFn: async (plantData: any) => {
+    mutationFn: async (plantData: Omit<PlantTaxonomyFormData, 'cultivar'> & { cultivar: string | null }) => {
       const response = await fetch('/api/plants', {
         method: 'POST',
         headers: {
@@ -241,7 +241,7 @@ export default function PlantInstanceForm({
 
   // Create/update mutation
   const mutation = useMutation({
-    mutationFn: async (data: PlantInstanceFormData & { fertilizerSchedule: string }) => {
+    mutationFn: async (data: Omit<PlantInstanceFormData, 'fertilizerSchedule'> & { fertilizerSchedule: string }) => {
       const formData = new FormData();
       
       // Add form fields
@@ -340,7 +340,7 @@ export default function PlantInstanceForm({
         plantId: plantInstance.plantId,
         nickname: plantInstance.nickname,
         location: plantInstance.location,
-        fertilizerSchedule: convertedSchedule as any,
+        fertilizerSchedule: convertedSchedule as PlantInstanceFormData['fertilizerSchedule'],
         lastFertilized: plantInstance.lastFertilized 
           ? new Date(plantInstance.lastFertilized).toISOString().split('T')[0]
           : '',
@@ -481,7 +481,7 @@ export default function PlantInstanceForm({
     console.log('Existing images being submitted:', existingImages);
     console.log('Original fertilizer schedule:', data.fertilizerSchedule);
     console.log('Converted fertilizer schedule:', convertFertilizerSchedule(data.fertilizerSchedule));
-    mutation.mutate(submitData as any);
+    mutation.mutate(submitData);
   };
 
   // Track unsaved changes
@@ -509,13 +509,13 @@ export default function PlantInstanceForm({
   }, [isOpen, hasUnsavedChanges]);
 
   // Handle close with unsaved changes warning
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     if (hasUnsavedChanges) {
       const confirmed = window.confirm('You have unsaved changes. Are you sure you want to close?');
       if (!confirmed) return;
     }
     onClose();
-  };
+  }, [hasUnsavedChanges, onClose]);
 
   // Close modal on escape
   useEffect(() => {
@@ -760,7 +760,6 @@ export default function PlantInstanceForm({
                           }`}
                           onChange={(e) => {
                             field.onChange(e);
-                            setLocationInput(e.target.value);
                             setShowLocationSuggestions(e.target.value.length > 0);
                           }}
                           onFocus={() => setShowLocationSuggestions(field.value.length > 0)}
@@ -781,7 +780,6 @@ export default function PlantInstanceForm({
                                   type="button"
                                   onClick={() => {
                                     field.onChange(location);
-                                    setLocationInput(location);
                                     setShowLocationSuggestions(false);
                                   }}
                                   className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none first:rounded-t-lg last:rounded-b-lg"
@@ -819,7 +817,6 @@ export default function PlantInstanceForm({
                                     type="button"
                                     onClick={() => {
                                       field.onChange(suggestion);
-                                      setLocationInput(suggestion);
                                       setShowLocationSuggestions(false);
                                     }}
                                     className="w-full px-3 py-2 text-left text-gray-600 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
@@ -845,7 +842,7 @@ export default function PlantInstanceForm({
                   
                   {/* Location tips */}
                   <p className="mt-1 text-xs text-gray-500">
-                    Be specific about lighting and conditions (e.g., "South-facing kitchen window")
+                    Be specific about lighting and conditions (e.g., &quot;South-facing kitchen window&quot;)
                   </p>
                 </div>
               </div>
@@ -917,7 +914,7 @@ export default function PlantInstanceForm({
                 )}
                 
                 <p className="mt-1 text-xs text-gray-500">
-                  Choose based on your plant's needs and your availability for care
+                  Choose based on your plant&apos;s needs and your availability for care
                 </p>
               </div>
 
@@ -1053,9 +1050,11 @@ export default function PlantInstanceForm({
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                       {existingImages.map((image, index) => (
                         <div key={index} className="relative group">
-                          <img
+                          <Image
                             src={image}
                             alt={`Plant photo ${index + 1}`}
+                            width={200}
+                            height={200}
                             className="w-full aspect-square object-cover rounded-lg"
                           />
                           
@@ -1143,7 +1142,7 @@ export default function PlantInstanceForm({
                               </svg>
                               <div className="text-xs text-amber-800">
                                 <p className="font-medium">Archiving this plant</p>
-                                <p>Care history will be preserved, but the plant won't appear in your active collection or receive care reminders.</p>
+                                <p>Care history will be preserved, but the plant won&apos;t appear in your active collection or receive care reminders.</p>
                               </div>
                             </div>
                           </div>
@@ -1206,7 +1205,7 @@ export default function PlantInstanceForm({
                 <button
                   type="submit"
                   disabled={mutation.isPending || !isValid || (!selectedPlant && !isEditing)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-lg hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-black bg-primary-600 border border-transparent rounded-lg hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {mutation.isPending ? (
                     <span className="flex items-center">
