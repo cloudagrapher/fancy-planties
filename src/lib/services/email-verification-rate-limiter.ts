@@ -18,17 +18,17 @@ export interface EmailVerificationRateLimitConfig {
 
 // Default configuration based on requirements
 export const DEFAULT_EMAIL_VERIFICATION_RATE_LIMIT_CONFIG: EmailVerificationRateLimitConfig = {
-  // Max 5 verification attempts per code (handled by service)
-  maxVerificationAttempts: 10, // Per IP per hour
+  // Max verification attempts per IP per hour (increased for development)
+  maxVerificationAttempts: 50, // Per IP per hour
   verificationWindowMs: 60 * 60 * 1000, // 1 hour
   
-  // Max 5 resend requests per hour per email
-  maxResendRequests: 5,
+  // Max 10 resend requests per hour per email (increased)
+  maxResendRequests: 10,
   resendWindowMs: 60 * 60 * 1000, // 1 hour
-  resendCooldownMs: 60 * 1000, // 60 seconds between resends
+  resendCooldownMs: 30 * 1000, // 30 seconds between resends (reduced)
   
-  // Overall email verification activity per IP
-  maxEmailVerificationRequests: 20,
+  // Overall email verification activity per IP (increased)
+  maxEmailVerificationRequests: 100,
   emailVerificationWindowMs: 60 * 60 * 1000, // 1 hour
 };
 
@@ -278,11 +278,11 @@ export class EmailVerificationRateLimiter {
     const now = Date.now();
     const oneHour = 60 * 60 * 1000;
     
-    // Check for rapid-fire attempts from same IP
+    // Check for rapid-fire attempts from same IP (more lenient)
     const verificationEntry = verificationAttemptStore.get(identifier);
-    if (verificationEntry && verificationEntry.count >= 8) {
+    if (verificationEntry && verificationEntry.count >= 30) {
       const timeSpan = now - verificationEntry.firstAttempt;
-      if (timeSpan < 10 * 60 * 1000) { // 8+ attempts in 10 minutes
+      if (timeSpan < 5 * 60 * 1000) { // 30+ attempts in 5 minutes
         logSecurityEvent({
           type: 'SUSPICIOUS_ACTIVITY',
           identifier,
@@ -306,7 +306,7 @@ export class EmailVerificationRateLimiter {
     );
     
     const uniqueEmails = new Set(recentEvents.map(event => event.email));
-    if (uniqueEmails.size >= 5) { // 5+ different emails in 1 hour
+    if (uniqueEmails.size >= 15) { // 15+ different emails in 1 hour
       logSecurityEvent({
         type: 'SUSPICIOUS_ACTIVITY',
         identifier,

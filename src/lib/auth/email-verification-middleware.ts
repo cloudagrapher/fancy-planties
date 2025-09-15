@@ -90,7 +90,7 @@ export async function withEmailVerificationRateLimit(
           {
             status: 429,
             headers: {
-              'X-RateLimit-Limit': '20',
+              'X-RateLimit-Limit': '100',
               'X-RateLimit-Remaining': activityResult.remaining.toString(),
               'X-RateLimit-Reset': activityResult.resetTime.toString(),
               'Retry-After': activityResult.retryAfter?.toString() || '3600',
@@ -114,7 +114,7 @@ export async function withEmailVerificationRateLimit(
           {
             status: 429,
             headers: {
-              'X-RateLimit-Limit': '10',
+              'X-RateLimit-Limit': '50',
               'X-RateLimit-Remaining': verificationResult.remaining.toString(),
               'X-RateLimit-Reset': verificationResult.resetTime.toString(),
               'Retry-After': verificationResult.retryAfter?.toString() || '3600',
@@ -143,10 +143,10 @@ export async function withEmailVerificationRateLimit(
           {
             status: 429,
             headers: {
-              'X-RateLimit-Limit': '5',
+              'X-RateLimit-Limit': '10',
               'X-RateLimit-Remaining': resendResult.remaining.toString(),
               'X-RateLimit-Reset': resendResult.resetTime.toString(),
-              'Retry-After': resendResult.retryAfter?.toString() || '60',
+              'Retry-After': resendResult.retryAfter?.toString() || '30',
             },
           }
         );
