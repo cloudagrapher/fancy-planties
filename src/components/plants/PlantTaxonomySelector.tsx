@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { debounce } from 'lodash-es';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
 import type { QuickSelectPlants } from '@/lib/types/plant-types';
 
@@ -131,11 +130,25 @@ export default function PlantTaxonomySelector({
     }
   }, []);
 
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce(performSearch, 300),
-    [performSearch]
-  );
+  // Custom debounce hook for better React performance
+  const debouncedSearchRef = useRef<NodeJS.Timeout>();
+  const debouncedSearch = useCallback((query: string) => {
+    if (debouncedSearchRef.current) {
+      clearTimeout(debouncedSearchRef.current);
+    }
+    debouncedSearchRef.current = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  }, [performSearch]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debouncedSearchRef.current) {
+        clearTimeout(debouncedSearchRef.current);
+      }
+    };
+  }, []);
 
   // Load quick select data on mount
   useEffect(() => {
@@ -161,21 +174,25 @@ export default function PlantTaxonomySelector({
   // Handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
+
+    // Immediately update the input value for responsive typing
     setSearchState(prev => ({
       ...prev,
       query,
-      showDropdown: true,
+      showDropdown: query.length > 0,
     }));
 
-    if (query !== selectedPlant?.commonName) {
+    // Only clear selection if the field is completely empty
+    // This prevents clearing when user is just typing to search for a different plant
+    if (query.trim() === '') {
       onSelect(null);
     }
 
-    // Only search if query is long enough
+    // Only search if query is long enough, and only via debounced function
     if (query.length >= 2) {
       debouncedSearch(query);
     } else {
-      // Clear results for short queries
+      // Clear results immediately for short queries
       setSearchState(prev => ({
         ...prev,
         results: [],
@@ -340,6 +357,7 @@ export default function PlantTaxonomySelector({
           autoFocus={autoFocus}
           role="combobox"
           aria-expanded={searchState.showDropdown}
+          aria-controls="plant-search-listbox"
           aria-haspopup="listbox"
           aria-autocomplete="list"
           aria-describedby={selectedPlant ? 'selected-plant-indicator' : undefined}
@@ -386,6 +404,7 @@ export default function PlantTaxonomySelector({
       {searchState.showDropdown && dropdownItems.length > 0 && (
         <div
           ref={dropdownRef}
+          id="plant-search-listbox"
           className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto"
           role="listbox"
           aria-label="Plant search results"
