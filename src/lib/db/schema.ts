@@ -167,7 +167,21 @@ export const careHistory = pgTable('care_history', {
   careDateIdx: index('care_history_care_date_idx').on(table.careDate),
   userPlantIdx: index('care_history_user_plant_idx').on(table.userId, table.plantInstanceId),
   userCareTypeIdx: index('care_history_user_care_type_idx').on(table.userId, table.careType),
-  plantCareDateIdx: index('care_history_plant_care_date_idx').on(table.plantInstanceId, table.careDate),
+}));
+
+// Rate limiting table for production-ready rate limiting
+export const rateLimits = pgTable('rate_limits', {
+  id: serial('id').primaryKey(),
+  identifier: text('identifier').notNull(), // IP address or user ID
+  windowStart: timestamp('window_start').notNull(),
+  requestCount: integer('request_count').default(1).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  // Unique constraint for identifier + window combination
+  identifierWindowUnique: uniqueIndex('rate_limits_identifier_window_unique').on(table.identifier, table.windowStart),
+  // Index for cleanup queries
+  windowStartIdx: index('rate_limits_window_start_idx').on(table.windowStart),
 }));
 
 // Care guides table for plant care instructions
@@ -382,7 +396,7 @@ export const auditLogs = pgTable('audit_logs', {
   entityId: integer('entity_id'), // ID of the affected entity (nullable for system actions)
   performedBy: integer('performed_by').notNull().references(() => users.id),
   timestamp: timestamp('timestamp').defaultNow().notNull(),
-  details: jsonb('details').$type<Record<string, any>>().default({}).notNull(), // Additional context
+  details: jsonb('details').$type<Record<string, unknown>>().default({}).notNull(), // Additional context
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
   success: boolean('success').default(true).notNull(), // Whether the action succeeded
