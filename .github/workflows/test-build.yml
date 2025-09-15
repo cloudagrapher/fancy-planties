@@ -20,12 +20,15 @@ jobs:
     steps:
     - name: Check if build should be skipped
       id: check
+      env:
+        PR_TITLE: ${{ github.event.pull_request.title }}
+        COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       run: |
         # Get the commit message (handle both push and PR events)
         if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-          COMMIT_MSG="${{ github.event.pull_request.title }}"
+          COMMIT_MSG="$PR_TITLE"
         else
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          COMMIT_MSG="$COMMIT_MESSAGE"
         fi
 
         # Handle empty commit message
@@ -33,7 +36,10 @@ jobs:
           COMMIT_MSG="No commit message"
         fi
 
-        echo "Checking commit message: $COMMIT_MSG"
+        # Get first line only to avoid issues with multiline messages
+        COMMIT_MSG_FIRST_LINE=$(echo "$COMMIT_MSG" | head -n 1)
+
+        echo "Checking commit message: $COMMIT_MSG_FIRST_LINE"
         
         # Check if commit message starts with skip keywords (case insensitive)
         if [[ "$COMMIT_MSG" =~ ^(\[skip ci\]|\[ci skip\]|\[skip build\]|\[build skip\]|\[docs\]|\[readme\]|\[Skip CI\]|\[CI Skip\]|\[Skip Build\]|\[Build Skip\]|\[Docs\]|\[README\]) ]]; then
