@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
@@ -33,14 +33,7 @@ export default function EmailVerificationClient({ email }: EmailVerificationClie
     }
   }, [resendCooldown]);
 
-  // Auto-submit when code is complete
-  useEffect(() => {
-    if (code.length === 6 && !isLoading) {
-      handleSubmit();
-    }
-  }, [code, isLoading]);
-
-  const handleSubmit = async (e?: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
     if (code.length !== 6) {
@@ -101,7 +94,14 @@ export default function EmailVerificationClient({ email }: EmailVerificationClie
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [code, email, router]);
+
+  // Auto-submit when code is complete
+  useEffect(() => {
+    if (code.length === 6 && !isLoading) {
+      handleSubmit();
+    }
+  }, [code, isLoading, handleSubmit]);
 
   const handleResend = async () => {
     if (resendCooldown > 0 || isResending) return;
@@ -242,9 +242,10 @@ export default function EmailVerificationClient({ email }: EmailVerificationClie
             type="submit"
             disabled={isLoading || code.length !== 6}
             className={`
-              btn btn--primary btn--full
+              btn btn--primary
               ${isLoading ? 'btn--loading' : ''}
             `}
+            style={{ width: '100%' }}
           >
             {isLoading ? (
               <>
