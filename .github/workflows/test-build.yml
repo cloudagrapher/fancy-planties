@@ -27,7 +27,12 @@ jobs:
         else
           COMMIT_MSG="${{ github.event.head_commit.message }}"
         fi
-        
+
+        # Handle empty commit message
+        if [[ -z "$COMMIT_MSG" ]]; then
+          COMMIT_MSG="No commit message"
+        fi
+
         echo "Checking commit message: $COMMIT_MSG"
         
         # Check if commit message starts with skip keywords (case insensitive)
