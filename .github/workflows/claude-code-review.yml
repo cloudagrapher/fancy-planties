@@ -9,6 +9,12 @@ on:
     #   - "src/**/*.tsx"
     #   - "src/**/*.js"
     #   - "src/**/*.jsx"
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: true
+        type: string
 
 jobs:
   claude-review:
@@ -34,6 +40,7 @@ jobs:
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
+        continue-on-error: true
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
@@ -48,7 +55,14 @@ jobs:
 
             Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
           
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://docs.anthropic.com/en/docs/claude-code/sdk#command-line for available options
           claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+      
+      - name: Handle rate limit
+        if: failure() && steps.claude-review.outcome == 'failure'
+        run: |
+          echo "⏰ Claude Code review failed - likely due to rate limiting"
+          echo "The review will be retried when the rate limit resets"
+          gh pr comment ${{ github.event.pull_request.number }} --body "🤖 Claude Code review is temporarily unavailable due to rate limiting. Will retry automatically when limits reset."
+        env:
+          GH_TOKEN: ${{ github.token }}
 

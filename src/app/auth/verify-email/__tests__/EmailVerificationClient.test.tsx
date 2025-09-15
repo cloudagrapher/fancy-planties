@@ -16,6 +16,15 @@ describe("EmailVerificationClient", () => {
   const mockRefresh = jest.fn();
   const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
+  // Helper function to enter verification code
+  const enterVerificationCode = async (user: any, inputs: HTMLElement[], code = "123456") => {
+    await act(async () => {
+      for (let i = 0; i < code.length; i++) {
+        await user.type(inputs[i], code[i]);
+      }
+    });
+  };
+
   beforeEach(() => {
     (useRouter as jest.Mock).mockReturnValue({
       push: mockPush,
@@ -66,14 +75,7 @@ describe("EmailVerificationClient", () => {
     const inputs = await waitFor(() => screen.getAllByRole("textbox"));
 
     // Enter 6 digits
-    await act(async () => {
-      await user.type(inputs[0], "1");
-      await user.type(inputs[1], "2");
-      await user.type(inputs[2], "3");
-      await user.type(inputs[3], "4");
-      await user.type(inputs[4], "5");
-      await user.type(inputs[5], "6");
-    });
+    await enterVerificationCode(user, inputs);
 
     // Wait for auto-submit
     await waitFor(() => {
