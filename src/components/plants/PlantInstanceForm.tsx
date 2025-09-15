@@ -283,34 +283,13 @@ export default function PlantInstanceForm({
       return response.json();
     },
     onSuccess: async (data) => {
-      // Comprehensive cache clearing for immediate grid updates
       console.log('Plant instance saved, invalidating caches...');
       
-      // Invalidate all plant-instances queries regardless of filters
-      await queryClient.invalidateQueries({ 
-        queryKey: ['plant-instances'],
-        refetchType: 'all'
-      });
-      
-      // Force refetch specific user queries
-      await queryClient.refetchQueries({ 
-        queryKey: ['plant-instances', userId],
-        type: 'all'
-      });
-      
-      // Additional cache clearing for related data
-      const additionalQueryKeys = [
-        ['plant-detail'],
-        ['care-dashboard', userId],
-        ['plants']
-      ];
-
-      for (const queryKey of additionalQueryKeys) {
-        await queryClient.invalidateQueries({ 
-          queryKey,
-          refetchType: 'active'
-        });
-      }
+      // Clear all plant-instances related queries
+      queryClient.invalidateQueries({ queryKey: ['plant-instances'] });
+      queryClient.invalidateQueries({ queryKey: ['care-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['user-locations'] });
       
       console.log('Cache invalidation complete');
       
