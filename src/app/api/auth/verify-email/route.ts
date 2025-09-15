@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { emailVerificationCodeService, VerificationCodeError, VerificationError } from '@/lib/services/email-verification-code-service';
 import { withVerificationRateLimit } from '@/lib/auth/email-verification-middleware';
+import { getUserByEmail } from '@/lib/auth';
+import { lucia } from '@/lib/auth/lucia';
+import { setSessionCookie } from '@/lib/auth/server';
 
 // Validation schema for email verification request
 const verifyEmailSchema = z.object({
@@ -36,10 +39,25 @@ export async function POST(request: NextRequest) {
       try {
         // Validate the verification code
         const isValid = await emailVerificationCodeService.validateCode(email, code);
-        
+
         if (isValid) {
           console.log(`Email verification successful for ${email}`);
-          
+
+          // Get the verified user
+          const user = await getUserByEmail(email);
+          if (!user) {
+            return NextResponse.json(
+              { error: 'User not found after verification' },
+              { status: 404 }
+            );
+          }
+
+          // Create a session for the verified user
+          const session = await lucia.createSession(user.id.toString(), {});
+          await setSessionCookie(session.id);
+
+          console.log(`Session created for verified user ${email}: ${session.id}`);
+
           return NextResponse.json({
             success: true,
             message: 'Email verified successfully! You can now access your account.',
