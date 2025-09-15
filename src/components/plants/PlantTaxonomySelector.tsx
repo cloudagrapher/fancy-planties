@@ -131,7 +131,7 @@ export default function PlantTaxonomySelector({
   }, []);
 
   // Custom debounce hook for better React performance
-  const debouncedSearchRef = useRef<NodeJS.Timeout>();
+  const debouncedSearchRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const debouncedSearch = useCallback((query: string) => {
     if (debouncedSearchRef.current) {
       clearTimeout(debouncedSearchRef.current);
