@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 
@@ -23,6 +23,20 @@ export default function EmailVerificationClient({ email }: EmailVerificationClie
   const [isResending, setIsResending] = useState(false);
   const router = useRouter();
 
+  // Refs for cleanup and request deduplication
+  const redirectTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const isRequestInFlightRef = useRef(false);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      // Clear any pending timeouts when component unmounts
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Countdown timer for resend cooldown
   useEffect(() => {
     if (resendCooldown > 0) {
@@ -35,12 +49,19 @@ export default function EmailVerificationClient({ email }: EmailVerificationClie
 
   const handleSubmit = useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    
+
+    // Prevent multiple simultaneous requests
+    if (isRequestInFlightRef.current || success) {
+      return;
+    }
+
     if (code.length !== 6) {
       setError('Please enter a 6-digit code');
       return;
     }
 
+    // Mark request as in-flight
+    isRequestInFlightRef.current = true;
     setIsLoading(true);
     setError('');
 
@@ -60,10 +81,17 @@ export default function EmailVerificationClient({ email }: EmailVerificationClie
 
       if (response.ok && data.success) {
         setSuccess(true);
-        // Redirect to dashboard after a brief delay
-        setTimeout(() => {
-          router.push(data.redirectTo || '/dashboard');
-          router.refresh(); // Refresh to update auth state
+        // Use safe navigation with error handling
+        redirectTimeoutRef.current = setTimeout(() => {
+          try {
+            const targetUrl = data.redirectTo || '/dashboard';
+            // Use replace to avoid back button issues
+            router.replace(targetUrl);
+          } catch (navError) {
+            console.error('Navigation error:', navError);
+            // Fallback to direct navigation
+            window.location.replace('/dashboard');
+          }
         }, 1500);
       } else {
         // Handle different error types
@@ -79,9 +107,13 @@ export default function EmailVerificationClient({ email }: EmailVerificationClie
             break;
           case 'ALREADY_VERIFIED':
             setError('Your email is already verified.');
-            setTimeout(() => {
-              router.push('/dashboard');
-              router.refresh();
+            redirectTimeoutRef.current = setTimeout(() => {
+              try {
+                router.replace('/dashboard');
+              } catch (navError) {
+                console.error('Navigation error:', navError);
+                window.location.replace('/dashboard');
+              }
             }, 2000);
             break;
           default:
@@ -93,15 +125,17 @@ export default function EmailVerificationClient({ email }: EmailVerificationClie
       setError('Network error. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
+      // Reset request flag
+      isRequestInFlightRef.current = false;
     }
-  }, [code, email, router]);
+  }, [code, email, router, success]);
 
   // Auto-submit when code is complete
   useEffect(() => {
-    if (code.length === 6 && !isLoading) {
+    if (code.length === 6 && !isLoading && !success && !isRequestInFlightRef.current) {
       handleSubmit();
     }
-  }, [code, isLoading, handleSubmit]);
+  }, [code, isLoading, success, handleSubmit]);
 
   const handleResend = async () => {
     if (resendCooldown > 0 || isResending) return;
