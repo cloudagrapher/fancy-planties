@@ -10,7 +10,7 @@ ENVIRONMENT="${ENVIRONMENT:-development}"
 BACKUP_BEFORE_DEPLOY="${BACKUP_BEFORE_DEPLOY:-true}"
 RUN_MIGRATIONS="${RUN_MIGRATIONS:-true}"
 HEALTH_CHECK_TIMEOUT="${HEALTH_CHECK_TIMEOUT:-60}"
-BACKUP_DIR="${BACKUP_DIR:-/Users/stefanbekker/projects/fancy-planties-volumes/backups}"
+BACKUP_DIR="${BACKUP_DIR:-./backups}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -62,6 +62,13 @@ check_prerequisites() {
 # Function to validate environment file
 validate_environment() {
   log_info "Validating environment configuration..."
+  
+  # Validate environment name contains only safe characters
+  if [[ ! "$ENVIRONMENT" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+    log_error "Invalid environment name: $ENVIRONMENT"
+    log_error "Environment name must contain only alphanumeric characters, hyphens, and underscores."
+    exit 1
+  fi
   
   local env_file=".env.${ENVIRONMENT}"
   
@@ -121,7 +128,7 @@ deploy_application() {
   export $(grep -v '^#' ".env.${ENVIRONMENT}" | xargs)
   
   # Build and start services
-  docker compose -f docker-compose.dev.yml --env-file ".env.${ENVIRONMENT}" up -d --build --remove-orphans
+  docker compose -f "docker-compose.dev.yml" --env-file ".env.${ENVIRONMENT}" up -d --build --remove-orphans
   
   log_success "Application deployed successfully"
 }
@@ -136,7 +143,7 @@ run_migrations() {
     sleep 10
     
     # Run migrations using the app container
-    docker compose -f docker-compose.prod.yml exec -T app npm run db:migrate
+    docker compose -f "docker-compose.dev.yml" exec -T app npm run db:migrate
     
     log_success "Database migrations completed"
   else
@@ -178,12 +185,12 @@ show_status() {
   
   # Show running containers
   log_info "Running containers:"
-  docker compose -f docker-compose.prod.yml ps
+  docker compose -f "docker-compose.dev.yml" ps
   echo ""
   
   # Show application logs (last 20 lines)
   log_info "Recent application logs:"
-  docker compose -f docker-compose.prod.yml logs --tail=20 app
+  docker compose -f "docker-compose.dev.yml" logs --tail=20 app
   echo ""
   
   # Show resource usage
@@ -196,7 +203,7 @@ rollback() {
   log_warning "Rolling back deployment..."
   
   # Stop current deployment
-  docker compose -f docker-compose.prod.yml down
+  docker compose -f "docker-compose.dev.yml" down
   
   # Restore from backup if available
   if [ -f "scripts/restore.sh" ]; then
