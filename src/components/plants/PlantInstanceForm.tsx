@@ -284,13 +284,28 @@ export default function PlantInstanceForm({
     },
     onSuccess: async (data) => {
       console.log('Plant instance saved, invalidating caches...');
-      
-      // Clear all plant-instances related queries
-      queryClient.invalidateQueries({ queryKey: ['plant-instances'] });
-      queryClient.invalidateQueries({ queryKey: ['care-dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['user-locations'] });
-      
+
+      // Clear all plant-instances related queries with proper key matching
+      await queryClient.invalidateQueries({
+        queryKey: ['plant-instances'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ['plant-instances-enhanced'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({ queryKey: ['care-dashboard'] });
+      await queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      await queryClient.invalidateQueries({ queryKey: ['user-locations'] });
+
+      // Force refetch of active queries
+      await queryClient.refetchQueries({
+        queryKey: ['plant-instances-enhanced'],
+        type: 'active'
+      });
+
       console.log('Cache invalidation complete');
       
       // Reset form state

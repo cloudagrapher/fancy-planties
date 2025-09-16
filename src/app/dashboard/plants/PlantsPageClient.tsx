@@ -49,14 +49,26 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   const handleFormSuccess = async () => {
     setIsFormModalOpen(false);
     setEditingPlant(null);
-    
+
     // Force a grid refresh to ensure immediate updates
-    // Form success, forcing grid refresh
-    await queryClient.invalidateQueries({ 
-      queryKey: ['plant-instances', userId],
+    // Clear both regular and enhanced plant instance queries
+    await queryClient.invalidateQueries({
+      queryKey: ['plant-instances'],
+      exact: false,
       refetchType: 'all'
     });
-    
+    await queryClient.invalidateQueries({
+      queryKey: ['plant-instances-enhanced'],
+      exact: false,
+      refetchType: 'all'
+    });
+
+    // Force refetch to ensure immediate update
+    await queryClient.refetchQueries({
+      queryKey: ['plant-instances-enhanced'],
+      type: 'active'
+    });
+
     // Don't automatically open detail modal - let user decide
     // This prevents the white line issue from modal conflicts
   };
