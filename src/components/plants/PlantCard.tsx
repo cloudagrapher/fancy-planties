@@ -235,6 +235,7 @@ export default function PlantCard({
         ${onSelect ? 'cursor-pointer' : ''}
         ${plant.isActive === false ? 'opacity-60' : ''}
         ${className}
+        bg-mint-50 hover:bg-mint-100
       `}
       onClick={handlePress}
       onKeyDown={(e) => {
@@ -273,11 +274,13 @@ export default function PlantCard({
       <div className={`plant-card-image ${config.image} relative bg-gradient-to-br from-primary-50 to-secondary-50`}>
         {plant.primaryImage && !imageError ? (
           plant.primaryImage.startsWith('data:') ? (
-            <img
+            <Image
               src={plant.primaryImage}
               alt={plant.displayName}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
               onError={() => setImageError(true)}
+              unoptimized
             />
           ) : (
             <Image

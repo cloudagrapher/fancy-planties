@@ -2,36 +2,107 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: fancy-planties-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-fancy_planties}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_DIR:-./postgres-data}:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-
-  app:
-    build: .
-    container_name: fancy-planties-app
-    ports:
-      - "3005:3000"
+      start_period: 30s
+    networks:
+      - fancy-planties-network
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+  
+  db-migrate:
+    image: postgres:16-alpine
+    container_name: fancy-planties-db-migrate
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/fancy_planties
-      - NODE_ENV=development
+      - POSTGRES_DB=${POSTGRES_DB:-fancy_planties}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./scripts/init-db.sh:/init-db.sh:ro
+      - ./drizzle:/app/drizzle:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run dev
+    networks:
+      - fancy-planties-network
+    command: ["/init-db.sh"]
+    restart: "no"
 
-volumes:
-  postgres_data:
+  app:
+    # Use the pre-built image from GitHub Container Registry
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fancy-planties-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - NODE_ENV=production
+      - HOSTNAME=0.0.0.0
+      - PORT=3000
+      - DISABLE_SECURE_COOKIES=${DISABLE_SECURE_COOKIES:-false}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - FROM_EMAIL=${FROM_EMAIL}
+      - FROM_NAME=${FROM_NAME}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    networks:
+      - fancy-planties-network
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
+# Note: Volumes are defined as bind mounts in the postgres service
+
+networks:
+  fancy-planties-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

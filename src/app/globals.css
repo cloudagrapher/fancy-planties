@@ -1,5 +1,8 @@
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind base;
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind components;
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind utilities;
 
 /* Color Design Tokens - Mint Green & Salmon Palette */
@@ -79,120 +82,6 @@
 }
 
 
-@theme inline {
-  /* Fancy Planties Color Palette */
-  
-  /* Pastel Green Primary */
-  --color-primary-50: #f0fdf4;
-  --color-primary-100: #d1fae5;
-  --color-primary-200: #a7f3d0;
-  --color-primary-300: #6ee7b7;
-  --color-primary-400: #34d399;
-  --color-primary-500: #10b981;
-  --color-primary-600: #059669;
-  --color-primary-700: #047857;
-  --color-primary-800: #065f46;
-  --color-primary-900: #064e3b;
-  --color-primary: var(--color-primary-200);
-  
-  /* Salmon/Coral Secondary */
-  --color-secondary-50: #fff1f2;
-  --color-secondary-100: #ffe4e6;
-  --color-secondary-200: #fecdd3;
-  --color-secondary-300: #fda4af;
-  --color-secondary-400: #fb7185;
-  --color-secondary-500: #f43f5e;
-  --color-secondary-600: #e11d48;
-  --color-secondary-700: #be123c;
-  --color-secondary-800: #9f1239;
-  --color-secondary-900: #881337;
-  --color-secondary: var(--color-secondary-300);
-  
-  /* Soft Lavender Tertiary */
-  --color-tertiary-50: #f5f3ff;
-  --color-tertiary-100: #e0e7ff;
-  --color-tertiary-200: #c7d2fe;
-  --color-tertiary-300: #c4b5fd;
-  --color-tertiary-400: #a78bfa;
-  --color-tertiary-500: #8b5cf6;
-  --color-tertiary-600: #7c3aed;
-  --color-tertiary-700: #6d28d9;
-  --color-tertiary-800: #5b21b6;
-  --color-tertiary-900: #4c1d95;
-  --color-tertiary: var(--color-tertiary-300);
-  
-  /* Mint Green Colors */
-  --color-mint-50: #f0fdf4;
-  --color-mint-100: #d1fae5;
-  --color-mint-200: #a7f3d0;
-  --color-mint-300: #6ee7b7;
-  --color-mint-400: #34d399;
-  --color-mint-500: #10b981;
-  --color-mint-600: #059669;
-  --color-mint-700: #047857;
-  --color-mint-800: #065f46;
-  --color-mint-900: #064e3b;
-
-  /* Salmon Colors */
-  --color-salmon-50: #fff1f2;
-  --color-salmon-100: #ffe4e6;
-  --color-salmon-200: #fecdd3;
-  --color-salmon-300: #fda4af;
-  --color-salmon-400: #fb7185;
-  --color-salmon-500: #f43f5e;
-  --color-salmon-600: #e11d48;
-  --color-salmon-700: #be123c;
-  --color-salmon-800: #9f1239;
-  --color-salmon-900: #881337;
-
-  /* Lavender Colors */
-  --color-lavender-50: #f5f3ff;
-  --color-lavender-100: #e0e7ff;
-  --color-lavender-200: #c7d2fe;
-  --color-lavender-300: #c4b5fd;
-  --color-lavender-400: #a78bfa;
-  --color-lavender-500: #8b5cf6;
-  --color-lavender-600: #7c3aed;
-  --color-lavender-700: #6d28d9;
-  --color-lavender-800: #5b21b6;
-  --color-lavender-900: #4c1d95;
-
-  /* Accent Pink */
-  --color-accent-300: #f9a8d4;
-  --color-accent-400: #f472b6;
-  --color-accent-500: #ec4899;
-  --color-accent: var(--color-accent-400);
-  
-  /* Status Colors */
-  --color-success: #86efac;
-  --color-warning: #fcd34d;
-  --color-danger: #fca5a5;
-  --color-info: #93c5fd;
-  
-  /* Neutral Colors */
-  --color-background: var(--color-background);
-  --color-surface: var(--color-surface);
-  --color-border: var(--color-border);
-  --color-foreground: var(--color-foreground);
-  --color-text-secondary: #9ca3af;
-  --color-text-muted: #d1d5db;
-  
-  /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  
-  /* Spacing */
-  --spacing-18: 4.5rem;
-  --spacing-88: 22rem;
-  
-  /* Border Radius */
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
-  
-  /* Shadows */
-  --shadow-soft: 0 2px 15px -3px rgba(167, 243, 208, 0.1), 0 4px 6px -2px rgba(167, 243, 208, 0.05);
-  --shadow-dreamy: 0 8px 32px -8px rgba(253, 164, 175, 0.15), 0 0 0 1px rgba(167, 243, 208, 0.05);
-}
-
 /* Light mode only - dark mode support removed */
 
 body {
@@ -207,6 +96,7 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
 }
 
 .line-clamp-2 {
@@ -214,6 +104,7 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .line-clamp-3 {
@@ -221,6 +112,7 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 
 /* Safe area utilities for mobile devices */
@@ -611,7 +503,7 @@ select {
 .plant-card {
   display: flex;
   flex-direction: column;
-  background-color: var(--color-surface);
+  /* background-color: var(--color-surface); */
   border: 1px solid var(--color-border);
   border-radius: 12px;
   overflow: hidden;
@@ -661,6 +553,8 @@ select {
 
 .plant-card-content {
   padding: 12px;
+  background-color: --color-mint-100/*var(--color-surface)*/;
+  color: var(--color-lavender-700);
 }
 
 .plant-card-title {
@@ -672,6 +566,7 @@ select {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
   word-wrap: break-word;
@@ -685,6 +580,7 @@ select {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -746,6 +642,7 @@ select {
 .plant-card .btn:hover {
   transform: none;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: --color-mint-100/*var(--color-surface)*/;
 }
 
 .plant-card .btn:active {
@@ -1092,6 +989,7 @@ select {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     overflow: hidden;
   }
   

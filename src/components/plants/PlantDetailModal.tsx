@@ -218,7 +218,7 @@ export default function PlantDetailModal({
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
+                    onClick={() => setActiveTab(tab.id as 'overview' | 'care' | 'notes' | 'lineage')}
                     className={`tab ${activeTab === tab.id ? 'tab--active' : ''}`}
                   >
                     <span className="tab-emoji">{tab.icon}</span>
@@ -314,7 +314,7 @@ function PlantOverview({
                   sizes="(max-width: 640px) 50vw, 33vw"
                 />
                 {index === 0 && (
-                  <div className="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded">
+                  <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
                     Primary
                   </div>
                 )}
