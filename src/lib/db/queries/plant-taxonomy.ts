@@ -349,7 +349,7 @@ export async function getQuickSelectPlants(userId?: number): Promise<QuickSelect
 
 // Validate plant taxonomy for duplicates and conflicts
 export async function validatePlantTaxonomy(
-  taxonomy: Pick<CreatePlant, 'family' | 'genus' | 'species' | 'commonName'>
+  taxonomy: Pick<CreatePlant, 'family' | 'genus' | 'species' | 'cultivar' | 'commonName'>
 ): Promise<TaxonomyValidationResult> {
   const errors: string[] = [];
   const warnings: string[] = [];
@@ -360,7 +360,9 @@ export async function validatePlantTaxonomy(
     commonName: [] as string[],
   };
 
-  // Check for exact taxonomic duplicates
+  // Check for exact taxonomic duplicates (including cultivar)
+  const cultivarValue = taxonomy.cultivar?.trim() || null;
+
   const exactDuplicates = await db
     .select()
     .from(plants)
@@ -368,7 +370,11 @@ export async function validatePlantTaxonomy(
       and(
         eq(sql`LOWER(${plants.family})`, taxonomy.family.toLowerCase()),
         eq(sql`LOWER(${plants.genus})`, taxonomy.genus.toLowerCase()),
-        eq(sql`LOWER(${plants.species})`, taxonomy.species.toLowerCase())
+        eq(sql`LOWER(${plants.species})`, taxonomy.species.toLowerCase()),
+        // Handle cultivar comparison: both null or both matching
+        cultivarValue
+          ? eq(sql`LOWER(COALESCE(${plants.cultivar}, ''))`, cultivarValue.toLowerCase())
+          : sql`${plants.cultivar} IS NULL OR ${plants.cultivar} = ''`
       )
     );
 
@@ -394,8 +400,37 @@ export async function validatePlantTaxonomy(
     .groupBy(plants.genus)
     .limit(5);
 
+  // Check for base species matches (same family/genus/species but different cultivars)
+  const baseSpeciesMatches = await db
+    .select()
+    .from(plants)
+    .where(
+      and(
+        eq(sql`LOWER(${plants.family})`, taxonomy.family.toLowerCase()),
+        eq(sql`LOWER(${plants.genus})`, taxonomy.genus.toLowerCase()),
+        eq(sql`LOWER(${plants.species})`, taxonomy.species.toLowerCase())
+      )
+    );
+
   if (exactDuplicates.length > 0) {
-    errors.push('A plant with this exact taxonomy already exists');
+    if (cultivarValue) {
+      errors.push('A plant with this exact taxonomy (including cultivar) already exists');
+    } else {
+      errors.push('A plant with this exact taxonomy already exists');
+    }
+  } else if (baseSpeciesMatches.length > 0 && !cultivarValue) {
+    // Base species exists but user didn't provide cultivar
+    const existingCultivars = baseSpeciesMatches
+      .map(p => p.cultivar)
+      .filter(Boolean);
+
+    if (existingCultivars.length > 0) {
+      warnings.push(
+        `This species already exists with cultivars: ${existingCultivars.join(', ')}. Consider adding a cultivar to differentiate your plant.`
+      );
+    } else {
+      warnings.push('This exact species already exists. Consider adding a cultivar to differentiate your plant.');
+    }
   }
 
   if (commonNameConflicts.length > 0 && 
@@ -416,6 +451,7 @@ export async function validatePlantTaxonomy(
       family: plant.family,
       genus: plant.genus,
       species: plant.species,
+      cultivar: plant.cultivar,
       commonName: plant.commonName,
       isVerified: plant.isVerified,
     })),

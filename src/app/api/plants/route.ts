@@ -76,11 +76,12 @@ export async function POST(request: NextRequest) {
     const validation = await validatePlantTaxonomy(validatedData);
     if (!validation.isValid) {
       return NextResponse.json(
-        { 
-          error: 'Validation failed', 
+        {
+          error: 'Validation failed',
           details: validation.errors,
-          duplicates: validation.duplicates 
-        }, 
+          warnings: validation.warnings,
+          duplicates: validation.duplicates
+        },
         { status: 409 }
       );
     }
