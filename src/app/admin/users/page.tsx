@@ -1,7 +1,7 @@
 import 'server-only';
 import { AdminUserQueries } from '@/lib/db/queries/admin-users';
-import UserManagementClient from '@/components/admin/UserManagementClient';
-import { AdminUserErrorBoundary } from '@/components/admin/AdminErrorBoundary';
+import OptimizedUserManagement from '@/components/admin/OptimizedUserManagement';
+import AdminErrorBoundary from '@/components/admin/AdminErrorBoundary';
 import { requirePermission } from '@/lib/auth/admin-auth';
 import { safeValidate, paginationSchema, userFiltersSchema, userSortSchema } from '@/lib/validation/admin-schemas';
 
@@ -68,12 +68,11 @@ export default async function UserManagementPage({
   );
   
   return (
-    <AdminUserErrorBoundary>
-      <UserManagementClient 
-        initialData={usersData}
+    <AdminErrorBoundary>
+      <OptimizedUserManagement 
         initialFilters={filtersValidation.data}
         initialSort={sortValidation.data}
       />
-    </AdminUserErrorBoundary>
+    </AdminErrorBoundary>
   );
 }

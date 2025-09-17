@@ -1,23 +1,22 @@
 import 'server-only';
 import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
-import PlantManagementTable from '@/components/admin/PlantManagementTable';
+import OptimizedPlantManagement from '@/components/admin/OptimizedPlantManagement';
+import AdminErrorBoundary from '@/components/admin/AdminErrorBoundary';
 
 export default async function AdminPlants() {
   try {
-    // Fetch initial data
-    const [{ plants, totalCount }, taxonomyOptions] = await Promise.all([
-      AdminPlantQueries.getPlantsWithDetails({}, { field: 'updatedAt', direction: 'desc' }, 20, 0),
-      AdminPlantQueries.getTaxonomyOptions(),
+    // Fetch initial data for SSR
+    const [{ plants, totalCount }] = await Promise.all([
+      AdminPlantQueries.getPlantsWithDetails({}, { field: 'updatedAt', direction: 'desc' }, 50, 0),
     ]);
 
     return (
-      <div className="admin-plants">
-        <PlantManagementTable
+      <AdminErrorBoundary>
+        <OptimizedPlantManagement
           initialPlants={plants}
           initialTotalCount={totalCount}
-          taxonomyOptions={taxonomyOptions}
         />
-      </div>
+      </AdminErrorBoundary>
     );
   } catch (error) {
     console.error('Failed to load admin plants:', error);

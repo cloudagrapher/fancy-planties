@@ -4,7 +4,7 @@
   "description": "Monitors all TypeScript, JavaScript, and configuration files for changes and triggers documentation updates in README.md and docs folder",
   "version": "1",
   "when": {
-    "type": "userTriggered",
+    "type": "fileEdited",
     "patterns": [
       "src/**/*.ts",
       "src/**/*.tsx",

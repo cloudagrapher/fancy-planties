@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Development Environment**: Updated VS Code configuration to disable TypeScript auto-closing tags for better JSX development experience
   - Disabled `typescript.autoClosingTags` to prevent interference with manual JSX tag management
+  - Improves developer experience when working with JSX components and manual tag management
   - Maintains existing Kiro Agent MCP configuration as disabled
 - **Code Quality**: Cleaned up unused helper functions in PlantsGrid component
   - Removed unused `setDatePreset`, `setImageFilter`, `setCareFrequencyFilter`, and `clearAllFilters` functions
