@@ -363,6 +363,18 @@ export async function validatePlantTaxonomy(
   // Check for exact taxonomic duplicates (including cultivar)
   const cultivarValue = taxonomy.cultivar?.trim() || null;
 
+  console.log('Validating plant taxonomy:', {
+    family: taxonomy.family,
+    genus: taxonomy.genus,
+    species: taxonomy.species,
+    cultivar: taxonomy.cultivar,
+    cultivarValue,
+    commonName: taxonomy.commonName
+  });
+
+  // Normalize cultivar for consistent comparison: treat NULL, empty string, and whitespace-only as equivalent
+  const normalizedCultivar = cultivarValue ? cultivarValue.toLowerCase() : '';
+
   const exactDuplicates = await db
     .select()
     .from(plants)
@@ -371,12 +383,12 @@ export async function validatePlantTaxonomy(
         eq(sql`LOWER(${plants.family})`, taxonomy.family.toLowerCase()),
         eq(sql`LOWER(${plants.genus})`, taxonomy.genus.toLowerCase()),
         eq(sql`LOWER(${plants.species})`, taxonomy.species.toLowerCase()),
-        // Handle cultivar comparison: both null or both matching
-        cultivarValue
-          ? eq(sql`LOWER(COALESCE(${plants.cultivar}, ''))`, cultivarValue.toLowerCase())
-          : sql`${plants.cultivar} IS NULL OR ${plants.cultivar} = ''`
+        // Consistent cultivar comparison: normalize both sides to empty string for NULL/empty values
+        eq(sql`LOWER(TRIM(COALESCE(${plants.cultivar}, '')))`, normalizedCultivar)
       )
     );
+
+  console.log('Exact duplicates found:', exactDuplicates.length, exactDuplicates);
 
   // Check for common name conflicts
   const commonNameConflicts = await db
