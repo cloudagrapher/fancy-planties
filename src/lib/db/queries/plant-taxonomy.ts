@@ -363,14 +363,6 @@ export async function validatePlantTaxonomy(
   // Check for exact taxonomic duplicates (including cultivar)
   const cultivarValue = taxonomy.cultivar?.trim() || null;
 
-  console.log('Validating plant taxonomy:', {
-    family: taxonomy.family,
-    genus: taxonomy.genus,
-    species: taxonomy.species,
-    cultivar: taxonomy.cultivar,
-    cultivarValue,
-    commonName: taxonomy.commonName
-  });
 
   // Normalize cultivar for consistent comparison: treat NULL, empty string, and whitespace-only as equivalent
   const normalizedCultivar = cultivarValue ? cultivarValue.toLowerCase() : '';
@@ -388,7 +380,6 @@ export async function validatePlantTaxonomy(
       )
     );
 
-  console.log('Exact duplicates found:', exactDuplicates.length, exactDuplicates);
 
   // Check for common name conflicts
   const commonNameConflicts = await db
