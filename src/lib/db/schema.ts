@@ -100,6 +100,7 @@ export const plantInstances = pgTable('plant_instances', {
   lastRepot: timestamp('last_repot'),
   notes: text('notes'),
   images: jsonb('images').$type<string[]>().default([]).notNull(),
+  s3ImageKeys: jsonb('s3_image_keys').$type<string[]>().default([]).notNull(), // S3 object keys for migrated images
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -128,6 +129,7 @@ export const propagations = pgTable('propagations', {
   externalSourceDetails: text('external_source_details'), // New field for additional details
   notes: text('notes'),
   images: jsonb('images').$type<string[]>().default([]).notNull(),
+  s3ImageKeys: jsonb('s3_image_keys').$type<string[]>().default([]).notNull(), // S3 object keys for migrated images
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
@@ -157,6 +159,7 @@ export const careHistory = pgTable('care_history', {
   potSize: text('pot_size'), // For repot care type
   soilType: text('soil_type'), // For repot care type
   images: jsonb('images').$type<string[]>().default([]).notNull(),
+  s3ImageKeys: jsonb('s3_image_keys').$type<string[]>().default([]).notNull(), // S3 object keys for migrated images
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
@@ -278,7 +281,8 @@ export const careGuides = pgTable('care_guides', {
   additionalNotes: text('additional_notes'),
   tags: jsonb('tags').$type<string[]>().default([]).notNull(),
   images: jsonb('images').$type<string[]>().default([]).notNull(),
-  
+  s3ImageKeys: jsonb('s3_image_keys').$type<string[]>().default([]).notNull(), // S3 object keys for migrated images
+
   // Metadata
   isPublic: boolean('is_public').default(false).notNull(),
   isVerified: boolean('is_verified').default(false).notNull(),
