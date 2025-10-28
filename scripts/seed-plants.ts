@@ -46,7 +46,7 @@ function loadEnvironmentConfig() {
   }
 
   // Fallback to default if no DATABASE_URL is found
-  return process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+  return process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/fancy_planties';
 }
 
 // Create database connection

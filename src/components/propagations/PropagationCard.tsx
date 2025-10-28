@@ -48,8 +48,8 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
       label: 'Rooting',
       icon: TrendingUp,
       color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      nextStatus: 'planted',
-      nextLabel: 'Mark as Planted'
+      nextStatus: 'ready',
+      nextLabel: 'Mark as Ready'
     },
     ready: {
       label: 'Ready',
@@ -60,8 +60,8 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
     },
     planted: {
       label: 'Planted',
-      icon: CheckCircle,
-      color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      icon: TreePine,
+      color: 'bg-purple-100 text-purple-800 border-purple-200',
       nextStatus: null,
       nextLabel: null
     }
@@ -360,7 +360,7 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
               )}
 
               {/* Convert to plant button (for ready propagations) */}
-              {propagation.status === 'established' && (
+              {propagation.status === 'ready' && (
                 <button
                   onClick={() => setShowConvertModal(true)}
                   className="flex items-center px-3 py-1.5 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"

@@ -8,18 +8,18 @@ Database tests were failing with authentication errors because they were trying 
 ### Environment File Precedence Issue
 The project has multiple environment files:
 - `.env` - Production configuration with `DATABASE_URL=postgresql://postgres:simple_password_123@postgres:5432/fancy_planties`
-- `.env.local` - Local development configuration with `DATABASE_URL=postgresql://postgres:simple_password_123@localhost:5433/fancy_planties`
+- `.env.local` - Local development configuration with `DATABASE_URL=postgresql://postgres:simple_password_123@localhost:5432/fancy_planties`
 
 ### Key Differences
 | Configuration | Hostname    | Port   | Usage                 |
 | ------------- | ----------- | ------ | --------------------- |
 | `.env`        | `postgres`  | `5432` | Docker container name |
-| `.env.local`  | `localhost` | `5433` | Local development     |
+| `.env.local`  | `localhost` | `5432` | Local development     |
 
 ### Test Environment Issue
 Jest was loading the production `.env` configuration instead of the local `.env.local` configuration, causing tests to try connecting to:
 - **Wrong hostname**: `postgres` (Docker container) instead of `localhost`
-- **Wrong port**: `5432` (standard PostgreSQL) instead of `5433` (local development)
+- **Wrong port**: `5432` (standard PostgreSQL) instead of `5432` (local development)
 
 ## Solution
 
@@ -33,8 +33,8 @@ const projectDir = process.cwd();
 loadEnvConfig(projectDir);
 
 // Force the correct DATABASE_URL for tests (override any other env files)
-// Use localhost:5433 for local development database from .env.local
-process.env.DATABASE_URL = 'postgresql://postgres:simple_password_123@localhost:5433/fancy_planties';
+// Use localhost:5432 for local development database from .env.local
+process.env.DATABASE_URL = 'postgresql://postgres:simple_password_123@localhost:5432/fancy_planties';
 ```
 
 ### 2. Fixed Import Paths in Existing Tests
@@ -72,7 +72,7 @@ import { createTestUser } from '../../test-utils/factories/user-factory.ts';
 
 ### Database Connection String
 ```
-postgresql://postgres:simple_password_123@localhost:5433/fancy_planties
+postgresql://postgres:simple_password_123@localhost:5432/fancy_planties
 ```
 
 ### Environment Variable Loading Order
@@ -105,7 +105,7 @@ npm test -- --testPathPatterns=user-auth-queries.test.ts --testNamePattern="Pass
 
 1. **Environment File Precedence**: Next.js loads multiple environment files, and the order matters
 2. **Docker vs Local**: Production uses Docker container names, development uses localhost
-3. **Port Configuration**: Different environments use different ports (5432 vs 5433)
+3. **Port Configuration**: Different environments use different ports (5432 vs 5432)
 4. **Import Extensions**: Jest requires explicit `.ts` extensions for TypeScript files
 5. **Test Isolation**: Proper database test setup requires explicit connection configuration
 

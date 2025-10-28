@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Database and Schema Updates
+- [x] 1. Database and Schema Updates
   - Update propagation status enum in database schema
   - Create and run database migration script
   - Update TypeScript schema types
@@ -13,26 +13,26 @@
   - Test migration on development database
   - _Requirements: 6, 7_
 
-- [ ] 1.2 Update schema.ts with new propagation status enum
+- [x] 1.2 Update schema.ts with new propagation status enum
   - Modify propagations table status field enum in `src/lib/db/schema.ts`
   - Change enum from `['started', 'rooting', 'planted', 'established']` to `['started', 'rooting', 'ready', 'planted']`
   - Update TypeScript types for Propagation
   - _Requirements: 6, 7_
 
-- [ ] 2. Update Propagation API and Validation
+- [x] 2. Update Propagation API and Validation
   - Modify API route validation schemas
   - Update query functions
   - Enhance error handling
   - _Requirements: 5, 6, 7_
 
-- [ ] 2.1 Update propagation API validation schema
+- [x] 2.1 Update propagation API validation schema
   - Modify Zod schema in `src/app/api/propagations/route.ts`
   - Change status enum to `['started', 'rooting', 'ready', 'planted']`
   - Add enhanced error logging for debugging creation issues
   - Include received data in error responses for troubleshooting
   - _Requirements: 5, 6, 7_
 
-- [ ] 2.2 Update propagation query functions
+- [x] 2.2 Update propagation query functions
   - Modify `src/lib/db/queries/propagations.ts` if it contains status-specific queries
   - Update any status filtering logic to use new enum values
   - Ensure getByStatus function accepts 'ready' instead of 'established'
@@ -42,16 +42,18 @@
   - Update status configuration
   - Fix button visibility
   - Update form and display components
+  - Run build to ensure it compiles without errors
+  - Create task summary
   - _Requirements: 6, 7, 8_
 
-- [ ] 3.1 Update PropagationDashboard status configuration
+- [x] 3.1 Update PropagationDashboard status configuration
   - Modify statusConfig in `src/components/propagations/PropagationDashboard.tsx`
   - Change 'established' to 'ready' with appropriate label and icon
   - Update status filter buttons to show 'Ready' instead of 'Established'
   - Update statistics calculations to use new status values
   - _Requirements: 6, 7_
 
-- [ ] 3.2 Improve Add Propagation button visibility
+- [x] 3.2 Improve Add Propagation button visibility
   - Enhance button styling in `src/components/propagations/PropagationDashboard.tsx`
   - Increase button size (px-6 py-3)
   - Use emerald-600 background with shadow-md
@@ -59,16 +61,18 @@
   - Ensure button is always visible in header regardless of content state
   - _Requirements: 8_
 
-- [ ] 3.3 Update PropagationForm status options
+- [x] 3.3 Update PropagationForm status options
   - Modify status dropdown in `src/components/propagations/PropagationForm.tsx`
   - Update status options to: Started, Rooting, Ready, Planted
   - Remove 'Established' option
+  - Create subtask summary in .kiro/summaries
   - _Requirements: 6, 7_
 
-- [ ] 3.4 Update PropagationCard status display
+- [x] 3.4 Update PropagationCard status display
   - Modify status badge rendering in `src/components/propagations/PropagationCard.tsx`
   - Update status color coding for 'ready' status
   - Ensure status labels display correctly
+  - Create subtask summary in .kiro/summaries
   - _Requirements: 6, 7_
 
 - [ ] 4. Update Care Guide Form

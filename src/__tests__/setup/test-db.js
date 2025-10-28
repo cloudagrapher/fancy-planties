@@ -3,7 +3,7 @@ import postgres from 'postgres';
 import * as schema from '@/lib/db/schema';
 
 // Use test database connection with environment variable fallback
-const connectionString = process.env.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+const connectionString = process.env.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/fancy_planties';
 let testDb;
 
 try {

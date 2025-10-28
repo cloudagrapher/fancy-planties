@@ -267,6 +267,7 @@ DEBUG=* npx tsx scripts/migrations/migrate-images-to-s3.ts --dry-run
 ### Expected Monthly Costs
 
 **Development Environment** (low usage):
+
 - S3 Storage (5GB): ~$0.12/month
 - S3 Requests: ~$0.01/month
 - CloudFront: Free tier (1TB/month)
@@ -274,6 +275,7 @@ DEBUG=* npx tsx scripts/migrations/migrate-images-to-s3.ts --dry-run
 - **Total: ~$0.13-$0.50/month**
 
 **Production Environment** (moderate usage):
+
 - S3 Storage (50GB): ~$1.20/month
 - S3 Requests: ~$0.10/month
 - CloudFront: Free tier covers most usage

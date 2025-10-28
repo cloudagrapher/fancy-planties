@@ -78,7 +78,7 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
    Run the app locally with containerized database:
 
    ```bash
-   # Start only the database (maps port 5433 externally to 5432 internally)
+   # Start only the database (maps port 5432 externally to 5432 internally)
    docker compose -f docker-compose.dev.yml --env-file .env.local up -d postgres
 
    # Generate migration files from schema (first time only)
@@ -96,8 +96,8 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
 
    **Important**: Ensure your `.env.local` file has the correct DATABASE_URL:
    ```bash
-   # For development with Docker on port 5433
-   DATABASE_URL=postgresql://postgres:simple_password_123@localhost:5433/fancy_planties
+   # For development with Docker on port 5432
+   DATABASE_URL=postgresql://postgres:simple_password_123@localhost:5432/fancy_planties
    ```
 
    #### Option B: Fully Containerized Development
@@ -122,7 +122,7 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
    ```
 
 5. **Available Docker Compose Files:**
-   - `docker-compose.dev.yml` - Development environment (database on port 5433)
+   - `docker-compose.dev.yml` - Development environment (database on port 5432)
    - `docker-compose.prod.yml` - Production environment with migrations
    - `docker-compose.yml` - Default production setup
    - `docker-compose.watchtower.yml` - Production with auto-updates
@@ -149,10 +149,10 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
 
    ```bash
    # Local development (uses .env.local)
-   npm run db:generate:local   # Generate migrations for localhost:5433
-   npm run db:migrate:local    # Apply migrations to localhost:5433
-   npm run db:studio:local     # Open studio connected to localhost:5433
-   npm run db:push:local       # Push schema to localhost:5433
+   npm run db:generate:local   # Generate migrations for localhost:5432
+   npm run db:migrate:local    # Apply migrations to localhost:5432
+   npm run db:studio:local     # Open studio connected to localhost:5432
+   npm run db:push:local       # Push schema to localhost:5432
 
    # Production (uses .env.prod)
    npm run db:generate:prod    # Generate migrations for postgres:5432
@@ -168,7 +168,7 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
    ```
 
    **Environment Files**:
-   - `.env.local` → `localhost:5433` (for local development with Docker)
+   - `.env.local` → `localhost:5432` (for local development with Docker)
    - `.env.prod` → `postgres:5432` (for Docker Compose environments)
    - `.env` → Fallback configuration
 

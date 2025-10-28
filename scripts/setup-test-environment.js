@@ -26,7 +26,7 @@ const TEST_CONFIG = {
     JEST_WORKERS: '50%',
     TEST_TIMEOUT: '10000',
     COVERAGE_THRESHOLD: '70',
-    DATABASE_URL: 'postgresql://postgres:postgres@localhost:5433/fancy_planties_test',
+    DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/fancy_planties_test',
   },
 };
 
@@ -80,12 +80,12 @@ function setupLocalTestDatabase() {
   
   try {
     // Check if PostgreSQL is running
-    execSync('pg_isready -h localhost -p 5433', { stdio: 'ignore' });
+    execSync('pg_isready -h localhost -p 5432', { stdio: 'ignore' });
     console.log('   PostgreSQL is running');
     
     // Create test database if it doesn't exist
     try {
-      execSync('createdb -h localhost -p 5433 -U postgres fancy_planties_test', { stdio: 'ignore' });
+      execSync('createdb -h localhost -p 5432 -U postgres fancy_planties_test', { stdio: 'ignore' });
       console.log('   Created test database');
     } catch (error) {
       // Database might already exist

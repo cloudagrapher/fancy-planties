@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       .where(
         and(
           eq(propagations.userId, userId),
-          inArray(propagations.status, ['planted', 'established'])
+          inArray(propagations.status, ['planted', 'ready'])
         )
       );
 

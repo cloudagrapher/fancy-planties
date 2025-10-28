@@ -5,7 +5,7 @@ import postgres from 'postgres';
 import { eq, and, desc, asc, sql } from 'drizzle-orm';
 import * as schema from './schema';
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/fancy_planties';
 
 // Connection configuration with pooling
 const client = postgres(connectionString, {

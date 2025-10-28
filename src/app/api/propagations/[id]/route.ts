@@ -12,7 +12,7 @@ const updatePropagationSchema = z.object({
   nickname: z.string().min(1).max(100).optional(),
   location: z.string().min(1).max(100).optional(),
   dateStarted: z.string().datetime().transform(str => new Date(str)).optional(),
-  status: z.enum(['started', 'rooting', 'planted', 'established']).optional(),
+  status: z.enum(['started', 'rooting', 'ready', 'planted']).optional(),
   notes: z.string().max(2000).optional().nullable(),
   images: z.array(z.string()).max(10).optional(),
 });

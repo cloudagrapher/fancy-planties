@@ -25,7 +25,7 @@ interface FormData {
   nickname: string;
   location: string;
   dateStarted: string;
-  status: 'started' | 'rooting' | 'planted' | 'established';
+  status: 'started' | 'rooting' | 'ready' | 'planted';
   sourceType: 'internal' | 'external';
   externalSource: 'gift' | 'trade' | 'purchase' | 'other' | null;
   externalSourceDetails: string;
@@ -519,8 +519,8 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                 >
                   <option value="started">Started</option>
                   <option value="rooting">Rooting</option>
+                  <option value="ready">Ready</option>
                   <option value="planted">Planted</option>
-                  <option value="established">Established</option>
                 </select>
               </div>
             </div>

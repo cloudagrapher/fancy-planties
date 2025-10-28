@@ -10,7 +10,7 @@ const bcrypt = require('bcryptjs');
 
 async function seedDevData() {
   const client = new Client({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties'
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/fancy_planties'
   });
 
   try {

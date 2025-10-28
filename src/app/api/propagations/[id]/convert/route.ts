@@ -38,10 +38,10 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Check if propagation is ready to be converted (should be established)
-    if (existingPropagation.status !== 'established') {
+    // Check if propagation is ready to be converted (should be ready)
+    if (existingPropagation.status !== 'ready') {
       return NextResponse.json(
-        { error: 'Propagation must be established before converting to plant instance' },
+        { error: 'Propagation must be ready before converting to plant instance' },
         { status: 400 }
       );
     }

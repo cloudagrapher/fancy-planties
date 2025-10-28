@@ -59,7 +59,7 @@ If you just want to use the app:
 
    **Required environment variables:**
    ```bash
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/fancy_planties"
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/fancy_planties"
    NEXT_PUBLIC_APP_URL="http://localhost:3000"
    NODE_ENV="development"
    ```

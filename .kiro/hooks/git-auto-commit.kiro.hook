@@ -4,9 +4,9 @@
   "description": "Automatically stages all files, generates a descriptive commit message based on changes, commits the changes, and pushes to remote repository",
   "version": "1",
   "when": {
-    "type": "userTriggered",
+    "type": "fileEdited",
     "patterns": [
-      "**/*"
+      ".kiro/summaries/*"
     ]
   },
   "then": {

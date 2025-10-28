@@ -97,17 +97,17 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
       color: 'bg-yellow-100 text-yellow-800',
       description: 'Developing root systems'
     },
+    ready: {
+      label: 'Ready',
+      icon: CheckCircle,
+      color: 'bg-green-100 text-green-800',
+      description: 'Ready to be planted'
+    },
     planted: {
       label: 'Planted',
       icon: Clock,
       color: 'bg-purple-100 text-purple-800',
       description: 'Planted and establishing'
-    },
-    established: {
-      label: 'Established',
-      icon: CheckCircle,
-      color: 'bg-green-100 text-green-800',
-      description: 'Successfully established'
     }
   };
 
@@ -176,9 +176,9 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+          className="flex items-center px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-md font-semibold"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-5 h-5 mr-2" />
           Add Propagation
         </button>
       </div>

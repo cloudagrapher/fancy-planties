@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 // Validation schema for status updates
 const updateStatusSchema = z.object({
-  status: z.enum(['started', 'rooting', 'planted', 'established']),
+  status: z.enum(['started', 'rooting', 'ready', 'planted']),
   notes: z.string().max(500).optional(),
 });
 

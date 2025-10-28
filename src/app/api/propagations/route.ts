@@ -12,7 +12,7 @@ const createPropagationSchema = z.object({
   nickname: z.string().min(1).max(100),
   location: z.string().min(1).max(100),
   dateStarted: z.string().datetime().transform(str => new Date(str)),
-  status: z.enum(['started', 'rooting', 'planted', 'established']).default('started'),
+  status: z.enum(['started', 'rooting', 'ready', 'planted']).default('started'),
   notes: z.string().max(2000).optional().nullable(),
   images: z.array(z.string()).max(10).default([]),
 });
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       // Get propagations by status
       propagations = await PropagationQueries.getByStatus(
         user.id, 
-        status as 'started' | 'rooting' | 'planted' | 'established'
+        status as 'started' | 'rooting' | 'ready' | 'planted'
       );
     } else if (parentInstanceId) {
       // Get propagations from a specific parent plant
@@ -57,14 +57,19 @@ export async function GET(request: NextRequest) {
 
 // POST /api/propagations - Create a new propagation
 export async function POST(request: NextRequest) {
+  let body: any;
+  
   try {
     const { user } = await validateRequest();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    body = await request.json();
+    console.log('Received propagation data:', JSON.stringify(body, null, 2));
+    
     const validatedData = createPropagationSchema.parse(body);
+    console.log('Validated propagation data:', JSON.stringify(validatedData, null, 2));
 
     const propagation = await PropagationQueries.create({
       userId: user.id,
@@ -78,19 +83,33 @@ export async function POST(request: NextRequest) {
       images: validatedData.images,
     });
 
+    console.log('Successfully created propagation:', propagation.id);
     return NextResponse.json(propagation, { status: 201 });
   } catch (error) {
     console.error('Error creating propagation:', error);
+    console.error('Received data that caused error:', JSON.stringify(body, null, 2));
     
     if (error instanceof z.ZodError) {
+      console.error('Validation errors:', JSON.stringify(error.issues, null, 2));
       return NextResponse.json(
-        { error: 'Invalid data', details: error.issues },
+        { 
+          error: 'Validation failed', 
+          details: error.issues,
+          receivedData: body
+        },
         { status: 400 }
       );
     }
 
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Database or server error:', errorMessage);
+    
     return NextResponse.json(
-      { error: 'Failed to create propagation' },
+      { 
+        error: 'Failed to create propagation',
+        message: errorMessage,
+        receivedData: body
+      },
       { status: 500 }
     );
   }

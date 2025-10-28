@@ -22,8 +22,8 @@ if (typeof global.process === 'undefined') {
 process.env.NODE_ENV = 'test';
 
 // Force the correct DATABASE_URL for tests (override any other env files)
-// Use localhost:5433 for local development database from .env.local
-process.env.DATABASE_URL = 'postgresql://postgres:simple_password_123@localhost:5433/fancy_planties';
+// Use localhost:5432 for local development database from .env.local
+process.env.DATABASE_URL = 'postgresql://postgres:simple_password_123@localhost:5432/fancy_planties';
 
 // Essential Next.js mocks - moved to test-utils for better organization
 jest.mock('next/navigation', () => require('./src/test-utils/mocks/nextjs-mocks').navigationMock);

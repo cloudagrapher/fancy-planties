@@ -5,7 +5,7 @@ import { PostgresJsAdapter } from '@lucia-auth/adapter-postgresql';
 import postgres from 'postgres';
 
 // Create postgres client for Lucia adapter
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/fancy_planties';
 const client = postgres(connectionString);
 
 // Initialize PostgreSQL adapter for Lucia
