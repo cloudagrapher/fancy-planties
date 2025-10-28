@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { updatePlantInstanceSchema } from '@/lib/validation/plant-schemas';
 import { validateRequest } from '@/lib/auth/server';
+import { S3UrlGenerator } from '@/lib/utils/s3-url-generator';
 
 // GET /api/plant-instances/[id] - Get a specific plant instance
 export async function GET(
@@ -30,6 +31,21 @@ export async function GET(
     // Check if the plant instance belongs to the current user
     if (plantInstance.userId !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Transform S3 keys to presigned URLs if S3 is configured
+    if (S3UrlGenerator.isConfigured() && plantInstance.s3ImageKeys && plantInstance.s3ImageKeys.length > 0) {
+      try {
+        const presignedUrls = await S3UrlGenerator.transformS3KeysToUrls(plantInstance.s3ImageKeys);
+        const validUrls = presignedUrls.filter(url => url); // Filter out any empty URLs
+        plantInstance.images = validUrls;
+        if (validUrls.length > 0) {
+          plantInstance.primaryImage = validUrls[0];
+        }
+      } catch (error) {
+        console.error('Failed to generate presigned URLs:', error);
+        // Continue without images rather than failing the entire request
+      }
     }
 
     return NextResponse.json(plantInstance);
@@ -152,6 +168,20 @@ export async function PUT(
 
     // Get the enhanced plant instance with plant data
     const enhancedInstance = await PlantInstanceQueries.getEnhancedById(updatedInstance.id);
+
+    // Transform S3 keys to presigned URLs if S3 is configured
+    if (enhancedInstance && S3UrlGenerator.isConfigured() && enhancedInstance.s3ImageKeys && enhancedInstance.s3ImageKeys.length > 0) {
+      try {
+        const presignedUrls = await S3UrlGenerator.transformS3KeysToUrls(enhancedInstance.s3ImageKeys);
+        const validUrls = presignedUrls.filter(url => url);
+        enhancedInstance.images = validUrls;
+        if (validUrls.length > 0) {
+          enhancedInstance.primaryImage = validUrls[0];
+        }
+      } catch (error) {
+        console.error('Failed to generate presigned URLs:', error);
+      }
+    }
 
     return NextResponse.json(enhancedInstance);
   } catch (error) {

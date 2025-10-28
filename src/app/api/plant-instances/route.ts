@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { createPlantInstanceSchema, plantInstanceFilterSchema, type EnhancedPlantInstanceFilter } from '@/lib/validation/plant-schemas';
 import { validateVerifiedRequest } from '@/lib/auth/server';
+import { S3UrlGenerator } from '@/lib/utils/s3-url-generator';
 
 // GET /api/plant-instances - Get plant instances with optional filtering
 export async function GET(request: NextRequest) {
@@ -69,12 +70,48 @@ export async function GET(request: NextRequest) {
       result = await PlantInstanceQueries.getWithFilters(validatedFilters);
     }
     
-    console.log('Plant instances result:', { 
-      instanceCount: result.instances.length, 
+    console.log('Plant instances result:', {
+      instanceCount: result.instances.length,
       totalCount: result.totalCount,
-      hasMore: result.hasMore 
+      hasMore: result.hasMore
     });
-    
+
+    // Transform S3 keys to presigned URLs if S3 is configured
+    console.log('[S3 Debug] S3 configured:', S3UrlGenerator.isConfigured());
+    console.log('[S3 Debug] Instances count:', result.instances.length);
+
+    if (S3UrlGenerator.isConfigured() && result.instances.length > 0) {
+      try {
+        // Find instances with S3 keys for logging
+        const withS3Keys = result.instances.filter(i => i.s3ImageKeys && i.s3ImageKeys.length > 0);
+        console.log('[S3 Debug] Instances with S3 keys:', withS3Keys.length);
+
+        await Promise.all(
+          result.instances.map(async (instance) => {
+            if (instance.s3ImageKeys && instance.s3ImageKeys.length > 0) {
+              try {
+                console.log(`[S3 Debug] Transforming ${instance.s3ImageKeys.length} keys for instance ${instance.id}`);
+                const presignedUrls = await S3UrlGenerator.transformS3KeysToUrls(instance.s3ImageKeys);
+                console.log(`[S3 Debug] Generated ${presignedUrls.length} URLs for instance ${instance.id}`);
+                const validUrls = presignedUrls.filter(url => url);
+                instance.images = validUrls;
+                // Update primaryImage to the first URL
+                if (validUrls.length > 0) {
+                  instance.primaryImage = validUrls[0];
+                }
+              } catch (error) {
+                console.error(`Failed to generate presigned URLs for instance ${instance.id}:`, error);
+                // Keep existing empty images array on error
+              }
+            }
+          })
+        );
+      } catch (error) {
+        console.error('Error transforming S3 keys:', error);
+        // Continue without images rather than failing the entire request
+      }
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error('Failed to get plant instances:', error);
@@ -235,10 +272,24 @@ export async function POST(request: NextRequest) {
 
     // Create the plant instance
     const plantInstance = await PlantInstanceQueries.create(validatedData);
-    
+
     // Get the enhanced plant instance with plant data
     const enhancedInstance = await PlantInstanceQueries.getEnhancedById(plantInstance.id);
-    
+
+    // Transform S3 keys to presigned URLs if S3 is configured
+    if (enhancedInstance && S3UrlGenerator.isConfigured() && enhancedInstance.s3ImageKeys && enhancedInstance.s3ImageKeys.length > 0) {
+      try {
+        const presignedUrls = await S3UrlGenerator.transformS3KeysToUrls(enhancedInstance.s3ImageKeys);
+        const validUrls = presignedUrls.filter(url => url);
+        enhancedInstance.images = validUrls;
+        if (validUrls.length > 0) {
+          enhancedInstance.primaryImage = validUrls[0];
+        }
+      } catch (error) {
+        console.error('Failed to generate presigned URLs:', error);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: enhancedInstance
