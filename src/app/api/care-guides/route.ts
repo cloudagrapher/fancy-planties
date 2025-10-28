@@ -15,9 +15,9 @@ const CareGuideCreateSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   images: z.array(z.string()).default([]),
+  s3ImageKeys: z.array(z.string()).default([]),
   watering: z.object({
     frequency: z.string().optional(),
-    method: z.string().optional(),
     tips: z.string().optional(),
   }).optional(),
   fertilizing: z.object({
@@ -83,6 +83,7 @@ export async function POST(request: NextRequest) {
       title: validatedData.title,
       description: validatedData.description || null,
       images: validatedData.images,
+      s3ImageKeys: validatedData.s3ImageKeys,
       watering: validatedData.watering || null,
       fertilizing: validatedData.fertilizing || null,
       lighting: validatedData.lighting || null,

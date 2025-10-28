@@ -110,19 +110,19 @@
   - Update API call to send s3ImageKeys instead of Base64 images
   - _Requirements: 4.1_
 
-- [ ] 5. Update Care Guide API for S3 Images
+- [x] 5. Update Care Guide API for S3 Images
   - Modify API to accept s3ImageKeys
   - Update validation schema
   - _Requirements: 4.1_
 
-- [ ] 5.1 Update care guide API validation schema
+- [x] 5.1 Update care guide API validation schema
   - Modify CareGuideCreateSchema in `src/app/api/care-guides/route.ts`
   - Change images field from array of strings (Base64) to accept s3ImageKeys
   - Add s3ImageKeys field validation
   - Update database insert to use s3ImageKeys field
   - _Requirements: 4.1_
 
-- [ ] 5.2 Update care guide API response handling
+- [x] 5.2 Update care guide API response handling
   - Ensure GET endpoint returns s3ImageKeys in response
   - Update POST endpoint to return created guide with s3ImageKeys
   - _Requirements: 4.1_
