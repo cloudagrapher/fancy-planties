@@ -19,10 +19,10 @@ export async function GET(request: NextRequest) {
       try {
         // Transform all plant instance arrays in the dashboard data
         const plantArrays = [
-          dashboardData.overdueInstances,
-          dashboardData.dueTodayInstances,
-          dashboardData.dueSoonInstances,
-          dashboardData.healthyInstances,
+          dashboardData.overdue,
+          dashboardData.dueToday,
+          dashboardData.dueSoon,
+          dashboardData.recentlyCared,
         ];
 
         await Promise.all(
