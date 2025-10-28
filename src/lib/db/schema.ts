@@ -123,7 +123,7 @@ export const propagations = pgTable('propagations', {
   nickname: text('nickname').notNull(),
   location: text('location').notNull(),
   dateStarted: timestamp('date_started').defaultNow().notNull(),
-  status: text('status', { enum: ['started', 'rooting', 'planted', 'established'] }).default('started').notNull(),
+  status: text('status', { enum: ['started', 'rooting', 'ready', 'planted'] }).default('started').notNull(),
   sourceType: text('source_type', { enum: ['internal', 'external'] }).default('internal').notNull(), // New field
   externalSource: text('external_source', { enum: ['gift', 'trade', 'purchase', 'other'] }), // New field, nullable
   externalSourceDetails: text('external_source_details'), // New field for additional details

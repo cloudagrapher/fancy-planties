@@ -69,7 +69,7 @@ export class PropagationQueries {
   }
 
   // Get propagations by status
-  static async getByStatus(userId: number, status: 'started' | 'rooting' | 'planted' | 'established'): Promise<(Propagation & { 
+  static async getByStatus(userId: number, status: 'started' | 'rooting' | 'ready' | 'planted'): Promise<(Propagation & { 
     plant: typeof plants.$inferSelect;
     parentInstance?: typeof plantInstances.$inferSelect;
   })[]> {
@@ -238,7 +238,7 @@ export class PropagationQueries {
   }
 
   // Update propagation status
-  static async updateStatus(id: number, status: 'started' | 'rooting' | 'planted' | 'established', notes?: string): Promise<Propagation> {
+  static async updateStatus(id: number, status: 'started' | 'rooting' | 'ready' | 'planted', notes?: string): Promise<Propagation> {
     try {
       const updateData: Partial<NewPropagation> = {
         status,
@@ -308,11 +308,11 @@ export class PropagationQueries {
           })
           .returning();
 
-        // Update propagation status to established
+        // Update propagation status to planted
         const [updatedPropagation] = await tx
           .update(propagations)
           .set({
-            status: 'established',
+            status: 'planted',
             notes: `${propagation.notes || ''}\nConverted to plant instance #${newInstance.id} on ${new Date().toDateString()}`,
             updatedAt: new Date()
           })
@@ -349,7 +349,7 @@ export class PropagationQueries {
     byExternalSource: Record<string, number>;
     successRate: number;
     successRateBySource: Record<string, number>;
-    averageDaysToEstablished: number;
+    averageDaysToReady: number;
   }> {
     try {
       const [stats] = await db
@@ -357,39 +357,41 @@ export class PropagationQueries {
           totalPropagations: sql<number>`count(*)`,
           started: sql<number>`count(*) filter (where status = 'started')`,
           rooting: sql<number>`count(*) filter (where status = 'rooting')`,
+          ready: sql<number>`count(*) filter (where status = 'ready')`,
           planted: sql<number>`count(*) filter (where status = 'planted')`,
-          established: sql<number>`count(*) filter (where status = 'established')`,
           internal: sql<number>`count(*) filter (where source_type = 'internal')`,
           external: sql<number>`count(*) filter (where source_type = 'external')`,
           gift: sql<number>`count(*) filter (where external_source = 'gift')`,
           trade: sql<number>`count(*) filter (where external_source = 'trade')`,
           purchase: sql<number>`count(*) filter (where external_source = 'purchase')`,
           other: sql<number>`count(*) filter (where external_source = 'other')`,
-          internalEstablished: sql<number>`count(*) filter (where source_type = 'internal' and status = 'established')`,
-          externalEstablished: sql<number>`count(*) filter (where source_type = 'external' and status = 'established')`,
-          avgDays: sql<number>`avg(extract(day from (updated_at - date_started))) filter (where status = 'established')`
+          internalReady: sql<number>`count(*) filter (where source_type = 'internal' and (status = 'ready' or status = 'planted'))`,
+          externalReady: sql<number>`count(*) filter (where source_type = 'external' and (status = 'ready' or status = 'planted'))`,
+          avgDays: sql<number>`avg(extract(day from (updated_at - date_started))) filter (where status = 'ready' or status = 'planted')`
         })
         .from(propagations)
         .where(eq(propagations.userId, userId));
 
       const total = Number(stats.totalPropagations);
-      const established = Number(stats.established);
+      const ready = Number(stats.ready);
+      const planted = Number(stats.planted);
+      const successful = ready + planted;
       const internal = Number(stats.internal);
       const external = Number(stats.external);
-      const internalEstablished = Number(stats.internalEstablished);
-      const externalEstablished = Number(stats.externalEstablished);
+      const internalReady = Number(stats.internalReady);
+      const externalReady = Number(stats.externalReady);
       
-      const successRate = total > 0 ? (established / total) * 100 : 0;
-      const internalSuccessRate = internal > 0 ? (internalEstablished / internal) * 100 : 0;
-      const externalSuccessRate = external > 0 ? (externalEstablished / external) * 100 : 0;
+      const successRate = total > 0 ? (successful / total) * 100 : 0;
+      const internalSuccessRate = internal > 0 ? (internalReady / internal) * 100 : 0;
+      const externalSuccessRate = external > 0 ? (externalReady / external) * 100 : 0;
 
       return {
         totalPropagations: total,
         byStatus: {
           started: Number(stats.started),
           rooting: Number(stats.rooting),
-          planted: Number(stats.planted),
-          established: established
+          ready: ready,
+          planted: planted
         },
         bySourceType: {
           internal: internal,
@@ -406,7 +408,7 @@ export class PropagationQueries {
           internal: Math.round(internalSuccessRate * 100) / 100,
           external: Math.round(externalSuccessRate * 100) / 100
         },
-        averageDaysToEstablished: Math.round((Number(stats.avgDays) || 0) * 100) / 100
+        averageDaysToReady: Math.round((Number(stats.avgDays) || 0) * 100) / 100
       };
     } catch (error) {
       console.error('Failed to get propagation stats:', error);
@@ -414,7 +416,7 @@ export class PropagationQueries {
     }
   }
 
-  // Get active propagations (not established)
+  // Get active propagations (not planted)
   static async getActive(userId: number): Promise<(Propagation & { 
     plant: typeof plants.$inferSelect;
     parentInstance?: typeof plantInstances.$inferSelect;
@@ -428,7 +430,7 @@ export class PropagationQueries {
         .where(
           and(
             eq(propagations.userId, userId),
-            sql`${propagations.status} != 'established'`
+            sql`${propagations.status} != 'planted'`
           )
         )
         .orderBy(asc(propagations.dateStarted));

@@ -1,10 +1,14 @@
 // Database connection for Node.js scripts (without server-only)
+import { config } from 'dotenv';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { sql } from 'drizzle-orm';
 import * as schema from './schema';
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5433/fancy_planties';
+// Load environment variables
+config({ path: '.env.local' });
+
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/fancy_planties';
 
 // Connection configuration with pooling
 const client = postgres(connectionString, {

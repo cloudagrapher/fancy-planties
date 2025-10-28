@@ -19,7 +19,7 @@ interface PropagationStats {
   totalPropagations: number;
   byStatus: Record<string, number>;
   successRate: number;
-  averageDaysToEstablished: number;
+  averageDaysToReady: number;
 }
 
 interface CareStats {
@@ -196,9 +196,9 @@ export default function DashboardStatistics({ userId, className = '' }: Dashboar
           </div>
           <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-sky-50/70 backdrop-blur p-4">
             <div className="text-2xl font-bold text-sky-600">
-              {isLoading ? '--' : formatNumber(propagationStats?.averageDaysToEstablished)}
+              {isLoading ? '--' : formatNumber(propagationStats?.averageDaysToReady)}
             </div>
-            <div className="text-sm text-sky-700">Avg Days to Establish</div>
+            <div className="text-sm text-sky-700">Avg Days to Ready</div>
           </div>
           <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-amber-50/70 backdrop-blur p-4">
             <div className="text-2xl font-bold text-amber-600">

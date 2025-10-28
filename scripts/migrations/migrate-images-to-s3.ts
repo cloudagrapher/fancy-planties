@@ -15,8 +15,12 @@
  *   --table         Migrate specific table only (plant_instances, propagations, care_history, care_guides)
  */
 
+// Load environment variables FIRST before any imports
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { db } from '@/lib/db';
+import { db } from '@/lib/db/script-connection';
 import { plantInstances, propagations, careHistory, careGuides } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { createId } from '@paralleldrive/cuid2';
