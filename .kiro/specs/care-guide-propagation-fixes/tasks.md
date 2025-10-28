@@ -38,7 +38,7 @@
   - Ensure getByStatus function accepts 'ready' instead of 'established'
   - _Requirements: 6, 7_
 
-- [ ] 3. Update Propagation Frontend Components
+- [x] 3. Update Propagation Frontend Components
   - Update status configuration
   - Fix button visibility
   - Update form and display components
@@ -75,26 +75,27 @@
   - Create subtask summary in .kiro/summaries
   - _Requirements: 6, 7_
 
-- [ ] 4. Update Care Guide Form
+- [x] 4. Update Care Guide Form
   - Remove watering method field
   - Integrate S3 image upload
   - Improve description field visibility
+  - Create subtask summary in .kiro/summaries
   - _Requirements: 1, 2, 4.1_
 
-- [ ] 4.1 Remove method field from watering section
+- [x] 4.1 Remove method field from watering section
   - Remove method input from watering card in `src/components/handbook/CareGuideForm.tsx`
   - Update CareGuideFormData interface to remove method from watering object
   - Remove method field from form state initialization
   - _Requirements: 1_
 
-- [ ] 4.2 Make description field more prominent
+- [x] 4.2 Make description field more prominent
   - Reposition description field in Basic Info tab of `src/components/handbook/CareGuideForm.tsx`
   - Increase textarea rows to 4-5 for better visibility
   - Add clearer label indicating this is the general description
   - Ensure field is prominently placed after Guide Information section
   - _Requirements: 2_
 
-- [ ] 4.3 Replace ImageUpload with S3ImageUpload component
+- [x] 4.3 Replace ImageUpload with S3ImageUpload component
   - Import S3ImageUpload in `src/components/handbook/CareGuideForm.tsx`
   - Replace ImageUpload component with S3ImageUpload
   - Pass required props: userId, entityType='care_guide', entityId
@@ -102,7 +103,7 @@
   - Update form state to track s3ImageKeys instead of File objects
   - _Requirements: 4.1_
 
-- [ ] 4.4 Update care guide form submission for S3 images
+- [x] 4.4 Update care guide form submission for S3 images
   - Modify handleSubmit in `src/components/handbook/CareGuideForm.tsx`
   - Remove Base64 conversion logic for images
   - Include s3ImageKeys array in form submission

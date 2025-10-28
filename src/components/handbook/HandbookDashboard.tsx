@@ -201,36 +201,12 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
 
   const handleCreateGuide = async (formData: any) => {
     try {
-      // Convert File objects to Base64 strings for images
-      const imagePromises = formData.images.map((file: File) => {
-        return new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            if (e.target?.result) {
-              resolve(e.target.result as string);
-            } else {
-              reject(new Error('Failed to read file'));
-            }
-          };
-          reader.onerror = () => reject(new Error('Failed to read file'));
-          reader.readAsDataURL(file);
-        });
-      });
-
-      const imageDataUrls = await Promise.all(imagePromises);
-
-      // Prepare the data for the API with converted images
-      const apiData = {
-        ...formData,
-        images: imageDataUrls, // Replace File[] with string[] (Base64 data URLs)
-      };
-
       const response = await fetch('/api/care-guides', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(apiData),
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
@@ -405,6 +381,7 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
         isOpen={showCreateForm}
         onClose={() => setShowCreateForm(false)}
         onSubmit={handleCreateGuide}
+        userId={userId}
       />
     </div>
   );

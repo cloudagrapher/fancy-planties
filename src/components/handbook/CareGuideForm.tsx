@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { X, Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, MessageCircle } from 'lucide-react';
-import ImageUpload from '@/components/shared/ImageUpload';
+import S3ImageUpload from '@/components/shared/S3ImageUpload';
 
 interface CareGuideFormData {
   taxonomyLevel: 'family' | 'genus' | 'species' | 'cultivar';
@@ -13,10 +13,9 @@ interface CareGuideFormData {
   commonName: string;
   title: string;
   description: string;
-  images: File[];
+  s3ImageKeys: string[];
   watering: {
     frequency: string;
-    method: string;
     tips: string;
   };
   fertilizing: {
@@ -59,6 +58,7 @@ interface CareGuideFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CareGuideFormData) => void;
+  userId: number;
 }
 
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -191,7 +191,7 @@ const TextArea = ({
   </div>
 );
 
-export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFormProps) {
+export default function CareGuideForm({ isOpen, onClose, onSubmit, userId }: CareGuideFormProps) {
   const [formData, setFormData] = useState<CareGuideFormData>({
     taxonomyLevel: 'species',
     family: '',
@@ -201,10 +201,9 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
     commonName: '',
     title: '',
     description: '',
-    images: [],
+    s3ImageKeys: [],
     watering: {
       frequency: '',
-      method: '',
       tips: ''
     },
     fertilizing: {
@@ -402,11 +401,11 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
                     />
 
                     <TextArea
-                      label="Description"
+                      label="General Description"
                       value={formData.description}
                       onChange={(value) => updateFormData('description', value)}
-                      placeholder="Brief overview of this care guide..."
-                      rows={3}
+                      placeholder="Provide a comprehensive overview of this plant's care requirements and characteristics..."
+                      rows={5}
                     />
 
                     <div className="flex items-center gap-2">
@@ -430,8 +429,11 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
                     <Info className="h-4 w-4 text-slate-600" />
                     <h3 className="font-medium text-slate-800">Photos</h3>
                   </div>
-                  <ImageUpload
-                    onImagesChange={(files) => updateFormData('images', files)}
+                  <S3ImageUpload
+                    userId={userId.toString()}
+                    entityType="care_guide"
+                    entityId={`temp-${Date.now()}`}
+                    onUploadComplete={(s3Keys) => updateFormData('s3ImageKeys', s3Keys)}
                     maxImages={6}
                     className="mt-3"
                   />
@@ -453,12 +455,6 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit }: CareGuideFo
                       value={formData.watering.frequency}
                       onChange={(value) => updateFormData('watering.frequency', value)}
                       placeholder="e.g., Weekly, When soil is dry"
-                    />
-                    <Input
-                      label="Method"
-                      value={formData.watering.method}
-                      onChange={(value) => updateFormData('watering.method', value)}
-                      placeholder="e.g., Deep watering, Bottom watering"
                     />
                     <TextArea
                       label="Tips"
