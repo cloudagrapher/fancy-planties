@@ -59,6 +59,7 @@ interface CareGuideFormProps {
   onClose: () => void;
   onSubmit: (data: CareGuideFormData) => void;
   userId: number;
+  initialData?: Partial<CareGuideFormData>;
 }
 
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -191,56 +192,77 @@ const TextArea = ({
   </div>
 );
 
-export default function CareGuideForm({ isOpen, onClose, onSubmit, userId }: CareGuideFormProps) {
-  const [formData, setFormData] = useState<CareGuideFormData>({
-    taxonomyLevel: 'species',
-    family: '',
-    genus: '',
-    species: '',
-    cultivar: '',
-    commonName: '',
-    title: '',
-    description: '',
-    s3ImageKeys: [],
-    watering: {
-      frequency: '',
-      tips: ''
-    },
-    fertilizing: {
-      frequency: '',
-      type: '',
-      schedule: '',
-      tips: ''
-    },
-    lighting: {
-      requirements: '',
-      intensity: '',
-      tips: ''
-    },
-    temperature: {
-      range: '',
-      tips: ''
-    },
-    humidity: {
-      requirements: '',
-      tips: ''
-    },
-    soil: {
-      type: '',
-      recipe: '',
-      tips: ''
-    },
-    repotting: {
-      frequency: '',
-      tips: ''
-    },
-    propagation: {
-      methods: '',
-      tips: ''
-    },
-    generalTips: '',
-    isPublic: false
-  });
+export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initialData }: CareGuideFormProps) {
+  const getInitialFormData = (): CareGuideFormData => {
+    const defaults: CareGuideFormData = {
+      taxonomyLevel: 'species',
+      family: '',
+      genus: '',
+      species: '',
+      cultivar: '',
+      commonName: '',
+      title: '',
+      description: '',
+      s3ImageKeys: [],
+      watering: {
+        frequency: '',
+        tips: ''
+      },
+      fertilizing: {
+        frequency: '',
+        type: '',
+        schedule: '',
+        tips: ''
+      },
+      lighting: {
+        requirements: '',
+        intensity: '',
+        tips: ''
+      },
+      temperature: {
+        range: '',
+        tips: ''
+      },
+      humidity: {
+        requirements: '',
+        tips: ''
+      },
+      soil: {
+        type: '',
+        recipe: '',
+        tips: ''
+      },
+      repotting: {
+        frequency: '',
+        tips: ''
+      },
+      propagation: {
+        methods: '',
+        tips: ''
+      },
+      generalTips: '',
+      isPublic: false
+    };
+
+    if (initialData) {
+      return {
+        ...defaults,
+        ...initialData,
+        watering: { ...defaults.watering, ...initialData.watering },
+        fertilizing: { ...defaults.fertilizing, ...initialData.fertilizing },
+        lighting: { ...defaults.lighting, ...initialData.lighting },
+        temperature: { ...defaults.temperature, ...initialData.temperature },
+        humidity: { ...defaults.humidity, ...initialData.humidity },
+        soil: { ...defaults.soil, ...initialData.soil },
+        repotting: { ...defaults.repotting, ...initialData.repotting },
+        propagation: { ...defaults.propagation, ...initialData.propagation },
+      };
+    }
+
+    return defaults;
+  };
+
+  const [formData, setFormData] = useState<CareGuideFormData>(getInitialFormData());
 
   const [activeTab, setActiveTab] = useState<'basic' | 'care'>('basic');
 
@@ -678,7 +700,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId }: Car
               </Button>
               <Button type="submit" disabled={!formData.title || !formData.family}>
                 <Save className="h-4 w-4" />
-                Create Guide
+                {initialData ? 'Update Guide' : 'Create Guide'}
               </Button>
             </div>
           </form>

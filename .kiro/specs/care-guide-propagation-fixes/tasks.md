@@ -68,7 +68,7 @@
   - Create subtask summary in .kiro/summaries
   - _Requirements: 6, 7_
 
-- [x] 3.4 Update PropagationCard status display
+- [ ] 3.4 Update PropagationCard status display
   - Modify status badge rendering in `src/components/propagations/PropagationCard.tsx`
   - Update status color coding for 'ready' status
   - Ensure status labels display correctly
@@ -79,7 +79,7 @@
   - Remove watering method field
   - Integrate S3 image upload
   - Improve description field visibility
-  - Create subtask summary in .kiro/summaries
+  - Create task summary in .kiro/summaries
   - _Requirements: 1, 2, 4.1_
 
 - [x] 4.1 Remove method field from watering section
@@ -164,44 +164,44 @@
   - Handle form submission to update existing guide
   - _Requirements: 3_
 
-- [ ] 7. Update HandbookDashboard for Clickable Cards
+- [x] 7. Update HandbookDashboard for Clickable Cards
   - Add click handlers to care guide cards
   - Integrate detail view modal
   - Display images on cards
   - _Requirements: 3, 4_
 
-- [ ] 7.1 Add state management for selected guide
+- [x] 7.1 Add state management for selected guide
   - Add selectedGuide state in `src/components/handbook/HandbookDashboard.tsx`
   - Add showDetail state for modal visibility
   - Create handler functions for opening and closing detail view
   - _Requirements: 3_
 
-- [ ] 7.2 Make CareGuideCard clickable
+- [x] 7.2 Make CareGuideCard clickable
   - Add onClick handler to CareGuideCard component
   - Update card styling to indicate clickability (cursor-pointer, hover effects)
   - Pass setSelectedGuide function to card onClick
   - _Requirements: 3_
 
-- [ ] 7.3 Integrate CareGuideDetail modal
+- [x] 7.3 Integrate CareGuideDetail modal
   - Import CareGuideDetail component
   - Conditionally render detail modal when selectedGuide is set
   - Pass guide data, userId, and handler functions
   - Implement close handler to clear selectedGuide
   - _Requirements: 3_
 
-- [ ] 7.4 Display thumbnail images on care guide cards
+- [x] 7.4 Display thumbnail images on care guide cards
   - Update CareGuideCard component to show first image from s3ImageKeys
   - Use S3Image component for thumbnail display
   - Add aspect-video container for consistent sizing
   - Handle cards with no images (hide image section)
   - _Requirements: 4_
 
-- [ ] 8. Update Care Guide API to Remove Watering Method
+- [x] 8. Update Care Guide API to Remove Watering Method
   - Update API validation schema
   - Update database operations
   - _Requirements: 1_
 
-- [ ] 8.1 Remove method field from API validation
+- [x] 8.1 Remove method field from API validation
   - Modify watering object schema in `src/app/api/care-guides/route.ts`
   - Remove method field from CareGuideCreateSchema watering object
   - Update any PUT/PATCH endpoints if they exist
@@ -211,6 +211,7 @@
   - Test all modified functionality
   - Verify database migrations
   - Test image upload and display
+  - Create task summary in .kiro/summaries
   - _Requirements: All_
 
 - [ ] 9.1 Test propagation status changes
@@ -255,6 +256,7 @@
   - Update API documentation
   - Add code comments
   - Clean up unused code
+  - Create task summary in .kiro/summaries
   - _Requirements: All_
 
 - [ ] 10.1 Update API documentation

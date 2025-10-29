@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
 import CareGuideForm from './CareGuideForm';
+import CareGuideDetail from './CareGuideDetail';
+import S3Image from '@/components/shared/S3Image';
 
 interface HandbookDashboardProps {
   careGuides: CareGuide[];
@@ -81,7 +83,7 @@ const SectionHeader = ({
   </div>
 );
 
-const CareGuideCard = ({ guide }: { guide: CareGuide }) => {
+const CareGuideCard = ({ guide, onClick, userId }: { guide: CareGuide; onClick: () => void; userId: number }) => {
   const getTaxonomyDisplay = (guide: CareGuide) => {
     switch (guide.taxonomyLevel) {
       case 'family':
@@ -119,8 +121,23 @@ const CareGuideCard = ({ guide }: { guide: CareGuide }) => {
   };
 
   return (
-    <Card className="p-0 overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
-      <div className="p-4 space-y-3">
+    <div onClick={onClick} className="cursor-pointer">
+      <Card className="p-0 overflow-hidden hover:shadow-lg transition-all hover:scale-[1.02]">
+        {/* Thumbnail Image */}
+        {guide.s3ImageKeys && guide.s3ImageKeys.length > 0 && (
+          <div className="aspect-video relative overflow-hidden bg-slate-100" suppressHydrationWarning>
+            <S3Image
+              s3Key={guide.s3ImageKeys[0]}
+              userId={userId.toString()}
+              alt={guide.title}
+              width={400}
+              height={225}
+              className="object-cover w-full h-full"
+            />
+          </div>
+        )}
+        
+        <div className="p-4 space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -189,7 +206,8 @@ const CareGuideCard = ({ guide }: { guide: CareGuide }) => {
           </span>
         </div>
       </div>
-    </Card>
+      </Card>
+    </div>
   );
 };
 
@@ -198,6 +216,8 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [selectedGuide, setSelectedGuide] = useState<CareGuide | null>(null);
+  const [editingGuide, setEditingGuide] = useState<CareGuide | null>(null);
 
   const handleCreateGuide = async (formData: any) => {
     try {
@@ -223,6 +243,99 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
       console.error('Failed to create care guide:', error);
       alert(`Failed to create care guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  };
+
+  const handleUpdateGuide = async (formData: any) => {
+    if (!editingGuide) return;
+    
+    try {
+      const response = await fetch(`/api/care-guides/${editingGuide.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update care guide');
+      }
+
+      // Refresh the page to show the updated guide
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('Failed to update care guide:', error);
+      alert(`Failed to update care guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleOpenDetail = (guide: CareGuide) => {
+    setSelectedGuide(guide);
+  };
+
+  const handleCloseDetail = () => {
+    setSelectedGuide(null);
+  };
+
+  const handleEditGuide = () => {
+    if (selectedGuide) {
+      setEditingGuide(selectedGuide);
+      handleCloseDetail();
+    }
+  };
+
+  const convertGuideToFormData = (guide: CareGuide) => {
+    return {
+      taxonomyLevel: guide.taxonomyLevel,
+      family: guide.family || '',
+      genus: guide.genus || '',
+      species: guide.species || '',
+      cultivar: guide.cultivar || '',
+      commonName: guide.commonName || '',
+      title: guide.title,
+      description: guide.description || '',
+      s3ImageKeys: guide.s3ImageKeys || [],
+      watering: {
+        frequency: guide.watering?.frequency || '',
+        tips: guide.watering?.tips || ''
+      },
+      fertilizing: {
+        frequency: guide.fertilizing?.frequency || '',
+        type: guide.fertilizing?.type || '',
+        schedule: guide.fertilizing?.schedule || '',
+        tips: guide.fertilizing?.tips || ''
+      },
+      lighting: {
+        requirements: guide.lighting?.requirements || '',
+        intensity: guide.lighting?.intensity || '',
+        tips: guide.lighting?.tips || ''
+      },
+      temperature: {
+        range: guide.temperature?.range || '',
+        tips: guide.temperature?.tips || ''
+      },
+      humidity: {
+        requirements: guide.humidity?.requirements || '',
+        tips: guide.humidity?.tips || ''
+      },
+      soil: {
+        type: guide.soil?.type || '',
+        recipe: guide.soil?.recipe || '',
+        tips: guide.soil?.tips || ''
+      },
+      repotting: {
+        frequency: guide.repotting?.frequency || '',
+        tips: guide.repotting?.tips || ''
+      },
+      propagation: {
+        methods: guide.propagation?.methods || '',
+        tips: guide.propagation?.tips || ''
+      },
+      generalTips: guide.generalTips || '',
+      isPublic: guide.isPublic,
+    };
   };
 
   // Filter care guides
@@ -352,7 +465,12 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
       {filteredGuides.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredGuides.map((guide) => (
-            <CareGuideCard key={guide.id} guide={guide} />
+            <CareGuideCard 
+              key={guide.id} 
+              guide={guide} 
+              onClick={() => handleOpenDetail(guide)}
+              userId={userId}
+            />
           ))}
         </div>
       ) : (
@@ -383,6 +501,27 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
         onSubmit={handleCreateGuide}
         userId={userId}
       />
+
+      {/* Care Guide Edit Form */}
+      {editingGuide && (
+        <CareGuideForm
+          isOpen={true}
+          onClose={() => setEditingGuide(null)}
+          onSubmit={handleUpdateGuide}
+          userId={userId}
+          initialData={convertGuideToFormData(editingGuide)}
+        />
+      )}
+
+      {/* Care Guide Detail Modal */}
+      {selectedGuide && (
+        <CareGuideDetail
+          guide={selectedGuide}
+          userId={userId}
+          onClose={handleCloseDetail}
+          onEdit={handleEditGuide}
+        />
+      )}
     </div>
   );
 }
