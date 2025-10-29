@@ -1,35 +1,17 @@
 /**
  * S3 URL Generator - Server-side utility for generating presigned URLs
- * This runs only on the server and uses AWS SDK credentials
+ * This runs only on the server and proxies through Lambda functions via API Gateway
+ * No AWS credentials needed - Lambda functions use IAM roles
  */
-
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const URL_EXPIRATION = 3600; // 1 hour
 
-// Lazy initialization of S3 client to ensure env vars are loaded
-let s3Client: S3Client | null = null;
-
-function getS3Client(): S3Client {
-  if (!s3Client) {
-    s3Client = new S3Client({
-      region: process.env.AWS_REGION || 'us-east-1',
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-      },
-    });
+function getApiEndpoint(): string {
+  const endpoint = process.env.AWS_API_ENDPOINT;
+  if (!endpoint) {
+    throw new Error('AWS_API_ENDPOINT environment variable is not set');
   }
-  return s3Client;
-}
-
-function getBucketName(): string {
-  const bucketName = process.env.AWS_S3_BUCKET_NAME || process.env.AWS_S3_BUCKET;
-  if (!bucketName) {
-    throw new Error('AWS_S3_BUCKET_NAME or AWS_S3_BUCKET environment variable is not set');
-  }
-  return bucketName;
+  return endpoint;
 }
 
 export interface GeneratePresignedUrlParams {
@@ -40,6 +22,7 @@ export interface GeneratePresignedUrlParams {
 export class S3UrlGenerator {
   /**
    * Generate a presigned URL for downloading an object from S3
+   * Uses Lambda function via API Gateway - no AWS credentials needed
    * @param params - S3 key and optional expiration time
    * @returns Presigned URL that can be used to download the object
    */
@@ -51,19 +34,40 @@ export class S3UrlGenerator {
     }
 
     try {
-      const bucketName = getBucketName();
-      const client = getS3Client();
+      const apiEndpoint = getApiEndpoint();
 
-      const command = new GetObjectCommand({
-        Bucket: bucketName,
-        Key: s3Key,
+      // Extract userId from s3Key (format: users/{userId}/...)
+      const userIdMatch = s3Key.match(/^users\/(\d+)\//);
+      if (!userIdMatch) {
+        throw new Error(`Invalid S3 key format: ${s3Key}`);
+      }
+      const userId = userIdMatch[1];
+
+      // Call Lambda function via API Gateway
+      const response = await fetch(`${apiEndpoint}/images/download`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          s3Key,
+          expiresIn,
+        }),
       });
 
-      const presignedUrl = await getSignedUrl(client, command, {
-        expiresIn,
-      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(`Lambda request failed: ${error.error || response.statusText}`);
+      }
 
-      return presignedUrl;
+      const data = await response.json();
+
+      if (!data.url) {
+        throw new Error('Lambda response missing presigned URL');
+      }
+
+      return data.url;
     } catch (error) {
       console.error(`Failed to generate presigned URL for ${s3Key}:`, error);
       throw new Error(`Failed to generate presigned URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -97,15 +101,11 @@ export class S3UrlGenerator {
   }
 
   /**
-   * Check if S3 credentials are configured
-   * @returns true if AWS credentials and bucket name are set
+   * Check if S3 is configured via Lambda API Gateway
+   * @returns true if AWS API endpoint is set
    */
   static isConfigured(): boolean {
-    return Boolean(
-      process.env.AWS_ACCESS_KEY_ID &&
-      process.env.AWS_SECRET_ACCESS_KEY &&
-      (process.env.AWS_S3_BUCKET_NAME || process.env.AWS_S3_BUCKET)
-    );
+    return Boolean(process.env.AWS_API_ENDPOINT);
   }
 
   /**

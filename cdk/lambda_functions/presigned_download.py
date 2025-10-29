@@ -21,7 +21,8 @@ def lambda_handler(event, context):
     Expected input:
     {
         "userId": "123",
-        "s3Key": "users/123/plant_instance/456/uuid.jpg"
+        "s3Key": "users/123/plant_instance/456/uuid.jpg",
+        "expiresIn": 3600  // optional, defaults to 900 seconds (15 min)
     }
     """
     try:
@@ -29,6 +30,7 @@ def lambda_handler(event, context):
         body = json.loads(event.get('body', '{}'))
         user_id = body.get('userId')
         s3_key = body.get('s3Key')
+        expires_in = body.get('expiresIn', URL_EXPIRATION)
 
         # Validate required fields
         if not all([user_id, s3_key]):
@@ -86,7 +88,7 @@ def lambda_handler(event, context):
                     'Bucket': BUCKET_NAME,
                     'Key': s3_key,
                 },
-                ExpiresIn=URL_EXPIRATION
+                ExpiresIn=expires_in
             )
         else:
             presigned_url = s3_client.generate_presigned_url(
@@ -95,7 +97,7 @@ def lambda_handler(event, context):
                     'Bucket': BUCKET_NAME,
                     'Key': s3_key,
                 },
-                ExpiresIn=URL_EXPIRATION
+                ExpiresIn=expires_in
             )
 
         return {
@@ -107,7 +109,7 @@ def lambda_handler(event, context):
             'body': json.dumps({
                 'url': presigned_url,
                 's3Key': s3_key,
-                'expiresIn': URL_EXPIRATION,
+                'expiresIn': expires_in,
                 'message': 'Download URL generated successfully'
             })
         }
