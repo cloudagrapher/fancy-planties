@@ -47,7 +47,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
     status: propagation?.status || 'started',
     sourceType: (propagation as any)?.sourceType || 'internal',
     externalSource: (propagation as any)?.externalSource || null,
-    externalSourceDetails: (propagation as unknown)?.externalSourceDetails || '',
+    externalSourceDetails: (propagation as any)?.externalSourceDetails || '',
     notes: propagation?.notes || '',
     images: propagation?.images || [],
   });
