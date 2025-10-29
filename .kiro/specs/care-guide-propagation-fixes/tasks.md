@@ -207,14 +207,14 @@
   - Update any PUT/PATCH endpoints if they exist
   - _Requirements: 1_
 
-- [ ] 9. Testing and Validation
+- [x] 9. Testing and Validation
   - Test all modified functionality
   - Verify database migrations
   - Test image upload and display
   - Create task summary in .kiro/summaries
   - _Requirements: All_
 
-- [ ] 9.1 Test propagation status changes
+- [x] 9.1 Test propagation status changes
   - Verify database migration completed successfully
   - Test creating propagations with new status values
   - Test filtering propagations by 'ready' status
@@ -222,7 +222,7 @@
   - Test status updates through the UI
   - _Requirements: 5, 6, 7_
 
-- [ ] 9.2 Test care guide form changes
+- [x] 9.2 Test care guide form changes
   - Verify watering method field is removed
   - Test description field is prominent and functional
   - Test S3 image upload functionality
@@ -230,7 +230,7 @@
   - Test form validation
   - _Requirements: 1, 2, 4.1_
 
-- [ ] 9.3 Test care guide detail view
+- [x] 9.3 Test care guide detail view
   - Test clicking on care guide cards opens detail view
   - Verify all care guide content displays correctly
   - Test S3 image gallery displays images
@@ -238,14 +238,14 @@
   - Test close functionality returns to list
   - _Requirements: 3, 4_
 
-- [ ] 9.4 Test propagation button visibility
+- [x] 9.4 Test propagation button visibility
   - Verify Add Propagation button is visible on empty state
   - Verify button remains visible with existing propagations
   - Test button styling and hover effects
   - Test button click opens form
   - _Requirements: 8_
 
-- [ ] 9.5 Test propagation creation flow
+- [x] 9.5 Test propagation creation flow
   - Test creating new propagations with all status options
   - Verify error messages display correctly on validation failures
   - Test successful creation updates the dashboard
