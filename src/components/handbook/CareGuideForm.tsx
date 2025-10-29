@@ -445,12 +445,19 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                 </Card>
 
-                {/* Photos Section */}
+                {/* Photos Section - S3 Image Storage Integration */}
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-4">
                     <Info className="h-4 w-4 text-slate-600" />
                     <h3 className="font-medium text-slate-800">Photos</h3>
                   </div>
+                  {/* 
+                    S3ImageUpload Component:
+                    - Uploads images directly to AWS S3 for efficient storage
+                    - Stores S3 object keys in the s3ImageKeys array instead of Base64 data
+                    - Uses temporary entityId for new guides (replaced with actual ID on save)
+                    - Supports up to 6 images per care guide
+                  */}
                   <S3ImageUpload
                     userId={userId.toString()}
                     entityType="care_guide"
@@ -465,13 +472,17 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
 
             {activeTab === 'care' && (
               <div className="space-y-6">
-                {/* Watering Section */}
+                {/* Watering Section - Simplified (method field removed) */}
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-4">
                     <Droplets className="h-4 w-4 text-blue-600" />
                     <h3 className="font-medium text-slate-800">Watering</h3>
                   </div>
                   <div className="space-y-3">
+                    {/* 
+                      Note: The 'method' field has been removed from the watering section
+                      to simplify the form and focus on essential watering information
+                    */}
                     <Input
                       label="Frequency"
                       value={formData.watering.frequency}

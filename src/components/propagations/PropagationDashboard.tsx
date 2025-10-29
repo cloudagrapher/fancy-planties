@@ -85,7 +85,10 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
     ? groupedPropagations[selectedStatus] || []
     : propagations;
 
-  // Status configuration
+  // Status configuration - Updated enum values
+  // Note: Status values changed from ['started', 'rooting', 'planted', 'established']
+  //       to ['started', 'rooting', 'ready', 'planted']
+  // 'established' was renamed to 'ready' to better reflect the propagation stage
   const statusConfig = {
     started: {
       label: 'Started',
@@ -99,7 +102,7 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
       color: 'bg-yellow-100 text-yellow-800',
       description: 'Developing root systems'
     },
-    ready: {
+    ready: {  // Changed from 'established' to 'ready'
       label: 'Ready',
       icon: CheckCircle,
       color: 'bg-green-100 text-green-800',

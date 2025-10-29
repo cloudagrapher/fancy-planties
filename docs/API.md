@@ -360,7 +360,7 @@ GET /api/propagations
 ```
 
 **Query Parameters:**
-- `status` (string): Filter by status (started, rooting, planted, established)
+- `status` (string): Filter by status (started, rooting, ready, planted)
 - `sourceType` (string): Filter by source type (internal, external)
 
 **Response:**
@@ -379,12 +379,19 @@ GET /api/propagations
       "sourceType": "internal",
       "notes": "Taken from mother plant",
       "images": ["base64_image_data"],
+      "s3ImageKeys": ["plants/user-1/propagation-1/image1.jpg"],
       "plant": { /* plant object */ },
       "parentInstance": { /* parent plant instance */ }
     }
   ]
 }
 ```
+
+**Status Values:**
+- `started`: Propagation has just begun
+- `rooting`: Propagation is developing roots
+- `ready`: Propagation has rooted and is ready to be planted (formerly "established")
+- `planted`: Propagation has been planted in soil
 
 ### Create Propagation
 ```http
@@ -397,9 +404,20 @@ Content-Type: application/json
   "nickname": "Monty Baby",
   "location": "Propagation station",
   "sourceType": "internal",
+  "status": "started",
   "notes": "Taken from mother plant"
 }
 ```
+
+**Request Body:**
+- `plantId` (number, required): ID of the plant type
+- `parentInstanceId` (number, optional): ID of parent plant instance (for internal propagations)
+- `nickname` (string, required): Name for the propagation
+- `location` (string, required): Where the propagation is located
+- `sourceType` (string, optional): "internal" or "external" (default: "internal")
+- `status` (string, optional): One of "started", "rooting", "ready", "planted" (default: "started")
+- `notes` (string, optional): Additional notes
+- `s3ImageKeys` (array, optional): Array of S3 object keys for images
 
 ### Create External Propagation
 ```http
@@ -423,10 +441,14 @@ PUT /api/propagations/{id}
 Content-Type: application/json
 
 {
-  "status": "planted",
-  "notes": "Successfully rooted and planted in soil"
+  "status": "ready",
+  "notes": "Successfully rooted and ready to plant"
 }
 ```
+
+**Valid Status Transitions:**
+- `started` → `rooting` → `ready` → `planted`
+- Any status can be updated to any other status (no strict enforcement)
 
 ### Convert Propagation to Plant Instance
 ```http
@@ -439,6 +461,190 @@ Content-Type: application/json
   "fertilizerSchedule": "weekly"
 }
 ```
+
+## 📖 Care Guides API
+
+Care guides provide detailed care instructions organized by plant taxonomy (family, genus, species, or cultivar level).
+
+### Get User's Care Guides
+```http
+GET /api/care-guides
+```
+
+**Query Parameters:**
+- `taxonomyLevel` (string): Filter by taxonomy level (family, genus, species, cultivar)
+- `family` (string): Filter by plant family
+- `genus` (string): Filter by genus
+- `species` (string): Filter by species
+- `isPublic` (boolean): Filter by public/private status
+
+**Response:**
+```json
+{
+  "careGuides": [
+    {
+      "id": 1,
+      "userId": 1,
+      "taxonomyLevel": "genus",
+      "family": "Araceae",
+      "genus": "Monstera",
+      "species": null,
+      "cultivar": null,
+      "commonName": "Monstera",
+      "title": "Monstera Care Guide",
+      "description": "General care instructions for all Monstera species",
+      "s3ImageKeys": ["care-guides/user-1/guide-1/image1.jpg"],
+      "watering": {
+        "frequency": "Weekly during growing season, every 2 weeks in winter",
+        "tips": "Allow top 2 inches of soil to dry between waterings"
+      },
+      "fertilizing": {
+        "frequency": "Monthly during growing season",
+        "type": "Balanced liquid fertilizer (20-20-20)",
+        "tips": "Dilute to half strength"
+      },
+      "lighting": {
+        "requirements": "Bright indirect light",
+        "tips": "Avoid direct sunlight which can scorch leaves"
+      },
+      "temperature": {
+        "min": 65,
+        "max": 85,
+        "unit": "F",
+        "tips": "Protect from cold drafts"
+      },
+      "humidity": {
+        "min": 60,
+        "max": 80,
+        "tips": "Mist regularly or use a humidifier"
+      },
+      "soil": {
+        "type": "Well-draining potting mix",
+        "tips": "Add perlite or orchid bark for drainage"
+      },
+      "repotting": {
+        "frequency": "Every 2-3 years",
+        "tips": "Repot in spring when roots are pot-bound"
+      },
+      "propagation": {
+        "methods": "Stem cuttings, air layering",
+        "tips": "Take cuttings with at least one node"
+      },
+      "generalTips": "Wipe leaves regularly to remove dust",
+      "isPublic": false,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-15T00:00:00Z"
+    }
+  ]
+}
+```
+
+### Get Care Guide by ID
+```http
+GET /api/care-guides/{id}
+```
+
+### Create Care Guide
+```http
+POST /api/care-guides
+Content-Type: application/json
+
+{
+  "taxonomyLevel": "genus",
+  "family": "Araceae",
+  "genus": "Monstera",
+  "commonName": "Monstera",
+  "title": "Monstera Care Guide",
+  "description": "General care instructions for all Monstera species",
+  "s3ImageKeys": ["care-guides/user-1/guide-1/image1.jpg"],
+  "watering": {
+    "frequency": "Weekly during growing season",
+    "tips": "Allow soil to dry between waterings"
+  },
+  "fertilizing": {
+    "frequency": "Monthly",
+    "type": "Balanced liquid fertilizer",
+    "tips": "Dilute to half strength"
+  },
+  "lighting": {
+    "requirements": "Bright indirect light",
+    "tips": "Avoid direct sunlight"
+  },
+  "isPublic": false
+}
+```
+
+**Request Body:**
+- `taxonomyLevel` (string, required): One of "family", "genus", "species", "cultivar"
+- `family` (string, required): Plant family name
+- `genus` (string, optional): Genus name (required if taxonomyLevel is genus, species, or cultivar)
+- `species` (string, optional): Species name (required if taxonomyLevel is species or cultivar)
+- `cultivar` (string, optional): Cultivar name (required if taxonomyLevel is cultivar)
+- `commonName` (string, optional): Common name for the plant
+- `title` (string, required): Title for the care guide
+- `description` (string, optional): General description of care requirements
+- `s3ImageKeys` (array, optional): Array of S3 object keys for reference images
+- `watering` (object, optional): Watering instructions
+  - `frequency` (string): How often to water
+  - `tips` (string): Additional watering tips
+- `fertilizing` (object, optional): Fertilizing instructions
+  - `frequency` (string): How often to fertilize
+  - `type` (string): Type of fertilizer
+  - `tips` (string): Additional fertilizing tips
+- `lighting` (object, optional): Light requirements
+  - `requirements` (string): Light level needed
+  - `tips` (string): Additional lighting tips
+- `temperature` (object, optional): Temperature requirements
+  - `min` (number): Minimum temperature
+  - `max` (number): Maximum temperature
+  - `unit` (string): "F" or "C"
+  - `tips` (string): Additional temperature tips
+- `humidity` (object, optional): Humidity requirements
+  - `min` (number): Minimum humidity percentage
+  - `max` (number): Maximum humidity percentage
+  - `tips` (string): Additional humidity tips
+- `soil` (object, optional): Soil requirements
+  - `type` (string): Type of soil mix
+  - `tips` (string): Additional soil tips
+- `repotting` (object, optional): Repotting instructions
+  - `frequency` (string): How often to repot
+  - `tips` (string): Additional repotting tips
+- `propagation` (object, optional): Propagation methods
+  - `methods` (string): Propagation methods
+  - `tips` (string): Additional propagation tips
+- `generalTips` (string, optional): General care tips
+- `isPublic` (boolean, optional): Whether guide is public (default: false)
+
+**Note:** The `watering` object no longer includes a `method` field. This field has been removed to simplify the watering section.
+
+### Update Care Guide
+```http
+PUT /api/care-guides/{id}
+Content-Type: application/json
+
+{
+  "title": "Updated Monstera Care Guide",
+  "description": "Updated care instructions",
+  "watering": {
+    "frequency": "Every 7-10 days",
+    "tips": "Check soil moisture before watering"
+  }
+}
+```
+
+### Delete Care Guide
+```http
+DELETE /api/care-guides/{id}
+```
+
+### Image Storage
+
+Care guide images are stored in AWS S3 for efficient, scalable storage:
+
+- **Upload**: Use the `/api/images/upload` endpoint with `entityType=care_guide`
+- **Display**: Images are retrieved using pre-signed URLs via the S3Image component
+- **Storage**: Images are stored at `care-guides/user-{userId}/guide-{guideId}/`
+- **Format**: S3 object keys are stored in the `s3ImageKeys` array field
 
 ## 📊 Import/Export API
 

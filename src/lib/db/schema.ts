@@ -123,6 +123,9 @@ export const propagations = pgTable('propagations', {
   nickname: text('nickname').notNull(),
   location: text('location').notNull(),
   dateStarted: timestamp('date_started').defaultNow().notNull(),
+  // Status enum: Updated from ['started', 'rooting', 'planted', 'established'] 
+  // to ['started', 'rooting', 'ready', 'planted']
+  // 'established' was renamed to 'ready' to better reflect the propagation stage
   status: text('status', { enum: ['started', 'rooting', 'ready', 'planted'] }).default('started').notNull(),
   sourceType: text('source_type', { enum: ['internal', 'external'] }).default('internal').notNull(), // New field
   externalSource: text('external_source', { enum: ['gift', 'trade', 'purchase', 'other'] }), // New field, nullable
@@ -209,9 +212,10 @@ export const careGuides = pgTable('care_guides', {
   description: text('description'),
   
   // Care categories
+  // Note: watering.method field was removed to simplify the watering section
   watering: jsonb('watering').$type<{
     frequency?: string;
-    method?: string;
+    method?: string;  // Deprecated - no longer used in UI
     tips?: string;
   }>(),
   

@@ -41,6 +41,11 @@ const Button = ({
 );
 
 export default function CareGuideDetail({ guide, userId, onClose, onEdit }: CareGuideDetailProps) {
+  /**
+   * Builds a formatted taxonomy string from the care guide's taxonomy fields
+   * Handles different taxonomy levels (family, genus, species, cultivar)
+   * Example output: "Araceae Monstera deliciosa 'Thai Constellation'"
+   */
   const getTaxonomyDisplay = () => {
     const parts = [];
     if (guide.family) parts.push(guide.family);
@@ -135,7 +140,13 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit }: Care
                 </Card>
               )}
 
-              {/* Image Gallery */}
+              {/* Image Gallery - S3 Integration */}
+              {/* 
+                Images are stored in AWS S3 and retrieved using pre-signed URLs
+                - s3ImageKeys contains array of S3 object keys
+                - S3Image component handles fetching and displaying images
+                - Images are displayed in a responsive grid layout
+              */}
               {guide.s3ImageKeys && guide.s3ImageKeys.length > 0 && (
                 <Card className="p-4">
                   <div className="space-y-3">
