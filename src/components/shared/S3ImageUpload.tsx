@@ -32,10 +32,9 @@ export default function S3ImageUpload({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<Map<string, number>>(new Map());
 
   const handleFiles = useCallback(
-    (files: File[]) => {
+    async (files: File[]) => {
       const newErrors: string[] = [];
       const validFiles: File[] = [];
 
@@ -60,13 +59,36 @@ export default function S3ImageUpload({
         validFiles.push(file);
       });
 
-      if (validFiles.length > 0) {
-        setSelectedFiles(prev => [...prev, ...validFiles]);
+      if (newErrors.length > 0) {
+        setErrors(newErrors);
       }
 
-      setErrors(newErrors);
+      // Auto-upload valid files immediately
+      if (validFiles.length > 0) {
+        setSelectedFiles(validFiles);
+        setUploading(true);
+        setErrors([]);
+
+        try {
+          const uploadedKeys = await S3ImageService.uploadMultipleImages({
+            userId,
+            entityType,
+            entityId,
+            files: validFiles,
+          });
+
+          onUploadComplete(uploadedKeys);
+          setSelectedFiles([]);
+        } catch (error) {
+          console.error('Upload failed:', error);
+          setErrors(['Upload failed. Please try again.']);
+          setSelectedFiles(validFiles); // Keep files so user can retry
+        } finally {
+          setUploading(false);
+        }
+      }
     },
-    [selectedFiles, maxImages, maxSizePerImage, acceptedTypes]
+    [selectedFiles, maxImages, maxSizePerImage, acceptedTypes, userId, entityType, entityId, onUploadComplete]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -92,7 +114,6 @@ export default function S3ImageUpload({
 
       onUploadComplete(uploadedKeys);
       setSelectedFiles([]);
-      setUploadProgress(new Map());
     } catch (error) {
       console.error('Upload failed:', error);
       setErrors(['Upload failed. Please try again.']);
@@ -101,15 +122,10 @@ export default function S3ImageUpload({
     }
   };
 
-  const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-    setErrors([]);
-  };
-
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Upload Area */}
-      {selectedFiles.length < maxImages && !uploading && (
+      {!uploading && (
         <div
           {...getRootProps()}
           className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
@@ -123,13 +139,16 @@ export default function S3ImageUpload({
           {isDragActive ? (
             <p className="text-primary-600">Drop images here...</p>
           ) : (
-            <>
-              <p className="text-gray-600">Click or drag images to upload</p>
-              <p className="text-sm text-gray-500 mt-2">
-                {selectedFiles.length} of {maxImages} selected
-              </p>
-            </>
+            <p className="text-gray-600">Click or drag images to upload</p>
           )}
+        </div>
+      )}
+
+      {/* Uploading State */}
+      {uploading && (
+        <div className="border-2 border-dashed border-primary-400 bg-primary-50 rounded-lg p-6 text-center">
+          <div className="text-4xl mb-2">⬆️</div>
+          <p className="text-primary-600 font-medium">Uploading to S3...</p>
         </div>
       )}
 
@@ -141,45 +160,14 @@ export default function S3ImageUpload({
               • {error}
             </p>
           ))}
-        </div>
-      )}
-
-      {/* Selected Files */}
-      {selectedFiles.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <h4 className="font-medium">Selected ({selectedFiles.length})</h4>
+          {selectedFiles.length > 0 && (
             <button
               onClick={uploadFiles}
-              disabled={uploading}
-              className="px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700 disabled:bg-gray-300"
+              className="mt-2 text-sm text-red-700 underline hover:text-red-800"
             >
-              {uploading ? 'Uploading...' : 'Upload to S3'}
+              Retry upload
             </button>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            {selectedFiles.map((file, i) => (
-              <div key={i} className="relative group">
-                <div className="aspect-square bg-gray-100 rounded">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={file.name}
-                    className="w-full h-full object-cover rounded"
-                  />
-                </div>
-                {!uploading && (
-                  <button
-                    onClick={() => removeFile(i)}
-                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100"
-                  >
-                    ×
-                  </button>
-                )}
-                <p className="text-xs text-gray-600 mt-1 truncate">{file.name}</p>
-              </div>
-            ))}
-          </div>
+          )}
         </div>
       )}
     </div>
