@@ -4,13 +4,13 @@
   "description": "Automatically stages all files, generates a descriptive commit message based on changes, commits the changes, and pushes to remote repository",
   "version": "1",
   "when": {
-    "type": "fileEdited",
+    "type": "userTriggered",
     "patterns": [
       ".kiro/summaries/*"
     ]
   },
   "then": {
     "type": "askAgent",
-    "prompt": "Stage all files using `git add .`, then analyze the staged changes to generate an appropriate commit message following conventional commit format (feat/fix/docs/style/refactor/test/chore), commit the changes with the generated message, and push to the remote repository. Ensure the commit message is descriptive and follows the project's commit standards.\n**important** do not utilize commands that require user input i.e., these commands open vi and requires the user to press \"q\": git diff --cached --name-status, git diff --cached src/components/admin/PlantManagementTable.tsx, git diff --cached src/lib/db/queries/admin-plants.ts"
+    "prompt": "Stage all files using `git add .`, then analyze the staged changes to generate an appropriate commit message following conventional commit format (feat/fix/docs/style/refactor/test/chore), commit the changes with the generated message, and push to the remote repository. Ensure the commit message is descriptive and follows the project's commit standards.\n**important** do not utilize commands that require user input i.e., these commands open vi and requires the user to press \"q\": git diff --cached --name-status, git diff --cached */*, git diff --cached */*"
   }
 }
