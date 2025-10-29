@@ -135,11 +135,15 @@ export const plantInstanceSchema = z.object({
     .max(2000, 'Notes too long')
     .optional()
     .nullable(),
-  
+
   images: z.array(z.string())
     .max(10, 'Maximum 10 images allowed')
     .default([]),
-  
+
+  s3ImageKeys: z.array(z.string())
+    .max(10, 'Maximum 10 images allowed')
+    .default([]),
+
   isActive: z.boolean().default(true),
 });
 

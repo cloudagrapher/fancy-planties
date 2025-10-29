@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
 import PlantTaxonomySelector from './PlantTaxonomySelector';
-import ImageUpload from '../shared/ImageUpload';
+import S3ImageUpload from '../shared/S3ImageUpload';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
 
@@ -55,7 +55,7 @@ const plantInstanceFormSchema = z.object({
     .max(2000, 'Notes must be less than 2000 characters')
     .optional()
     .transform(val => val?.trim() || ''),
-  images: z.array(z.string()).max(10, 'Maximum 10 images allowed').optional(),
+  s3ImageKeys: z.array(z.string()).max(10, 'Maximum 10 images allowed').optional(),
   isActive: z.boolean().default(true).optional(),
   // New taxonomy fields (only used when creating new plant)
   newPlantTaxonomy: plantTaxonomySchema.optional(),
@@ -104,8 +104,7 @@ export default function PlantInstanceForm({
   userId,
 }: PlantInstanceFormProps) {
   const [selectedPlant, setSelectedPlant] = useState<PlantSuggestion | null>(null);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [s3ImageKeys, setS3ImageKeys] = useState<string[]>([]);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [isCreatingPlant, setIsCreatingPlant] = useState(false);
   const [showTaxonomyForm, setShowTaxonomyForm] = useState(false);
@@ -141,7 +140,7 @@ export default function PlantInstanceForm({
       lastFertilized: '',
       lastRepot: '',
       notes: '',
-      images: [],
+      s3ImageKeys: [],
       isActive: true,
       newPlantTaxonomy: undefined,
     },
@@ -242,36 +241,21 @@ export default function PlantInstanceForm({
   // Create/update mutation
   const mutation = useMutation({
     mutationFn: async (data: Omit<PlantInstanceFormData, 'fertilizerSchedule'> & { fertilizerSchedule: string }) => {
-      const formData = new FormData();
-      
-      // Add form fields
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && value !== '') {
-          if (key === 'images' && Array.isArray(value)) {
-            // Handle existing images
-            value.forEach((image, index) => {
-              formData.append(`existingImages[${index}]`, image);
-            });
-          } else {
-            formData.append(key, String(value));
-          }
-        }
-      });
-
-      // Add new image files
-      imageFiles.forEach((file, index) => {
-        formData.append(`imageFiles[${index}]`, file);
-      });
-
-      const url = isEditing 
+      const url = isEditing
         ? `/api/plant-instances/${plantInstance.id}`
         : '/api/plant-instances';
-      
+
       const method = isEditing ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          s3ImageKeys: s3ImageKeys,
+        }),
       });
 
       if (!response.ok) {
@@ -307,11 +291,10 @@ export default function PlantInstanceForm({
       });
 
       console.log('Cache invalidation complete');
-      
+
       // Reset form state
       reset();
-      setImageFiles([]);
-      setExistingImages([]);
+      setS3ImageKeys([]);
       setSelectedPlant(null);
       setShowTaxonomyForm(false);
       setHasUnsavedChanges(false);
@@ -338,11 +321,11 @@ export default function PlantInstanceForm({
         lastFertilized: plantInstance.lastFertilized 
           ? new Date(plantInstance.lastFertilized).toISOString().split('T')[0]
           : '',
-        lastRepot: plantInstance.lastRepot 
+        lastRepot: plantInstance.lastRepot
           ? new Date(plantInstance.lastRepot).toISOString().split('T')[0]
           : '',
         notes: plantInstance.notes || '',
-        images: plantInstance.images || [],
+        s3ImageKeys: plantInstance.s3ImageKeys || [],
         isActive: plantInstance.isActive,
       });
 
@@ -355,12 +338,11 @@ export default function PlantInstanceForm({
         isVerified: plantInstance.plant.isVerified,
       });
 
-      setExistingImages(plantInstance.images || []);
+      setS3ImageKeys(plantInstance.s3ImageKeys || []);
     } else {
       reset();
       setSelectedPlant(null);
-      setImageFiles([]);
-      setExistingImages([]);
+      setS3ImageKeys([]);
       setShowTaxonomyForm(false);
       setTaxonomyData({
         family: '',
@@ -383,34 +365,35 @@ export default function PlantInstanceForm({
     }
   };
 
-  // Handle image changes
-  const handleImageChange = (files: File[]) => {
-    setImageFiles(files);
-    // Don't update form's images field - keep existingImages separate
-    // Just trigger validation to ensure form is valid
+  // Handle S3 image upload completion
+  const handleS3Upload = (keys: string[]) => {
+    const updatedKeys = [...s3ImageKeys, ...keys];
+    setS3ImageKeys(updatedKeys);
+    setValue('s3ImageKeys', updatedKeys);
     trigger();
   };
 
   // Handle existing image removal
   const handleRemoveExistingImage = (index: number) => {
-    const newImages = existingImages.filter((_, i) => i !== index);
-    setExistingImages(newImages);
-    // Don't update form's images field - keep existingImages separate
+    const newKeys = s3ImageKeys.filter((_, i) => i !== index);
+    setS3ImageKeys(newKeys);
+    setValue('s3ImageKeys', newKeys);
     trigger();
   };
 
   // Handle setting primary image (move image to index 0)
   const handleSetPrimaryImage = (index: number) => {
     if (index === 0) return; // Already primary
-    
-    const newImages = [...existingImages];
-    const selectedImage = newImages[index];
-    
-    // Remove the selected image and add it to the beginning
-    newImages.splice(index, 1);
-    newImages.unshift(selectedImage);
-    
-    setExistingImages(newImages);
+
+    const newKeys = [...s3ImageKeys];
+    const selectedKey = newKeys[index];
+
+    // Remove the selected key and add it to the beginning
+    newKeys.splice(index, 1);
+    newKeys.unshift(selectedKey);
+
+    setS3ImageKeys(newKeys);
+    setValue('s3ImageKeys', newKeys);
     trigger();
   };
 
@@ -469,10 +452,10 @@ export default function PlantInstanceForm({
     const submitData = {
       ...data,
       fertilizerSchedule: convertFertilizerSchedule(data.fertilizerSchedule),
-      images: existingImages, // Always use current existingImages state
+      s3ImageKeys: s3ImageKeys, // Use S3 keys instead of base64 images
     };
     console.log('Form submission data:', submitData);
-    console.log('Existing images being submitted:', existingImages);
+    console.log('S3 image keys being submitted:', s3ImageKeys);
     console.log('Original fertilizer schedule:', data.fertilizerSchedule);
     console.log('Converted fertilizer schedule:', convertFertilizerSchedule(data.fertilizerSchedule));
     mutation.mutate(submitData);
@@ -480,8 +463,8 @@ export default function PlantInstanceForm({
 
   // Track unsaved changes
   useEffect(() => {
-    setHasUnsavedChanges(isDirty || imageFiles.length > 0 || showTaxonomyForm);
-  }, [isDirty, imageFiles.length, showTaxonomyForm]);
+    setHasUnsavedChanges(isDirty || s3ImageKeys.length > 0 || showTaxonomyForm);
+  }, [isDirty, s3ImageKeys.length, showTaxonomyForm]);
 
   // Warn about unsaved changes before page unload
   useEffect(() => {
@@ -1037,12 +1020,12 @@ export default function PlantInstanceForm({
                   Photos
                 </label>
                 
-                {/* Existing Images */}
-                {existingImages.length > 0 && (
+                {/* Existing Images (S3 Keys - displayed with presigned URLs) */}
+                {s3ImageKeys.length > 0 && plantInstance && plantInstance.images && (
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-600 mb-2">Current Photos</h4>
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                      {existingImages.map((image, index) => (
+                      {plantInstance.images.map((image, index) => (
                         <div key={index} className="relative group">
                           <Image
                             src={image}
@@ -1090,12 +1073,13 @@ export default function PlantInstanceForm({
                   </div>
                 )}
 
-                {/* New Image Upload */}
-                <ImageUpload
-                  onImagesChange={handleImageChange}
-                  maxImages={6 - existingImages.length}
-                  acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
-                  maxSizePerImage={5 * 1024 * 1024} // 5MB
+                {/* New Image Upload - S3 */}
+                <S3ImageUpload
+                  userId={userId.toString()}
+                  entityType="plant_instance"
+                  entityId={plantInstance?.id?.toString() || 'new'}
+                  onUploadComplete={handleS3Upload}
+                  maxImages={6 - s3ImageKeys.length}
                 />
               </div>
 
