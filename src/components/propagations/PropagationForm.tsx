@@ -255,7 +255,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
   return (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
-      <div className="absolute inset-2 sm:inset-8 bg-white rounded-2xl shadow-xl flex flex-col border border-slate-200/70 max-h-[95vh]">
+      <div className="absolute inset-2 sm:inset-8 bg-white rounded-2xl shadow-xl flex flex-col border border-slate-200/70 max-h-[95dvh]">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">

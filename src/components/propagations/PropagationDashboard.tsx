@@ -7,6 +7,8 @@ import PropagationCard from './PropagationCard';
 import PropagationForm from './PropagationForm';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 
+// Force recompilation
+
 interface PropagationWithDetails extends Propagation {
   plant: Plant;
   parentInstance?: PlantInstance;
@@ -167,20 +169,40 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Propagations</h1>
-          <p className="text-gray-600">
-            Track your plant propagation progress
-          </p>
+      <div className="mb-6">
+        {/* Mobile: Stacked layout */}
+        <div className="flex flex-col gap-4 sm:hidden">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">Propagations</h1>
+            <p className="text-sm text-gray-600">
+              Track your plant propagation progress
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center justify-center w-full px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 active:bg-emerald-800 transition-colors shadow-lg font-semibold text-base"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add Propagation
+          </button>
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="flex items-center px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-md font-semibold"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Add Propagation
-        </button>
+
+        {/* Desktop: Horizontal layout */}
+        <div className="hidden sm:flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Propagations</h1>
+            <p className="text-gray-600">
+              Track your plant propagation progress
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-md font-semibold"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add Propagation
+          </button>
+        </div>
       </div>
 
       {/* Statistics Cards */}

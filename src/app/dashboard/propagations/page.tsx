@@ -8,11 +8,7 @@ export default async function PropagationsPage() {
     <div className="page">
       <div className="container">
         <div className="page-content">
-          <div className="card card--dreamy">
-            <div className="card-body">
-              <PropagationDashboard userId={user.id} />
-            </div>
-          </div>
+          <PropagationDashboard userId={user.id} />
         </div>
       </div>
     </div>
