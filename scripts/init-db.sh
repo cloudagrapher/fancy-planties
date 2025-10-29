@@ -57,6 +57,34 @@ fi
 
 echo "✅ Database initialization complete!"
 
+# Grant ownership and permissions to application user if different from migration user
+if [ "${POSTGRES_USER}" != "postgres" ]; then
+  echo "🔐 Granting permissions to ${POSTGRES_USER}..."
+  psql -h ${POSTGRES_HOST:-postgres} -p ${POSTGRES_PORT:-5432} -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-fancy_planties} -c "
+    -- Grant all privileges on database
+    GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_DB:-fancy_planties} TO ${POSTGRES_USER};
+
+    -- Grant schema privileges
+    GRANT ALL ON SCHEMA public TO ${POSTGRES_USER};
+    GRANT ALL ON SCHEMA drizzle TO ${POSTGRES_USER};
+
+    -- Grant privileges on all tables
+    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${POSTGRES_USER};
+    GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA drizzle TO ${POSTGRES_USER};
+
+    -- Grant privileges on all sequences
+    GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ${POSTGRES_USER};
+    GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA drizzle TO ${POSTGRES_USER};
+
+    -- Set default privileges for future objects
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${POSTGRES_USER};
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${POSTGRES_USER};
+    ALTER DEFAULT PRIVILEGES IN SCHEMA drizzle GRANT ALL ON TABLES TO ${POSTGRES_USER};
+    ALTER DEFAULT PRIVILEGES IN SCHEMA drizzle GRANT ALL ON SEQUENCES TO ${POSTGRES_USER};
+  "
+  echo "✅ Permissions granted to ${POSTGRES_USER}"
+fi
+
 # Verify tables were created
 echo "🔍 Verifying database setup..."
 table_count=$(psql -h ${POSTGRES_HOST:-postgres} -p ${POSTGRES_PORT:-5432} -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-fancy_planties} -t -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE';")
