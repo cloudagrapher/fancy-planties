@@ -127,20 +127,20 @@
   - Update POST endpoint to return created guide with s3ImageKeys
   - _Requirements: 4.1_
 
-- [ ] 6. Create Care Guide Detail Component
+- [x] 6. Create Care Guide Detail Component
   - Build new detail view component
   - Implement image gallery with S3Image
   - Add edit functionality
   - _Requirements: 3, 4_
 
-- [ ] 6.1 Create CareGuideDetail component file
+- [x] 6.1 Create CareGuideDetail component file
   - Create new file `src/components/handbook/CareGuideDetail.tsx`
   - Define CareGuideDetailProps interface
   - Create modal/full-page layout structure
   - Add header with title, edit button, and close button
   - _Requirements: 3_
 
-- [ ] 6.2 Implement care guide content display
+- [x] 6.2 Implement care guide content display
   - Display taxonomy information and common name
   - Show general description prominently
   - Render all care categories (watering, fertilizing, lighting, etc.)
@@ -148,7 +148,7 @@
   - Format content with appropriate styling and icons
   - _Requirements: 3_
 
-- [ ] 6.3 Implement S3 image gallery in detail view
+- [x] 6.3 Implement S3 image gallery in detail view
   - Import S3Image component
   - Create grid layout for images
   - Map through s3ImageKeys array
@@ -157,7 +157,7 @@
   - Add loading states for image fetching
   - _Requirements: 4_
 
-- [ ] 6.4 Add edit functionality to detail view
+- [x] 6.4 Add edit functionality to detail view
   - Add edit button in header
   - Implement onEdit callback to open CareGuideForm in edit mode
   - Pass current guide data to form for editing
