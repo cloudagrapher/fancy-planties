@@ -33,14 +33,14 @@ const plantInstanceFormSchema = z.object({
     .trim()
     .refine(val => val.length > 0, 'Location cannot be empty'),
   fertilizerSchedule: z.enum([
-    'weekly', 
-    'biweekly', 
+    'weekly',
+    'biweekly',
     'every_2_4_weeks',
-    'every_3_4_weeks', 
+    'every_3_4_weeks',
     'every_4_weeks',
     'every_4_6_weeks',
     'every_6_8_weeks',
-    'bimonthly', 
+    'bimonthly',
     'quarterly'
   ], {
     message: 'Please select a fertilizer schedule'
@@ -209,13 +209,13 @@ export default function PlantInstanceForm({
       return response.json();
     },
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ 
+      await queryClient.invalidateQueries({
         queryKey: ['plants'],
         refetchType: 'active'
       });
       queryClient.removeQueries({ queryKey: ['plants'] });
       await queryClient.refetchQueries({ queryKey: ['plants'] });
-      
+
       // Set the newly created plant as selected
       const newPlant: PlantSuggestion = {
         id: data.data.id,
@@ -226,7 +226,7 @@ export default function PlantInstanceForm({
         commonName: data.data.commonName,
         isVerified: data.data.isVerified,
       };
-      
+
       handlePlantSelect(newPlant);
       setIsCreatingPlant(false);
       setShowTaxonomyForm(false);
@@ -298,7 +298,7 @@ export default function PlantInstanceForm({
       setSelectedPlant(null);
       setShowTaxonomyForm(false);
       setHasUnsavedChanges(false);
-      
+
       if (onSuccess) {
         onSuccess(data);
       } else {
@@ -318,7 +318,7 @@ export default function PlantInstanceForm({
         nickname: plantInstance.nickname,
         location: plantInstance.location,
         fertilizerSchedule: convertedSchedule as PlantInstanceFormData['fertilizerSchedule'],
-        lastFertilized: plantInstance.lastFertilized 
+        lastFertilized: plantInstance.lastFertilized
           ? new Date(plantInstance.lastFertilized).toISOString().split('T')[0]
           : '',
         lastRepot: plantInstance.lastRepot
@@ -401,7 +401,7 @@ export default function PlantInstanceForm({
   const convertFertilizerSchedule = (schedule: string): string => {
     const scheduleMap = {
       'weekly': '7 days',
-      'biweekly': '2 weeks', 
+      'biweekly': '2 weeks',
       'every_2_4_weeks': '3 weeks', // Average of 2-4 weeks
       'every_3_4_weeks': '4 weeks', // Average of 3-4 weeks
       'every_4_weeks': '4 weeks',
@@ -417,7 +417,7 @@ export default function PlantInstanceForm({
   const convertDatabaseScheduleToForm = (schedule: string): string => {
     console.log('Converting database schedule:', schedule);
     if (!schedule) return 'every_4_weeks';
-    
+
     const reverseMap = {
       // New format matches (what we send to API)
       '7 days': 'weekly',
@@ -432,7 +432,7 @@ export default function PlantInstanceForm({
       '1 week': 'weekly',
       'every 2 weeks': 'biweekly',
       'every 2-4 weeks': 'every_2_4_weeks',
-      'every 3-4 weeks': 'every_3_4_weeks', 
+      'every 3-4 weeks': 'every_3_4_weeks',
       'every 4 weeks': 'every_4_weeks',
       'every 4-6 weeks': 'every_4_6_weeks',
       'every 6-8 weeks': 'every_6_8_weeks',
@@ -441,7 +441,7 @@ export default function PlantInstanceForm({
       'bimonthly': 'bimonthly',
       'quarterly': 'quarterly',
     };
-    
+
     const result = reverseMap[schedule as keyof typeof reverseMap] || 'every_4_weeks';
     console.log('Converted to:', result);
     return result;
@@ -518,11 +518,11 @@ export default function PlantInstanceForm({
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
         onClick={handleClose}
       />
-      
+
       {/* Modal */}
       <div className="relative h-full flex items-end sm:items-center justify-center p-4 pb-20 sm:pb-4">
         <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-full overflow-hidden shadow-2xl">
@@ -589,7 +589,7 @@ export default function PlantInstanceForm({
                         </svg>
                       </button>
                     </div>
-                    
+
                     <div className="space-y-4">
                       {/* Common Name */}
                       <div>
@@ -707,9 +707,8 @@ export default function PlantInstanceForm({
                         id="nickname"
                         type="text"
                         placeholder="My favorite monstera"
-                        className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
-                          errors.nickname ? 'border-red-300' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${errors.nickname ? 'border-red-300' : 'border-gray-300'
+                          }`}
                       />
                     )}
                   />
@@ -732,9 +731,8 @@ export default function PlantInstanceForm({
                           id="location"
                           type="text"
                           placeholder="Living room window"
-                          className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
-                            errors.location ? 'border-red-300' : 'border-gray-300'
-                          }`}
+                          className={`w-full px-3 py-2 bg-white text-gray-900 placeholder-gray-500 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${errors.location ? 'border-red-300' : 'border-gray-300'
+                            }`}
                           onChange={(e) => {
                             field.onChange(e);
                             setShowLocationSuggestions(e.target.value.length > 0);
@@ -742,12 +740,12 @@ export default function PlantInstanceForm({
                           onFocus={() => setShowLocationSuggestions(field.value.length > 0)}
                           onBlur={() => setTimeout(() => setShowLocationSuggestions(false), 200)}
                         />
-                        
+
                         {/* Location suggestions dropdown */}
                         {showLocationSuggestions && userLocations && userLocations.length > 0 && (
                           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto">
                             {userLocations
-                              .filter(location => 
+                              .filter(location =>
                                 location.toLowerCase().includes(field.value.toLowerCase())
                               )
                               .slice(0, 5)
@@ -770,44 +768,44 @@ export default function PlantInstanceForm({
                                   </div>
                                 </button>
                               ))}
-                            
+
                             {/* Common location suggestions */}
-                            {field.value.length > 0 && !userLocations.some(loc => 
+                            {field.value.length > 0 && !userLocations.some(loc =>
                               loc.toLowerCase().includes(field.value.toLowerCase())
                             ) && (
-                              <div className="border-t border-gray-100">
-                                <div className="px-3 py-2 text-xs text-gray-500 font-medium">Suggestions:</div>
-                                {[
-                                  'Living room window',
-                                  'Kitchen counter',
-                                  'Bedroom windowsill',
-                                  'Bathroom shelf',
-                                  'Office desk',
-                                  'Balcony',
-                                  'Greenhouse',
-                                  'Outdoor garden',
-                                ].filter(suggestion => 
-                                  suggestion.toLowerCase().includes(field.value.toLowerCase())
-                                ).slice(0, 3).map((suggestion) => (
-                                  <button
-                                    key={suggestion}
-                                    type="button"
-                                    onClick={() => {
-                                      field.onChange(suggestion);
-                                      setShowLocationSuggestions(false);
-                                    }}
-                                    className="w-full px-3 py-2 text-left text-gray-600 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
-                                  >
-                                    <div className="flex items-center">
-                                      <svg className="w-4 h-4 text-gray-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                      </svg>
-                                      {suggestion}
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
+                                <div className="border-t border-gray-100">
+                                  <div className="px-3 py-2 text-xs text-gray-500 font-medium">Suggestions:</div>
+                                  {[
+                                    'Living room window',
+                                    'Kitchen counter',
+                                    'Bedroom windowsill',
+                                    'Bathroom shelf',
+                                    'Office desk',
+                                    'Balcony',
+                                    'Greenhouse',
+                                    'Outdoor garden',
+                                  ].filter(suggestion =>
+                                    suggestion.toLowerCase().includes(field.value.toLowerCase())
+                                  ).slice(0, 3).map((suggestion) => (
+                                    <button
+                                      key={suggestion}
+                                      type="button"
+                                      onClick={() => {
+                                        field.onChange(suggestion);
+                                        setShowLocationSuggestions(false);
+                                      }}
+                                      className="w-full px-3 py-2 text-left text-gray-600 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                                    >
+                                      <div className="flex items-center">
+                                        <svg className="w-4 h-4 text-gray-300 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                        </svg>
+                                        {suggestion}
+                                      </div>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
                           </div>
                         )}
                       </div>
@@ -816,7 +814,7 @@ export default function PlantInstanceForm({
                   {errors.location && (
                     <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
                   )}
-                  
+
                   {/* Location tips */}
                   <p className="mt-1 text-xs text-gray-500">
                     Be specific about lighting and conditions (e.g., &quot;South-facing kitchen window&quot;)
@@ -837,9 +835,8 @@ export default function PlantInstanceForm({
                       <select
                         {...field}
                         id="fertilizerSchedule"
-                        className={`w-full px-3 py-2 bg-white text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
-                          errors.fertilizerSchedule ? 'border-red-300' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-3 py-2 bg-white text-gray-900 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${errors.fertilizerSchedule ? 'border-red-300' : 'border-gray-300'
+                          }`}
                       >
                         <option value="weekly">Weekly (every 7 days) - High maintenance</option>
                         <option value="biweekly">Every 2 weeks - Regular care</option>
@@ -851,7 +848,7 @@ export default function PlantInstanceForm({
                         <option value="bimonthly">Bi-monthly (every 60 days) - Very low maintenance</option>
                         <option value="quarterly">Quarterly (every 90 days) - Minimal care</option>
                       </select>
-                      
+
                       {/* Schedule preview */}
                       {field.value && watch('lastFertilized') && (
                         <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
@@ -889,7 +886,7 @@ export default function PlantInstanceForm({
                 {errors.fertilizerSchedule && (
                   <p className="mt-1 text-sm text-red-600">{errors.fertilizerSchedule.message}</p>
                 )}
-                
+
                 <p className="mt-1 text-xs text-gray-500">
                   Choose based on your plant&apos;s needs and your availability for care
                 </p>
@@ -939,7 +936,7 @@ export default function PlantInstanceForm({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Notes & Observations
                 </label>
-                
+
                 {/* Existing Notes History */}
                 {watch('notes') && watch('notes')?.trim() && (
                   <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
@@ -949,7 +946,7 @@ export default function PlantInstanceForm({
                     </div>
                   </div>
                 )}
-                
+
                 {/* New Note Input */}
                 <div className="space-y-2">
                   <textarea
@@ -965,7 +962,7 @@ export default function PlantInstanceForm({
                         if (newNote) {
                           const timestamp = new Date().toLocaleDateString();
                           const existingNotes = watch('notes') || '';
-                          const updatedNotes = existingNotes 
+                          const updatedNotes = existingNotes
                             ? `${existingNotes}\n\n[${timestamp}] ${newNote}`
                             : `[${timestamp}] ${newNote}`;
                           setValue('notes', updatedNotes);
@@ -985,7 +982,7 @@ export default function PlantInstanceForm({
                         if (newNote) {
                           const timestamp = new Date().toLocaleDateString();
                           const existingNotes = watch('notes') || '';
-                          const updatedNotes = existingNotes 
+                          const updatedNotes = existingNotes
                             ? `${existingNotes}\n\n[${timestamp}] ${newNote}`
                             : `[${timestamp}] ${newNote}`;
                           setValue('notes', updatedNotes);
@@ -999,7 +996,7 @@ export default function PlantInstanceForm({
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Hidden field for form submission */}
                 <Controller
                   name="notes"
@@ -1008,7 +1005,7 @@ export default function PlantInstanceForm({
                     <input type="hidden" {...field} />
                   )}
                 />
-                
+
                 {errors.notes && (
                   <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>
                 )}
@@ -1019,7 +1016,7 @@ export default function PlantInstanceForm({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Photos
                 </label>
-                
+
                 {/* Existing Images (S3 Keys - displayed with presigned URLs) */}
                 {s3ImageKeys.length > 0 && plantInstance && plantInstance.images && (
                   <div className="mb-4">
@@ -1034,7 +1031,7 @@ export default function PlantInstanceForm({
                             height={200}
                             className="w-full aspect-square object-cover rounded-lg"
                           />
-                          
+
                           {/* Delete Button */}
                           <button
                             type="button"
@@ -1047,14 +1044,14 @@ export default function PlantInstanceForm({
                               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                             </svg>
                           </button>
-                          
+
                           {/* Primary Badge */}
                           {index === 0 && (
                             <div className="absolute bottom-1 left-1 bg-primary-500 text-white text-xs px-1 py-0.5 rounded">
                               Primary
                             </div>
                           )}
-                          
+
                           {/* Set as Primary Button (for non-primary images) */}
                           {index !== 0 && (
                             <button
@@ -1104,14 +1101,14 @@ export default function PlantInstanceForm({
                               Keep this plant active in my collection
                             </span>
                             <p className="text-xs text-gray-500 mt-1">
-                              {value 
+                              {value
                                 ? 'This plant will appear in your main collection and care reminders'
                                 : 'This plant will be archived and hidden from your main collection'
                               }
                             </p>
                           </div>
                         </label>
-                        
+
                         {!value && (
                           <div className="bg-amber-50 border border-amber-200 rounded p-3">
                             <div className="flex items-start">
@@ -1144,9 +1141,9 @@ export default function PlantInstanceForm({
                     <ul className="text-sm text-red-700 space-y-1">
                       {Object.entries(errors).map(([field, error]) => (
                         <li key={field}>
-                          • {field === 'plantId' ? 'Plant type' : 
-                             field === 'fertilizerSchedule' ? 'Fertilizer schedule' :
-                             field.charAt(0).toUpperCase() + field.slice(1)}: {error.message}
+                          • {field === 'plantId' ? 'Plant type' :
+                            field === 'fertilizerSchedule' ? 'Fertilizer schedule' :
+                              field.charAt(0).toUpperCase() + field.slice(1)}: {error.message}
                         </li>
                       ))}
                     </ul>
@@ -1170,7 +1167,7 @@ export default function PlantInstanceForm({
                   </span>
                 )}
               </div>
-              
+
               <div className="flex space-x-3">
                 <button
                   type="button"

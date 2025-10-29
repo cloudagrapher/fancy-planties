@@ -291,7 +291,7 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
           {!selectedStatus && (
             <button
               onClick={() => setShowAddForm(true)}
-              className="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm"
+              className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
             >
               Start First Propagation
             </button>

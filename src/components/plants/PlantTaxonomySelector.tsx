@@ -138,7 +138,7 @@ export default function PlantTaxonomySelector({
   const debouncedSearchRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const loadingDelayRef = useRef<NodeJS.Timeout | undefined>(undefined);
   
-  const debouncedSearch = useCallback((query: string) => {
+  const debouncedSearch = (query: string) => {
     if (debouncedSearchRef.current) {
       clearTimeout(debouncedSearchRef.current);
     }
@@ -149,15 +149,15 @@ export default function PlantTaxonomySelector({
     // Show loading state only after a delay to avoid flickering during fast typing
     loadingDelayRef.current = setTimeout(() => {
       setSearchState(prev => ({ ...prev, isLoading: true }));
-    }, 200);
+    }, 150);
     
     debouncedSearchRef.current = setTimeout(() => {
       if (loadingDelayRef.current) {
         clearTimeout(loadingDelayRef.current);
       }
       performSearch(query);
-    }, 500);
-  }, [performSearch]);
+    }, 300);
+  };
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -196,30 +196,35 @@ export default function PlantTaxonomySelector({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
 
-    // Immediately update the input value for responsive typing
-    setSearchState(prev => ({
-      ...prev,
-      query,
-      showDropdown: query.length > 0,
-    }));
-
-    // Only clear selection if the field is completely empty
-    // This prevents clearing when user is just typing to search for a different plant
+    // Batch all state updates into a single call
     if (query.trim() === '') {
       onSelect(null);
-    }
-
-    // Only search if query is long enough, and only via debounced function
-    if (query.length >= 2) {
-      debouncedSearch(query);
-    } else {
-      // Clear results immediately for short queries
-      setSearchState(prev => ({
-        ...prev,
+      setSearchState({
+        query: '',
+        showDropdown: false,
         results: [],
         isLoading: false,
         hasSearched: false,
-      }));
+        selectedIndex: -1,
+      });
+      return;
+    }
+
+    // Update query and show dropdown in one state update
+    setSearchState(prev => ({
+      ...prev,
+      query,
+      showDropdown: true,
+      ...(query.length < 2 && {
+        results: [],
+        isLoading: false,
+        hasSearched: false,
+      }),
+    }));
+
+    // Trigger search for queries >= 2 characters
+    if (query.length >= 2) {
+      debouncedSearch(query);
     }
   };
 
@@ -374,7 +379,7 @@ export default function PlantTaxonomySelector({
           onBlur={handleInputBlur}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          disabled={disabled || searchState.isLoading}
+          disabled={disabled}
           autoFocus={autoFocus}
           role="combobox"
           aria-expanded={searchState.showDropdown}
