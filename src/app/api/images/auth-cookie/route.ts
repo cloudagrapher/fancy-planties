@@ -65,32 +65,27 @@ export async function POST(request: NextRequest) {
     });
 
     // Set CloudFront signed cookies
-    // IMPORTANT: For cookies to work with CloudFront in development:
-    // 1. Add to /etc/hosts: 127.0.0.1 dev.fancy-planties.cloudagrapher.com
-    // 2. Access app via http://dev.fancy-planties.cloudagrapher.com:3000
-    // This allows cookies set for .fancy-planties.cloudagrapher.com to be sent to cdn.fancy-planties.cloudagrapher.com
+    // CRITICAL: sameSite must be 'none' for cross-subdomain requests (app -> CDN)
+    // This allows cookies from fancy-planties.cloudagrapher.com to be sent to cdn.fancy-planties.cloudagrapher.com
     
-    const isProduction = process.env.NODE_ENV === 'production';
     const requestHost = request.headers.get('host') || '';
     const usesCustomDomain = requestHost.includes('fancy-planties.cloudagrapher.com');
     
     const cookieOptions: any = {
       path: '/',
-      secure: isProduction,
+      secure: true, // Required for sameSite: 'none'
       httpOnly: false, // Must be false so browser can send cookies with image requests
-      sameSite: 'lax' as const, // 'lax' works for same-site subdomains
+      sameSite: 'none' as const, // Required for cross-subdomain requests
       maxAge: SEVEN_DAYS_IN_SECONDS,
     };
     
     // Set parent domain for cookie sharing across subdomains
-    // Only works if accessing via a subdomain of fancy-planties.cloudagrapher.com
     if (usesCustomDomain && cloudfrontDomain.includes('fancy-planties.cloudagrapher.com')) {
       cookieOptions.domain = '.fancy-planties.cloudagrapher.com';
-      console.log('[CloudFront Cookie] Setting cookies for domain: .fancy-planties.cloudagrapher.com');
+      console.log('[CloudFront Cookie] Setting cookies for domain: .fancy-planties.cloudagrapher.com with sameSite=none');
     } else {
-      console.warn('[CloudFront Cookie] WARNING: Accessing via localhost - CloudFront cookies will NOT work!');
-      console.warn('[CloudFront Cookie] Add to /etc/hosts: 127.0.0.1 dev.fancy-planties.cloudagrapher.com');
-      console.warn('[CloudFront Cookie] Then access via: http://dev.fancy-planties.cloudagrapher.com:3000');
+      console.warn('[CloudFront Cookie] WARNING: Not using custom domain - CloudFront cookies may not work!');
+      console.warn('[CloudFront Cookie] Current host:', requestHost);
     }
 
     response.cookies.set('CloudFront-Policy', cookies['CloudFront-Policy'], cookieOptions);
