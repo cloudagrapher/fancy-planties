@@ -1,6 +1,7 @@
 /**
  * S3 Image Service
- * Handles secure image uploads and downloads via S3 with pre-signed URLs
+ * Handles secure image uploads via S3 with pre-signed URLs
+ * Uses CloudFront signed cookies for authenticated image access
  */
 
 const API_ENDPOINT = process.env.NEXT_PUBLIC_AWS_API_ENDPOINT || '';
@@ -13,13 +14,6 @@ export interface PresignedUploadResponse {
   message: string;
 }
 
-export interface PresignedDownloadResponse {
-  url: string;
-  s3Key: string;
-  expiresIn: number;
-  message: string;
-}
-
 export interface UploadImageParams {
   userId: string;
   entityType: 'plant_instance' | 'propagation' | 'care_history' | 'care_guide';
@@ -27,10 +21,6 @@ export interface UploadImageParams {
   file: File;
 }
 
-export interface DownloadImageParams {
-  userId: string;
-  s3Key: string;
-}
 
 export class S3ImageService {
   /**
@@ -117,56 +107,48 @@ export class S3ImageService {
   }
 
   /**
-   * Get a pre-signed URL for downloading an image from S3
+   * Initialize CloudFront signed cookies for the current user session
+   * Call this once after user login to enable direct CloudFront access
+   * Cookies are valid for 7 days
    */
-  static async getPresignedDownloadUrl(params: DownloadImageParams): Promise<PresignedDownloadResponse> {
-    const { userId, s3Key } = params;
-
-    const response = await fetch(`${API_ENDPOINT}/images/download`, {
+  static async initializeSignedCookies(): Promise<void> {
+    const response = await fetch('/api/images/auth-cookie', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId,
-        s3Key,
-      }),
+      credentials: 'include', // Important: include cookies in request
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.error || 'Failed to get download URL');
+      throw new Error(error.error || 'Failed to initialize CloudFront cookies');
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log('[S3ImageService] CloudFront cookies initialized:', data);
   }
 
   /**
-   * Get download URLs for multiple S3 keys
+   * Convert S3 key to CloudFront URL
+   * No authentication needed - CloudFront validates via signed cookies
+   *
+   * @param s3Key - The S3 object key (e.g., "users/123/plant_instance/456/image.jpg")
+   * @returns Full CloudFront URL
    */
-  static async getMultipleDownloadUrls(
-    userId: string,
-    s3Keys: string[]
-  ): Promise<Map<string, string>> {
-    const downloadPromises = s3Keys.map(s3Key =>
-      this.getPresignedDownloadUrl({ userId, s3Key })
-        .then(response => ({ s3Key, url: response.url }))
-        .catch(error => {
-          console.error(`Failed to get download URL for ${s3Key}:`, error);
-          return { s3Key, url: '' };
-        })
-    );
+  static s3KeyToCloudFrontUrl(s3Key: string): string {
+    const cloudfrontDomain = this.getCloudFrontDomain();
+    if (!cloudfrontDomain) {
+      throw new Error('CloudFront domain not configured');
+    }
+    return `https://${cloudfrontDomain}/${s3Key}`;
+  }
 
-    const results = await Promise.all(downloadPromises);
-
-    const urlMap = new Map<string, string>();
-    results.forEach(({ s3Key, url }) => {
-      if (url) {
-        urlMap.set(s3Key, url);
-      }
-    });
-
-    return urlMap;
+  /**
+   * Convert multiple S3 keys to CloudFront URLs
+   *
+   * @param s3Keys - Array of S3 object keys
+   * @returns Array of CloudFront URLs in the same order
+   */
+  static s3KeysToCloudFrontUrls(s3Keys: string[]): string[] {
+    return s3Keys.map(key => this.s3KeyToCloudFrontUrl(key));
   }
 
   /**

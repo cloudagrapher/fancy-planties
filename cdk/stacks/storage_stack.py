@@ -1,6 +1,7 @@
 """
 Storage Stack: S3 Bucket + CloudFront Distribution for Image Storage
 Implements cost-effective, secure image storage with CDN delivery
+Supports signed cookies for authenticated access
 """
 from aws_cdk import (
     Stack,
@@ -26,6 +27,32 @@ class ImageStorageStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         self.env_name = env_name
+
+        # Get CloudFront public key ID from context (for signed cookies)
+        # This key should be generated manually and stored in cdk.json context
+        public_key_id = self.node.try_get_context("cloudfront_public_key_id")
+        if not public_key_id:
+            raise ValueError(
+                "CloudFront public key ID is required for signed cookies. "
+                "Generate a key pair and add to cdk.json context: "
+                "-c cloudfront_public_key_id=K3..."
+            )
+
+        # Create CloudFront Key Group for signed cookie validation
+        # This allows CloudFront to validate signed cookies at the edge
+        self.key_group = cloudfront.KeyGroup(
+            self,
+            "ImageAccessKeyGroup",
+            items=[
+                cloudfront.PublicKey.from_public_key_id(
+                    self,
+                    "SigningPublicKey",
+                    public_key_id
+                )
+            ],
+            key_group_name=f"fancy-planties-key-group-{env_name}",
+            comment=f"Key group for signed cookie access to Fancy Planties images ({env_name})",
+        )
 
         # Create S3 bucket for image storage
         self.image_bucket = s3.Bucket(
@@ -112,6 +139,9 @@ class ImageStorageStack(Stack):
                 cached_methods=cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
                 cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED,
                 compress=True,
+                # Enable signed cookies for authentication
+                # This requires users to have valid CloudFront signed cookies to access images
+                trusted_key_groups=[self.key_group],
             ),
             # Price class for cost optimization (use lower-cost edge locations)
             price_class=cloudfront.PriceClass.PRICE_CLASS_100,  # US, Canada, Europe
@@ -210,4 +240,12 @@ class ImageStorageStack(Stack):
             value=self.distribution.distribution_id,
             description="CloudFront distribution ID",
             export_name=f"FancyPlantiesCloudFrontId-{env_name}",
+        )
+
+        CfnOutput(
+            self,
+            "KeyGroupId",
+            value=self.key_group.key_group_id,
+            description="CloudFront Key Group ID for signed cookies",
+            export_name=f"FancyPlantiesKeyGroupId-{env_name}",
         )
