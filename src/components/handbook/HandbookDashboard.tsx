@@ -128,7 +128,6 @@ const CareGuideCard = ({ guide, onClick, userId }: { guide: CareGuide; onClick: 
           <div className="aspect-video relative overflow-hidden bg-slate-100" suppressHydrationWarning>
             <S3Image
               s3Key={guide.s3ImageKeys[0]}
-              userId={userId.toString()}
               alt={guide.title}
               width={400}
               height={225}

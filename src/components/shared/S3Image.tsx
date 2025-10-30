@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { S3ImageService } from '@/lib/services/s3-image-service';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
 interface S3ImageProps {
   s3Key: string;
@@ -54,6 +55,7 @@ export default function S3Image({
       height={height || 200}
       className={className}
       priority={priority}
+      unoptimized={shouldUnoptimizeImage(imageUrl)}
       onError={(e) => {
         e.currentTarget.src = fallbackSrc;
       }}
