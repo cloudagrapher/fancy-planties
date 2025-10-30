@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from 'react';
 import type { User } from '@/lib/auth';
+import { useCloudFrontCookies } from '@/hooks/use-cloudfront-cookies';
 
 interface UserContextType {
   user: User | null;
@@ -15,6 +16,9 @@ interface UserProviderProps {
 }
 
 export function UserProvider({ user, children }: UserProviderProps) {
+  // Initialize CloudFront signed cookies for authenticated users
+  useCloudFrontCookies(!!user);
+
   return (
     <UserContext.Provider value={{ user }}>
       {children}

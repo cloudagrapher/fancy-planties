@@ -65,13 +65,19 @@ export async function POST(request: NextRequest) {
     });
 
     // Set CloudFront signed cookies
-    // These cookies will be automatically sent with all requests to the CloudFront domain
+    // Use parent domain (.fancy-planties.cloudagrapher.com) so cookies work for both:
+    // - Development: localhost.fancy-planties.cloudagrapher.com (via hosts file)
+    // - Production: fancy-planties.cloudagrapher.com
+    // - CDN: cdn.fancy-planties.cloudagrapher.com
+    const isProduction = process.env.NODE_ENV === 'production';
     const cookieOptions = {
-      domain: cloudfrontDomain,
+      domain: cloudfrontDomain.includes('fancy-planties.cloudagrapher.com')
+        ? '.fancy-planties.cloudagrapher.com'  // Parent domain for custom CDN
+        : cloudfrontDomain,                     // Fallback for default CloudFront domain
       path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      sameSite: 'none' as const, // Required for cross-domain cookies (Next.js → CloudFront)
+      secure: isProduction,
+      httpOnly: false, // Must be false so browser can send cookies with image requests
+      sameSite: 'lax' as const, // 'lax' works for same-site requests (CDN subdomain)
       maxAge: SEVEN_DAYS_IN_SECONDS,
     };
 

@@ -12,6 +12,7 @@ from aws_cdk import (
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_iam as iam,
+    aws_certificatemanager as acm,
 )
 from constructs import Construct
 from cdk_nag import NagSuppressions
@@ -28,30 +29,30 @@ class ImageStorageStack(Stack):
 
         self.env_name = env_name
 
-        # Get CloudFront public key ID from context (for signed cookies)
-        # This key should be generated manually and stored in cdk.json context
-        public_key_id = self.node.try_get_context("cloudfront_public_key_id")
-        if not public_key_id:
+        # Get CloudFront key group ID from context (for signed cookies)
+        # The key group should be created manually before deploying this stack
+        key_group_id = self.node.try_get_context("cloudfront_key_group_id")
+        if not key_group_id:
             raise ValueError(
-                "CloudFront public key ID is required for signed cookies. "
-                "Generate a key pair and add to cdk.json context: "
-                "-c cloudfront_public_key_id=K3..."
+                "CloudFront key group ID is required for signed cookies. "
+                "Generate a key pair, create a key group, and add to cdk.json context: "
+                "-c cloudfront_key_group_id=..."
             )
 
-        # Create CloudFront Key Group for signed cookie validation
-        # This allows CloudFront to validate signed cookies at the edge
-        self.key_group = cloudfront.KeyGroup(
+        # Import existing CloudFront Key Group for signed cookie validation
+        # This key group was created manually and contains the public signing key
+        self.key_group = cloudfront.KeyGroup.from_key_group_id(
             self,
             "ImageAccessKeyGroup",
-            items=[
-                cloudfront.PublicKey.from_public_key_id(
-                    self,
-                    "SigningPublicKey",
-                    public_key_id
-                )
-            ],
-            key_group_name=f"fancy-planties-key-group-{env_name}",
-            comment=f"Key group for signed cookie access to Fancy Planties images ({env_name})",
+            key_group_id
+        )
+
+        # Import existing SSL certificate from ACM (us-east-1)
+        # Wildcard certificate *.cloudagrapher.com covers cdn.fancy-planties.cloudagrapher.com
+        certificate = acm.Certificate.from_certificate_arn(
+            self,
+            "CloudFrontCertificate",
+            certificate_arn="arn:aws:acm:us-east-1:580033881001:certificate/cbaa9ed3-c244-4a39-95cc-20aa3bd515d8"
         )
 
         # Create S3 bucket for image storage
@@ -143,6 +144,10 @@ class ImageStorageStack(Stack):
                 # This requires users to have valid CloudFront signed cookies to access images
                 trusted_key_groups=[self.key_group],
             ),
+            # Custom domain configuration
+            domain_names=[f"cdn.fancy-planties.cloudagrapher.com"],
+            certificate=certificate,
+
             # Price class for cost optimization (use lower-cost edge locations)
             price_class=cloudfront.PriceClass.PRICE_CLASS_100,  # US, Canada, Europe
 

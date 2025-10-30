@@ -127,14 +127,17 @@ export class S3ImageService {
   }
 
   /**
-   * Convert S3 key to CloudFront URL
-   * No authentication needed - CloudFront validates via signed cookies
+   * Convert S3 key to image URL
+   *
+   * Uses direct CloudFront URL with custom domain (cdn.fancy-planties.cloudagrapher.com)
+   * Parent domain cookies (.fancy-planties.cloudagrapher.com) enable access in both dev and prod
    *
    * @param s3Key - The S3 object key (e.g., "users/123/plant_instance/456/image.jpg")
-   * @returns Full CloudFront URL
+   * @returns CloudFront URL
    */
   static s3KeyToCloudFrontUrl(s3Key: string): string {
     const cloudfrontDomain = this.getCloudFrontDomain();
+
     if (!cloudfrontDomain) {
       throw new Error('CloudFront domain not configured');
     }

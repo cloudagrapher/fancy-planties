@@ -361,7 +361,11 @@ After successful migration:
 1. Monitor CloudFront logs for 403 errors
 2. Set up CloudFront access logging
 3. Consider implementing automatic cookie refresh before expiration
-4. Consider custom domain for CloudFront (first-party cookies)
+4. **Consider custom domain for CloudFront** - See [cdk/CLOUDFRONT_CUSTOM_DOMAIN_SETUP.md](cdk/CLOUDFRONT_CUSTOM_DOMAIN_SETUP.md)
+   - Enables direct CloudFront access (no proxy needed)
+   - Better performance and lower latency
+   - Full CDN edge location benefits
+   - Setup: `cdn.fancy-planties.cloudagrapher.com`
 5. Optimize CloudFront cache policies for better performance
 
 ## Support

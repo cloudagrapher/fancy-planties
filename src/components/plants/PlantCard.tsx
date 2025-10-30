@@ -6,6 +6,7 @@ import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { plantInstanceHelpers } from '@/lib/types/plant-instance-types';
 import { useSwipeGestures } from '@/hooks/useSwipeGestures';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
 interface PlantCardProps {
   plant: EnhancedPlantInstance;
@@ -289,6 +290,7 @@ export default function PlantCard({
               fill
               className="object-cover"
               onError={() => setImageError(true)}
+              unoptimized={shouldUnoptimizeImage(plant.primaryImage)}
               sizes={`(max-width: 768px) ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}, ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}`}
             />
           )

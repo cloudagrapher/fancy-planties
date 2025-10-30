@@ -4,39 +4,41 @@ import withPWA from 'next-pwa';
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment
   output: 'standalone',
-  
+
   eslint: {
     // Only run ESLint on specific directories during production builds
     dirs: ['src/app', 'src/components', 'src/lib'],
     // Allow production builds to complete even if there are ESLint errors
     ignoreDuringBuilds: true,
   },
-  
+
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@tanstack/react-query'],
   },
-  
+
   // Image optimization
   images: {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
+    // Disable optimization for CloudFront URLs (they require signed cookies)
+    unoptimized: false, // Keep optimization for other images
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.cloudfront.net',
+        hostname: 'cdn.fancy-planties.cloudagrapher.com',
         port: '',
         pathname: '/**',
       },
     ],
   },
-  
+
   // Compression and optimization
   compress: true,
   poweredByHeader: false,
-  
+
   // Bundle optimization
   webpack: (config, { isServer, dev }) => {
     // Client-side fallbacks for Node.js modules
@@ -49,7 +51,7 @@ const nextConfig: NextConfig = {
         perf_hooks: false,
       };
     }
-    
+
     // Production optimizations
     if (!dev) {
       // Tree shaking optimization
@@ -58,7 +60,7 @@ const nextConfig: NextConfig = {
         usedExports: true,
         sideEffects: false,
       };
-      
+
       // Bundle splitting
       config.optimization.splitChunks = {
         ...config.optimization.splitChunks,
@@ -97,10 +99,10 @@ const nextConfig: NextConfig = {
         },
       };
     }
-    
+
     return config;
   },
-  
+
   // Headers for performance and security
   async headers() {
     return [

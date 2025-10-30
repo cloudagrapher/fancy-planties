@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Upload, Trash2 } from 'lucide-react';
 import Image from 'next/image';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import PlantTaxonomySelector from '../plants/PlantTaxonomySelector';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
@@ -568,6 +569,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                             width={80}
                             height={80}
                             className="w-full h-16 object-cover rounded-lg"
+                            unoptimized={shouldUnoptimizeImage(image)}
                           />
                           <button
                             type="button"

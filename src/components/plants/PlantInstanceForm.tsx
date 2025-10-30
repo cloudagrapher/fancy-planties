@@ -6,6 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import PlantTaxonomySelector from './PlantTaxonomySelector';
 import S3ImageUpload from '../shared/S3ImageUpload';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
@@ -1030,6 +1031,7 @@ export default function PlantInstanceForm({
                             width={200}
                             height={200}
                             className="w-full aspect-square object-cover rounded-lg"
+                            unoptimized={shouldUnoptimizeImage(image)}
                           />
 
                           {/* Delete Button */}

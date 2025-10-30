@@ -15,7 +15,8 @@ interface S3ImageProps {
 
 /**
  * Component to display images from CloudFront using signed cookies
- * No URL fetching needed - CloudFront validates via cookies set at session start
+ * Uses Next.js Image with direct CloudFront access via custom domain (cdn.fancy-planties.cloudagrapher.com)
+ * Parent domain cookies (.fancy-planties.cloudagrapher.com) enable access in both dev and prod
  *
  * Migration note: Removed userId prop as it's no longer needed with signed cookies
  * CloudFront cookies are path-based and automatically restrict access to user's images
@@ -42,9 +43,9 @@ export default function S3Image({
   }
 
   // Convert S3 key to CloudFront URL
-  // CloudFront validates access via signed cookies (set once per session)
   const imageUrl = S3ImageService.s3KeyToCloudFrontUrl(s3Key);
 
+  // Use Next.js Image with CloudFront (custom domain enables direct access)
   return (
     <Image
       src={imageUrl}
@@ -54,7 +55,6 @@ export default function S3Image({
       className={className}
       priority={priority}
       onError={(e) => {
-        // Fallback on error (e.g., expired cookie, missing file)
         e.currentTarget.src = fallbackSrc;
       }}
     />
