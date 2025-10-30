@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { Propagation } from '@/lib/db/schema';
 
@@ -95,6 +96,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                     width={64}
                     height={64}
                     className="w-full h-full object-cover"
+                    unoptimized={shouldUnoptimizeImage(parentPlant.primaryImage)}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
@@ -144,6 +146,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                   width={64}
                   height={64}
                   className="w-full h-full object-cover"
+                  unoptimized={shouldUnoptimizeImage(plant.primaryImage)}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.style.display = 'none';
@@ -218,6 +221,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                           width={48}
                           height={48}
                           className="w-full h-full object-cover"
+                          unoptimized={shouldUnoptimizeImage(propagation.images[0])}
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
@@ -329,6 +333,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                                 width={64}
                                 height={64}
                                 className="w-full h-full object-cover"
+                                unoptimized={shouldUnoptimizeImage(image)}
                                 onError={(e) => {
                                   const target = e.target as HTMLImageElement;
                                   target.style.display = 'none';

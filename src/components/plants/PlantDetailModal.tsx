@@ -13,6 +13,7 @@ import PlantNotes from './PlantNotes';
 import PlantImageGallery from './PlantImageGallery';
 import PlantLineage from './PlantLineage';
 import QuickCareActions from '../care/QuickCareActions';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
 interface PlantDetailModalProps {
   plantId: number;
@@ -312,6 +313,7 @@ function PlantOverview({
                   fill
                   className="object-cover"
                   sizes="(max-width: 640px) 50vw, 33vw"
+                  unoptimized={shouldUnoptimizeImage(image)}
                 />
                 {index === 0 && (
                   <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">

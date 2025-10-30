@@ -2,7 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { logFertilizerSchema, logRepotSchema } from '@/lib/validation/plant-schemas';
 import { validateRequest } from '@/lib/auth/server';
-import { S3UrlGenerator } from '@/lib/utils/s3-url-generator';
+import { S3ImageService } from '@/lib/services/s3-image-service';
+
+// Helper function to transform S3 keys to image URLs
+// Uses proxy in development, direct CloudFront in production (with custom domain)
+function transformS3KeysToCloudFrontUrls(instance: any): void {
+  if (instance.s3ImageKeys && instance.s3ImageKeys.length > 0) {
+    instance.images = S3ImageService.s3KeysToCloudFrontUrls(instance.s3ImageKeys);
+    instance.primaryImage = instance.images[0];
+  }
+}
 
 // POST /api/plant-instances/care - Log care activities (fertilizer, repot)
 export async function POST(request: NextRequest) {
@@ -77,18 +86,9 @@ export async function POST(request: NextRequest) {
     // Get the enhanced plant instance with updated data
     const enhancedInstance = await PlantInstanceQueries.getEnhancedById(result.id);
 
-    // Transform S3 keys to presigned URLs if S3 is configured
-    if (enhancedInstance && S3UrlGenerator.isConfigured() && enhancedInstance.s3ImageKeys && enhancedInstance.s3ImageKeys.length > 0) {
-      try {
-        const presignedUrls = await S3UrlGenerator.transformS3KeysToUrls(enhancedInstance.s3ImageKeys);
-        const validUrls = presignedUrls.filter(url => url);
-        enhancedInstance.images = validUrls;
-        if (validUrls.length > 0) {
-          enhancedInstance.primaryImage = validUrls[0];
-        }
-      } catch (error) {
-        console.error('Failed to generate presigned URLs:', error);
-      }
+    // Transform S3 keys to CloudFront URLs
+    if (enhancedInstance) {
+      transformS3KeysToCloudFrontUrls(enhancedInstance);
     }
 
     return NextResponse.json({

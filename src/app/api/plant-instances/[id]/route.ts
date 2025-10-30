@@ -3,7 +3,16 @@ import { z } from 'zod';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { updatePlantInstanceSchema } from '@/lib/validation/plant-schemas';
 import { validateRequest } from '@/lib/auth/server';
-import { S3UrlGenerator } from '@/lib/utils/s3-url-generator';
+import { S3ImageService } from '@/lib/services/s3-image-service';
+
+// Helper function to transform S3 keys to image URLs
+// Uses proxy in development, direct CloudFront in production (with custom domain)
+function transformS3KeysToCloudFrontUrls(instance: any): void {
+  if (instance.s3ImageKeys && instance.s3ImageKeys.length > 0) {
+    instance.images = S3ImageService.s3KeysToCloudFrontUrls(instance.s3ImageKeys);
+    instance.primaryImage = instance.images[0];
+  }
+}
 
 // GET /api/plant-instances/[id] - Get a specific plant instance
 export async function GET(
@@ -33,20 +42,8 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Transform S3 keys to presigned URLs if S3 is configured
-    if (S3UrlGenerator.isConfigured() && plantInstance.s3ImageKeys && plantInstance.s3ImageKeys.length > 0) {
-      try {
-        const presignedUrls = await S3UrlGenerator.transformS3KeysToUrls(plantInstance.s3ImageKeys);
-        const validUrls = presignedUrls.filter(url => url); // Filter out any empty URLs
-        plantInstance.images = validUrls;
-        if (validUrls.length > 0) {
-          plantInstance.primaryImage = validUrls[0];
-        }
-      } catch (error) {
-        console.error('Failed to generate presigned URLs:', error);
-        // Continue without images rather than failing the entire request
-      }
-    }
+    // Transform S3 keys to CloudFront URLs
+    transformS3KeysToCloudFrontUrls(plantInstance);
 
     return NextResponse.json(plantInstance);
   } catch (error) {
@@ -169,18 +166,9 @@ export async function PUT(
     // Get the enhanced plant instance with plant data
     const enhancedInstance = await PlantInstanceQueries.getEnhancedById(updatedInstance.id);
 
-    // Transform S3 keys to presigned URLs if S3 is configured
-    if (enhancedInstance && S3UrlGenerator.isConfigured() && enhancedInstance.s3ImageKeys && enhancedInstance.s3ImageKeys.length > 0) {
-      try {
-        const presignedUrls = await S3UrlGenerator.transformS3KeysToUrls(enhancedInstance.s3ImageKeys);
-        const validUrls = presignedUrls.filter(url => url);
-        enhancedInstance.images = validUrls;
-        if (validUrls.length > 0) {
-          enhancedInstance.primaryImage = validUrls[0];
-        }
-      } catch (error) {
-        console.error('Failed to generate presigned URLs:', error);
-      }
+    // Transform S3 keys to CloudFront URLs
+    if (enhancedInstance) {
+      transformS3KeysToCloudFrontUrls(enhancedInstance);
     }
 
     return NextResponse.json(enhancedInstance);

@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { S3ImageService } from '@/lib/services/s3-image-service';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
 interface S3ImageProps {
   s3Key: string;
-  userId: string;
   alt: string;
   className?: string;
   width?: number;
@@ -16,12 +15,15 @@ interface S3ImageProps {
 }
 
 /**
- * Component to display images from S3 using pre-signed URLs
- * Automatically fetches pre-signed URLs and handles loading states
+ * Component to display images from CloudFront using signed cookies
+ * Uses Next.js Image with direct CloudFront access via custom domain (cdn.fancy-planties.cloudagrapher.com)
+ * Parent domain cookies (.fancy-planties.cloudagrapher.com) enable access in both dev and prod
+ *
+ * Migration note: Removed userId prop as it's no longer needed with signed cookies
+ * CloudFront cookies are path-based and automatically restrict access to user's images
  */
 export default function S3Image({
   s3Key,
-  userId,
   alt,
   className = '',
   width,
@@ -29,58 +31,7 @@ export default function S3Image({
   priority = false,
   fallbackSrc = '/placeholder-plant.png',
 }: S3ImageProps) {
-  const [imageUrl, setImageUrl] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchImageUrl() {
-      try {
-        setLoading(true);
-        setError(false);
-
-        const response = await S3ImageService.getPresignedDownloadUrl({
-          userId,
-          s3Key,
-        });
-
-        if (mounted) {
-          setImageUrl(response.url);
-        }
-      } catch (err) {
-        console.error('Failed to fetch image URL:', err);
-        if (mounted) {
-          setError(true);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    if (s3Key && userId) {
-      fetchImageUrl();
-    }
-
-    return () => {
-      mounted = false;
-    };
-  }, [s3Key, userId]);
-
-  if (loading) {
-    return (
-      <div
-        className={`bg-gray-200 animate-pulse ${className}`}
-        style={{ width, height }}
-        aria-label="Loading image"
-      />
-    );
-  }
-
-  if (error || !imageUrl) {
+  if (!s3Key || !S3ImageService.isEnabled()) {
     return (
       <Image
         src={fallbackSrc}
@@ -92,6 +43,10 @@ export default function S3Image({
     );
   }
 
+  // Convert S3 key to CloudFront URL
+  const imageUrl = S3ImageService.s3KeyToCloudFrontUrl(s3Key);
+
+  // Use Next.js Image with CloudFront (custom domain enables direct access)
   return (
     <Image
       src={imageUrl}
@@ -100,6 +55,10 @@ export default function S3Image({
       height={height || 200}
       className={className}
       priority={priority}
+      unoptimized={shouldUnoptimizeImage(imageUrl)}
+      onError={(e) => {
+        e.currentTarget.src = fallbackSrc;
+      }}
     />
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import { 
   Calendar, 
   MapPin, 
@@ -174,6 +175,7 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
                     width={64}
                     height={64}
                     className="w-full h-full object-cover"
+                    unoptimized={shouldUnoptimizeImage(propagation.images[0])}
                   />
                 )
               ) : (

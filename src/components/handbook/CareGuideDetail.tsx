@@ -156,7 +156,6 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit }: Care
                         <div key={s3Key} className="aspect-square relative overflow-hidden rounded-lg">
                           <S3Image
                             s3Key={s3Key}
-                            userId={userId.toString()}
                             alt={`${guide.title} - Image ${index + 1}`}
                             width={300}
                             height={300}

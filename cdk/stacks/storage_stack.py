@@ -1,6 +1,7 @@
 """
 Storage Stack: S3 Bucket + CloudFront Distribution for Image Storage
 Implements cost-effective, secure image storage with CDN delivery
+Supports signed cookies for authenticated access
 """
 from aws_cdk import (
     Stack,
@@ -11,6 +12,7 @@ from aws_cdk import (
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_iam as iam,
+    aws_certificatemanager as acm,
 )
 from constructs import Construct
 from cdk_nag import NagSuppressions
@@ -26,6 +28,32 @@ class ImageStorageStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         self.env_name = env_name
+
+        # Get CloudFront key group ID from context (for signed cookies)
+        # The key group should be created manually before deploying this stack
+        key_group_id = self.node.try_get_context("cloudfront_key_group_id")
+        if not key_group_id:
+            raise ValueError(
+                "CloudFront key group ID is required for signed cookies. "
+                "Generate a key pair, create a key group, and add to cdk.json context: "
+                "-c cloudfront_key_group_id=..."
+            )
+
+        # Import existing CloudFront Key Group for signed cookie validation
+        # This key group was created manually and contains the public signing key
+        self.key_group = cloudfront.KeyGroup.from_key_group_id(
+            self,
+            "ImageAccessKeyGroup",
+            key_group_id
+        )
+
+        # Import existing SSL certificate from ACM (us-east-1)
+        # Wildcard certificate *.cloudagrapher.com covers cdn.fancy-planties.cloudagrapher.com
+        certificate = acm.Certificate.from_certificate_arn(
+            self,
+            "CloudFrontCertificate",
+            certificate_arn="arn:aws:acm:us-east-1:580033881001:certificate/cbaa9ed3-c244-4a39-95cc-20aa3bd515d8"
+        )
 
         # Create S3 bucket for image storage
         self.image_bucket = s3.Bucket(
@@ -112,7 +140,14 @@ class ImageStorageStack(Stack):
                 cached_methods=cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
                 cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED,
                 compress=True,
+                # Enable signed cookies for authentication
+                # This requires users to have valid CloudFront signed cookies to access images
+                trusted_key_groups=[self.key_group],
             ),
+            # Custom domain configuration
+            domain_names=[f"cdn.fancy-planties.cloudagrapher.com"],
+            certificate=certificate,
+
             # Price class for cost optimization (use lower-cost edge locations)
             price_class=cloudfront.PriceClass.PRICE_CLASS_100,  # US, Canada, Europe
 
@@ -210,4 +245,12 @@ class ImageStorageStack(Stack):
             value=self.distribution.distribution_id,
             description="CloudFront distribution ID",
             export_name=f"FancyPlantiesCloudFrontId-{env_name}",
+        )
+
+        CfnOutput(
+            self,
+            "KeyGroupId",
+            value=self.key_group.key_group_id,
+            description="CloudFront Key Group ID for signed cookies",
+            export_name=f"FancyPlantiesKeyGroupId-{env_name}",
         )

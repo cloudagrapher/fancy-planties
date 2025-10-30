@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
 interface PlantImageGalleryProps {
   images: string[];
@@ -191,6 +192,7 @@ export default function PlantImageGallery({
             }`}
             sizes="100vw"
             priority
+            unoptimized={shouldUnoptimizeImage(images[currentIndex])}
             onError={(e) => {
               console.error('Failed to load image:', images[currentIndex]);
               // Could show a fallback image here
@@ -223,6 +225,7 @@ export default function PlantImageGallery({
                   className="object-cover"
                   sizes="64px"
                   loading="lazy"
+                  unoptimized={shouldUnoptimizeImage(image)}
                   onError={(e) => {
                     console.error('Failed to load thumbnail:', image);
                   }}

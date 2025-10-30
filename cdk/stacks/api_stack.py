@@ -1,6 +1,7 @@
 """
 API Stack: Lambda functions and API Gateway for image upload/download
 Provides secure API endpoints with user authorization
+Supports CloudFront signed cookies for authenticated image access
 """
 from aws_cdk import (
     Stack,
@@ -10,6 +11,7 @@ from aws_cdk import (
     aws_apigateway as apigw,
     aws_iam as iam,
     aws_logs as logs,
+    aws_secretsmanager as secretsmanager,
 )
 from constructs import Construct
 from cdk_nag import NagSuppressions
@@ -69,24 +71,63 @@ class ImageApiStack(Stack):
             log_retention=logs.RetentionDays.ONE_WEEK,
         )
 
-        # Lambda function for generating pre-signed download URLs
-        self.download_url_function = lambda_.Function(
+        # Get CloudFront configuration from context
+        cloudfront_key_pair_id = self.node.try_get_context("cloudfront_public_key_id")
+        if not cloudfront_key_pair_id:
+            raise ValueError(
+                "CloudFront public key ID is required for signed cookies. "
+                "Set it in cdk.json or pass via context: -c cloudfront_public_key_id=K3..."
+            )
+
+        # Get reference to the CloudFront private key secret
+        private_key_secret = secretsmanager.Secret.from_secret_name_v2(
             self,
-            "PresignedDownloadFunction",
+            "CloudFrontPrivateKeySecret",
+            secret_name=f"/fancy-planties/cloudfront/private-key-{env_name}"
+        )
+
+        # Grant Lambda role permission to read the secret
+        private_key_secret.grant_read(lambda_role)
+
+        # Lambda function for generating CloudFront signed cookies
+        self.cookie_generator_function = lambda_.Function(
+            self,
+            "SignedCookieFunction",
             runtime=lambda_.Runtime.PYTHON_3_12,
-            handler="presigned_download.lambda_handler",
+            handler="signed_cookie_generator.lambda_handler",
             code=lambda_.Code.from_asset("lambda_functions"),
             role=lambda_role,
             timeout=Duration.seconds(30),
             memory_size=256,
             environment={
-                "BUCKET_NAME": storage_stack.image_bucket.bucket_name,
+                "PRIVATE_KEY_SECRET_NAME": private_key_secret.secret_name,
+                "CLOUDFRONT_KEY_PAIR_ID": cloudfront_key_pair_id,
                 "CLOUDFRONT_DOMAIN": storage_stack.distribution.distribution_domain_name,
-                "URL_EXPIRATION": "900",  # 15 minutes
+                "COOKIE_EXPIRATION_DAYS": "7",
             },
-            description="Generate pre-signed S3 download URLs with user authorization",
+            description="Generate CloudFront signed cookies for authenticated image access",
             log_retention=logs.RetentionDays.ONE_WEEK,
         )
+
+        # DEPRECATED: Lambda function for generating pre-signed download URLs
+        # Kept temporarily for backward compatibility - will be removed after migration
+        # self.download_url_function = lambda_.Function(
+        #     self,
+        #     "PresignedDownloadFunction",
+        #     runtime=lambda_.Runtime.PYTHON_3_12,
+        #     handler="presigned_download.lambda_handler",
+        #     code=lambda_.Code.from_asset("lambda_functions"),
+        #     role=lambda_role,
+        #     timeout=Duration.seconds(30),
+        #     memory_size=256,
+        #     environment={
+        #         "BUCKET_NAME": storage_stack.image_bucket.bucket_name,
+        #         "CLOUDFRONT_DOMAIN": storage_stack.distribution.distribution_domain_name,
+        #         "URL_EXPIRATION": "900",  # 15 minutes
+        #     },
+        #     description="Generate pre-signed S3 download URLs with user authorization",
+        #     log_retention=logs.RetentionDays.ONE_WEEK,
+        # )
 
         # Create API Gateway REST API
         self.api = apigw.RestApi(
@@ -129,15 +170,26 @@ class ImageApiStack(Stack):
             ),
         )
 
-        # Create /images/download endpoint
-        download = images.add_resource("download")
-        download.add_method(
+        # Create /images/auth-cookie endpoint for CloudFront signed cookies
+        auth_cookie = images.add_resource("auth-cookie")
+        auth_cookie.add_method(
             "POST",
             apigw.LambdaIntegration(
-                self.download_url_function,
+                self.cookie_generator_function,
                 proxy=True,
             ),
         )
+
+        # DEPRECATED: /images/download endpoint
+        # Commented out after migration to CloudFront signed cookies
+        # download = images.add_resource("download")
+        # download.add_method(
+        #     "POST",
+        #     apigw.LambdaIntegration(
+        #         self.download_url_function,
+        #         proxy=True,
+        #     ),
+        # )
 
         # CDK Nag suppressions
         NagSuppressions.add_resource_suppressions(
@@ -192,8 +244,17 @@ class ImageApiStack(Stack):
 
         CfnOutput(
             self,
-            "DownloadFunctionName",
-            value=self.download_url_function.function_name,
-            description="Download URL generator Lambda function name",
-            export_name=f"FancyPlantiesDownloadFunction-{env_name}",
+            "CookieGeneratorFunctionName",
+            value=self.cookie_generator_function.function_name,
+            description="CloudFront signed cookie generator Lambda function name",
+            export_name=f"FancyPlantiesCookieFunction-{env_name}",
         )
+
+        # DEPRECATED: Download function output - removed after migration
+        # CfnOutput(
+        #     self,
+        #     "DownloadFunctionName",
+        #     value=self.download_url_function.function_name,
+        #     description="Download URL generator Lambda function name",
+        #     export_name=f"FancyPlantiesDownloadFunction-{env_name}",
+        # )
