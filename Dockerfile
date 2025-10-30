@@ -30,6 +30,12 @@ WORKDIR /app
 COPY --from=build-deps /app/node_modules ./node_modules
 COPY . .
 
+# Build-time environment variables for Next.js
+ARG NEXT_PUBLIC_AWS_API_ENDPOINT
+ARG NEXT_PUBLIC_CLOUDFRONT_DOMAIN
+ENV NEXT_PUBLIC_AWS_API_ENDPOINT=$NEXT_PUBLIC_AWS_API_ENDPOINT
+ENV NEXT_PUBLIC_CLOUDFRONT_DOMAIN=$NEXT_PUBLIC_CLOUDFRONT_DOMAIN
+
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Disable telemetry during build for faster builds

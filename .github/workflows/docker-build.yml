@@ -110,6 +110,8 @@ jobs:
         build-args: |
           BUILDKIT_INLINE_CACHE=1
           NODE_ENV=production
+          NEXT_PUBLIC_AWS_API_ENDPOINT=${{ secrets.AWS_API_ENDPOINT }}
+          NEXT_PUBLIC_CLOUDFRONT_DOMAIN=${{ secrets.CLOUDFRONT_DOMAIN }}
 
     - name: Generate deployment summary
       run: |
