@@ -2,15 +2,42 @@
 
 /**
  * Seed script to create development data
+ *
+ * ⚠️  WARNING: This script is for DEVELOPMENT and TESTING only!
+ * ⚠️  DO NOT run this script in production environments!
+ *
  * Usage: node scripts/seed-dev-data.js
+ *
+ * This script creates test users with known credentials and sample plant data.
+ * Make sure to delete test data before deploying to production.
  */
 
 const { Client } = require('pg');
 const bcrypt = require('bcryptjs');
 
+// Prevent running in production
+if (process.env.NODE_ENV === 'production') {
+  console.error('❌ ERROR: This seed script cannot be run in production!');
+  console.error('This script creates test users with known weak credentials.');
+  process.exit(1);
+}
+
+// Warn if running in non-development environment
+if (process.env.NODE_ENV && process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'test') {
+  console.warn('⚠️  WARNING: Running seed script in non-development environment');
+  console.warn(`Current NODE_ENV: ${process.env.NODE_ENV}`);
+}
+
 async function seedDevData() {
+  // Require DATABASE_URL to be explicitly set
+  if (!process.env.DATABASE_URL) {
+    console.error('❌ ERROR: DATABASE_URL environment variable is required');
+    console.error('Please set DATABASE_URL in your .env.local file');
+    process.exit(1);
+  }
+
   const client = new Client({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/fancy_planties'
+    connectionString: process.env.DATABASE_URL
   });
 
   try {
@@ -25,7 +52,14 @@ async function seedDevData() {
       userId = existingUser.rows[0].id;
       console.log('✅ Test user already exists: test@example.com');
     } else {
-      const hashedPassword = await bcrypt.hash('password123', 12);
+      // Get test password from environment or use default
+      const testPassword = process.env.TEST_USER_PASSWORD || 'password123';
+
+      if (!process.env.TEST_USER_PASSWORD) {
+        console.warn('⚠️  WARNING: Using default test password. Set TEST_USER_PASSWORD in .env.local for custom password.');
+      }
+
+      const hashedPassword = await bcrypt.hash(testPassword, 12);
       const result = await client.query(
         'INSERT INTO users (email, hashed_password, name) VALUES ($1, $2, $3) RETURNING id',
         ['test@example.com', hashedPassword, 'Test User']
@@ -33,7 +67,8 @@ async function seedDevData() {
       userId = result.rows[0].id;
       console.log('✅ Test user created successfully!');
       console.log('📧 Email: test@example.com');
-      console.log('🔑 Password: password123');
+      console.log(`🔑 Password: ${testPassword}`);
+      console.log('⚠️  IMPORTANT: Delete this user before deploying to production!');
     }
 
     // Check if we already have plant data
