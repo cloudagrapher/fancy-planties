@@ -1,0 +1,158 @@
+# Fancy Planties — Codebase Context for AI Agents
+
+> This file gives a coding agent enough context to navigate the codebase, understand key
+> decisions, and avoid past mistakes. Read this first. Check `docs/project_notes/` for
+> deep dives on specific bugs and design decisions.
+
+## What Is This?
+
+A plant-management PWA. Users track their plant collections, log care events (fertilizer,
+water, repot, prune), manage propagations, and get a dashboard showing what's overdue.
+Stefan's wife is the primary user — she has a serious plant collection and strong opinions
+about the UI.
+
+## Stack
+
+| Layer          | Tech                                            |
+|----------------|-------------------------------------------------|
+| Framework      | Next.js 15 (App Router, standalone Docker mode) |
+| Language       | TypeScript (strict)                             |
+| Database       | PostgreSQL 16 (via Docker)                      |
+| ORM            | Drizzle ORM                                     |
+| Auth           | Lucia (session-based, cookie auth)              |
+| Styling        | Tailwind CSS + custom CSS tokens                |
+| Image Storage  | S3 → CloudFront (signed cookies for access)     |
+| Infra          | AWS CDK (Python), Docker, GitHub Actions (GHCR) |
+| PWA            | next-pwa (service worker, offline support)      |
+
+## Project Layout
+
+```
+src/
+├── app/                    # Next.js App Router pages + API routes
+│   ├── api/                # REST API (care, plants, propagations, search, admin, images)
+│   ├── dashboard/          # Main user-facing pages (plants, care, propagations, handbook, profile)
+│   ├── admin/              # Admin/curator panel
+│   └── auth/               # Auth pages (signin, signup, verify-email, password reset)
+├── components/             # React components by domain (plants, care, search, admin, etc.)
+├── hooks/                  # Custom hooks (swipe gestures, haptic feedback, etc.)
+├── lib/
+│   ├── auth/               # Lucia auth setup
+│   ├── db/                 # Drizzle schema, queries, migrations
+│   │   ├── schema.ts       # All table definitions (users, plants, plantInstances, careHistory, etc.)
+│   │   └── queries/        # Query modules by domain
+│   ├── services/           # Business logic (care-calculator, s3-image-service, search, CSV import, email)
+│   ├── types/              # TypeScript types (care-types, plant-types, plant-instance-types)
+│   ├── validation/         # Zod schemas + validation helpers (care-schemas, plant-schemas, etc.)
+│   └── utils/              # Shared utilities
+├── styles/                 # Global CSS, base styles, design tokens
+└── test-utils/             # Test factories, helpers, mocking infrastructure
+infra/                      # AWS CDK stack (Python) — CloudFront, S3, deploy scripts
+docs/                       # Architecture, API, deployment, testing guides
+```
+
+## Key Architectural Decisions
+
+### Dual Schedule Parsers (⚠️ Watch This)
+
+There are **two** fertilizer schedule parsing functions. Both must stay in sync:
+
+1. **`careHelpers.parseFertilizerSchedule`** in `src/lib/types/care-types.ts`
+   - Used by: `CareTaskCard`, `care-history.ts` queries, consistency scoring
+   - Input: schedule string → Output: number of days
+
+2. **`careValidation.parseFertilizerScheduleToDays`** in `src/lib/validation/care-schemas.ts`
+   - Used by: `CareCalculator` service (4 call sites)
+   - Input: schedule string → Output: number of days
+
+**Why two?** Historical accident — types and validation were written independently. Both need
+the same schedule map and the same fallback logic. If you change one, change the other.
+
+See: `docs/project_notes/001-fertilizer-due-date-bug.md`
+
+### Image Pipeline (S3 → CloudFront → Client)
+
+Images flow: Upload → S3 (presigned URL) → CloudFront CDN → Client (signed cookies).
+
+- `S3ImageService` (`src/lib/services/s3-image-service.ts`) handles URL transforms
+- `S3Image` component (`src/components/shared/S3Image.tsx`) renders with fallback
+- `NEXT_PUBLIC_CLOUDFRONT_DOMAIN` must be set at both build time AND runtime in Docker
+- Auth cookies are set via `/api/images/auth-cookie` route
+
+**Critical:** `NEXT_PUBLIC_*` vars are inlined into the client bundle at build time by Next.js.
+For Docker, they must be passed as both build ARGs and runtime ENVs. Without this, server-side
+API routes can't access them even though the client bundle has them baked in.
+
+See: `docs/project_notes/002-photos-not-loading-bug.md`
+
+### Mobile-First Image Sizing
+
+Plant card images use `aspect-ratio: 4/3` (CSS) and Tailwind `aspect-[4/3]` classes, NOT
+fixed pixel heights. Fixed `h-20`/`h-24`/`h-32` heights caused images to appear super-zoomed
+on mobile because `object-fit: cover` on a narrow, tall container crops aggressively.
+
+See: `docs/project_notes/003-image-aspect-ratio-bug.md`
+
+### Fertilizer Schedule Formats in the Database
+
+The database contains a mix of schedule string formats because they come from different sources
+(manual entry, CSV import, form dropdowns, AI-generated care guides). The parsers must handle:
+
+- Legacy single-word: `"weekly"`, `"biweekly"`, `"monthly"`, `"quarterly"`
+- Explicit unit: `"2 weeks"`, `"1 month"`, `"3 months"`
+- "Every" prefix: `"every 2 weeks"`, `"every 4-6 weeks"`, `"every 17 weeks"`
+- Range formats: `"every 2-3 weeks"` (use midpoint average)
+- Plain numbers: `"14"` (treated as days)
+
+When adding new schedule sources, add entries to BOTH parser schedule maps.
+
+### Docker Build & Deployment
+
+- `Dockerfile` uses multi-stage: deps → builder → runner
+- `docker-compose.prod.yml` — production stack (Postgres + app + Nginx)
+- GitHub Actions builds on push to main, publishes to GHCR
+- `infra/` contains AWS CDK stack (CloudFront distribution, S3 bucket, OAI)
+
+### Testing
+
+- Jest + React Testing Library
+- Test factories in `src/test-utils/factories/`
+- See `docs/TESTING_GUIDE.md` for comprehensive testing patterns
+
+## Common Gotchas
+
+1. **parseInt on schedule strings** — `parseInt("4 weeks")` returns `4`, not `28`.
+   Always use regex matching with unit conversion. Never use naked `parseInt` as a fallback
+   for schedule parsing.
+
+2. **NEXT_PUBLIC_ in Docker** — These vars are baked into the JS bundle at `next build` time.
+   If you need them at runtime too (for server-side API routes), they must also be set as
+   ENV in the Docker runner stage.
+
+3. **Fixed image heights on mobile** — Use `aspect-ratio` instead of fixed heights for card
+   images. `object-fit: cover` + fixed narrow height = aggressive cropping.
+
+4. **Schedule parser duplication** — Two functions, same logic, different files. Change one →
+   change both. Ideally refactor into a single shared utility. (TODO)
+
+5. **CloudFront signed cookies** — The `/api/images/auth-cookie` route sets cookies scoped to
+   `.fancy-planties.cloudagrapher.com`. The CDN domain must be a subdomain of that for cookies
+   to work cross-origin.
+
+## Where to Find Things
+
+| Need to...                        | Look at...                                              |
+|-----------------------------------|---------------------------------------------------------|
+| Add a new care type               | `care-types.ts`, `care-schemas.ts`, `careHistory` table |
+| Change fertilizer schedule logic  | BOTH `care-types.ts` AND `care-schemas.ts`              |
+| Fix image loading                 | `s3-image-service.ts`, `S3Image.tsx`, Dockerfile        |
+| Add a new API route               | `src/app/api/<domain>/route.ts`                         |
+| Modify the plant card UI          | `PlantCard.tsx`, `globals.css` (.plant-card-image)      |
+| Add/change database tables        | `src/lib/db/schema.ts`, then `migrations.ts`            |
+| Infrastructure changes            | `infra/stacks/`, `docker-compose.prod.yml`              |
+| Admin features                    | `src/app/admin/`, `src/app/api/admin/`                  |
+
+## PR Workflow
+
+Stefan prefers branches → PRs → review. Name branches: `fix/`, `feature/`, `docs/`.
+Don't commit directly to main.

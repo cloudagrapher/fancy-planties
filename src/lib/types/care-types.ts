@@ -281,15 +281,30 @@ export const careHelpers = {
       'every 17 weeks': 119,        // 17 weeks
     };
 
-    // Check if it's a predefined schedule
-    if (scheduleMap[schedule]) {
-      return scheduleMap[schedule];
+    // Check if it's a predefined schedule (case-insensitive)
+    const normalized = schedule.toLowerCase().trim();
+    if (scheduleMap[normalized]) {
+      return scheduleMap[normalized];
     }
 
-    // Try to parse as custom number of days
-    const customDays = parseInt(schedule, 10);
-    if (!isNaN(customDays) && customDays > 0) {
-      return customDays;
+    // Parse "X days/weeks/months" format (e.g., "3 weeks", "7 days", "2 months")
+    const match = normalized.match(/^(\d+)\s*(day|week|month)s?$/i);
+    if (match) {
+      const amount = parseInt(match[1], 10);
+      const unit = match[2].toLowerCase();
+      switch (unit) {
+        case 'day': return amount;
+        case 'week': return amount * 7;
+        case 'month': return amount * 30;
+      }
+    }
+
+    // Try to parse as a plain number of days (only if the entire string is numeric)
+    if (/^\d+$/.test(normalized)) {
+      const customDays = parseInt(normalized, 10);
+      if (customDays > 0) {
+        return customDays;
+      }
     }
 
     // Default to monthly if unable to parse
