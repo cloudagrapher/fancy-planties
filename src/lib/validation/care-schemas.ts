@@ -193,23 +193,50 @@ export const careValidation = {
 
   // Parse fertilizer schedule to days
   parseFertilizerScheduleToDays: (schedule: string): number => {
+    if (!schedule) return 30;
+
     const scheduleMap: Record<string, number> = {
+      // Legacy single-word formats
       'weekly': 7,
       'biweekly': 14,
       'monthly': 30,
       'bimonthly': 60,
-      'quarterly': 90
+      'quarterly': 90,
+      // Database formats (from form conversion)
+      'every 2 weeks': 14,
+      'every 2-3 weeks': 18,
+      'every 2-4 weeks': 21,
+      'every 3-4 weeks': 24,
+      'every 4 weeks': 28,
+      'every 4-6 weeks': 35,
+      'every 6-8 weeks': 49,
+      'every 17 weeks': 119,
     };
 
-    // Check if it's a predefined schedule
-    if (scheduleMap[schedule]) {
-      return scheduleMap[schedule];
+    // Check if it's a predefined schedule (case-insensitive)
+    const normalized = schedule.toLowerCase().trim();
+    if (scheduleMap[normalized]) {
+      return scheduleMap[normalized];
     }
 
-    // Try to parse as custom number of days
-    const customDays = parseInt(schedule, 10);
-    if (!isNaN(customDays) && customDays > 0) {
-      return customDays;
+    // Parse "X days/weeks/months" format (e.g., "3 weeks", "7 days", "2 months")
+    const match = normalized.match(/^(\d+)\s*(day|week|month)s?$/i);
+    if (match) {
+      const amount = parseInt(match[1], 10);
+      const unit = match[2].toLowerCase();
+      switch (unit) {
+        case 'day': return amount;
+        case 'week': return amount * 7;
+        case 'month': return amount * 30;
+      }
+    }
+
+    // Try to parse as a plain number of days (only if the entire string is numeric)
+    if (/^\d+$/.test(normalized)) {
+      const customDays = parseInt(normalized, 10);
+      if (customDays > 0) {
+        return customDays;
+      }
     }
 
     // Default to monthly if unable to parse
