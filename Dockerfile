@@ -53,6 +53,15 @@ ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# NEXT_PUBLIC_ vars are inlined into client bundle at build time, but server-side
+# API routes also need them at runtime (e.g., auth-cookie route, S3 URL transforms).
+# These ARGs propagate the build-time values into the runner's environment.
+# They can still be overridden by docker-compose environment variables.
+ARG NEXT_PUBLIC_AWS_API_ENDPOINT
+ARG NEXT_PUBLIC_CLOUDFRONT_DOMAIN
+ENV NEXT_PUBLIC_AWS_API_ENDPOINT=$NEXT_PUBLIC_AWS_API_ENDPOINT
+ENV NEXT_PUBLIC_CLOUDFRONT_DOMAIN=$NEXT_PUBLIC_CLOUDFRONT_DOMAIN
+
 # Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
