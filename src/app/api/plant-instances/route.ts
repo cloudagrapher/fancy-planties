@@ -223,12 +223,13 @@ export async function POST(request: NextRequest) {
     
     // Calculate initial fertilizer due date if schedule is provided
     if (validatedData.fertilizerSchedule && !validatedData.fertilizerDue) {
-      const now = new Date();
+      // Use lastFertilized as the base date if provided, otherwise use today
+      const baseDate = validatedData.lastFertilized ? new Date(validatedData.lastFertilized) : new Date();
       const scheduleMatch = validatedData.fertilizerSchedule.match(/(\d+)\s*(day|week|month)s?/i);
       
       if (scheduleMatch) {
         const [, amount, unit] = scheduleMatch;
-        const dueDate = new Date(now);
+        const dueDate = new Date(baseDate);
         
         switch (unit.toLowerCase()) {
           case 'day':
