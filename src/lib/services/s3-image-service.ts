@@ -133,13 +133,18 @@ export class S3ImageService {
    * Parent domain cookies (.fancy-planties.cloudagrapher.com) enable access in both dev and prod
    *
    * @param s3Key - The S3 object key (e.g., "users/123/plant_instance/456/image.jpg")
-   * @returns CloudFront URL
+   * @returns CloudFront URL or empty string if domain not configured
    */
   static s3KeyToCloudFrontUrl(s3Key: string): string {
     const cloudfrontDomain = this.getCloudFrontDomain();
 
     if (!cloudfrontDomain) {
-      throw new Error('CloudFront domain not configured');
+      console.error(
+        '[S3ImageService] NEXT_PUBLIC_CLOUDFRONT_DOMAIN is not configured. ' +
+        'Images will not load. Ensure this env var is set in .env.prod AND ' +
+        'as a GitHub secret (CLOUDFRONT_DOMAIN) for Docker builds.'
+      );
+      return '';
     }
     return `https://${cloudfrontDomain}/${s3Key}`;
   }

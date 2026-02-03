@@ -31,7 +31,12 @@ export default function S3Image({
   priority = false,
   fallbackSrc = '/placeholder-plant.png',
 }: S3ImageProps) {
-  if (!s3Key || !S3ImageService.isEnabled()) {
+  // Convert S3 key to CloudFront URL
+  const imageUrl = s3Key && S3ImageService.isEnabled()
+    ? S3ImageService.s3KeyToCloudFrontUrl(s3Key)
+    : '';
+
+  if (!imageUrl) {
     return (
       <Image
         src={fallbackSrc}
@@ -42,9 +47,6 @@ export default function S3Image({
       />
     );
   }
-
-  // Convert S3 key to CloudFront URL
-  const imageUrl = S3ImageService.s3KeyToCloudFrontUrl(s3Key);
 
   // Use Next.js Image with CloudFront (custom domain enables direct access)
   return (
