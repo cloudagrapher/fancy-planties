@@ -455,10 +455,6 @@ export default function PlantInstanceForm({
       fertilizerSchedule: convertFertilizerSchedule(data.fertilizerSchedule),
       s3ImageKeys: s3ImageKeys, // Use S3 keys instead of base64 images
     };
-    console.log('Form submission data:', submitData);
-    console.log('S3 image keys being submitted:', s3ImageKeys);
-    console.log('Original fertilizer schedule:', data.fertilizerSchedule);
-    console.log('Converted fertilizer schedule:', convertFertilizerSchedule(data.fertilizerSchedule));
     mutation.mutate(submitData);
   };
 

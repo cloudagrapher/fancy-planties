@@ -42,6 +42,61 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('auth_session');
   const isAuthenticated = !!sessionCookie?.value;
 
+  // CSRF Protection: validate Origin header for all state-changing API requests
+  if (pathname.startsWith('/api/') && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method)) {
+    const origin = request.headers.get('origin');
+    const host = request.headers.get('host');
+    
+    // Allow requests with no Origin only if they have a matching Referer (same-origin navigations)
+    if (origin) {
+      const originHost = new URL(origin).host;
+      if (originHost !== host) {
+        return NextResponse.json(
+          { error: 'CSRF validation failed' },
+          { status: 403 }
+        );
+      }
+    } else {
+      // No Origin header — check Referer as fallback
+      const referer = request.headers.get('referer');
+      if (referer) {
+        const refererHost = new URL(referer).host;
+        if (refererHost !== host) {
+          return NextResponse.json(
+            { error: 'CSRF validation failed' },
+            { status: 403 }
+          );
+        }
+      }
+      // If neither Origin nor Referer is present, the request likely comes from
+      // a non-browser client (curl, server-to-server). Allow it through since
+      // session cookies won't be attached by non-browser clients.
+    }
+
+    // Double-submit cookie CSRF check for authenticated requests
+    // Clients must fetch a token from GET /api/csrf and send it as x-csrf-token header
+    if (isAuthenticated && !publicApiRoutes.some(route => pathname.startsWith(route))) {
+      const csrfHeader = request.headers.get('x-csrf-token');
+      const csrfCookie = request.cookies.get('csrf-token')?.value;
+      
+      if (csrfHeader && csrfCookie && csrfHeader === csrfCookie) {
+        // Valid double-submit — continue
+      } else if (!csrfHeader) {
+        // No CSRF token header provided — reject
+        return NextResponse.json(
+          { error: 'CSRF token required. Fetch a token from GET /api/csrf and send it as x-csrf-token header.' },
+          { status: 403 }
+        );
+      } else {
+        // Token mismatch
+        return NextResponse.json(
+          { error: 'Invalid CSRF token' },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
   // Check if the route is protected
   const isProtectedRoute = protectedRoutes.some(route => 
     pathname.startsWith(route)
@@ -142,9 +197,9 @@ export async function middleware(request: NextRequest) {
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-inline and unsafe-eval
     "style-src 'self' 'unsafe-inline'", // Tailwind requires unsafe-inline
-    "img-src 'self' data: blob:",
+    "img-src 'self' data: blob: https://cdn.fancy-planties.cloudagrapher.com https://*.cloudfront.net",
     "font-src 'self'",
-    "connect-src 'self'",
+    "connect-src 'self' https://cdn.fancy-planties.cloudagrapher.com https://sl4zllu188.execute-api.us-east-1.amazonaws.com",
     "frame-ancestors 'none'",
   ].join('; ');
   

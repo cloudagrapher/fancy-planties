@@ -3,6 +3,16 @@ import { Resend } from 'resend';
 import { EmailService, EmailConfig, EmailServiceError } from './email-service';
 import { emailServiceMonitor } from './email-service-monitor';
 
+// Escape HTML special characters to prevent injection in email templates
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export class ResendEmailService implements EmailService {
   private resend: Resend;
   private config: EmailConfig;
@@ -147,6 +157,7 @@ export class ResendEmailService implements EmailService {
   }
 
   private generateVerificationEmailTemplate(code: string, name: string): string {
+    const safeName = escapeHtml(name);
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -203,7 +214,7 @@ export class ResendEmailService implements EmailService {
           <h1>Verify Your Email Address</h1>
         </div>
         
-        <p>Hi ${name},</p>
+        <p>Hi ${safeName},</p>
         
         <p>Welcome to Fancy Planties! To complete your account setup, please verify your email address by entering the verification code below:</p>
         
@@ -244,6 +255,7 @@ Need help? Contact us at support@fancy-planties.cloudagrapher.com
   }
 
   private generatePasswordResetEmailTemplate(resetUrl: string, name: string): string {
+    const safeName = escapeHtml(name);
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -313,7 +325,7 @@ Need help? Contact us at support@fancy-planties.cloudagrapher.com
           <h1>Password Reset Request</h1>
         </div>
         
-        <p>Hi ${name},</p>
+        <p>Hi ${safeName},</p>
         
         <p>We received a request to reset your password for your Fancy Planties account. If you made this request, click the button below to reset your password:</p>
         

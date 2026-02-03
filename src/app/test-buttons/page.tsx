@@ -1,6 +1,11 @@
 import ButtonShowcase from '@/components/test/ButtonShowcase';
+import { notFound } from 'next/navigation';
 
 export default function TestButtonsPage() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-mint-50 to-white p-4">
       <div className="container mx-auto max-w-4xl">

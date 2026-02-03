@@ -1,7 +1,12 @@
 import { getCuratorStatus } from '@/lib/auth/server';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
 export default async function TestAdminAccess() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
   const status = await getCuratorStatus();
 
   return (

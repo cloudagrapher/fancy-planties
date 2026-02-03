@@ -2,7 +2,7 @@ import 'server-only';
 import { NextRequest, NextResponse } from 'next/server';
 import { emailVerificationCleanupService } from '@/lib/services/email-verification-cleanup';
 import { emailServiceMonitor } from '@/lib/services/email-service-monitor';
-import { requireAuth } from '@/lib/auth/middleware';
+import { validateCuratorRequest } from '@/lib/auth/server';
 
 /**
  * GET /api/admin/email-verification-monitor
@@ -18,12 +18,12 @@ import { requireAuth } from '@/lib/auth/middleware';
  */
 export async function GET(request: NextRequest) {
   try {
-    // Require authentication (in a real app, you'd also check for admin role)
-    const authResult = await requireAuth();
-    if (!authResult) {
+    // Require curator privileges
+    const authResult = await validateCuratorRequest();
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.error === 'Unauthorized' ? 401 : 403 }
       );
     }
     const { user } = authResult;
@@ -80,12 +80,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Require authentication (in a real app, you'd also check for admin role)
-    const authResult = await requireAuth();
-    if (!authResult) {
+    // Require curator privileges
+    const authResult = await validateCuratorRequest();
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.error === 'Unauthorized' ? 401 : 403 }
       );
     }
     const { user } = authResult;

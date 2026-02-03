@@ -1,4 +1,10 @@
+import { notFound } from 'next/navigation';
+
 export default function TestGridPage() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
   return (
     <div className="page">
       <div className="container">

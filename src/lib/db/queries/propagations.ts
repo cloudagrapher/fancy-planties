@@ -157,7 +157,7 @@ export class PropagationQueries {
   }
 
   // Get propagations from a specific parent plant instance
-  static async getByParentInstance(parentInstanceId: number): Promise<(Propagation & { 
+  static async getByParentInstance(parentInstanceId: number, userId: number): Promise<(Propagation & { 
     plant: typeof plants.$inferSelect;
   })[]> {
     try {
@@ -165,7 +165,10 @@ export class PropagationQueries {
         .select()
         .from(propagations)
         .leftJoin(plants, eq(propagations.plantId, plants.id))
-        .where(eq(propagations.parentInstanceId, parentInstanceId))
+        .where(and(
+          eq(propagations.parentInstanceId, parentInstanceId),
+          eq(propagations.userId, userId)
+        ))
         .orderBy(desc(propagations.dateStarted));
 
       return propagationList.map(prop => ({
