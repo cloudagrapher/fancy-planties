@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       );
     } else if (parentInstanceId) {
       // Get propagations from a specific parent plant
-      propagations = await PropagationQueries.getByParentInstance(parseInt(parentInstanceId, 10));
+      propagations = await PropagationQueries.getByParentInstance(parseInt(parentInstanceId, 10), user.id);
     } else {
       // Get all propagations for user
       propagations = await PropagationQueries.getByUserId(user.id);
@@ -66,10 +66,8 @@ export async function POST(request: NextRequest) {
     }
 
     body = await request.json();
-    console.log('Received propagation data:', JSON.stringify(body, null, 2));
     
     const validatedData = createPropagationSchema.parse(body);
-    console.log('Validated propagation data:', JSON.stringify(validatedData, null, 2));
 
     const propagation = await PropagationQueries.create({
       userId: user.id,
@@ -83,32 +81,23 @@ export async function POST(request: NextRequest) {
       images: validatedData.images,
     });
 
-    console.log('Successfully created propagation:', propagation.id);
     return NextResponse.json(propagation, { status: 201 });
   } catch (error) {
     console.error('Error creating propagation:', error);
-    console.error('Received data that caused error:', JSON.stringify(body, null, 2));
     
     if (error instanceof z.ZodError) {
-      console.error('Validation errors:', JSON.stringify(error.issues, null, 2));
       return NextResponse.json(
         { 
           error: 'Validation failed', 
-          details: error.issues,
-          receivedData: body
+          details: error.issues
         },
         { status: 400 }
       );
     }
 
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Database or server error:', errorMessage);
-    
     return NextResponse.json(
       { 
-        error: 'Failed to create propagation',
-        message: errorMessage,
-        receivedData: body
+        error: 'Failed to create propagation'
       },
       { status: 500 }
     );

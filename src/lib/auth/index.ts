@@ -131,9 +131,11 @@ export async function signUpUnverified(email: string, password: string, name: st
       throw new Error('User already exists');
     }
     
-    // If user exists but is not verified, return the existing user
-    // This allows them to resend verification email
-    return existingUser;
+    // If user exists but is not verified, update password and name to latest signup attempt.
+    // This ensures the email owner (who receives the verification code) controls the password.
+    const hashedPassword = await hashPassword(password);
+    await db.update(users).set({ hashedPassword, name }).where(eq(users.id, existingUser.id));
+    return { ...existingUser, hashedPassword, name };
   }
   
   // Create new unverified user (no session created)

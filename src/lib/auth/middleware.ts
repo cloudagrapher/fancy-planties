@@ -93,10 +93,10 @@ export async function rateLimit(identifier: string, dbInstance = db): Promise<{ 
     };
   } catch (error) {
     console.error('Rate limiting error:', error);
-    // Fallback to allowing request on database error
+    // Fail closed: deny request on database error to prevent bypass via DB disruption
     return {
-      success: true,
-      remaining: RATE_LIMIT_MAX_REQUESTS - 1,
+      success: false,
+      remaining: 0,
       resetTime,
     };
   }
