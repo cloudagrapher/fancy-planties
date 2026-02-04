@@ -140,8 +140,6 @@ export default function PlantsGrid({
         if (currentFilters.lastFertilizedBefore) params.append('lastFertilizedBefore', currentFilters.lastFertilizedBefore.toISOString());
       }
 
-      console.log('Fetching plants:', { endpoint, params: params.toString(), hasAdvancedFeatures });
-
       const response = await fetch(`${endpoint}?${params}`);
       if (!response.ok) {
         const errorText = await response.text();
@@ -166,30 +164,8 @@ export default function PlantsGrid({
     if (useSearchResults && searchResults) {
       return (searchResults.instances || []).filter(Boolean);
     }
-    const result = data?.pages.flatMap(page => page.instances).filter(Boolean) ?? [];
-
-    // Enhanced debugging for infinite scroll
-    const lastPage = data?.pages?.[data.pages.length - 1];
-    console.log('PlantsGrid debug:', {
-      totalPages: data?.pages?.length,
-      plantsLoaded: result.length,
-      hasNextPage,
-      isFetchingNextPage,
-      lastPageHasMore: lastPage?.hasMore,
-      lastPageTotalCount: lastPage?.totalCount,
-      lastPageOffset: lastPage?.filters?.offset,
-      lastPageLimit: lastPage?.filters?.limit,
-      calculatedNextOffset: lastPage ? lastPage.filters.offset + lastPage.filters.limit : 0,
-      allPagesData: data?.pages?.map(page => ({
-        instanceCount: page.instances.length,
-        hasMore: page.hasMore,
-        totalCount: page.totalCount,
-        offset: page.filters.offset,
-        limit: page.filters.limit
-      }))
-    });
-    return result;
-  }, [data, searchResults, useSearchResults, hasNextPage, isFetchingNextPage]);
+    return data?.pages.flatMap(page => page.instances).filter(Boolean) ?? [];
+  }, [data, searchResults, useSearchResults]);
 
   // Handle search - now integrated into enhanced filters
   const handleSearch = useCallback((query: string) => {

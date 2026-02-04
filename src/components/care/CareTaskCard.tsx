@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import type { EnhancedPlantInstance } from '@/lib/types/care-types';
 import { careHelpers } from '@/lib/types/care-types';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
 interface CareTaskCardProps {
   plant: EnhancedPlantInstance;
@@ -63,12 +65,15 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
       <div className="sm:hidden w-full max-w-full overflow-hidden">
         <div className="flex items-start space-x-3 mb-3">
           {/* Plant Image */}
-          <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
+          <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden relative">
             {plant.primaryImage ? (
-              <img
+              <Image
                 src={plant.primaryImage}
                 alt={plant.displayName}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="48px"
+                unoptimized={plant.primaryImage.startsWith('data:') || shouldUnoptimizeImage(plant.primaryImage)}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -146,12 +151,15 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
             {/* Plant Image */}
-            <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
+            <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden relative">
               {plant.primaryImage ? (
-                <img
+                <Image
                   src={plant.primaryImage}
                   alt={plant.displayName}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                  unoptimized={plant.primaryImage.startsWith('data:') || shouldUnoptimizeImage(plant.primaryImage)}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-400">

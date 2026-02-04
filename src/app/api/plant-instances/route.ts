@@ -55,14 +55,6 @@ export async function GET(request: NextRequest) {
     // Check if we need custom sorting (different from default)
     const needsCustomSorting = sortBy !== 'created_at' || sortOrder !== 'desc';
     
-    console.log('Plant instances API:', { 
-      userId: user.id, 
-      sortBy, 
-      sortOrder, 
-      needsCustomSorting,
-      filterCount: Object.keys(validatedFilters).length 
-    });
-    
     let result;
     if (needsCustomSorting) {
       // Use enhanced search for custom sorting
@@ -79,12 +71,6 @@ export async function GET(request: NextRequest) {
       result = await PlantInstanceQueries.getWithFilters(validatedFilters);
     }
     
-    console.log('Plant instances result:', {
-      instanceCount: result.instances.length,
-      totalCount: result.totalCount,
-      hasMore: result.hasMore
-    });
-
     // Transform S3 keys to CloudFront URLs
     result.instances.forEach(transformS3KeysToCloudFrontUrls);
 

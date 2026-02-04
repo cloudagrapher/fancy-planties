@@ -20,20 +20,14 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
   const { data: dashboardData, isLoading: loading, error } = useQuery({
     queryKey: ['care-dashboard', userId],
     queryFn: async (): Promise<CareDashboardData> => {
-      const response = await fetch(`/api/care/dashboard?userId=${userId}`, {
-        // Prevent browser caching
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        },
-      });
+      const response = await fetch(`/api/care/dashboard?userId=${userId}`);
       if (!response.ok) {
         throw new Error('Failed to load care dashboard');
       }
       return response.json();
     },
-    staleTime: 0, // Always consider data stale
-    gcTime: 0, // Don't keep old data in cache
+    staleTime: 1000 * 30, // 30 seconds — avoid hammering API on every focus
+    gcTime: 1000 * 60 * 5, // Keep cached data for 5 minutes
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
@@ -61,11 +55,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       // Invalidate and refetch dashboard data
       await queryClient.invalidateQueries({ 
         queryKey: ['care-dashboard', userId],
-        refetchType: 'active'
       });
-      // Also remove from cache entirely and refetch
-      queryClient.removeQueries({ queryKey: ['care-dashboard', userId] });
-      await queryClient.refetchQueries({ queryKey: ['care-dashboard', userId] });
     } catch (err) {
       console.error('Error logging quick care:', err);
       // Could show a toast notification here instead
@@ -85,7 +75,6 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     ];
 
     if (plantsNeedingCare.length === 0) {
-      console.log('No plants currently need this type of care');
       return;
     }
 
@@ -113,15 +102,9 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       const failureCount = results.length - successCount;
 
       if (successCount > 0) {
-        // Show success message
-        console.log(`Successfully logged ${careType} for ${successCount} plants${failureCount > 0 ? `, ${failureCount} failed` : ''}`);
         await queryClient.invalidateQueries({ 
           queryKey: ['care-dashboard', userId],
-          refetchType: 'active'
         });
-        // Also remove from cache entirely and refetch
-        queryClient.removeQueries({ queryKey: ['care-dashboard', userId] });
-        await queryClient.refetchQueries({ queryKey: ['care-dashboard', userId] });
       } else {
         throw new Error('Failed to log care for any plants');
       }
