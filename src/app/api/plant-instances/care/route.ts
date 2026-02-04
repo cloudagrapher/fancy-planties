@@ -4,15 +4,6 @@ import { logFertilizerSchema, logRepotSchema } from '@/lib/validation/plant-sche
 import { validateRequest } from '@/lib/auth/server';
 import { S3ImageService } from '@/lib/services/s3-image-service';
 
-// Helper function to transform S3 keys to image URLs
-// Uses proxy in development, direct CloudFront in production (with custom domain)
-function transformS3KeysToCloudFrontUrls(instance: any): void {
-  if (instance.s3ImageKeys && instance.s3ImageKeys.length > 0) {
-    instance.images = S3ImageService.s3KeysToCloudFrontUrls(instance.s3ImageKeys);
-    instance.primaryImage = instance.images[0];
-  }
-}
-
 // POST /api/plant-instances/care - Log care activities (fertilizer, repot)
 export async function POST(request: NextRequest) {
   try {
@@ -88,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     // Transform S3 keys to CloudFront URLs
     if (enhancedInstance) {
-      transformS3KeysToCloudFrontUrls(enhancedInstance);
+      S3ImageService.transformS3KeysToUrls(enhancedInstance);
     }
 
     return NextResponse.json({

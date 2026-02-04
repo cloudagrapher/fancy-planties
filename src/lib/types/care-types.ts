@@ -1,5 +1,6 @@
 import type { CareHistory, PlantInstance, Plant } from '@/lib/db/schema';
 import type { EnhancedPlantInstance } from './plant-instance-types';
+import { parseFertilizerScheduleToDays } from '@/lib/utils/schedule-parser';
 
 // Re-export EnhancedPlantInstance for convenience
 export type { EnhancedPlantInstance } from './plant-instance-types';
@@ -253,63 +254,8 @@ export const careHelpers = {
     return displays[careType];
   },
 
-  // Parse fertilizer schedule to days
-  parseFertilizerSchedule: (schedule: string): number => {
-    if (!schedule) return 30;
-    
-    const scheduleMap: Record<string, number> = {
-      // Legacy formats
-      'weekly': 7,
-      'biweekly': 14,
-      'monthly': 30,
-      'bimonthly': 60,
-      'quarterly': 90,
-      // Week-based formats
-      '1 week': 7,
-      '2 weeks': 14,
-      '1 month': 30,
-      '2 months': 60,
-      '3 months': 90,
-      // Your actual database formats
-      'every 2 weeks': 14,
-      'every 2-3 weeks': 18,        // Average of 2-3 weeks
-      'every 2-4 weeks': 21,        // Average of 2-4 weeks  
-      'every 3-4 weeks': 24,        // Average of 3-4 weeks
-      'every 4 weeks': 28,          // 4 weeks
-      'every 4-6 weeks': 35,        // Average of 4-6 weeks
-      'every 6-8 weeks': 49,        // Average of 6-8 weeks
-      'every 17 weeks': 119,        // 17 weeks
-    };
-
-    // Check if it's a predefined schedule (case-insensitive)
-    const normalized = schedule.toLowerCase().trim();
-    if (scheduleMap[normalized]) {
-      return scheduleMap[normalized];
-    }
-
-    // Parse "X days/weeks/months" format (e.g., "3 weeks", "7 days", "2 months")
-    const match = normalized.match(/^(\d+)\s*(day|week|month)s?$/i);
-    if (match) {
-      const amount = parseInt(match[1], 10);
-      const unit = match[2].toLowerCase();
-      switch (unit) {
-        case 'day': return amount;
-        case 'week': return amount * 7;
-        case 'month': return amount * 30;
-      }
-    }
-
-    // Try to parse as a plain number of days (only if the entire string is numeric)
-    if (/^\d+$/.test(normalized)) {
-      const customDays = parseInt(normalized, 10);
-      if (customDays > 0) {
-        return customDays;
-      }
-    }
-
-    // Default to monthly if unable to parse
-    return 30;
-  },
+  // Parse fertilizer schedule to days (delegates to shared utility)
+  parseFertilizerSchedule: parseFertilizerScheduleToDays,
 
   // Calculate next fertilizer due date
   calculateNextFertilizerDue: (lastFertilized: Date | null, schedule: string): Date | null => {

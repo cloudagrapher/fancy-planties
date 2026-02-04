@@ -24,6 +24,24 @@ export interface UploadImageParams {
 
 export class S3ImageService {
   /**
+   * Mutate an object that has `s3ImageKeys` so that `images` and
+   * `primaryImage` point at the corresponding CloudFront URLs.
+   *
+   * Safe to call when `s3ImageKeys` is missing, null, or empty — it
+   * simply does nothing in those cases.
+   */
+  static transformS3KeysToUrls(instance: {
+    s3ImageKeys?: string[] | null;
+    images?: string[];
+    primaryImage?: string | null;
+  }): void {
+    if (instance.s3ImageKeys && instance.s3ImageKeys.length > 0) {
+      instance.images = S3ImageService.s3KeysToCloudFrontUrls(instance.s3ImageKeys);
+      instance.primaryImage = instance.images[0];
+    }
+  }
+
+  /**
    * Get a pre-signed URL for uploading an image to S3
    */
   static async getPresignedUploadUrl(params: UploadImageParams): Promise<PresignedUploadResponse> {

@@ -5,15 +5,6 @@ import { updatePlantInstanceSchema } from '@/lib/validation/plant-schemas';
 import { validateRequest } from '@/lib/auth/server';
 import { S3ImageService } from '@/lib/services/s3-image-service';
 
-// Helper function to transform S3 keys to image URLs
-// Uses proxy in development, direct CloudFront in production (with custom domain)
-function transformS3KeysToCloudFrontUrls(instance: any): void {
-  if (instance.s3ImageKeys && instance.s3ImageKeys.length > 0) {
-    instance.images = S3ImageService.s3KeysToCloudFrontUrls(instance.s3ImageKeys);
-    instance.primaryImage = instance.images[0];
-  }
-}
-
 // GET /api/plant-instances/[id] - Get a specific plant instance
 export async function GET(
   request: NextRequest,
@@ -43,7 +34,7 @@ export async function GET(
     }
 
     // Transform S3 keys to CloudFront URLs
-    transformS3KeysToCloudFrontUrls(plantInstance);
+    S3ImageService.transformS3KeysToUrls(plantInstance);
 
     return NextResponse.json(plantInstance);
   } catch (error) {
@@ -84,7 +75,8 @@ export async function PUT(
 
     // Check if request is FormData or JSON
     const contentType = request.headers.get('content-type');
-    let body: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- body is validated by Zod below
+    let body: Record<string, any>;
 
     if (contentType?.includes('multipart/form-data')) {
       // Handle FormData for file uploads
@@ -168,7 +160,7 @@ export async function PUT(
 
     // Transform S3 keys to CloudFront URLs
     if (enhancedInstance) {
-      transformS3KeysToCloudFrontUrls(enhancedInstance);
+      S3ImageService.transformS3KeysToUrls(enhancedInstance);
     }
 
     return NextResponse.json(enhancedInstance);
