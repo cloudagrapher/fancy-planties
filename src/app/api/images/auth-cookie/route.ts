@@ -71,11 +71,18 @@ export async function POST(request: NextRequest) {
     const requestHost = request.headers.get('host') || '';
     const usesCustomDomain = requestHost.includes('fancy-planties.cloudagrapher.com');
     
-    const cookieOptions: any = {
+    const cookieOptions: {
+      path: string;
+      secure: boolean;
+      httpOnly: boolean;
+      sameSite: 'none' | 'lax' | 'strict';
+      maxAge: number;
+      domain?: string;
+    } = {
       path: '/',
       secure: true, // Required for sameSite: 'none'
       httpOnly: false, // Must be false so browser can send cookies with image requests
-      sameSite: 'none' as const, // Required for cross-subdomain requests
+      sameSite: 'none', // Required for cross-subdomain requests
       maxAge: SEVEN_DAYS_IN_SECONDS,
     };
     
