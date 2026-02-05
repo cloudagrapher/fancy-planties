@@ -5,6 +5,7 @@ import type { PlantWithDetails } from '@/lib/db/queries/admin-plants';
 import PlantReviewCard from './PlantReviewCard';
 import { useBulkOperations } from '@/hooks/useBulkOperations';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
+import { apiFetch } from '@/lib/api-client';
 
 interface PlantApprovalQueueProps {
   pendingPlants: PlantWithDetails[];
@@ -57,7 +58,7 @@ export default function PlantApprovalQueue({
   // Bulk operation handlers
   const handleBulkAction = async (actionId: string) => {
     await executeBulkOperation(async (plantIds) => {
-      const response = await fetch('/api/admin/plants/bulk-operations', {
+      const response = await apiFetch('/api/admin/plants/bulk-operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -90,7 +91,7 @@ export default function PlantApprovalQueue({
 
   const handleExport = async () => {
     try {
-      const response = await fetch('/api/admin/plants/export', {
+      const response = await apiFetch('/api/admin/plants/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

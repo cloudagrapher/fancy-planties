@@ -12,6 +12,7 @@ import type {
   PlantInstanceSortField,
   AdvancedSearchResult 
 } from '@/lib/types/plant-instance-types';
+import { apiFetch } from '@/lib/api-client';
 
 interface AdvancedSearchInterfaceProps {
   onResults: (results: AdvancedSearchResult) => void;
@@ -62,7 +63,7 @@ export default function AdvancedSearchInterface({
     queryFn: async () => {
       if (searchQuery.length < 2) return { suggestions: [] };
       
-      const response = await fetch(`/api/search/suggestions?query=${encodeURIComponent(searchQuery)}&limit=5`);
+      const response = await apiFetch(`/api/search/suggestions?query=${encodeURIComponent(searchQuery)}&limit=5`);
       if (!response.ok) throw new Error('Failed to fetch suggestions');
       const data = await response.json();
       return data.data || data; // Handle both data.data and direct data response
@@ -75,7 +76,7 @@ export default function AdvancedSearchInterface({
   const { data: presets } = useQuery({
     queryKey: ['search-presets'],
     queryFn: async () => {
-      const response = await fetch('/api/search/presets');
+      const response = await apiFetch('/api/search/presets');
       if (!response.ok) throw new Error('Failed to fetch presets');
       const data = await response.json();
       return (data.data?.presets || data.presets || []) as SearchPreset[];
@@ -88,7 +89,7 @@ export default function AdvancedSearchInterface({
   const { data: history, error: historyError } = useQuery({
     queryKey: ['search-history'],
     queryFn: async () => {
-      const response = await fetch('/api/search/history?limit=5');
+      const response = await apiFetch('/api/search/history?limit=5');
       if (!response.ok) throw new Error('Failed to fetch history');
       const data = await response.json();
       return data.data?.history || [];
@@ -100,7 +101,7 @@ export default function AdvancedSearchInterface({
   // Smart search mutation
   const smartSearchMutation = useMutation({
     mutationFn: async (query: string) => {
-      const response = await fetch('/api/search/smart', {
+      const response = await apiFetch('/api/search/smart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -128,7 +129,7 @@ export default function AdvancedSearchInterface({
   // Advanced search mutation
   const advancedSearchMutation = useMutation({
     mutationFn: async (criteria: MultiFieldSearch) => {
-      const response = await fetch('/api/search/advanced', {
+      const response = await apiFetch('/api/search/advanced', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -224,7 +225,7 @@ export default function AdvancedSearchInterface({
   // Handle preset selection
   const handlePresetSelect = useCallback(async (presetId: string) => {
     try {
-      const response = await fetch(`/api/search/presets/${presetId}`);
+      const response = await apiFetch(`/api/search/presets/${presetId}`);
       if (!response.ok) throw new Error('Failed to load preset');
       
       const data = await response.json();

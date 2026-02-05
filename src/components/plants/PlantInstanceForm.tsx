@@ -11,6 +11,7 @@ import PlantTaxonomySelector from './PlantTaxonomySelector';
 import S3ImageUpload from '../shared/S3ImageUpload';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
+import { apiFetch } from '@/lib/api-client';
 
 // Form validation schemas
 const plantTaxonomySchema = z.object({
@@ -151,7 +152,7 @@ export default function PlantInstanceForm({
   const { data: userLocations } = useQuery({
     queryKey: ['user-locations', userId],
     queryFn: async () => {
-      const response = await fetch(`/api/plant-instances/locations?userId=${userId}`);
+      const response = await apiFetch(`/api/plant-instances/locations?userId=${userId}`);
       if (!response.ok) throw new Error('Failed to fetch locations');
       return response.json() as Promise<string[]>;
     },
@@ -194,7 +195,7 @@ export default function PlantInstanceForm({
   // Create new plant mutation
   const createPlantMutation = useMutation({
     mutationFn: async (plantData: Omit<PlantTaxonomyFormData, 'cultivar'> & { cultivar: string | null }) => {
-      const response = await fetch('/api/plants', {
+      const response = await apiFetch('/api/plants', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -248,7 +249,7 @@ export default function PlantInstanceForm({
 
       const method = isEditing ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',

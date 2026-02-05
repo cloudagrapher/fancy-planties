@@ -8,6 +8,7 @@ import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import PlantTaxonomySelector from '../plants/PlantTaxonomySelector';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
+import { apiFetch } from '@/lib/api-client';
 
 interface PropagationWithDetails extends Propagation {
   plant: Plant;
@@ -74,7 +75,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
 
   const fetchParentInstances = async (plantId: number) => {
     try {
-      const response = await fetch(`/api/plant-instances?plantId=${plantId}&isActive=true`);
+      const response = await apiFetch(`/api/plant-instances?plantId=${plantId}&isActive=true`);
       if (response.ok) {
         const result = await response.json();
         // Extract instances from the API response structure
@@ -182,7 +183,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
 
       const method = propagation ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',

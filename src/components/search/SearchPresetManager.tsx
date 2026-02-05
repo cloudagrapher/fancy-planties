@@ -7,6 +7,7 @@ import type {
   EnhancedPlantInstanceFilter 
 } from '@/lib/validation/plant-schemas';
 import type { PlantInstanceSortField } from '@/lib/types/plant-instance-types';
+import { apiFetch } from '@/lib/api-client';
 
 interface SearchPresetManagerProps {
   currentFilters: EnhancedPlantInstanceFilter;
@@ -34,7 +35,7 @@ export default function SearchPresetManager({
   const { data: presets, isLoading } = useQuery({
     queryKey: ['search-presets'],
     queryFn: async () => {
-      const response = await fetch('/api/search/presets');
+      const response = await apiFetch('/api/search/presets');
       if (!response.ok) throw new Error('Failed to fetch presets');
       const data = await response.json();
       return data.data.presets as SearchPreset[];
@@ -52,7 +53,7 @@ export default function SearchPresetManager({
       sortOrder: 'asc' | 'desc';
       isDefault: boolean;
     }) => {
-      const response = await fetch('/api/search/presets', {
+      const response = await apiFetch('/api/search/presets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(presetData),

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import PropagationForm from './PropagationForm';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
+import { apiFetch } from '@/lib/api-client';
 
 interface PropagationWithDetails extends Propagation {
   plant: Plant;
@@ -81,7 +82,7 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
     try {
       setIsUpdatingStatus(true);
       
-      const response = await fetch(`/api/propagations/${propagation.id}/status`, {
+      const response = await apiFetch(`/api/propagations/${propagation.id}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +110,7 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
   // Handle delete
   const handleDelete = async () => {
     try {
-      const response = await fetch(`/api/propagations/${propagation.id}`, {
+      const response = await apiFetch(`/api/propagations/${propagation.id}`, {
         method: 'DELETE',
       });
 
@@ -127,7 +128,7 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
   // Handle convert to plant instance
   const handleConvertToPlant = async () => {
     try {
-      const response = await fetch(`/api/propagations/${propagation.id}/convert`, {
+      const response = await apiFetch(`/api/propagations/${propagation.id}/convert`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

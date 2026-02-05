@@ -5,6 +5,7 @@ import PlantTaxonomySelector from './PlantTaxonomySelector';
 import PlantTaxonomyForm from './PlantTaxonomyForm';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
 import type { CreatePlant } from '@/lib/validation/plant-schemas';
+import { apiFetch } from '@/lib/api-client';
 
 interface PlantSelectorProps {
   onPlantSelect: (plant: PlantSuggestion) => void;
@@ -50,7 +51,7 @@ export default function PlantSelector({
     setIsCreating(true);
     
     try {
-      const response = await fetch('/api/plants', {
+      const response = await apiFetch('/api/plants', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

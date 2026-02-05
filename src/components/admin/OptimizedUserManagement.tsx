@@ -16,6 +16,7 @@ import type {
   UserFilters, 
   UserSortConfig 
 } from '@/lib/db/queries/admin-users';
+import { apiFetch } from '@/lib/api-client';
 
 export interface OptimizedUserManagementProps {
   initialFilters: UserFilters;
@@ -168,7 +169,7 @@ export default function OptimizedUserManagement({
 
   const handleExport = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/users/export', {
+      const response = await apiFetch('/api/admin/users/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

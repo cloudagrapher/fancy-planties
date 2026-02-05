@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { clearCsrfToken } from '@/lib/api-client';
 
 interface LogoutButtonProps {
   className?: string;
@@ -29,6 +30,7 @@ export default function LogoutButton({
       });
 
       if (response.ok) {
+        clearCsrfToken();
         // Redirect to sign in page
         router.push('/auth/signin');
         router.refresh();

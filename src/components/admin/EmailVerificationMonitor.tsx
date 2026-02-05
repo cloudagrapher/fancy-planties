@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { apiFetch } from '@/lib/api-client';
 
 interface MonitoringData {
   timestamp: number;
@@ -59,7 +60,7 @@ export default function EmailVerificationMonitor() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/api/admin/email-verification-monitor');
+      const response = await apiFetch('/api/admin/email-verification-monitor');
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
@@ -77,7 +78,7 @@ export default function EmailVerificationMonitor() {
   const performAction = async (action: string) => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/email-verification-monitor', {
+      const response = await apiFetch('/api/admin/email-verification-monitor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),

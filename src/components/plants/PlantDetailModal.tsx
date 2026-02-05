@@ -14,6 +14,7 @@ import PlantImageGallery from './PlantImageGallery';
 import PlantLineage from './PlantLineage';
 import QuickCareActions from '../care/QuickCareActions';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
+import { apiFetch } from '@/lib/api-client';
 
 interface PlantDetailModalProps {
   plantId: number;
@@ -46,24 +47,24 @@ export default function PlantDetailModal({
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['plant-detail', plantId],
     queryFn: async (): Promise<PlantDetailData> => {
-      const response = await fetch(`/api/plant-instances/${plantId}`);
+      const response = await apiFetch(`/api/plant-instances/${plantId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch plant details');
       }
       const plant = await response.json();
 
       // Fetch care history
-      const careResponse = await fetch(`/api/care/history/${plantId}`);
+      const careResponse = await apiFetch(`/api/care/history/${plantId}`);
       const careHistory = careResponse.ok ? await careResponse.json() : [];
 
       // Fetch propagations from this plant
-      const propResponse = await fetch(`/api/propagations?parentInstanceId=${plantId}`);
+      const propResponse = await apiFetch(`/api/propagations?parentInstanceId=${plantId}`);
       const propagations = propResponse.ok ? await propResponse.json() : [];
 
       // Fetch parent plant if this is a propagation
       let parentPlant;
       if (plant.parentInstanceId) {
-        const parentResponse = await fetch(`/api/plant-instances/${plant.parentInstanceId}`);
+        const parentResponse = await apiFetch(`/api/plant-instances/${plant.parentInstanceId}`);
         if (parentResponse.ok) {
           parentPlant = await parentResponse.json();
         }
@@ -87,7 +88,7 @@ export default function PlantDetailModal({
   // Quick care mutation
   const quickCareMutation = useMutation({
     mutationFn: async ({ careType, notes }: { careType: string; notes?: string }) => {
-      const response = await fetch('/api/care/quick-log', {
+      const response = await apiFetch('/api/care/quick-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

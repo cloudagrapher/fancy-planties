@@ -7,6 +7,7 @@ import BulkOperationsToolbar from './BulkOperationsToolbar';
 import { VirtualScrollTable } from '@/components/shared/VirtualScrollTable';
 import { PlantDetailModal } from './PlantDetailModal';
 import { reactOptimization } from '@/lib/utils/performance';
+import { apiFetch } from '@/lib/api-client';
 
 export interface PlantManagementTableProps {
   initialPlants: PlantWithDetails[];
@@ -64,7 +65,7 @@ export default function PlantManagementTable({
         ...(filters.isVerified !== undefined && { isVerified: filters.isVerified.toString() }),
       });
 
-      const response = await fetch(`/api/admin/plants?${params}`);
+      const response = await apiFetch(`/api/admin/plants?${params}`);
       if (!response.ok) throw new Error('Failed to fetch plants');
       
       const data = await response.json();
@@ -138,7 +139,7 @@ export default function PlantManagementTable({
     if (!editingId) return;
     
     try {
-      const response = await fetch(`/api/admin/plants/${editingId}`, {
+      const response = await apiFetch(`/api/admin/plants/${editingId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editForm),
@@ -167,7 +168,7 @@ export default function PlantManagementTable({
   // Bulk operation handlers
   const handleBulkAction = async (actionId: string) => {
     await executeBulkOperation(async (plantIds) => {
-      const response = await fetch('/api/admin/plants/bulk-operations', {
+      const response = await apiFetch('/api/admin/plants/bulk-operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -199,7 +200,7 @@ export default function PlantManagementTable({
 
   const handleExport = async () => {
     try {
-      const response = await fetch('/api/admin/plants/export', {
+      const response = await apiFetch('/api/admin/plants/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
