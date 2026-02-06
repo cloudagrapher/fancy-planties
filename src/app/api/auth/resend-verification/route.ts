@@ -66,7 +66,9 @@ export async function POST(request: NextRequest) {
           const emailService = createEmailService();
           await sendEmailWithRetry(emailService, normalizedEmail, verificationCode, user.name);
           
-          console.log(`Verification code resent to ${normalizedEmail} for user ${user.id}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Verification code resent to ${normalizedEmail} for user ${user.id}`);
+          }
           
           return NextResponse.json({
             success: true,
@@ -136,7 +138,9 @@ export async function POST(request: NextRequest) {
               errorMessage = 'Failed to generate verification code. Please try again.';
           }
           
-          console.log(`Resend verification failed for ${normalizedEmail}: ${error.code} - ${errorMessage}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Resend verification failed for ${normalizedEmail}: ${error.code} - ${errorMessage}`);
+          }
           
           return NextResponse.json(
             { 

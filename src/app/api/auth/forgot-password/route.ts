@@ -43,7 +43,9 @@ export async function POST(request: NextRequest) {
         const emailService = createEmailService();
         await sendPasswordResetEmailWithRetry(emailService, email, resetToken, user.name);
         
-        console.log(`Password reset email sent to ${email} for user ${user.id}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Password reset email sent to ${email} for user ${user.id}`);
+        }
         
         return NextResponse.json(successResponse);
         

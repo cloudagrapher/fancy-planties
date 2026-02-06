@@ -51,7 +51,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[CloudFront Cookie] Generating cookies for user ${user.id}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[CloudFront Cookie] Generating cookies for user ${user.id}`);
+    }
 
     const lambdaResponse = await fetch(`${lambdaEndpoint}/images/auth-cookie`, {
       method: 'POST',
@@ -105,7 +107,9 @@ export async function POST(request: NextRequest) {
     // Set parent domain for cookie sharing across subdomains
     if (cookieDomain) {
       cookieOptions.domain = cookieDomain;
-      console.log(`[CloudFront Cookie] Setting cookies for domain: ${cookieDomain} with sameSite=none`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[CloudFront Cookie] Setting cookies for domain: ${cookieDomain} with sameSite=none`);
+      }
     } else {
       console.warn('[CloudFront Cookie] WARNING: Could not determine cookie domain - CloudFront cookies may not work!');
       console.warn('[CloudFront Cookie] Current host:', requestHost);
@@ -116,7 +120,9 @@ export async function POST(request: NextRequest) {
     response.cookies.set('CloudFront-Signature', cookies['CloudFront-Signature'], cookieOptions);
     response.cookies.set('CloudFront-Key-Pair-Id', cookies['CloudFront-Key-Pair-Id'], cookieOptions);
 
-    console.log(`[CloudFront Cookie] Successfully set cookies for user ${user.id}, expires at ${new Date(expiresAt * 1000).toISOString()}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[CloudFront Cookie] Successfully set cookies for user ${user.id}, expires at ${new Date(expiresAt * 1000).toISOString()}`);
+    }
 
     return response;
   } catch (error) {

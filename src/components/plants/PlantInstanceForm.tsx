@@ -269,7 +269,6 @@ export default function PlantInstanceForm({
       return response.json();
     },
     onSuccess: async (data) => {
-      console.log('Plant instance saved, invalidating caches...');
 
       // Clear all plant-instances related queries with proper key matching
       await queryClient.invalidateQueries({
@@ -292,8 +291,6 @@ export default function PlantInstanceForm({
         type: 'active'
       });
 
-      console.log('Cache invalidation complete');
-
       // Reset form state
       reset();
       setS3ImageKeys([]);
@@ -314,7 +311,6 @@ export default function PlantInstanceForm({
   useEffect(() => {
     if (isEditing && plantInstance) {
       const convertedSchedule = convertDatabaseScheduleToForm(plantInstance.fertilizerSchedule);
-      console.log('Setting form with fertilizer schedule:', convertedSchedule);
       reset({
         plantId: plantInstance.plantId,
         nickname: plantInstance.nickname,
@@ -417,7 +413,6 @@ export default function PlantInstanceForm({
 
   // Convert database fertilizer schedule back to form enum
   const convertDatabaseScheduleToForm = (schedule: string): string => {
-    console.log('Converting database schedule:', schedule);
     if (!schedule) return 'every_4_weeks';
 
     const reverseMap = {
@@ -444,9 +439,7 @@ export default function PlantInstanceForm({
       'quarterly': 'quarterly',
     };
 
-    const result = reverseMap[schedule as keyof typeof reverseMap] || 'every_4_weeks';
-    console.log('Converted to:', result);
-    return result;
+    return reverseMap[schedule as keyof typeof reverseMap] || 'every_4_weeks';
   };
 
   // Handle form submission

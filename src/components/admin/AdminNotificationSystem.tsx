@@ -223,16 +223,14 @@ export function useBulkOperationNotifications() {
         {
           label: 'View Errors',
           action: () => {
-            // Show detailed error modal
-            console.log('Bulk operation errors:', errors);
+            // TODO: Show detailed error modal with errors list
           },
           variant: 'secondary',
         },
         {
           label: 'Retry Failed',
           action: () => {
-            // Retry failed items
-            console.log('Retrying failed items:', errors.map(e => e.id));
+            // TODO: Implement retry logic for failed items
           },
           variant: 'primary',
         },
@@ -248,8 +246,7 @@ export function useBulkOperationNotifications() {
         {
           label: 'Retry',
           action: () => {
-            // Retry the operation
-            console.log('Retrying bulk operation');
+            // TODO: Implement bulk operation retry
           },
           variant: 'primary',
         },
@@ -308,8 +305,7 @@ export function useAuthorizationNotifications() {
         {
           label: 'Contact Admin',
           action: () => {
-            // Open contact form or email
-            console.log('Contact admin for curator access');
+            // TODO: Open contact form or email for curator access request
           },
           variant: 'secondary',
         },
@@ -358,16 +354,14 @@ export function useFormValidationNotifications() {
         {
           label: 'Save Changes',
           action: () => {
-            // Trigger save
-            console.log('Saving changes');
+            // TODO: Trigger form save
           },
           variant: 'primary',
         },
         {
           label: 'Discard Changes',
           action: () => {
-            // Discard changes
-            console.log('Discarding changes');
+            // TODO: Implement discard changes
           },
           variant: 'secondary',
         },
