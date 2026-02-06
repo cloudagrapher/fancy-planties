@@ -277,16 +277,18 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
 
   const [activeTab, setActiveTab] = useState<'basic' | 'care'>('basic');
 
-  const updateFormData = (path: string, value: any) => {
+  const updateFormData = (path: string, value: string | boolean | string[]) => {
     setFormData(prev => {
       const keys = path.split('.');
       if (keys.length === 1) {
         return { ...prev, [keys[0]]: value };
       } else if (keys.length === 2) {
+        const parentKey = keys[0] as keyof CareGuideFormData;
+        const parent = prev[parentKey];
         return {
           ...prev,
           [keys[0]]: {
-            ...(prev[keys[0] as keyof CareGuideFormData] as any),
+            ...(typeof parent === 'object' && parent !== null && !Array.isArray(parent) ? parent : {}),
             [keys[1]]: value
           }
         };

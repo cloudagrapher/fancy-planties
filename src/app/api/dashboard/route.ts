@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateRequest } from '@/lib/auth/server';
 import { db } from '@/lib/db';
 import { plantInstances, propagations } from '@/lib/db/schema';
-import { eq, and, sql, inArray } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 
 export interface FertilizerEvent {
   id: string;
@@ -46,31 +46,22 @@ export async function GET(request: NextRequest) {
       .where(eq(plantInstances.userId, userId));
 
     // Get propagation statistics
+    // Note: Status enum is ['started', 'rooting', 'ready', 'planted']
+    // 'established' was renamed to 'ready' — see schema.ts
     const [propagationStats] = await db
       .select({
         totalPropagations: sql<number>`count(*)`,
         activePropagations: sql<number>`count(*) filter (where ${propagations.status} in ('started', 'rooting'))`,
-        successfulPropagations: sql<number>`count(*) filter (where ${propagations.status} in ('planted', 'established'))`
+        successfulPropagations: sql<number>`count(*) filter (where ${propagations.status} in ('planted', 'ready'))`
       })
       .from(propagations)
       .where(eq(propagations.userId, userId));
 
     // Calculate success rate
-    const totalCompletedPropagations = await db
-      .select({
-        count: sql<number>`count(*)`
-      })
-      .from(propagations)
-      .where(
-        and(
-          eq(propagations.userId, userId),
-          inArray(propagations.status, ['planted', 'ready'])
-        )
-      );
-
-    const completedCount = totalCompletedPropagations[0]?.count || 0;
+    // 'planted' and 'ready' are both considered successful outcomes
     const successfulCount = propagationStats?.successfulPropagations || 0;
-    const propagationSuccessRate = completedCount > 0 ? Math.round((successfulCount / completedCount) * 100) : 0;
+    const totalCount = propagationStats?.totalPropagations || 0;
+    const propagationSuccessRate = totalCount > 0 ? Math.round((successfulCount / totalCount) * 100) : 0;
 
     // Get fertilizer events from plant instances with due dates
     const fertilizerEventData = await db
