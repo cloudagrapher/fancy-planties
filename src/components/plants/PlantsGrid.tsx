@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import Image from 'next/image';
 import PlantCard from './PlantCard';
 import PlantSearchFilter from './PlantSearchFilter';
 import PlantCardSkeleton from './PlantCardSkeleton';
@@ -30,6 +31,7 @@ interface PlantsGridProps {
   showSearchResults?: boolean;
   showPresets?: boolean;
   showHistory?: boolean;
+  showViewToggle?: boolean;
   initialFilters?: Partial<EnhancedPlantInstanceFilter>;
   cardSize?: 'small' | 'medium' | 'large';
   className?: string;
@@ -47,6 +49,7 @@ export default function PlantsGrid({
   showSearchResults = false,
   showPresets = false,
   showHistory = false,
+  showViewToggle = true,
   initialFilters = {},
   cardSize = 'medium',
   className = '',
@@ -67,6 +70,7 @@ export default function PlantsGrid({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
   const [useSearchResults, setUseSearchResults] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const { triggerHaptic } = useHapticFeedback();
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -431,6 +435,43 @@ export default function PlantsGrid({
                 </button>
               </div>
             )}
+
+          {/* View Toggle */}
+          {showViewToggle && (
+            <div className="flex items-center justify-end gap-2 mt-3">
+              <span className="text-xs text-neutral-500 mr-1">View:</span>
+              <div className="inline-flex rounded-lg border border-neutral-200 bg-neutral-50 p-0.5">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    viewMode === 'grid'
+                      ? 'bg-white text-neutral-900 shadow-sm'
+                      : 'text-neutral-600 hover:text-neutral-900'
+                  }`}
+                  title="Grid view"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                  Grid
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-white text-neutral-900 shadow-sm'
+                      : 'text-neutral-600 hover:text-neutral-900'
+                  }`}
+                  title="List view"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                  </svg>
+                  List
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -508,7 +549,7 @@ export default function PlantsGrid({
               {enhancedFilters.searchQuery ? 'Try adjusting your search or filters' : 'Add your first plant to get started'}
             </p>
           </div>
-        ) : (
+        ) : viewMode === 'grid' ? (
           <div className={`${getGridColumns()} p-4`}>
             {plants.map((plant) => (
               <PlantCard
@@ -526,6 +567,132 @@ export default function PlantsGrid({
                 showLocation={true}
                 showLastCare={false}
               />
+            ))}
+          </div>
+        ) : (
+          /* List View */
+          <div className="divide-y divide-neutral-100 p-2">
+            {plants.map((plant) => (
+              <div
+                key={plant.id}
+                onClick={() => handlePlantSelect(plant)}
+                className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors hover:bg-neutral-50 ${
+                  selectedPlants.includes(plant.id) ? 'bg-mint-50 ring-1 ring-mint-200' : ''
+                }`}
+              >
+                {/* Selection checkbox in selection mode */}
+                {isSelectionMode && (
+                  <div className="flex-shrink-0">
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                      selectedPlants.includes(plant.id)
+                        ? 'bg-mint-500 border-mint-500'
+                        : 'border-neutral-300'
+                    }`}>
+                      {selectedPlants.includes(plant.id) && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Plant thumbnail */}
+                <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-neutral-100 overflow-hidden relative">
+                  {plant.s3ImageKeys && plant.s3ImageKeys.length > 0 ? (
+                    <Image
+                      src={`/api/images/s3?key=${encodeURIComponent(plant.s3ImageKeys[0])}`}
+                      alt={plant.displayName || 'Plant'}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-neutral-400">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                {/* Plant info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-medium text-neutral-900 truncate">
+                      {plant.displayName || 'Unnamed Plant'}
+                    </h3>
+                    {plant.careStatus === 'overdue' && (
+                      <span className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 rounded">
+                        Overdue
+                      </span>
+                    )}
+                    {plant.careStatus === 'due_soon' && (
+                      <span className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded">
+                        Due Soon
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 mt-0.5 text-xs text-neutral-500">
+                    {plant.plant?.commonName && plant.nickname && (
+                      <span className="truncate">{plant.plant.commonName}</span>
+                    )}
+                    {plant.location && (
+                      <span className="flex items-center gap-1 truncate">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {plant.location}
+                      </span>
+                    )}
+                    {plant.lastFertilized && (
+                      <span className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                        {new Date(plant.lastFertilized).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quick actions */}
+                <div className="flex-shrink-0 flex items-center gap-1">
+                  {onCareAction && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCareAction(plant, 'fertilize');
+                      }}
+                      className="p-2 rounded-lg text-neutral-400 hover:text-mint-600 hover:bg-mint-50 transition-colors"
+                      title="Log fertilizer"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                      </svg>
+                    </button>
+                  )}
+                  {onEdit && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(plant);
+                      }}
+                      className="p-2 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+                      title="Edit plant"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                  )}
+                  <svg className="w-4 h-4 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
             ))}
           </div>
         )}

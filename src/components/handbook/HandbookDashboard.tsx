@@ -333,6 +333,11 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
         methods: guide.propagation?.methods || '',
         tips: guide.propagation?.tips || ''
       },
+      rootStructure: {
+        type: guide.rootStructure?.type || '',
+        growthHabits: guide.rootStructure?.growthHabits || '',
+        tips: guide.rootStructure?.tips || ''
+      },
       generalTips: guide.generalTips || '',
       isPublic: guide.isPublic,
     };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, MessageCircle } from 'lucide-react';
+import { X, Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, MessageCircle, TreeDeciduous } from 'lucide-react';
 import S3ImageUpload from '@/components/shared/S3ImageUpload';
 
 interface CareGuideFormData {
@@ -48,6 +48,11 @@ interface CareGuideFormData {
   };
   propagation: {
     methods: string;
+    tips: string;
+  };
+  rootStructure: {
+    type: string;
+    growthHabits: string;
     tips: string;
   };
   generalTips: string;
@@ -240,6 +245,11 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
         methods: '',
         tips: ''
       },
+      rootStructure: {
+        type: '',
+        growthHabits: '',
+        tips: ''
+      },
       generalTips: '',
       isPublic: false
     };
@@ -256,6 +266,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
         soil: { ...defaults.soil, ...initialData.soil },
         repotting: { ...defaults.repotting, ...initialData.repotting },
         propagation: { ...defaults.propagation, ...initialData.propagation },
+        rootStructure: { ...defaults.rootStructure, ...initialData.rootStructure },
       };
     }
 
@@ -472,6 +483,36 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
 
             {activeTab === 'care' && (
               <div className="space-y-6">
+                {/* Root Structure & Growth Habits Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <TreeDeciduous className="h-4 w-4 text-amber-700" />
+                    <h3 className="font-medium text-slate-800">Root Structure & Growth Habits</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <Input
+                      label="Root Type"
+                      value={formData.rootStructure.type}
+                      onChange={(value) => updateFormData('rootStructure.type', value)}
+                      placeholder="e.g., Fibrous, Tuberous, Aerial roots"
+                    />
+                    <TextArea
+                      label="Growth Habits"
+                      value={formData.rootStructure.growthHabits}
+                      onChange={(value) => updateFormData('rootStructure.growthHabits', value)}
+                      placeholder="e.g., Climbing vine, Trailing, Compact rosette, Upright growth..."
+                      rows={2}
+                    />
+                    <TextArea
+                      label="Tips"
+                      value={formData.rootStructure.tips}
+                      onChange={(value) => updateFormData('rootStructure.tips', value)}
+                      placeholder="Tips for managing root growth and plant structure..."
+                      rows={2}
+                    />
+                  </div>
+                </Card>
+
                 {/* Watering Section - Simplified (method field removed) */}
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-4">
