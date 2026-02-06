@@ -52,6 +52,11 @@ const CareGuideUpdateSchema = z.object({
     methods: z.string().optional(),
     tips: z.string().optional(),
   }).optional(),
+  rootStructure: z.object({
+    type: z.string().optional(),
+    growthHabits: z.string().optional(),
+    tips: z.string().optional(),
+  }).optional(),
   generalTips: z.string().optional(),
   isPublic: z.boolean().optional(),
 });
@@ -156,6 +161,7 @@ export async function PUT(
     if (validatedData.soil !== undefined) updateData.soil = validatedData.soil;
     if (validatedData.repotting !== undefined) updateData.repotting = validatedData.repotting;
     if (validatedData.propagation !== undefined) updateData.propagation = validatedData.propagation;
+    if (validatedData.rootStructure !== undefined) updateData.rootStructure = validatedData.rootStructure || null;
     if (validatedData.generalTips !== undefined) updateData.generalTips = validatedData.generalTips || null;
     if (validatedData.isPublic !== undefined) updateData.isPublic = validatedData.isPublic;
 

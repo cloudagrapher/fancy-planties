@@ -52,6 +52,11 @@ const CareGuideCreateSchema = z.object({
     methods: z.string().optional(),
     tips: z.string().optional(),
   }).optional(),
+  rootStructure: z.object({
+    type: z.string().optional(),
+    growthHabits: z.string().optional(),
+    tips: z.string().optional(),
+  }).optional(),
   generalTips: z.string().optional(),
   isPublic: z.boolean().default(false),
 });
@@ -92,6 +97,7 @@ export async function POST(request: NextRequest) {
       soil: validatedData.soil || null,
       repotting: validatedData.repotting || null,
       propagation: validatedData.propagation || null,
+      rootStructure: validatedData.rootStructure || null,
       generalTips: validatedData.generalTips || null,
       isPublic: validatedData.isPublic,
       createdAt: new Date(),
