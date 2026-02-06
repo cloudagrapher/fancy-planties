@@ -11,6 +11,7 @@ import {
 import { useBulkOperations } from '@/hooks/useBulkOperations';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
 import { useAdminNotifications, useBulkOperationNotifications, useAuthorizationNotifications } from './AdminNotificationSystem';
+import { apiFetch } from '@/lib/api-client';
 
 export interface UserManagementClientProps {
   initialData: PaginatedUsers;
@@ -88,7 +89,7 @@ export default function UserManagementClient({
         params.set('emailVerified', filters.emailVerified.toString());
       }
       
-      const response = await fetch(`/api/admin/users?${params.toString()}`);
+      const response = await apiFetch(`/api/admin/users?${params.toString()}`);
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -145,7 +146,7 @@ export default function UserManagementClient({
   // Handle curator status change
   const handleCuratorStatusChange = useCallback(async (userId: number, action: 'promote' | 'demote') => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/curator-status`, {
+      const response = await apiFetch(`/api/admin/users/${userId}/curator-status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -199,7 +200,7 @@ export default function UserManagementClient({
     notifyBulkStart(actionId, selectedUserIds.length);
     
     await executeBulkOperation(async (userIds) => {
-      const response = await fetch('/api/admin/users/bulk-operations', {
+      const response = await apiFetch('/api/admin/users/bulk-operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -248,7 +249,7 @@ export default function UserManagementClient({
 
   const handleExport = async () => {
     try {
-      const response = await fetch('/api/admin/users/export', {
+      const response = await apiFetch('/api/admin/users/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

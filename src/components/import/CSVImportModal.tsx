@@ -7,6 +7,7 @@ import { ImportTypeSelector, type ImportType } from './ImportTypeSelector';
 import { CSVPreview } from './CSVPreview';
 import { ImportProgress } from './ImportProgress';
 import type { ImportProgress as ImportProgressType } from '@/lib/validation/csv-schemas';
+import { apiFetch } from '@/lib/api-client';
 
 interface CSVImportModalProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ export function CSVImportModal({
 
       // Validate CSV content
       if (importType) {
-        const response = await fetch('/api/import/csv/validate', {
+        const response = await apiFetch('/api/import/csv/validate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -109,7 +110,7 @@ export function CSVImportModal({
     setError(null);
 
     try {
-      const response = await fetch('/api/import/csv', {
+      const response = await apiFetch('/api/import/csv', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

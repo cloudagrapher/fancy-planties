@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { PlantWithDetails } from '@/lib/db/queries/admin-plants';
 import PlantEditForm from './PlantEditForm';
+import { apiFetch } from '@/lib/api-client';
 
 interface PlantReviewCardProps {
   plant: PlantWithDetails;
@@ -31,7 +32,7 @@ export default function PlantReviewCard({
     try {
       onProcessingStart(plant.id);
       
-      const response = await fetch(`/api/admin/plants/${plant.id}/approve`, {
+      const response = await apiFetch(`/api/admin/plants/${plant.id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -58,7 +59,7 @@ export default function PlantReviewCard({
     try {
       onProcessingStart(plant.id);
       
-      const response = await fetch(`/api/admin/plants/${plant.id}/reject`, {
+      const response = await apiFetch(`/api/admin/plants/${plant.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: rejectReason }),
@@ -83,7 +84,7 @@ export default function PlantReviewCard({
     try {
       onProcessingStart(plant.id);
       
-      const response = await fetch(`/api/admin/plants/${plant.id}`, {
+      const response = await apiFetch(`/api/admin/plants/${plant.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedPlant),

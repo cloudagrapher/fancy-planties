@@ -6,6 +6,7 @@ import type { CareDashboardData } from '@/lib/types/care-types';
 import CareTaskCard from './CareTaskCard';
 // import QuickCareActions from './QuickCareActions';
 import CareStatistics from './CareStatistics';
+import { apiFetch } from '@/lib/api-client';
 
 interface CareDashboardProps {
   userId: number;
@@ -35,7 +36,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
   const handleQuickCare = async (plantInstanceId: number, careType: string) => {
     try {
       setQuickCareLoading(plantInstanceId);
-      const response = await fetch('/api/care/quick-log', {
+      const response = await apiFetch('/api/care/quick-log', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       
       // Log care for multiple plants
       const promises = plantsNeedingCare.slice(0, 10).map(plant => // Limit to first 10 plants
-        fetch('/api/care/quick-log', {
+        apiFetch('/api/care/quick-log', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

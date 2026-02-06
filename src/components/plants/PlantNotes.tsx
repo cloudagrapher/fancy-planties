@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 
 interface NoteEntry {
   id: string;
@@ -52,7 +53,7 @@ export default function PlantNotes({ plantId, initialNotes, onNotesUpdate }: Pla
   // Update notes mutation
   const updateNotesMutation = useMutation({
     mutationFn: async (serializedNotes: string) => {
-      const response = await fetch(`/api/plant-instances/${plantId}`, {
+      const response = await apiFetch(`/api/plant-instances/${plantId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: serializedNotes }),

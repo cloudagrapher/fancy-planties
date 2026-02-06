@@ -5,6 +5,7 @@ import type { CareType } from '@/lib/types/care-types';
 import { careHelpers } from '@/lib/types/care-types';
 import { useOffline } from '@/hooks/useOffline';
 import { useServiceWorker } from '@/lib/utils/service-worker';
+import { apiFetch } from '@/lib/api-client';
 
 interface QuickCareFormProps {
   plantInstanceId?: number;
@@ -51,7 +52,7 @@ export default function QuickCareForm({
     try {
       if (isOnline) {
         // Online: Submit directly to API
-        const response = await fetch('/api/care/log', {
+        const response = await apiFetch('/api/care/log', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

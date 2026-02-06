@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 
 interface SearchHistoryEntry {
   id: string;
@@ -30,7 +31,7 @@ export default function SearchHistory({
   const { data: history, isLoading } = useQuery({
     queryKey: ['search-history', limit],
     queryFn: async () => {
-      const response = await fetch(`/api/search/history?limit=${limit}`);
+      const response = await apiFetch(`/api/search/history?limit=${limit}`);
       if (!response.ok) throw new Error('Failed to fetch search history');
       const data = await response.json();
       return data.data.history as SearchHistoryEntry[];
@@ -41,7 +42,7 @@ export default function SearchHistory({
   // Clear history mutation
   const clearHistoryMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/search/history', {
+      const response = await apiFetch('/api/search/history', {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to clear search history');

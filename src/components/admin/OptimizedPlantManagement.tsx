@@ -16,6 +16,7 @@ import type {
   PlantFilters, 
   PlantSortConfig 
 } from '@/lib/db/queries/admin-plants';
+import { apiFetch } from '@/lib/api-client';
 
 export interface OptimizedPlantManagementProps {
   initialPlants?: PlantWithDetails[];
@@ -174,7 +175,7 @@ export default function OptimizedPlantManagement({
 
   const handleExport = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/plants/export', {
+      const response = await apiFetch('/api/admin/plants/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

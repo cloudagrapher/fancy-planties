@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createPlantSchema, type CreatePlant } from '@/lib/validation/plant-schemas';
 import type { TaxonomyValidationResult } from '@/lib/types/plant-types';
+import { apiFetch } from '@/lib/api-client';
 
 interface PlantTaxonomyFormProps {
   onSubmit: (plant: CreatePlant) => void;
@@ -83,7 +84,7 @@ export default function PlantTaxonomyForm({
     setFormState(prev => ({ ...prev, isValidating: true }));
 
     try {
-      const response = await fetch('/api/plants/validate', {
+      const response = await apiFetch('/api/plants/validate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

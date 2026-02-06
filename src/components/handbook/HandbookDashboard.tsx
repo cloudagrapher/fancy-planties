@@ -22,6 +22,7 @@ import type { CareGuide } from '@/lib/db/schema';
 import CareGuideForm from './CareGuideForm';
 import CareGuideDetail from './CareGuideDetail';
 import S3Image from '@/components/shared/S3Image';
+import { apiFetch } from '@/lib/api-client';
 
 interface HandbookDashboardProps {
   careGuides: CareGuide[];
@@ -220,7 +221,7 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
 
   const handleCreateGuide = async (formData: any) => {
     try {
-      const response = await fetch('/api/care-guides', {
+      const response = await apiFetch('/api/care-guides', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -248,7 +249,7 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
     if (!editingGuide) return;
     
     try {
-      const response = await fetch(`/api/care-guides/${editingGuide.id}`, {
+      const response = await apiFetch(`/api/care-guides/${editingGuide.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
