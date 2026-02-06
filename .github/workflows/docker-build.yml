@@ -2,7 +2,7 @@ name: Docker Build & Test
 
 on:
   push:
-    branches: [ main ]  # Only push images from main branch
+    branches: [ main ]  # Build + push image on main
   pull_request:
     branches: [ main ]  # Build-only for PR validation
   workflow_dispatch:
