@@ -74,13 +74,11 @@ export function useHapticFeedback() {
     }
   }, []);
 
-  const isHapticSupported = useCallback(() => {
-    if (typeof navigator === 'undefined') return false;
-    return (typeof navigator.vibrate === 'function') || 'hapticFeedback' in navigator;
-  }, []);
+  const isHapticSupported = typeof navigator !== 'undefined' &&
+    ((typeof navigator.vibrate === 'function') || 'hapticFeedback' in navigator);
 
   return {
     triggerHaptic,
-    isHapticSupported: isHapticSupported(),
+    isHapticSupported,
   };
 }

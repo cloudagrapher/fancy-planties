@@ -225,7 +225,7 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
           </div>
           <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-amber-50/70 backdrop-blur p-6">
             <div className="text-2xl font-bold text-amber-600">
-              {stats.byStatus.started + stats.byStatus.rooting + stats.byStatus.planted}
+              {(stats.byStatus.started || 0) + (stats.byStatus.rooting || 0) + (stats.byStatus.planted || 0)}
             </div>
             <div className="text-sm text-amber-700">Active Propagations</div>
           </div>

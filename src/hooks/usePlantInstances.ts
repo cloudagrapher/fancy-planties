@@ -25,10 +25,12 @@ export function usePlantInstances(filters: PlantInstanceFilter) {
     queryFn: async (): Promise<PlantInstanceSearchResult> => {
       const params = new URLSearchParams(
         Object.fromEntries(
-          Object.entries(filters).map(([key, value]) => [
-            key,
-            value instanceof Date ? value.toISOString() : String(value)
-          ])
+          Object.entries(filters)
+            .filter(([, value]) => value !== undefined && value !== null)
+            .map(([key, value]) => [
+              key,
+              value instanceof Date ? value.toISOString() : String(value)
+            ])
         )
       );
 
