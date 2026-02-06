@@ -10,6 +10,24 @@ import { validateRequest } from '@/lib/auth/server';
 
 const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60;
 
+/**
+ * Determine the cookie domain based on the request host
+ * Supports both new domain (fancy-planties.com) and legacy domain (cloudagrapher.com)
+ */
+function getCookieDomain(host: string, cloudfrontDomain: string): string | undefined {
+  // New primary domain
+  if (host.includes('fancy-planties.com') && cloudfrontDomain.includes('fancy-planties.com')) {
+    return '.fancy-planties.com';
+  }
+  
+  // Legacy domain (cloudagrapher.com)
+  if (host.includes('fancy-planties.cloudagrapher.com') && cloudfrontDomain.includes('cloudagrapher.com')) {
+    return '.fancy-planties.cloudagrapher.com';
+  }
+  
+  return undefined;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Validate user session
@@ -66,10 +84,8 @@ export async function POST(request: NextRequest) {
 
     // Set CloudFront signed cookies
     // CRITICAL: sameSite must be 'none' for cross-subdomain requests (app -> CDN)
-    // This allows cookies from fancy-planties.cloudagrapher.com to be sent to cdn.fancy-planties.cloudagrapher.com
-    
     const requestHost = request.headers.get('host') || '';
-    const usesCustomDomain = requestHost.includes('fancy-planties.cloudagrapher.com');
+    const cookieDomain = getCookieDomain(requestHost, cloudfrontDomain);
     
     const cookieOptions: {
       path: string;
@@ -87,12 +103,13 @@ export async function POST(request: NextRequest) {
     };
     
     // Set parent domain for cookie sharing across subdomains
-    if (usesCustomDomain && cloudfrontDomain.includes('fancy-planties.cloudagrapher.com')) {
-      cookieOptions.domain = '.fancy-planties.cloudagrapher.com';
-      console.log('[CloudFront Cookie] Setting cookies for domain: .fancy-planties.cloudagrapher.com with sameSite=none');
+    if (cookieDomain) {
+      cookieOptions.domain = cookieDomain;
+      console.log(`[CloudFront Cookie] Setting cookies for domain: ${cookieDomain} with sameSite=none`);
     } else {
-      console.warn('[CloudFront Cookie] WARNING: Not using custom domain - CloudFront cookies may not work!');
+      console.warn('[CloudFront Cookie] WARNING: Could not determine cookie domain - CloudFront cookies may not work!');
       console.warn('[CloudFront Cookie] Current host:', requestHost);
+      console.warn('[CloudFront Cookie] CloudFront domain:', cloudfrontDomain);
     }
 
     response.cookies.set('CloudFront-Policy', cookies['CloudFront-Policy'], cookieOptions);

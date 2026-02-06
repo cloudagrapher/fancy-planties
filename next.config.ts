@@ -28,6 +28,12 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'cdn.fancy-planties.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'cdn.fancy-planties.cloudagrapher.com',
         port: '',
         pathname: '/**',
