@@ -1,0 +1,1 @@
+ALTER TABLE "care_guides" ADD COLUMN "root_structure" jsonb;
