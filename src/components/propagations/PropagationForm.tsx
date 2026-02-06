@@ -242,7 +242,6 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
         })
       ]);
 
-      console.log('Propagation cache invalidation complete');
       onSuccess();
     } catch (error) {
       console.error('Error saving propagation:', error);

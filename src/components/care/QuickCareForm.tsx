@@ -78,8 +78,6 @@ export default function QuickCareForm({
 
         // Register for background sync
         registerBackgroundSync();
-
-        console.log('Care entry queued for sync:', pendingId);
       }
 
       // Reset form

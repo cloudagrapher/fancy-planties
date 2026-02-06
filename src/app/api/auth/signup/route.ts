@@ -34,7 +34,9 @@ export async function POST(request: NextRequest) {
         const emailService = createEmailService();
         await sendEmailWithRetry(emailService, email, verificationCode, name);
         
-        console.log(`Verification email sent to ${email} for user ${user.id}`);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Verification email sent to ${email} for user ${user.id}`);
+        }
         
         const message = isExistingUser 
           ? 'Verification email resent. Please check your email for the new verification code.'

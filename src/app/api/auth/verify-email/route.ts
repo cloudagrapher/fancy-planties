@@ -41,7 +41,9 @@ export async function POST(request: NextRequest) {
         const isValid = await emailVerificationCodeService.validateCode(email, code);
 
         if (isValid) {
-          console.log(`Email verification successful for ${email}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Email verification successful for ${email}`);
+          }
 
           // Get the verified user
           const user = await getUserByEmail(email);
@@ -56,7 +58,9 @@ export async function POST(request: NextRequest) {
           const session = await lucia.createSession(user.id.toString(), {});
           await setSessionCookie(session.id);
 
-          console.log(`Session created for verified user ${email}: ${session.id}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Session created for verified user ${email}: ${session.id}`);
+          }
 
           return NextResponse.json({
             success: true,
@@ -112,7 +116,9 @@ export async function POST(request: NextRequest) {
               errorMessage = 'Verification failed. Please try again.';
           }
           
-          console.log(`Email verification failed for ${email}: ${error.code} - ${errorMessage}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`Email verification failed for ${email}: ${error.code} - ${errorMessage}`);
+          }
           
           return NextResponse.json(
             { 
