@@ -279,18 +279,7 @@ export default function PlantsGrid({
     enabled: true,
   });
 
-  // Handle infinite scroll
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
-    const isNearBottom = scrollPercentage >= 0.8; // Trigger when 80% scrolled
-
-    if (isNearBottom && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  // Intersection Observer for infinite scroll (more reliable than scroll events)
+  // Intersection Observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -524,9 +513,7 @@ export default function PlantsGrid({
       {/* Plants Grid */}
       <div
         ref={pullToRefreshRef}
-        className="flex-1 overflow-auto pull-to-refresh"
-        style={{ maxHeight: '70vh', minHeight: '400px' }}
-        onScroll={handleScroll}
+        className="flex-1 pull-to-refresh"
       >
         {/* Pull to Refresh Indicator */}
         <PullToRefreshIndicator
