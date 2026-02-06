@@ -282,6 +282,7 @@ export default function PlantCard({
               className="object-cover"
               onError={() => setImageError(true)}
               unoptimized
+              loading="lazy"
             />
           ) : (
             <Image
@@ -291,6 +292,7 @@ export default function PlantCard({
               className="object-cover"
               onError={() => setImageError(true)}
               unoptimized={shouldUnoptimizeImage(plant.primaryImage)}
+              loading="lazy"
               sizes={`(max-width: 768px) ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}, ${size === 'small' ? '128px' : size === 'medium' ? '160px' : '192px'}`}
             />
           )
