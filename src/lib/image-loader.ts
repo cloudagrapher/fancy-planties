@@ -3,8 +3,15 @@
  * CloudFront images need direct browser access to send signed cookies
  */
 
+/**
+ * Check if the image URL is from our CloudFront CDN
+ * Supports both new domain (fancy-planties.com) and legacy domain (cloudagrapher.com)
+ */
 export function shouldUnoptimizeImage(src: string): boolean {
-  return src.startsWith('https://cdn.fancy-planties.cloudagrapher.com');
+  return (
+    src.startsWith('https://cdn.fancy-planties.com') ||
+    src.startsWith('https://cdn.fancy-planties.cloudagrapher.com')
+  );
 }
 
 /**

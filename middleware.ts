@@ -197,9 +197,9 @@ export async function middleware(request: NextRequest) {
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-inline and unsafe-eval
     "style-src 'self' 'unsafe-inline'", // Tailwind requires unsafe-inline
-    "img-src 'self' data: blob: https://cdn.fancy-planties.cloudagrapher.com https://*.cloudfront.net",
+    "img-src 'self' data: blob: https://cdn.fancy-planties.com https://cdn.fancy-planties.cloudagrapher.com https://*.cloudfront.net",
     "font-src 'self'",
-    "connect-src 'self' https://cdn.fancy-planties.cloudagrapher.com https://sl4zllu188.execute-api.us-east-1.amazonaws.com",
+    "connect-src 'self' https://cdn.fancy-planties.com https://cdn.fancy-planties.cloudagrapher.com https://sl4zllu188.execute-api.us-east-1.amazonaws.com",
     "frame-ancestors 'none'",
   ].join('; ');
   

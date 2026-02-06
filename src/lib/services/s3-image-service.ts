@@ -147,8 +147,9 @@ export class S3ImageService {
   /**
    * Convert S3 key to image URL
    *
-   * Uses direct CloudFront URL with custom domain (cdn.fancy-planties.cloudagrapher.com)
-   * Parent domain cookies (.fancy-planties.cloudagrapher.com) enable access in both dev and prod
+   * Uses direct CloudFront URL with custom domain (cdn.fancy-planties.com)
+   * Parent domain cookies (.fancy-planties.com) enable access in both dev and prod
+   * Also supports legacy domain (cdn.fancy-planties.cloudagrapher.com) during migration
    *
    * @param s3Key - The S3 object key (e.g., "users/123/plant_instance/456/image.jpg")
    * @returns CloudFront URL or empty string if domain not configured
