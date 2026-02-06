@@ -273,6 +273,12 @@ export const careGuides = pgTable('care_guides', {
     difficulty?: string;
     tips?: string;
   }>(),
+
+  rootStructure: jsonb('root_structure').$type<{
+    type?: string;
+    growthHabits?: string;
+    tips?: string;
+  }>(),
   
   commonIssues: jsonb('common_issues').$type<{
     pests?: string[];
