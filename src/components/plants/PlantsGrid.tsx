@@ -602,7 +602,7 @@ export default function PlantsGrid({
                   {plant.s3ImageKeys && plant.s3ImageKeys.length > 0 ? (
                     <Image
                       src={`/api/images/s3?key=${encodeURIComponent(plant.s3ImageKeys[0])}`}
-                      alt={plant.nickname || plant.plantName || 'Plant'}
+                      alt={plant.displayName || 'Plant'}
                       fill
                       sizes="48px"
                       className="object-cover"
@@ -621,7 +621,7 @@ export default function PlantsGrid({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-medium text-neutral-900 truncate">
-                      {plant.nickname || plant.plantName || 'Unnamed Plant'}
+                      {plant.displayName || 'Unnamed Plant'}
                     </h3>
                     {plant.careStatus === 'overdue' && (
                       <span className="flex-shrink-0 px-1.5 py-0.5 text-xs font-medium bg-red-100 text-red-700 rounded">
@@ -635,8 +635,8 @@ export default function PlantsGrid({
                     )}
                   </div>
                   <div className="flex items-center gap-3 mt-0.5 text-xs text-neutral-500">
-                    {plant.plantName && plant.nickname && (
-                      <span className="truncate">{plant.plantName}</span>
+                    {plant.plant?.commonName && plant.nickname && (
+                      <span className="truncate">{plant.plant.commonName}</span>
                     )}
                     {plant.location && (
                       <span className="flex items-center gap-1 truncate">
