@@ -156,9 +156,9 @@ export default function PlantsGrid({
     getNextPageParam: (lastPage) => {
       return lastPage.hasMore ? lastPage.filters.offset + lastPage.filters.limit : undefined;
     },
-    staleTime: 1000 * 5,
-    gcTime: 1000 * 60 * 2,
-    refetchOnWindowFocus: true,
+    staleTime: 1000 * 30,
+    gcTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
     refetchOnMount: true,
     refetchOnReconnect: true,
   });
@@ -349,7 +349,7 @@ export default function PlantsGrid({
   }
 
   return (
-    <div className={`flex flex-col h-full ${className}`}>
+    <div className={`flex flex-col ${className}`}>
       {/* Header with Search and Filters */}
       {(showSearch || showFilters) && (
         <div className="flex-shrink-0 mb-4">
@@ -593,6 +593,7 @@ export default function PlantsGrid({
                       fill
                       sizes="48px"
                       className="object-cover"
+                      loading="lazy"
                       unoptimized
                     />
                   ) : (
