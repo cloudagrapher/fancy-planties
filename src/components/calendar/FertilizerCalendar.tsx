@@ -159,15 +159,15 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
               }`}
             >
               <div
-                className={`absolute top-1 right-1 text-[10px] ${
-                  isToday ? 'text-emerald-600 font-semibold' : 'text-slate-400'
+                className={`text-sm font-medium mb-1 ${
+                  isToday ? 'text-emerald-600 font-semibold' : 'text-slate-500'
                 }`}
               >
                 {day}
               </div>
               
               {hasFertilizer && (
-                <div className="mt-5 flex flex-col gap-1">
+                <div className="flex flex-col gap-1">
                   {dayEvents.slice(0, 2).map((event) => (
                     <Chip
                       key={event.id}
