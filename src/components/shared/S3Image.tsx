@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { S3ImageService, type ThumbnailSize } from '@/lib/services/s3-image-service';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
@@ -39,6 +39,33 @@ export default function S3Image({
 }: S3ImageProps) {
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [originalFailed, setOriginalFailed] = useState(false);
+  const [cookiesReady, setCookiesReady] = useState(false);
+
+  // Monitor CloudFront cookies and reset failure states when cookies become available
+  useEffect(() => {
+    // Check if CloudFront cookies are present
+    const checkCookies = () => {
+      const hasCookies = document.cookie.includes('CloudFront-Key-Pair-Id');
+      if (hasCookies && !cookiesReady) {
+        setCookiesReady(true);
+        // Reset failure states to allow retry now that cookies are available
+        setThumbnailFailed(false);
+        setOriginalFailed(false);
+      }
+    };
+
+    // Check immediately
+    checkCookies();
+
+    // Poll for cookies every 100ms for up to 2 seconds (handles async cookie initialization)
+    const intervalId = setInterval(checkCookies, 100);
+    const timeoutId = setTimeout(() => clearInterval(intervalId), 2000);
+
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(timeoutId);
+    };
+  }, [cookiesReady]);
 
   // Determine which URL to use (thumbnail or original)
   const imageUrl = (() => {
