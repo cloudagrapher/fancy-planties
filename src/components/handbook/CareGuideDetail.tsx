@@ -231,6 +231,7 @@ export default function CareGuideDetail({ guide, userId: _userId, onClose, onEdi
                           width={300}
                           height={300}
                           className="object-cover w-full h-full"
+                          thumbnailSize="medium"
                         />
                       </div>
                     ))}

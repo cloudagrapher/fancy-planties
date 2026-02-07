@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import S3Image from '@/components/shared/S3Image';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { plantInstanceHelpers } from '@/lib/types/plant-instance-types';
 import { useSwipeGestures } from '@/hooks/useSwipeGestures';
@@ -283,6 +284,15 @@ export default function PlantCard({
               onError={() => setImageError(true)}
               unoptimized
               loading="lazy"
+            />
+          ) : plant.s3ImageKeys && plant.s3ImageKeys.length > 0 ? (
+            <S3Image
+              s3Key={plant.s3ImageKeys[0]}
+              alt={plant.displayName}
+              width={size === 'small' ? 128 : size === 'medium' ? 160 : 192}
+              height={size === 'small' ? 128 : size === 'medium' ? 160 : 192}
+              className="object-cover"
+              thumbnailSize="small"
             />
           ) : (
             <Image

@@ -6,6 +6,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
+import S3Image from '../shared/S3Image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import PlantTaxonomySelector from './PlantTaxonomySelector';
 import S3ImageUpload from '../shared/S3ImageUpload';
@@ -1009,19 +1010,19 @@ export default function PlantInstanceForm({
                 </label>
 
                 {/* Existing Images (S3 Keys - displayed with presigned URLs) */}
-                {s3ImageKeys.length > 0 && plantInstance && plantInstance.images && (
+                {s3ImageKeys.length > 0 && plantInstance && (
                   <div className="mb-4">
                     <h4 className="text-sm font-medium text-gray-600 mb-2">Current Photos</h4>
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                      {plantInstance.images.map((image, index) => (
+                      {s3ImageKeys.map((s3Key, index) => (
                         <div key={index} className="relative group">
-                          <Image
-                            src={image}
+                          <S3Image
+                            s3Key={s3Key}
                             alt={`Plant photo ${index + 1}`}
                             width={200}
                             height={200}
                             className="w-full aspect-square object-cover rounded-lg"
-                            unoptimized={shouldUnoptimizeImage(image)}
+                            thumbnailSize="small"
                           />
 
                           {/* Delete Button */}
