@@ -101,7 +101,7 @@ class ImageApiStack(Stack):
             environment={
                 "PRIVATE_KEY_SECRET_NAME": private_key_secret.secret_name,
                 "CLOUDFRONT_KEY_PAIR_ID": cloudfront_key_pair_id,
-                "CLOUDFRONT_DOMAIN": "https://cdn.fancy-planties.cloudagrapher.com/",
+                "CLOUDFRONT_DOMAIN": "cdn.fancy-planties.com",
                 "COOKIE_EXPIRATION_DAYS": "7",
             },
             description="Generate CloudFront signed cookies for authenticated image access",

@@ -148,7 +148,7 @@ class ImageStorageStack(Stack):
                 trusted_key_groups=[self.key_group],
             ),
             # Custom domain configuration
-            domain_names=[f"cdn.fancy-planties.cloudagrapher.com"],
+            domain_names=["cdn.fancy-planties.com"],
             certificate=certificate,
 
             # Price class for cost optimization (use lower-cost edge locations)
