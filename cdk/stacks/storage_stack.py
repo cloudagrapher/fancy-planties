@@ -51,11 +51,11 @@ class ImageStorageStack(Stack):
         )
 
         # Import existing SSL certificate from ACM (us-east-1)
-        # Wildcard certificate *.cloudagrapher.com covers cdn.fancy-planties.cloudagrapher.com
+        # Wildcard certificate *.fancy-planties.com covers cdn.fancy-planties.com
         certificate = acm.Certificate.from_certificate_arn(
             self,
             "CloudFrontCertificate",
-            certificate_arn="arn:aws:acm:us-east-1:580033881001:certificate/cbaa9ed3-c244-4a39-95cc-20aa3bd515d8"
+            certificate_arn="arn:aws:acm:us-east-1:580033881001:certificate/7c044d77-2ee8-473e-af74-60a97f0322c1"
         )
 
         # Create S3 bucket for image storage

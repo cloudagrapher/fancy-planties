@@ -22,6 +22,10 @@ let csrfPromise: Promise<string> | null = null;
 async function fetchCsrfToken(): Promise<string> {
   const response = await fetch('/api/csrf');
   if (!response.ok) {
+    if (response.status === 401) {
+      window.location.href = '/auth/signin';
+      throw new Error('Session expired');
+    }
     throw new Error('Failed to fetch CSRF token');
   }
   const data = await response.json();
@@ -68,11 +72,18 @@ export async function apiFetch(
   if (response.status === 403 && MUTATION_METHODS.has(method)) {
     const body = await response.clone().json().catch(() => null);
     if (body?.error && typeof body.error === 'string' && body.error.toLowerCase().includes('csrf')) {
-      csrfToken = null; // invalidate cache
-      const freshToken = await getCsrfToken();
-      const retryHeaders = new Headers(options.headers);
-      retryHeaders.set('x-csrf-token', freshToken);
-      return fetch(url, { ...options, headers: retryHeaders });
+      csrfToken = null;
+      try {
+        const freshToken = await getCsrfToken();
+        const retryHeaders = new Headers(options.headers);
+        retryHeaders.set('x-csrf-token', freshToken);
+        return fetch(url, { ...options, headers: retryHeaders });
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Session expired') {
+          throw error;
+        }
+        throw error;
+      }
     }
   }
 

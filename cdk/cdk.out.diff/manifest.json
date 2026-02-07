@@ -1,0 +1,468 @@
+{
+  "version": "38.0.1",
+  "artifacts": {
+    "FancyPlantiesStorage-dev.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "FancyPlantiesStorage-dev.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "FancyPlantiesStorage-dev": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://580033881001/us-east-1",
+      "properties": {
+        "templateFile": "FancyPlantiesStorage-dev.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::580033881001:role/cdk-hnb659fds-deploy-role-580033881001-us-east-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::580033881001:role/cdk-hnb659fds-cfn-exec-role-580033881001-us-east-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-580033881001-us-east-1/6b7a38f2cd1ecd252b4939b58c34a461a4e46cf937781fc5c77ab06e8cd15dd8.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "FancyPlantiesStorage-dev.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::580033881001:role/cdk-hnb659fds-lookup-role-580033881001-us-east-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "FancyPlantiesStorage-dev.assets"
+      ],
+      "metadata": {
+        "/FancyPlantiesStorage-dev/ImageBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageBucket97210811"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ImageBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageBucketPolicy9E7B0384"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ImageBucket/AutoDeleteObjectsCustomResource/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageBucketAutoDeleteObjectsCustomResource99A1E17B"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ImageBucket/Notifications/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageBucketNotifications51091307"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ImageBucket/AllowBucketNotificationsToFancyPlantiesStoragedevThumbnailGeneratorFunction0C218081": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageBucketAllowBucketNotificationsToFancyPlantiesStoragedevThumbnailGeneratorFunction0C218081A18013A7"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+          {
+            "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+            "data": true
+          }
+        ],
+        "/FancyPlantiesStorage-dev/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ImageBucketOAC": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageBucketOAC"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ImageDistribution/Origin1/S3Origin/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageDistributionOrigin1S3OriginA0A29277"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ImageDistribution/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageDistribution0E4DF19E"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ImageBucketName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageBucketName"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ImageBucketArn": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageBucketArn"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/CloudFrontDomainName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CloudFrontDomainName"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/CloudFrontDistributionId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CloudFrontDistributionId"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/KeyGroupId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "KeyGroupId"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ThumbnailLambdaRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ThumbnailLambdaRole201A9652"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ThumbnailLambdaRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ThumbnailLambdaRoleDefaultPolicyFF62E1C2"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ThumbnailGeneratorFunction/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ThumbnailGeneratorFunction5CFECAA5"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ThumbnailGeneratorFunction/LogRetention/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ThumbnailGeneratorFunctionLogRetention185E5805"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleDefaultPolicy2CF63D36"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/ThumbnailFunctionName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ThumbnailFunctionName"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/Exports/Output{\"Fn::GetAtt\":[\"ImageBucket97210811\",\"Arn\"]}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ExportsOutputFnGetAttImageBucket97210811ArnBE413D3E"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/Exports/Output{\"Ref\":\"ImageBucket97210811\"}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ExportsOutputRefImageBucket97210811FA5BB109"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/FancyPlantiesStorage-dev/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "FancyPlantiesStorage-dev"
+    },
+    "FancyPlantiesImageApi-dev.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "FancyPlantiesImageApi-dev.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "FancyPlantiesImageApi-dev": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://580033881001/us-east-1",
+      "properties": {
+        "templateFile": "FancyPlantiesImageApi-dev.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::580033881001:role/cdk-hnb659fds-deploy-role-580033881001-us-east-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::580033881001:role/cdk-hnb659fds-cfn-exec-role-580033881001-us-east-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-580033881001-us-east-1/9cde09cd67923df1e3b88b368b7ab48ad2c10b6e7397a5f7c6579811f578661d.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "FancyPlantiesImageApi-dev.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::580033881001:role/cdk-hnb659fds-lookup-role-580033881001-us-east-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "FancyPlantiesStorage-dev",
+        "FancyPlantiesImageApi-dev.assets"
+      ],
+      "metadata": {
+        "/FancyPlantiesImageApi-dev/ImageLambdaRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageLambdaRole8F32C851"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageLambdaRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageLambdaRoleDefaultPolicy0043558D"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/PresignedUploadFunction/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PresignedUploadFunction83F595D2"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/PresignedUploadFunction/LogRetention/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "PresignedUploadFunctionLogRetention17253FA8"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/SignedCookieFunction/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SignedCookieFunction51CA7CDF"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/SignedCookieFunction/LogRetention/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SignedCookieFunctionLogRetentionFF812ED3"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApi1EBF0B79"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Deployment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiDeploymentF8E6322Bb7beef3e973c3fcb2c4dbfd82ab04035"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/DeploymentStage.dev/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiDeploymentStagedev42DFA083"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Endpoint": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiEndpointAEA1ACB2"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiOPTIONS2BE5F2FA"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimages28A342D4"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesOPTIONS8DBA5D14"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesuploadB4AD8684"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesuploadOPTIONS19F87799"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/POST/ApiPermission.FancyPlantiesImageApidevImageApiEB1ABDDF.POST..images.upload": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesuploadPOSTApiPermissionFancyPlantiesImageApidevImageApiEB1ABDDFPOSTimagesupload47F21621"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/POST/ApiPermission.Test.FancyPlantiesImageApidevImageApiEB1ABDDF.POST..images.upload": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesuploadPOSTApiPermissionTestFancyPlantiesImageApidevImageApiEB1ABDDFPOSTimagesupload5F02A32A"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/POST/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesuploadPOST46B599A6"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesauthcookieA743044B"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesauthcookieOPTIONSD06E614A"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/POST/ApiPermission.FancyPlantiesImageApidevImageApiEB1ABDDF.POST..images.auth-cookie": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesauthcookiePOSTApiPermissionFancyPlantiesImageApidevImageApiEB1ABDDFPOSTimagesauthcookie8108AA2C"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/POST/ApiPermission.Test.FancyPlantiesImageApidevImageApiEB1ABDDF.POST..images.auth-cookie": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesauthcookiePOSTApiPermissionTestFancyPlantiesImageApidevImageApiEB1ABDDFPOSTimagesauthcookieE0C9DD08"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/POST/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ImageApiimagesauthcookiePOST620F518D"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/ApiEndpoint": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiEndpoint"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/UploadFunctionName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UploadFunctionName"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/CookieGeneratorFunctionName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CookieGeneratorFunctionName"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/FancyPlantiesImageApi-dev/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "FancyPlantiesImageApi-dev"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}
