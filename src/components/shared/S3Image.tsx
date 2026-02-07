@@ -11,6 +11,7 @@ interface S3ImageProps {
   className?: string;
   width?: number;
   height?: number;
+  fill?: boolean;
   priority?: boolean;
   fallbackSrc?: string;
   thumbnailSize?: ThumbnailSize | 'original';
@@ -33,6 +34,7 @@ export default function S3Image({
   className = '',
   width,
   height,
+  fill = false,
   priority = false,
   fallbackSrc = '/placeholder-plant.png',
   thumbnailSize = 'original',
@@ -88,8 +90,7 @@ export default function S3Image({
       <Image
         src={fallbackSrc}
         alt={alt}
-        width={width || 200}
-        height={height || 200}
+        {...(fill ? { fill: true } : { width: width || 200, height: height || 200 })}
         className={className}
       />
     );
@@ -110,8 +111,7 @@ export default function S3Image({
     <Image
       src={imageUrl}
       alt={alt}
-      width={width || 200}
-      height={height || 200}
+      {...(fill ? { fill: true } : { width: width || 200, height: height || 200 })}
       className={className}
       priority={priority}
       unoptimized={shouldUnoptimizeImage(imageUrl)}
