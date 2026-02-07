@@ -6,7 +6,12 @@ import postgres from 'postgres';
 
 // Create postgres client for Lucia adapter
 const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/fancy_planties';
-const client = postgres(connectionString);
+const client = postgres(connectionString, {
+  prepare: false,
+  max: 5,
+  idle_timeout: 20,
+  connect_timeout: 10,
+});
 
 // Initialize PostgreSQL adapter for Lucia
 const adapter = new PostgresJsAdapter(client, {

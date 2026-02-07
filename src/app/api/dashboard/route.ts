@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       .select({
         totalPlants: sql<number>`count(*)`,
         activePlants: sql<number>`count(*) filter (where ${plantInstances.isActive} = true)`,
-        careDueToday: sql<number>`count(*) filter (where ${plantInstances.isActive} = true and ${plantInstances.fertilizerDue} <= ${today})`
+        careDueToday: sql<number>`count(*) filter (where ${plantInstances.isActive} = true and ${plantInstances.fertilizerDue} <= ${today.toISOString()})`
       })
       .from(plantInstances)
       .where(eq(plantInstances.userId, userId));

@@ -1,11 +1,19 @@
 # Project Notes
 
-Bug investigations, implementation decisions, and architectural learnings.
-Each file documents a specific issue: what went wrong, why, and how it was fixed.
+Institutional knowledge for Fancy Planties. Bug investigations, architectural decisions, configuration facts, and work history.
 
 These exist so future contributors (human or AI) don't repeat the same mistakes.
 
-## Index
+## Quick Reference
+
+| File | Purpose |
+|------|---------|
+| [bugs.md](./bugs.md) | Bug log with solutions and prevention notes |
+| [decisions.md](./decisions.md) | Architectural Decision Records (ADRs) |
+| [key_facts.md](./key_facts.md) | Project configuration, AWS resources, deployment details |
+| [issues.md](./issues.md) | Work log with PR references |
+
+## Detailed Bug Write-ups
 
 | File | Summary |
 |------|---------|
