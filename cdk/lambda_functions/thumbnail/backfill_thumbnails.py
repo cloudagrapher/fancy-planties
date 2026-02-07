@@ -86,7 +86,8 @@ def backfill_thumbnails(
     bucket: str,
     dry_run: bool = False,
     batch_size: int = DEFAULT_BATCH_SIZE,
-    max_images: Optional[int] = None
+    max_images: Optional[int] = None,
+    force: bool = False
 ) -> Dict:
     """
     Main backfill logic to process existing images.
@@ -102,7 +103,7 @@ def backfill_thumbnails(
     """
     # Find all images that need thumbnail generation
     logger.info("Scanning S3 bucket for images...")
-    images_to_process = find_images_needing_thumbnails(bucket, max_images)
+    images_to_process = find_images_needing_thumbnails(bucket, max_images, force=force)
 
     total_images = len(images_to_process)
     logger.info(f"Found {total_images} images needing thumbnails")
@@ -129,7 +130,8 @@ def backfill_thumbnails(
 
 def find_images_needing_thumbnails(
     bucket: str,
-    max_images: Optional[int] = None
+    max_images: Optional[int] = None,
+    force: bool = False
 ) -> List[str]:
     """
     List all original images that don't have thumbnails yet.
@@ -137,6 +139,7 @@ def find_images_needing_thumbnails(
     Args:
         bucket: S3 bucket name
         max_images: Maximum number of images to return
+        force: If True, include images that already have thumbnails
 
     Returns:
         List of S3 keys that need thumbnail generation
@@ -170,7 +173,7 @@ def find_images_needing_thumbnails(
                     continue
 
                 # Check if this image already has thumbnails
-                if not has_thumbnails(bucket, key):
+                if force or not has_thumbnails(bucket, key):
                     images_needing_thumbnails.append(key)
                     logger.debug(f"Needs thumbnails: {key}")
 
@@ -426,6 +429,11 @@ def main() -> None:
         help='Maximum number of images to process'
     )
     parser.add_argument(
+        '--force',
+        action='store_true',
+        help='Regenerate thumbnails even if they already exist'
+    )
+    parser.add_argument(
         '--function-name',
         required=False,
         help='Lambda function name for thumbnail generation (or set THUMBNAIL_FUNCTION_NAME env var)'
@@ -454,7 +462,8 @@ def main() -> None:
             bucket=bucket,
             dry_run=args.dry_run,
             batch_size=args.batch_size,
-            max_images=args.max_images
+            max_images=args.max_images,
+            force=args.force
         )
 
         print("\n" + "=" * 60)
