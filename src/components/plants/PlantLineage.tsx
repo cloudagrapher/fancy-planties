@@ -94,10 +94,10 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                   <S3Image
                     s3Key={parentPlant.s3ImageKeys[0]}
                     alt={parentPlant.displayName}
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                     thumbnailSize="tiny"
+                    sizes="64px"
                   />
                 ) : parentPlant.primaryImage ? (
                   <Image
@@ -153,10 +153,10 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                 <S3Image
                   s3Key={plant.s3ImageKeys[0]}
                   alt={plant.displayName}
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                   thumbnailSize="tiny"
+                  sizes="64px"
                 />
               ) : plant.primaryImage ? (
                 <Image

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import Image from 'next/image';
 import S3Image from '@/components/shared/S3Image';
 import PlantCard from './PlantCard';
 import PlantSearchFilter from './PlantSearchFilter';
@@ -591,10 +590,10 @@ export default function PlantsGrid({
                     <S3Image
                       s3Key={plant.s3ImageKeys[0]}
                       alt={plant.displayName || 'Plant'}
-                      width={48}
-                      height={48}
+                      fill
                       className="object-cover"
                       thumbnailSize="tiny"
+                      sizes="48px"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

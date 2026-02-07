@@ -5,9 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import Image from 'next/image';
 import S3Image from '../shared/S3Image';
-import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import PlantTaxonomySelector from './PlantTaxonomySelector';
 import S3ImageUpload from '../shared/S3ImageUpload';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
@@ -1015,14 +1013,14 @@ export default function PlantInstanceForm({
                     <h4 className="text-sm font-medium text-gray-600 mb-2">Current Photos</h4>
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                       {s3ImageKeys.map((s3Key, index) => (
-                        <div key={index} className="relative group">
+                        <div key={index} className="relative group aspect-square rounded-lg overflow-hidden">
                           <S3Image
                             s3Key={s3Key}
                             alt={`Plant photo ${index + 1}`}
-                            width={200}
-                            height={200}
-                            className="w-full aspect-square object-cover rounded-lg"
+                            fill
+                            className="object-cover"
                             thumbnailSize="small"
+                            sizes="(max-width: 640px) 33vw, 25vw"
                           />
 
                           {/* Delete Button */}

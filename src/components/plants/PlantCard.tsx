@@ -289,10 +289,10 @@ export default function PlantCard({
             <S3Image
               s3Key={plant.s3ImageKeys[0]}
               alt={plant.displayName}
-              width={size === 'small' ? 128 : size === 'medium' ? 160 : 192}
-              height={size === 'small' ? 128 : size === 'medium' ? 160 : 192}
+              fill
               className="object-cover"
               thumbnailSize="small"
+              sizes={`(max-width: 768px) ${size === 'small' ? '128px' : '160px'}, ${size === 'large' ? '192px' : '160px'}`}
             />
           ) : (
             <Image

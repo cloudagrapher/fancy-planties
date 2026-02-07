@@ -228,10 +228,10 @@ export default function CareGuideDetail({ guide, userId: _userId, onClose, onEdi
                         <S3Image
                           s3Key={s3Key}
                           alt={`${guide.title} - Image ${index + 1}`}
-                          width={300}
-                          height={300}
-                          className="object-cover w-full h-full"
+                          fill
+                          className="object-cover"
                           thumbnailSize="medium"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                         />
                       </div>
                     ))}
