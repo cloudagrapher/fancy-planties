@@ -9,10 +9,13 @@ from aws_cdk import (
     Duration,
     CfnOutput,
     aws_s3 as s3,
+    aws_s3_notifications as s3n,
     aws_cloudfront as cloudfront,
     aws_cloudfront_origins as origins,
     aws_iam as iam,
     aws_certificatemanager as acm,
+    aws_lambda as lambda_,
+    aws_logs as logs,
 )
 from constructs import Construct
 from cdk_nag import NagSuppressions
@@ -253,4 +256,70 @@ class ImageStorageStack(Stack):
             value=self.key_group.key_group_id,
             description="CloudFront Key Group ID for signed cookies",
             export_name=f"FancyPlantiesKeyGroupId-{env_name}",
+        )
+
+        # --- Thumbnail Generator Lambda ---
+        # Lives in this stack to avoid cyclic dependency with the API stack.
+        # The Lambda is an S3 event handler, not an API handler.
+
+        # Dedicated IAM role with least-privilege permissions
+        thumbnail_role = iam.Role(
+            self,
+            "ThumbnailLambdaRole",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            description="Execution role for thumbnail generator Lambda function",
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AWSLambdaBasicExecutionRole"
+                ),
+            ],
+        )
+
+        # Grant S3 read/write so the Lambda can read originals and write thumbnails
+        self.image_bucket.grant_read_write(thumbnail_role)
+
+        # Lambda function for generating thumbnails from uploaded images
+        self.thumbnail_function = lambda_.Function(
+            self,
+            "ThumbnailGeneratorFunction",
+            runtime=lambda_.Runtime.PYTHON_3_12,
+            handler="generate_thumbnails.lambda_handler",
+            code=lambda_.Code.from_asset(
+                "lambda_functions/thumbnail_bundle",
+            ),
+            role=thumbnail_role,
+            timeout=Duration.seconds(60),
+            memory_size=1024,
+            environment={
+                "BUCKET_NAME": self.image_bucket.bucket_name,
+            },
+            description="Generate WebP thumbnails for uploaded images",
+            log_retention=logs.RetentionDays.ONE_WEEK,
+        )
+
+        # Wire S3 event notification directly — no cross-stack reference needed
+        self.image_bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED,
+            s3n.LambdaDestination(self.thumbnail_function),
+            s3.NotificationKeyFilter(prefix='users/')
+        )
+
+        # CDK Nag suppression for managed policy on thumbnail role
+        NagSuppressions.add_resource_suppressions(
+            thumbnail_role,
+            [
+                {
+                    "id": "AwsSolutions-IAM4",
+                    "reason": "AWSLambdaBasicExecutionRole is the standard managed policy for Lambda execution. "
+                             "Additional permissions are granted via specific resource policies."
+                },
+            ],
+        )
+
+        CfnOutput(
+            self,
+            "ThumbnailFunctionName",
+            value=self.thumbnail_function.function_name,
+            description="Thumbnail generator Lambda function name",
+            export_name=f"FancyPlantiesThumbnailFunction-{env_name}",
         )

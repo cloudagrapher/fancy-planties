@@ -2,7 +2,9 @@
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
+import Image from 'next/image';
 import { S3ImageService } from '@/lib/services/s3-image-service';
+import { imageOptimization } from '@/lib/utils/performance';
 
 interface S3ImageUploadProps {
   userId: string;
@@ -32,6 +34,7 @@ export default function S3ImageUpload({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
 
   const handleFiles = useCallback(
     async (files: File[]) => {
@@ -69,6 +72,29 @@ export default function S3ImageUpload({
         setUploading(true);
         setErrors([]);
 
+        // Generate Canvas preview thumbnails for instant feedback
+        const previewPromises = validFiles.map(file => {
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = async () => {
+              try {
+                const thumbnail = await imageOptimization.generateThumbnail(
+                  reader.result as string,
+                  150
+                );
+                resolve(thumbnail);
+              } catch (error) {
+                console.error('Failed to generate preview:', error);
+                resolve(''); // Empty string on error
+              }
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+
+        const generatedPreviews = await Promise.all(previewPromises);
+        setPreviews(generatedPreviews.filter(p => p !== ''));
+
         try {
           const uploadedKeys = await S3ImageService.uploadMultipleImages({
             userId,
@@ -79,6 +105,7 @@ export default function S3ImageUpload({
 
           onUploadComplete(uploadedKeys);
           setSelectedFiles([]);
+          setPreviews([]); // Clear previews on success
         } catch (error) {
           console.error('Upload failed:', error);
           setErrors(['Upload failed. Please try again.']);
@@ -114,6 +141,7 @@ export default function S3ImageUpload({
 
       onUploadComplete(uploadedKeys);
       setSelectedFiles([]);
+      setPreviews([]); // Clear previews on success
     } catch (error) {
       console.error('Upload failed:', error);
       setErrors(['Upload failed. Please try again.']);
@@ -144,11 +172,34 @@ export default function S3ImageUpload({
         </div>
       )}
 
-      {/* Uploading State */}
+      {/* Uploading State with Canvas Previews */}
       {uploading && (
-        <div className="border-2 border-dashed border-primary-400 bg-primary-50 rounded-lg p-6 text-center">
-          <div className="text-4xl mb-2">⬆️</div>
-          <p className="text-primary-600 font-medium">Uploading to S3...</p>
+        <div className="space-y-4">
+          {previews.length > 0 && (
+            <div className="grid grid-cols-3 gap-3">
+              {previews.map((preview, index) => (
+                <div
+                  key={index}
+                  className="aspect-square relative overflow-hidden rounded-lg border-2 border-primary-400 bg-white"
+                >
+                  <Image
+                    src={preview}
+                    alt={`Upload preview ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-primary-500/20 flex items-center justify-center">
+                    <div className="text-2xl">⬆️</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="border-2 border-dashed border-primary-400 bg-primary-50 rounded-lg p-6 text-center">
+            <div className="text-4xl mb-2">⬆️</div>
+            <p className="text-primary-600 font-medium">Uploading to S3...</p>
+          </div>
         </div>
       )}
 

@@ -133,6 +133,7 @@ const CareGuideCard = ({ guide, onClick, userId }: { guide: CareGuide; onClick: 
               width={400}
               height={225}
               className="object-cover w-full h-full"
+              thumbnailSize="large"
             />
           </div>
         )}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import S3Image from '@/components/shared/S3Image';
 import type { EnhancedPlantInstance } from '@/lib/types/care-types';
 import { careHelpers } from '@/lib/types/care-types';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
@@ -66,7 +67,16 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
         <div className="flex items-start space-x-3 mb-3">
           {/* Plant Image */}
           <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden relative">
-            {plant.primaryImage ? (
+            {plant.s3ImageKeys && plant.s3ImageKeys.length > 0 ? (
+              <S3Image
+                s3Key={plant.s3ImageKeys[0]}
+                alt={plant.displayName}
+                width={48}
+                height={48}
+                className="object-cover"
+                thumbnailSize="tiny"
+              />
+            ) : plant.primaryImage ? (
               <Image
                 src={plant.primaryImage}
                 alt={plant.displayName}
@@ -152,7 +162,16 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           <div className="flex items-start space-x-3 flex-1">
             {/* Plant Image */}
             <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden relative">
-              {plant.primaryImage ? (
+              {plant.s3ImageKeys && plant.s3ImageKeys.length > 0 ? (
+                <S3Image
+                  s3Key={plant.s3ImageKeys[0]}
+                  alt={plant.displayName}
+                  width={48}
+                  height={48}
+                  className="object-cover"
+                  thumbnailSize="tiny"
+                />
+              ) : plant.primaryImage ? (
                 <Image
                   src={plant.primaryImage}
                   alt={plant.displayName}

@@ -21,6 +21,7 @@ export interface UploadImageParams {
   file: File;
 }
 
+export type ThumbnailSize = 'tiny' | 'small' | 'medium' | 'large';
 
 export class S3ImageService {
   /**
@@ -199,5 +200,54 @@ export class S3ImageService {
    */
   static getCloudFrontDomain(): string {
     return process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN || '';
+  }
+
+  /**
+   * Convert an S3 key to its thumbnail key
+   *
+   * @param s3Key - The original S3 key (e.g., "users/123/plant_instance/456/abc-def.jpg")
+   * @param size - Thumbnail size: tiny (64px), small (200px), medium (300px), large (400px)
+   * @returns Thumbnail S3 key (e.g., "users/123/plant_instance/456/thumb-64/abc-def.webp")
+   */
+  static s3KeyToThumbnailKey(s3Key: string, size: ThumbnailSize): string {
+    // Map size to dimension
+    const sizeMap: Record<ThumbnailSize, number> = {
+      tiny: 64,
+      small: 200,
+      medium: 300,
+      large: 400,
+    };
+    const dimension = sizeMap[size];
+
+    // Extract directory and filename
+    const lastSlashIndex = s3Key.lastIndexOf('/');
+    const lastDotIndex = s3Key.lastIndexOf('.');
+
+    // Guard: cannot derive thumbnail path from malformed keys
+    if (lastSlashIndex === -1 || lastDotIndex === -1 || lastDotIndex < lastSlashIndex) {
+      return s3Key;
+    }
+
+    const directory = s3Key.substring(0, lastSlashIndex);
+    const filename = s3Key.substring(lastSlashIndex + 1);
+
+    // Replace extension with .webp
+    const filenameWithoutExt = filename.substring(0, filename.lastIndexOf('.'));
+    const thumbnailFilename = `${filenameWithoutExt}.webp`;
+
+    // Construct thumbnail key: directory/thumb-{dimension}/filename.webp
+    return `${directory}/thumb-${dimension}/${thumbnailFilename}`;
+  }
+
+  /**
+   * Convert an S3 key to its thumbnail CloudFront URL
+   *
+   * @param s3Key - The original S3 key
+   * @param size - Thumbnail size
+   * @returns CloudFront URL for the thumbnail
+   */
+  static s3KeyToThumbnailUrl(s3Key: string, size: ThumbnailSize): string {
+    const thumbnailKey = this.s3KeyToThumbnailKey(s3Key, size);
+    return this.s3KeyToCloudFrontUrl(thumbnailKey);
   }
 }

@@ -49,8 +49,7 @@ class ImageApiStack(Stack):
             ],
         )
 
-        # Grant S3 permissions to Lambda role
-        storage_stack.image_bucket.grant_read_write(lambda_role)
+        # Grant S3 put permission for upload Lambda (least-privilege)
         storage_stack.image_bucket.grant_put(lambda_role)
 
         # Lambda function for generating pre-signed upload URLs
