@@ -12,7 +12,7 @@ from urllib.parse import unquote_plus
 
 import boto3
 from botocore.exceptions import ClientError
-from PIL import Image
+from PIL import Image, ImageOps
 
 # Configure logging
 logger = logging.getLogger()
@@ -193,6 +193,8 @@ def generate_thumbnails(bucket: str, original_key: str, image_data: bytes) -> Li
     # Load original image
     try:
         image = Image.open(io.BytesIO(image_data))
+        # Apply EXIF orientation (phone photos store rotation as metadata)
+        image = ImageOps.exif_transpose(image)
         # Convert to RGB if necessary (handle RGBA, P, etc.)
         if image.mode not in ('RGB', 'RGBA'):
             image = image.convert('RGBA' if image.mode == 'LA' else 'RGB')
