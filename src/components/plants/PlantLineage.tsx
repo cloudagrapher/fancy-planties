@@ -89,7 +89,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
           <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
             <div className="flex items-start space-x-4">
               {/* Parent plant image */}
-              <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+              <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 relative">
                 {parentPlant.s3ImageKeys && parentPlant.s3ImageKeys.length > 0 ? (
                   <S3Image
                     s3Key={parentPlant.s3ImageKeys[0]}
@@ -148,7 +148,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-start space-x-4">
             {/* Current plant image */}
-            <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+            <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 relative">
               {plant.s3ImageKeys && plant.s3ImageKeys.length > 0 ? (
                 <S3Image
                   s3Key={plant.s3ImageKeys[0]}
