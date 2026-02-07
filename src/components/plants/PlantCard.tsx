@@ -292,6 +292,7 @@ export default function PlantCard({
               fill
               className="object-cover"
               thumbnailSize="small"
+              sizes={`(max-width: 768px) ${size === 'small' ? '128px' : '160px'}, ${size === 'large' ? '192px' : '160px'}`}
             />
           ) : (
             <Image

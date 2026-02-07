@@ -1,0 +1,1153 @@
+{
+ "Description": "Lambda functions and API Gateway for secure image upload/download",
+ "Resources": {
+  "ImageLambdaRole8F32C851": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Description": "Execution role for image upload/download Lambda functions",
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageLambdaRole/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "AWSLambdaBasicExecutionRole is the standard managed policy for Lambda execution. Additional permissions are granted via specific resource policies.",
+       "id": "AwsSolutions-IAM4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageLambdaRoleDefaultPolicy0043558D": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::ImportValue": "FancyPlantiesStorage-dev:ExportsOutputFnGetAttImageBucket97210811ArnBE413D3E"
+          },
+          "/*"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue"
+       ],
+       "Effect": "Allow",
+       "Resource": "arn:aws:secretsmanager:us-east-1:580033881001:secret:/fancy-planties/cloudfront/private-key-dev-??????"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ImageLambdaRoleDefaultPolicy0043558D",
+    "Roles": [
+     {
+      "Ref": "ImageLambdaRole8F32C851"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageLambdaRole/DefaultPolicy/Resource"
+   }
+  },
+  "PresignedUploadFunction83F595D2": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-580033881001-us-east-1",
+     "S3Key": "1a04baf12d83a36165bd84f78d7245baeca937cd775ecbc8bc5b11f65c41c7bf.zip"
+    },
+    "Description": "Generate pre-signed S3 upload URLs with user authorization",
+    "Environment": {
+     "Variables": {
+      "BUCKET_NAME": {
+       "Fn::ImportValue": "FancyPlantiesStorage-dev:ExportsOutputRefImageBucket97210811FA5BB109"
+      },
+      "URL_EXPIRATION": "900"
+     }
+    },
+    "Handler": "presigned_upload.lambda_handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "ImageLambdaRole8F32C851",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.12",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "ImageLambdaRoleDefaultPolicy0043558D",
+    "ImageLambdaRole8F32C851"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/PresignedUploadFunction/Resource",
+    "aws:asset:path": "asset.1a04baf12d83a36165bd84f78d7245baeca937cd775ecbc8bc5b11f65c41c7bf",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "PresignedUploadFunctionLogRetention17253FA8": {
+   "Type": "Custom::LogRetention",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+      "Arn"
+     ]
+    },
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "PresignedUploadFunction83F595D2"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 7
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/PresignedUploadFunction/LogRetention/Resource"
+   }
+  },
+  "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource"
+   }
+  },
+  "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "logs:DeleteRetentionPolicy",
+        "logs:PutRetentionPolicy"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+    "Roles": [
+     {
+      "Ref": "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Handler": "index.handler",
+    "Runtime": "nodejs20.x",
+    "Timeout": 900,
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-580033881001-us-east-1",
+     "S3Key": "2819175352ad1ce0dae768e83fc328fb70fb5f10b4a8ff0ccbcb791f02b0716d.zip"
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRoleDefaultPolicyADDA7DEB",
+    "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aServiceRole9741ECFB"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/Resource",
+    "aws:asset:path": "asset.2819175352ad1ce0dae768e83fc328fb70fb5f10b4a8ff0ccbcb791f02b0716d",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "SignedCookieFunction51CA7CDF": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-580033881001-us-east-1",
+     "S3Key": "1a04baf12d83a36165bd84f78d7245baeca937cd775ecbc8bc5b11f65c41c7bf.zip"
+    },
+    "Description": "Generate CloudFront signed cookies for authenticated image access",
+    "Environment": {
+     "Variables": {
+      "PRIVATE_KEY_SECRET_NAME": "/fancy-planties/cloudfront/private-key-dev",
+      "CLOUDFRONT_KEY_PAIR_ID": "K2OWI8TFAG01ZW",
+      "CLOUDFRONT_DOMAIN": "https://cdn.fancy-planties.cloudagrapher.com/",
+      "COOKIE_EXPIRATION_DAYS": "7"
+     }
+    },
+    "Handler": "signed_cookie_generator.lambda_handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "ImageLambdaRole8F32C851",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.12",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "ImageLambdaRoleDefaultPolicy0043558D",
+    "ImageLambdaRole8F32C851"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/SignedCookieFunction/Resource",
+    "aws:asset:path": "asset.1a04baf12d83a36165bd84f78d7245baeca937cd775ecbc8bc5b11f65c41c7bf",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "SignedCookieFunctionLogRetentionFF812ED3": {
+   "Type": "Custom::LogRetention",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8aFD4BFC8A",
+      "Arn"
+     ]
+    },
+    "LogGroupName": {
+     "Fn::Join": [
+      "",
+      [
+       "/aws/lambda/",
+       {
+        "Ref": "SignedCookieFunction51CA7CDF"
+       }
+      ]
+     ]
+    },
+    "RetentionInDays": 7
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/SignedCookieFunction/LogRetention/Resource"
+   }
+  },
+  "ImageApi1EBF0B79": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Description": "API for secure image upload and download operations",
+    "Name": "fancy-planties-image-api-dev"
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiDeploymentF8E6322Bb7beef3e973c3fcb2c4dbfd82ab04035": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "API for secure image upload and download operations",
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "DependsOn": [
+    "ImageApiimagesauthcookieOPTIONSD06E614A",
+    "ImageApiimagesauthcookiePOST620F518D",
+    "ImageApiimagesauthcookieA743044B",
+    "ImageApiimagesOPTIONS8DBA5D14",
+    "ImageApiimages28A342D4",
+    "ImageApiimagesuploadOPTIONS19F87799",
+    "ImageApiimagesuploadPOST46B599A6",
+    "ImageApiimagesuploadB4AD8684",
+    "ImageApiOPTIONS2BE5F2FA"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Deployment/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiDeploymentStagedev42DFA083": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "ImageApiDeploymentF8E6322Bb7beef3e973c3fcb2c4dbfd82ab04035"
+    },
+    "MethodSettings": [
+     {
+      "DataTraceEnabled": true,
+      "HttpMethod": "*",
+      "LoggingLevel": "INFO",
+      "MetricsEnabled": true,
+      "ResourcePath": "/*",
+      "ThrottlingBurstLimit": 200,
+      "ThrottlingRateLimit": 100
+     }
+    ],
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    },
+    "StageName": "dev"
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/DeploymentStage.dev/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiOPTIONS2BE5F2FA": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Fn::GetAtt": [
+      "ImageApi1EBF0B79",
+      "RootResourceId"
+     ]
+    },
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/OPTIONS/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimages28A342D4": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ImageApi1EBF0B79",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "images",
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesOPTIONS8DBA5D14": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ImageApiimages28A342D4"
+    },
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/OPTIONS/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesuploadB4AD8684": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "ImageApiimages28A342D4"
+    },
+    "PathPart": "upload",
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesuploadOPTIONS19F87799": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ImageApiimagesuploadB4AD8684"
+    },
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/OPTIONS/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesuploadPOSTApiPermissionFancyPlantiesImageApidevImageApiEB1ABDDFPOSTimagesupload47F21621": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "PresignedUploadFunction83F595D2",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:us-east-1:580033881001:",
+       {
+        "Ref": "ImageApi1EBF0B79"
+       },
+       "/",
+       {
+        "Ref": "ImageApiDeploymentStagedev42DFA083"
+       },
+       "/POST/images/upload"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/POST/ApiPermission.FancyPlantiesImageApidevImageApiEB1ABDDF.POST..images.upload",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesuploadPOSTApiPermissionTestFancyPlantiesImageApidevImageApiEB1ABDDFPOSTimagesupload5F02A32A": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "PresignedUploadFunction83F595D2",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:us-east-1:580033881001:",
+       {
+        "Ref": "ImageApi1EBF0B79"
+       },
+       "/test-invoke-stage/POST/images/upload"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/POST/ApiPermission.Test.FancyPlantiesImageApidevImageApiEB1ABDDF.POST..images.upload",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesuploadPOST46B599A6": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "PresignedUploadFunction83F595D2",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "ImageApiimagesuploadB4AD8684"
+    },
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/upload/POST/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesauthcookieA743044B": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Ref": "ImageApiimages28A342D4"
+    },
+    "PathPart": "auth-cookie",
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesauthcookieOPTIONSD06E614A": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "ImageApiimagesauthcookieA743044B"
+    },
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/OPTIONS/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesauthcookiePOSTApiPermissionFancyPlantiesImageApidevImageApiEB1ABDDFPOSTimagesauthcookie8108AA2C": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "SignedCookieFunction51CA7CDF",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:us-east-1:580033881001:",
+       {
+        "Ref": "ImageApi1EBF0B79"
+       },
+       "/",
+       {
+        "Ref": "ImageApiDeploymentStagedev42DFA083"
+       },
+       "/POST/images/auth-cookie"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/POST/ApiPermission.FancyPlantiesImageApidevImageApiEB1ABDDF.POST..images.auth-cookie",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesauthcookiePOSTApiPermissionTestFancyPlantiesImageApidevImageApiEB1ABDDFPOSTimagesauthcookieE0C9DD08": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "SignedCookieFunction51CA7CDF",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:us-east-1:580033881001:",
+       {
+        "Ref": "ImageApi1EBF0B79"
+       },
+       "/test-invoke-stage/POST/images/auth-cookie"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/POST/ApiPermission.Test.FancyPlantiesImageApidevImageApiEB1ABDDF.POST..images.auth-cookie",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "ImageApiimagesauthcookiePOST620F518D": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "SignedCookieFunction51CA7CDF",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "ImageApiimagesauthcookieA743044B"
+    },
+    "RestApiId": {
+     "Ref": "ImageApi1EBF0B79"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/ImageApi/Default/images/auth-cookie/POST/Resource",
+    "cdk_nag": {
+     "rules_to_suppress": [
+      {
+       "reason": "Request validation will be implemented at application level. Lambda functions perform input validation.",
+       "id": "AwsSolutions-APIG2"
+      },
+      {
+       "reason": "Authorization is implemented at the application level. Next.js API routes validate user sessions before calling these endpoints.",
+       "id": "AwsSolutions-APIG4"
+      },
+      {
+       "reason": "Cognito authorizer not used. Application uses Lucia Auth for session management. User authorization is validated in Next.js API routes.",
+       "id": "AwsSolutions-COG4"
+      }
+     ]
+    }
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02OTW6DQAyFz5L94CZlkXXSqqtWReQAkTNxicMwg7ARQoi7VzNQldX77Oef9wqH4x72Oxwks/c6c3yD6aJoa4ODXCfGBqYyODJvPz5pERzbMZYLzcZhc7sjTB+9t8rBR2/LBXUNi3Dws5H8iiKkAqcoRnI497YmPaOQcaES+AxVSUo+rWPLFSoNOMJUkuip5ZRkxXdqXRgb8hq7m+qiWKXMC5Qkoe8spS9fpI9wj+ZKf+56OfE8/7dT1HiIfbWdifzda9vrbIpRH8G/5HDI4bh7CnPW9V65ISgX/QVho4kGawEAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "FancyPlantiesImageApi-dev/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ImageApiEndpointAEA1ACB2": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ImageApi1EBF0B79"
+      },
+      ".execute-api.us-east-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ImageApiDeploymentStagedev42DFA083"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "ApiEndpoint": {
+   "Description": "API Gateway endpoint URL",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ImageApi1EBF0B79"
+      },
+      ".execute-api.us-east-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ImageApiDeploymentStagedev42DFA083"
+      },
+      "/"
+     ]
+    ]
+   },
+   "Export": {
+    "Name": "FancyPlantiesApiEndpoint-dev"
+   }
+  },
+  "UploadFunctionName": {
+   "Description": "Upload URL generator Lambda function name",
+   "Value": {
+    "Ref": "PresignedUploadFunction83F595D2"
+   },
+   "Export": {
+    "Name": "FancyPlantiesUploadFunction-dev"
+   }
+  },
+  "CookieGeneratorFunctionName": {
+   "Description": "CloudFront signed cookie generator Lambda function name",
+   "Value": {
+    "Ref": "SignedCookieFunction51CA7CDF"
+   },
+   "Export": {
+    "Name": "FancyPlantiesCookieFunction-dev"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

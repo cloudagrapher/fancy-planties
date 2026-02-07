@@ -130,10 +130,10 @@ const CareGuideCard = ({ guide, onClick, userId }: { guide: CareGuide; onClick: 
             <S3Image
               s3Key={guide.s3ImageKeys[0]}
               alt={guide.title}
-              width={400}
-              height={225}
-              className="object-cover w-full h-full"
+              fill
+              className="object-cover"
               thumbnailSize="large"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           </div>
         )}
