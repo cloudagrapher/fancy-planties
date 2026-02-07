@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     console.error('Error checking curator status:', error);
     return NextResponse.json(
       { isCurator: false, isAuthenticated: false, isVerified: false },
-      { status: 500 }
+      { status: 200 }
     );
   }
 }
