@@ -4,7 +4,7 @@ Can be run as a Lambda function or as a local script with AWS credentials.
 
 Usage:
     As Lambda: Invoke with payload {"dryRun": true} to test
-    Locally: python backfill_thumbnails.py [--bucket BUCKET_NAME] [--dry-run] [--batch-size 10]
+    Locally: python backfill_thumbnails.py [--bucket BUCKET_NAME] [--dry-run] [--batch-size 10] [--function-name LAMBDA_FUNCTION_NAME]
 """
 import json
 import os
@@ -254,7 +254,18 @@ def process_images_in_batches(
     try:
         from generate_thumbnails import generate_thumbnails_for_key
     except ImportError:
-        logger.error("Failed to import generate_thumbnails module")
+        logger.warning("Failed to import generate_thumbnails module (Pillow not available)")
+        logger.warning("Falling back to Lambda invocation mode")
+        # Validate Lambda function name is configured
+        if not os.environ.get('THUMBNAIL_FUNCTION_NAME'):
+            logger.error(
+                "Cannot proceed: Pillow not installed locally AND THUMBNAIL_FUNCTION_NAME not set. "
+                "Either install Pillow or pass --function-name argument."
+            )
+            raise RuntimeError(
+                "Missing required dependency: Either install Pillow for local processing "
+                "or provide Lambda function name via --function-name argument"
+            )
         # Define a fallback that calls Lambda directly
         generate_thumbnails_for_key = lambda b, k: invoke_thumbnail_lambda(b, k)
 
@@ -414,6 +425,11 @@ def main() -> None:
         default=None,
         help='Maximum number of images to process'
     )
+    parser.add_argument(
+        '--function-name',
+        required=False,
+        help='Lambda function name for thumbnail generation (or set THUMBNAIL_FUNCTION_NAME env var)'
+    )
 
     args = parser.parse_args()
 
@@ -422,6 +438,10 @@ def main() -> None:
     if not bucket:
         print("Error: Bucket name required via --bucket or BUCKET_NAME env var")
         sys.exit(1)
+
+    # Set function name if provided (for Lambda invocation fallback)
+    if args.function_name:
+        os.environ['THUMBNAIL_FUNCTION_NAME'] = args.function_name
 
     # Configure logging for console
     logging.basicConfig(
