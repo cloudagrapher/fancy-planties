@@ -12,6 +12,18 @@ const config: Config = {
     extend: {
       colors: {
         // Use CSS custom properties for colors
+        primary: {
+          50: 'var(--color-mint-50)',
+          100: 'var(--color-mint-100)',
+          200: 'var(--color-mint-200)',
+          300: 'var(--color-mint-300)',
+          400: 'var(--color-mint-400)',
+          500: 'var(--color-mint-500)',
+          600: 'var(--color-mint-600)',
+          700: 'var(--color-mint-700)',
+          800: 'var(--color-mint-800)',
+          900: 'var(--color-mint-900)',
+        },
         mint: {
           50: 'var(--color-mint-50)',
           100: 'var(--color-mint-100)',
