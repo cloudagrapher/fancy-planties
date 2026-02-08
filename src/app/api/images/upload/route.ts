@@ -6,11 +6,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateRequest } from '@/lib/auth/server';
 import { z } from 'zod';
 
+const ALLOWED_CONTENT_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/heic',
+  'image/heif',
+] as const;
+
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'heif'] as const;
+
 const uploadRequestSchema = z.object({
   entityType: z.enum(['plant_instance', 'propagation', 'care_history', 'care_guide']),
-  entityId: z.string(),
-  contentType: z.string(),
-  fileExtension: z.string(),
+  entityId: z.string().min(1, 'Entity ID is required').max(50, 'Entity ID too long'),
+  contentType: z.string().refine(
+    (val) => ALLOWED_CONTENT_TYPES.includes(val as typeof ALLOWED_CONTENT_TYPES[number]),
+    `Content type must be one of: ${ALLOWED_CONTENT_TYPES.join(', ')}`
+  ),
+  fileExtension: z.string().refine(
+    (val) => ALLOWED_EXTENSIONS.includes(val.toLowerCase() as typeof ALLOWED_EXTENSIONS[number]),
+    `File extension must be one of: ${ALLOWED_EXTENSIONS.join(', ')}`
+  ),
 });
 
 export async function POST(request: NextRequest) {
