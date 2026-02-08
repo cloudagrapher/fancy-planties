@@ -2,6 +2,14 @@
 
 Bug investigations and solutions. Detailed write-ups live in individual files; this is the quick-reference index.
 
+## 2026-02-08 - Deleting Plant with Care History CRASHES (FK Cascades Missing)
+- **Issue**: Deleting a plant instance with care history crashes — FK constraints default to `no action`, blocking the delete
+- **Reported by**: Howl (bug hunt round)
+- **Root Cause**: `schema.ts` had correct `onDelete` rules (cascade/restrict/set null) but the initial migration (`0000`) created all FKs with `ON DELETE no action`. The schema changes were never migrated — 10 out of 13 FKs were out of sync.
+- **Solution**: Generated migration `0004_flimsy_black_crow.sql` — drops and re-creates all 10 mismatched FK constraints with correct rules (6 cascade, 2 restrict, 2 set null)
+- **Migration needed**: YES — `0004_flimsy_black_crow.sql` must be applied to local and production databases
+- **Affected FKs**: sessions.user_id, plant_instances.user_id, plant_instances.plant_id, plants.created_by, propagations.user_id, propagations.plant_id, propagations.parent_instance_id, care_history.user_id, care_history.plant_instance_id, care_guides.user_id
+
 ## 2026-02-06 - S3Image Cookie Race Condition
 - **Issue**: Plant images showed 403 errors then permanently fell back to placeholders on first page load
 - **Root Cause**: `S3Image` component tried loading images before CloudFront signed cookies were set
