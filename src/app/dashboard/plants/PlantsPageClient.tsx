@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { PlantsGrid, PlantDetailModal, PlantInstanceForm } from '@/components/plants';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
+import { apiFetch } from '@/lib/api-client';
 
 interface PlantsPageClientProps {
   userId: number;
@@ -29,15 +30,57 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
     setIsDetailModalOpen(false);
   };
 
-  // Handle care actions
-  const handleCareAction = (plant: EnhancedPlantInstance, action: 'fertilize' | 'repot') => {
-    // This will be handled by the quick care system
-  };
+  // Handle care actions — log quick care and refresh data
+  const handleCareAction = useCallback(async (plant: EnhancedPlantInstance, action: 'fertilize' | 'repot') => {
+    try {
+      const careType = action === 'fertilize' ? 'fertilizer' : 'repot';
+      const response = await apiFetch('/api/care/quick-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plantInstanceId: plant.id,
+          careType,
+          careDate: new Date().toISOString(),
+          userId,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to log care action');
+        return;
+      }
+
+      // Refresh plant data after care action
+      await queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'], exact: false });
+      await queryClient.invalidateQueries({ queryKey: ['care-dashboard'], exact: false });
+    } catch (error) {
+      console.error('Error logging care action:', error);
+    }
+  }, [queryClient, userId]);
 
   // Handle bulk actions
-  const handleBulkAction = (plants: EnhancedPlantInstance[], action: string) => {
-    // Bulk action logic will be implemented here
-  };
+  const handleBulkAction = useCallback(async (plants: EnhancedPlantInstance[], action: string) => {
+    try {
+      const promises = plants.map(plant =>
+        apiFetch('/api/care/quick-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            plantInstanceId: plant.id,
+            careType: action === 'fertilize' ? 'fertilizer' : action,
+            careDate: new Date().toISOString(),
+            userId,
+          }),
+        })
+      );
+
+      await Promise.allSettled(promises);
+      await queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'], exact: false });
+      await queryClient.invalidateQueries({ queryKey: ['care-dashboard'], exact: false });
+    } catch (error) {
+      console.error('Error with bulk care action:', error);
+    }
+  }, [queryClient, userId]);
 
   // Handle add new plant
   const handleAddPlant = () => {

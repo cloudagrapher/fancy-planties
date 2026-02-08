@@ -63,7 +63,7 @@ export default function PlantSearchFilter({
   const [showPresetsPanel, setShowPresetsPanel] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
@@ -99,17 +99,15 @@ export default function PlantSearchFilter({
     setLocalSearchQuery(value);
 
     // Clear existing timeout
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
 
     // Set new timeout
-    const timeout = setTimeout(() => {
+    searchTimeoutRef.current = setTimeout(() => {
       onSearch(value);
     }, 300);
-
-    setSearchTimeout(timeout);
-  }, [onSearch, searchTimeout]);
+  }, [onSearch]);
 
   // Handle filter changes
   const handleFilterChange = useCallback((key: keyof EnhancedPlantInstanceFilter, value: string | number | boolean | Date | undefined) => {
@@ -212,11 +210,11 @@ export default function PlantSearchFilter({
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchTimeout]);
+  }, []);
 
   return (
     <div className="space-y-3">
