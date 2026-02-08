@@ -48,21 +48,22 @@ export default function PlantCard({
   const { triggerHaptic } = useHapticFeedback();
 
   // Size configurations with aspect-ratio-based image sizing
+  // Cards fill their grid cell — the grid's minmax() controls actual width
   const sizeConfig = {
     small: {
-      container: 'w-full max-w-[140px]',
+      container: 'w-full',
       image: 'aspect-[4/3]',
       text: 'text-xs',
       title: 'text-sm',
     },
     medium: {
-      container: 'w-full max-w-[160px]',
+      container: 'w-full',
       image: 'aspect-[4/3]',
       text: 'text-xs',
       title: 'text-sm',
     },
     large: {
-      container: 'w-full max-w-[200px]',
+      container: 'w-full',
       image: 'aspect-[4/3]',
       text: 'text-sm',
       title: 'text-base',
