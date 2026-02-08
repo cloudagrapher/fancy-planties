@@ -881,43 +881,42 @@ select {
     gap: 8px;
     padding: 0 8px;
   }
-  
-  
-  /* Extra small breakpoint for very narrow screens - under 375px */
-  @media (max-width: 374px) {
-    .xs\:hidden {
-      display: none !important;
-    }
-    
-    .xs\:inline {
-      display: none !important;
-    }
-  }
-  
-  @media (min-width: 375px) {
-    .xs\:inline {
-      display: inline !important;
-    }
-  }
-  
-  /* Improve bottom nav spacing on very small screens */
+
+  /* Bottom nav spacing on small screens (480px and below) */
   .bottom-nav-container {
     height: 72px;
     padding: 0 4px;
   }
-  
+
   .bottom-nav-item {
     min-width: 50px;
     max-width: 65px;
     padding: 4px 2px;
   }
-  
+
   .bottom-nav-icon {
     font-size: 20px;
   }
-  
+
   .bottom-nav-label {
     font-size: 9px;
+  }
+}
+
+/* Extra small breakpoint for very narrow screens — under 375px */
+@media (max-width: 374px) {
+  .xs\:hidden {
+    display: none !important;
+  }
+
+  .xs\:inline {
+    display: none !important;
+  }
+}
+
+@media (min-width: 375px) {
+  .xs\:inline {
+    display: inline !important;
   }
 }
 

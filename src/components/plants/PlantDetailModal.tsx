@@ -47,28 +47,27 @@ export default function PlantDetailModal({
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['plant-detail', plantId],
     queryFn: async (): Promise<PlantDetailData> => {
+      // Fetch plant details first (needed to determine parentInstanceId)
       const response = await apiFetch(`/api/plant-instances/${plantId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch plant details');
       }
       const plant = await response.json();
 
-      // Fetch care history
-      const careResponse = await apiFetch(`/api/care/history/${plantId}`);
-      const careHistory = careResponse.ok ? await careResponse.json() : [];
-
-      // Fetch propagations from this plant
-      const propResponse = await apiFetch(`/api/propagations?parentInstanceId=${plantId}`);
-      const propagations = propResponse.ok ? await propResponse.json() : [];
-
-      // Fetch parent plant if this is a propagation
-      let parentPlant;
-      if (plant.parentInstanceId) {
-        const parentResponse = await apiFetch(`/api/plant-instances/${plant.parentInstanceId}`);
-        if (parentResponse.ok) {
-          parentPlant = await parentResponse.json();
-        }
-      }
+      // Fetch care history, propagations, and parent plant in parallel
+      const [careHistory, propagations, parentPlant] = await Promise.all([
+        apiFetch(`/api/care/history/${plantId}`)
+          .then(r => r.ok ? r.json() : [])
+          .catch(() => []),
+        apiFetch(`/api/propagations?parentInstanceId=${plantId}`)
+          .then(r => r.ok ? r.json() : [])
+          .catch(() => []),
+        plant.parentInstanceId
+          ? apiFetch(`/api/plant-instances/${plant.parentInstanceId}`)
+              .then(r => r.ok ? r.json() : undefined)
+              .catch(() => undefined)
+          : Promise.resolve(undefined),
+      ]);
 
       return {
         plant,

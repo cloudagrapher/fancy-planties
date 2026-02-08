@@ -181,11 +181,11 @@ export default function PlantCard({
     if (!onCareAction && !onEdit) return null;
 
     return (
-      <div className="flex space-x-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex space-x-1 mt-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
         {onCareAction && (
           <button
             onClick={(e) => handleCareAction('fertilize', e)}
-            className="btn btn--sm btn--outline"
+            className="btn btn--sm btn--outline min-h-[36px] min-w-[44px]"
             title="Quick care"
             aria-label={`Quick care for ${plant.displayName}`}
           >
@@ -195,7 +195,7 @@ export default function PlantCard({
         {onEdit && (
           <button
             onClick={handleEdit}
-            className="btn btn--sm btn--secondary"
+            className="btn btn--sm btn--secondary min-h-[36px] min-w-[44px]"
             title="Edit plant"
             aria-label={`Edit ${plant.displayName}`}
           >
