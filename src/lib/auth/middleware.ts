@@ -4,7 +4,7 @@ import type { User } from '../db/schema';
 import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { db } from '../db';
 import { rateLimits } from '../db/schema';
-import { eq, and, lt } from 'drizzle-orm';
+import { eq, and, lt, sql } from 'drizzle-orm';
 
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
@@ -78,10 +78,12 @@ export async function rateLimit(identifier: string, dbInstance = db): Promise<{ 
       };
     }
     
-    // Increment request count
+    // Atomic increment using SQL to prevent race conditions.
+    // Previously used `current.requestCount + 1` which was read-then-write,
+    // allowing concurrent requests to read the same count and both succeed.
     await dbInstance.update(rateLimits)
       .set({ 
-        requestCount: current.requestCount + 1,
+        requestCount: sql`${rateLimits.requestCount} + 1`,
         updatedAt: now,
       })
       .where(eq(rateLimits.id, current.id));

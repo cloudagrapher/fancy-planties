@@ -356,7 +356,14 @@ export class CareCalculator {
   // Static methods (existing implementation for backward compatibility)
   
   /**
-   * Calculate next fertilizer due date based on last fertilized date and schedule
+   * Calculate next fertilizer due date based on last fertilized date and schedule.
+   *
+   * BUG FIX: Previously converted ALL schedules to flat days (e.g. "1 month" → 30 days),
+   * which caused permanent drift for month-based schedules. Jan 31 + 30 days = Mar 2,
+   * then Mar 2 + 30 = Apr 1, etc. — never returning to the 31st.
+   *
+   * Now month-based schedules use calendar month arithmetic via setMonth(), preserving
+   * the original day-of-month (or clamping to the last day of shorter months).
    */
   static calculateNextFertilizerDue(
     lastFertilized: Date | null, 
@@ -364,8 +371,36 @@ export class CareCalculator {
   ): Date | null {
     if (!lastFertilized) return null;
 
-    const intervalDays = careValidation.parseFertilizerScheduleToDays(schedule);
     const nextDue = new Date(lastFertilized);
+    const normalized = schedule.toLowerCase().trim();
+
+    // Detect month-based schedules and use calendar month arithmetic
+    const monthMatch = normalized.match(/^(\d+)\s*months?$/i);
+    const bimonthlyMatch = normalized === 'bimonthly';
+    const quarterlyMatch = normalized === 'quarterly';
+
+    let months = 0;
+    if (monthMatch) {
+      months = parseInt(monthMatch[1], 10);
+    } else if (bimonthlyMatch) {
+      months = 2;
+    } else if (quarterlyMatch) {
+      months = 3;
+    }
+
+    if (months > 0) {
+      // Calendar month addition — preserves day-of-month where possible
+      const originalDay = nextDue.getDate();
+      nextDue.setMonth(nextDue.getMonth() + months);
+      // If the day shifted (e.g. Jan 31 → Mar 3), clamp to last day of target month
+      if (nextDue.getDate() !== originalDay) {
+        nextDue.setDate(0); // Last day of the previous month (our target month)
+      }
+      return nextDue;
+    }
+
+    // All other schedules (day/week based): use flat day arithmetic
+    const intervalDays = careValidation.parseFertilizerScheduleToDays(schedule);
     nextDue.setDate(nextDue.getDate() + intervalDays);
     
     return nextDue;
