@@ -230,7 +230,7 @@ export default function PlantDetailModal({
 
               {/* Content */}
               <div className="modal-body modal-body--no-padding">
-                <div className="overflow-auto max-h-96 sm:max-h-[60vh]">
+                <div className="overflow-auto">
                 {activeTab === 'overview' && (
                   <PlantOverview 
                     plant={data.plant}
