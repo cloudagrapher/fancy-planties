@@ -41,6 +41,18 @@ export async function PATCH(
     const body = await request.json();
     const { status, notes } = updateStatusSchema.parse(body);
 
+    // Validate status transition — only allow forward progression
+    // started → rooting → ready → planted
+    const STATUS_ORDER = ['started', 'rooting', 'ready', 'planted'] as const;
+    const currentIndex = STATUS_ORDER.indexOf(existingPropagation.status as typeof STATUS_ORDER[number]);
+    const newIndex = STATUS_ORDER.indexOf(status);
+    if (newIndex <= currentIndex) {
+      return NextResponse.json(
+        { error: `Cannot transition from '${existingPropagation.status}' to '${status}'. Status can only move forward.` },
+        { status: 400 }
+      );
+    }
+
     const updatedPropagation = await PropagationQueries.updateStatus(
       propagationId,
       status,

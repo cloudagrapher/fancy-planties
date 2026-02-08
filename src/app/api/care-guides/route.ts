@@ -150,13 +150,18 @@ export async function GET(request: NextRequest) {
     }
 
     if (filters.searchQuery) {
+      // Escape special LIKE/ILIKE characters to prevent wildcard injection
+      const escapedQuery = filters.searchQuery
+        .replace(/\\/g, '\\\\')
+        .replace(/%/g, '\\%')
+        .replace(/_/g, '\\_');
       const searchConditions = or(
-        ilike(careGuides.title, `%${filters.searchQuery}%`),
-        ilike(careGuides.description, `%${filters.searchQuery}%`),
-        ilike(careGuides.commonName, `%${filters.searchQuery}%`),
-        ilike(careGuides.family, `%${filters.searchQuery}%`),
-        ilike(careGuides.genus, `%${filters.searchQuery}%`),
-        ilike(careGuides.species, `%${filters.searchQuery}%`)
+        ilike(careGuides.title, `%${escapedQuery}%`),
+        ilike(careGuides.description, `%${escapedQuery}%`),
+        ilike(careGuides.commonName, `%${escapedQuery}%`),
+        ilike(careGuides.family, `%${escapedQuery}%`),
+        ilike(careGuides.genus, `%${escapedQuery}%`),
+        ilike(careGuides.species, `%${escapedQuery}%`)
       );
       if (searchConditions) {
         conditions.push(searchConditions);
