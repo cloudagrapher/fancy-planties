@@ -309,6 +309,7 @@ export class CareCalculator {
         repot: { frequency: 'seasonal', interval: 4 },
         prune: { frequency: 'seasonal', interval: 2 },
         inspect: { frequency: 'monthly', interval: 1 },
+        flush: { frequency: 'monthly', interval: 3 },
         other: { frequency: 'monthly', interval: 1 }
       },
       tropical: {
@@ -317,6 +318,7 @@ export class CareCalculator {
         repot: { frequency: 'seasonal', interval: 2 },
         prune: { frequency: 'monthly', interval: 2 },
         inspect: { frequency: 'weekly', interval: 2 },
+        flush: { frequency: 'monthly', interval: 2 },
         other: { frequency: 'monthly', interval: 1 }
       },
       cactus: {
@@ -325,6 +327,7 @@ export class CareCalculator {
         repot: { frequency: 'seasonal', interval: 6 },
         prune: { frequency: 'seasonal', interval: 1 },
         inspect: { frequency: 'monthly', interval: 2 },
+        flush: { frequency: 'monthly', interval: 3 },
         other: { frequency: 'monthly', interval: 1 }
       },
       herb: {
@@ -333,6 +336,7 @@ export class CareCalculator {
         repot: { frequency: 'seasonal', interval: 1 },
         prune: { frequency: 'weekly', interval: 2 },
         inspect: { frequency: 'weekly', interval: 1 },
+        flush: { frequency: 'monthly', interval: 1 },
         other: { frequency: 'weekly', interval: 1 }
       }
     };
@@ -550,7 +554,7 @@ export class CareCalculator {
       lastCareDate,
       averageCareDays: Math.round(averageCareDays),
       careConsistencyScore: Math.round(consistencyScore),
-      careTypeBreakdown: careTypeBreakdown as Record<'fertilizer' | 'water' | 'repot' | 'prune' | 'inspect' | 'other', number>,
+      careTypeBreakdown: careTypeBreakdown as Record<CareType, number>,
       longestCareGap,
       currentCareStreak: careStreak
     };

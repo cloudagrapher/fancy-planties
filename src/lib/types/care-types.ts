@@ -12,6 +12,7 @@ export type CareType =
   | 'repot'
   | 'prune'
   | 'inspect'
+  | 'flush'
   | 'other';
 
 // Care frequency enumeration
@@ -243,6 +244,12 @@ export const careHelpers = {
         icon: '🔍',
         color: 'text-indigo-600 bg-indigo-50',
         description: 'Inspected for pests or issues'
+      },
+      flush: {
+        label: 'Flush',
+        icon: '🚿',
+        color: 'text-cyan-600 bg-cyan-50',
+        description: 'Flushed soil with water to remove salt buildup'
       },
       other: {
         label: 'Other',
@@ -503,6 +510,15 @@ export const careHelpers = {
       careType: 'inspect',
       color: 'bg-indigo-500 hover:bg-indigo-600',
       description: 'Check for pests or issues',
+      isEnabled: true
+    },
+    {
+      id: 'flush',
+      label: 'Flush',
+      icon: '🚿',
+      careType: 'flush',
+      color: 'bg-cyan-500 hover:bg-cyan-600',
+      description: 'Flush soil with water to remove salt buildup',
       isEnabled: true
     },
     {

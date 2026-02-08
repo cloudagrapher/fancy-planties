@@ -8,6 +8,7 @@ export const careTypeSchema = z.enum([
   'repot',
   'prune',
   'inspect',
+  'flush',
   'other'
 ]);
 
@@ -203,7 +204,7 @@ export const careValidation = {
 
   // Get care type validation error messages
   getCareTypeErrorMessage: (careType: string): string | null => {
-    const validTypes = ['fertilizer', 'water', 'repot', 'prune', 'inspect', 'other'];
+    const validTypes = ['fertilizer', 'water', 'repot', 'prune', 'inspect', 'flush', 'other'];
     if (!validTypes.includes(careType)) {
       return `Care type must be one of: ${validTypes.join(', ')}`;
     }

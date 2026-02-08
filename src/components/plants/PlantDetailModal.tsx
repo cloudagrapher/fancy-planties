@@ -422,6 +422,17 @@ function PlantOverview({
                 </p>
               </div>
             )}
+            {plant.lastFlush && (
+              <div>
+                <label className="text-sm font-medium text-gray-700">Last Flushed</label>
+                <p className="text-gray-900">
+                  {new Date(plant.lastFlush).toLocaleDateString()}
+                  <span className="text-sm text-gray-500 ml-2">
+                    ({plant.daysSinceLastFlush} days ago)
+                  </span>
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

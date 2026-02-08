@@ -69,6 +69,14 @@ export class CareService {
         );
       }
 
+      if (careData.careType === 'flush') {
+        await this.updatePlantFlushDate(
+          careData.plantInstanceId,
+          userId,
+          careData.careDate
+        );
+      }
+
       // Get enhanced care history for response
       const careHistoryRecord = await CareHistoryQueries.getCareHistoryById(newCareHistory.id);
       
@@ -446,6 +454,28 @@ export class CareService {
       .update(plantInstances)
       .set({
         lastRepot: repotDate,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(plantInstances.id, plantInstanceId),
+          eq(plantInstances.userId, userId)
+        )
+      );
+  }
+
+  /**
+   * Private helper to update plant flush date
+   */
+  private static async updatePlantFlushDate(
+    plantInstanceId: number,
+    userId: number,
+    flushDate: Date
+  ): Promise<void> {
+    await db
+      .update(plantInstances)
+      .set({
+        lastFlush: flushDate,
         updatedAt: new Date(),
       })
       .where(

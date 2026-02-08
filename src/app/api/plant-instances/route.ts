@@ -172,6 +172,7 @@ export async function POST(request: NextRequest) {
       // Convert date strings to Date objects if they exist and are not empty
       lastFertilized: body.lastFertilized && body.lastFertilized !== '' ? new Date(body.lastFertilized as string) : null,
       lastRepot: body.lastRepot && body.lastRepot !== '' ? new Date(body.lastRepot as string) : null,
+      lastFlush: body.lastFlush && body.lastFlush !== '' ? new Date(body.lastFlush as string) : null,
     };
 
     // Validate the plant instance data
