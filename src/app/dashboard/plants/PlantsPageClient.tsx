@@ -6,6 +6,11 @@ import { PlantsGrid, PlantDetailModal, PlantInstanceForm } from '@/components/pl
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { apiFetch } from '@/lib/api-client';
 
+interface ToastState {
+  message: string;
+  type: 'success' | 'error';
+}
+
 interface PlantsPageClientProps {
   userId: number;
 }
@@ -16,6 +21,19 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingPlant, setEditingPlant] = useState<EnhancedPlantInstance | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
+
+  const refreshPlantData = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'], exact: false }),
+      queryClient.invalidateQueries({ queryKey: ['care-dashboard'], exact: false }),
+    ]);
+  }, [queryClient]);
 
   // Handle plant selection (open detail modal)
   const handlePlantSelect = (plant: EnhancedPlantInstance) => {
@@ -41,46 +59,71 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
           plantInstanceId: plant.id,
           careType,
           careDate: new Date().toISOString(),
-          userId,
         }),
       });
 
       if (!response.ok) {
-        console.error('Failed to log care action');
+        showToast(`Failed to log ${action} for ${plant.nickname || 'plant'}`, 'error');
         return;
       }
 
-      // Refresh plant data after care action
-      await queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'], exact: false });
-      await queryClient.invalidateQueries({ queryKey: ['care-dashboard'], exact: false });
+      await refreshPlantData();
+      showToast(`${action === 'fertilize' ? 'Fertilized' : 'Repotted'} ${plant.nickname || 'plant'} ✓`, 'success');
     } catch (error) {
       console.error('Error logging care action:', error);
+      showToast(`Failed to log ${action}`, 'error');
     }
-  }, [queryClient, userId]);
+  }, [refreshPlantData, showToast]);
 
-  // Handle bulk actions
+  // Handle bulk actions — routes deactivate to archive endpoint, care actions to quick-log
   const handleBulkAction = useCallback(async (plants: EnhancedPlantInstance[], action: string) => {
     try {
-      const promises = plants.map(plant =>
-        apiFetch('/api/care/quick-log', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            plantInstanceId: plant.id,
-            careType: action === 'fertilize' ? 'fertilizer' : action,
-            careDate: new Date().toISOString(),
-            userId,
-          }),
-        })
-      );
+      let promises: Promise<Response>[];
 
-      await Promise.allSettled(promises);
-      await queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'], exact: false });
-      await queryClient.invalidateQueries({ queryKey: ['care-dashboard'], exact: false });
+      if (action === 'deactivate') {
+        // Archive: PATCH isActive=false on each plant instance
+        promises = plants.map(plant =>
+          apiFetch(`/api/plant-instances/${plant.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isActive: false }),
+          })
+        );
+      } else {
+        // Care action: log via quick-log endpoint
+        const careType = action === 'fertilize' ? 'fertilizer' : action;
+        promises = plants.map(plant =>
+          apiFetch('/api/care/quick-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              plantInstanceId: plant.id,
+              careType,
+              careDate: new Date().toISOString(),
+            }),
+          })
+        );
+      }
+
+      const results = await Promise.allSettled(promises);
+      const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok));
+      const succeeded = results.length - failed.length;
+
+      await refreshPlantData();
+
+      if (failed.length === 0) {
+        const label = action === 'deactivate' ? 'Archived' : action === 'fertilize' ? 'Fertilized' : `${action} logged for`;
+        showToast(`${label} ${succeeded} plant${succeeded !== 1 ? 's' : ''} ✓`, 'success');
+      } else if (succeeded > 0) {
+        showToast(`${succeeded} succeeded, ${failed.length} failed`, 'error');
+      } else {
+        showToast(`Bulk ${action} failed for all ${plants.length} plants`, 'error');
+      }
     } catch (error) {
-      console.error('Error with bulk care action:', error);
+      console.error('Error with bulk action:', error);
+      showToast(`Bulk ${action} failed`, 'error');
     }
-  }, [queryClient, userId]);
+  }, [refreshPlantData, showToast]);
 
   // Handle add new plant
   const handleAddPlant = () => {
@@ -118,6 +161,26 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
 
   return (
     <div className="page">
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-50 max-w-sm w-full rounded-lg shadow-lg p-4 transition-all ${
+            toast.type === 'success'
+              ? 'bg-green-50 border border-green-200 text-green-800'
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">{toast.message}</p>
+            <button
+              onClick={() => setToast(null)}
+              className="ml-3 text-current opacity-60 hover:opacity-100"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       <div className="container">
         <div className="page-content">
           {/* Main Plants Card */}
