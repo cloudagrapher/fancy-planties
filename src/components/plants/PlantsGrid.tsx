@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 import S3Image from '@/components/shared/S3Image';
 import PlantCard from './PlantCard';
 import PlantSearchFilter from './PlantSearchFilter';
@@ -247,7 +248,7 @@ export default function PlantsGrid({
         if (currentFilters.lastFertilizedBefore) params.append('lastFertilizedBefore', currentFilters.lastFertilizedBefore.toISOString());
       }
 
-      const response = await fetch(`${endpoint}?${params}`);
+      const response = await apiFetch(`${endpoint}?${params}`);
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Failed to fetch plants:', response.status, errorText);

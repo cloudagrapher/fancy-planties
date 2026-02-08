@@ -73,12 +73,9 @@ export function useOffline() {
     loadCachedData();
   }, []);
 
-  // Auto-sync when coming back online
-  useEffect(() => {
-    if (isOnline && pendingEntries.length > 0) {
-      syncPendingEntries();
-    }
-  }, [isOnline]);
+  // NOTE: Auto-sync on reconnect is handled by OfflineManager component,
+  // which has proper dependency tracking. Removed duplicate effect here
+  // that had missing deps (pendingEntries.length, syncPendingEntries).
 
   /**
    * Cache data for offline use

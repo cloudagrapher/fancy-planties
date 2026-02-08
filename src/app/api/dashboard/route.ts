@@ -16,6 +16,7 @@ export interface DashboardStats {
   totalPlants: number;
   activePlants: number;
   careDueToday: number;
+  overdueCount: number;
   totalPropagations: number;
   activePropagations: number;
   successfulPropagations: number;
@@ -32,15 +33,21 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = user.id;
-    const today = new Date();
-    today.setHours(23, 59, 59, 999); // End of today
+    // Build date boundaries for "today" — start of day to end of day
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
 
     // Get plant statistics
+    // BUG FIX: careDueToday previously used `<= end of today` which included ALL overdue plants.
+    // Now we separately count plants due specifically today vs all overdue plants.
     const [plantStats] = await db
       .select({
         totalPlants: sql<number>`count(*)`,
         activePlants: sql<number>`count(*) filter (where ${plantInstances.isActive} = true)`,
-        careDueToday: sql<number>`count(*) filter (where ${plantInstances.isActive} = true and ${plantInstances.fertilizerDue} <= ${today.toISOString()})`
+        careDueToday: sql<number>`count(*) filter (where ${plantInstances.isActive} = true and ${plantInstances.fertilizerDue} >= ${todayStart.toISOString()} and ${plantInstances.fertilizerDue} <= ${todayEnd.toISOString()})`,
+        overdueCount: sql<number>`count(*) filter (where ${plantInstances.isActive} = true and ${plantInstances.fertilizerDue} < ${todayStart.toISOString()})`
       })
       .from(plantInstances)
       .where(eq(plantInstances.userId, userId));
@@ -96,6 +103,7 @@ export async function GET(request: NextRequest) {
       totalPlants: plantStats?.totalPlants || 0,
       activePlants: plantStats?.activePlants || 0,
       careDueToday: plantStats?.careDueToday || 0,
+      overdueCount: plantStats?.overdueCount || 0,
       totalPropagations: propagationStats?.totalPropagations || 0,
       activePropagations: propagationStats?.activePropagations || 0,
       successfulPropagations: successfulCount,

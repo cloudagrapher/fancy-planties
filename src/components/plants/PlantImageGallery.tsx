@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
@@ -24,16 +24,16 @@ export default function PlantImageGallery({
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
 
   // Navigate to previous image
-  const goToPrevious = () => {
+  const goToPrevious = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1));
     setIsZoomed(false);
-  };
+  }, [images.length]);
 
   // Navigate to next image
-  const goToNext = () => {
+  const goToNext = useCallback(() => {
     setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : 0));
     setIsZoomed(false);
-  };
+  }, [images.length]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -52,14 +52,14 @@ export default function PlantImageGallery({
           break;
         case ' ':
           e.preventDefault();
-          setIsZoomed(!isZoomed);
+          setIsZoomed(prev => !prev);
           break;
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isZoomed, onClose]);
+  }, [isOpen, onClose, goToPrevious, goToNext]);
 
   // Handle touch gestures
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -87,16 +87,17 @@ export default function PlantImageGallery({
     setTouchStart(null);
   };
 
-  // Prevent body scroll when modal is open
+  // Prevent body scroll when gallery is open.
+  // Save and restore the previous overflow value so closing the gallery
+  // doesn't clobber the parent modal's own overflow:hidden.
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = previousOverflow;
     };
   }, [isOpen]);
 
