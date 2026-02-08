@@ -44,6 +44,9 @@ export interface EnhancedPlantInstance extends PlantInstance {
   // Days since last repot
   daysSinceLastRepot: number | null;
   
+  // Days since last flush
+  daysSinceLastFlush: number | null;
+  
   // Display name (nickname or plant common name)
   displayName: string;
   
@@ -246,6 +249,15 @@ export const plantInstanceHelpers = {
     return Math.floor(diffMs / (1000 * 60 * 60 * 24));
   },
 
+  // Calculate days since last flush
+  calculateDaysSinceLastFlush: (lastFlush: Date | null): number | null => {
+    if (!lastFlush) return null;
+    
+    const now = new Date();
+    const diffMs = now.getTime() - lastFlush.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  },
+
   // Get display name (nickname or plant common name)
   getDisplayName: (instance: PlantInstance, plant?: Plant): string => {
     return instance.nickname || plant?.commonName || 'Unnamed Plant';
@@ -266,6 +278,7 @@ export const plantInstanceHelpers = {
     const daysUntilFertilizerDue = plantInstanceHelpers.calculateDaysUntilFertilizerDue(instance.fertilizerDue);
     const daysSinceLastFertilized = plantInstanceHelpers.calculateDaysSinceLastFertilized(instance.lastFertilized);
     const daysSinceLastRepot = plantInstanceHelpers.calculateDaysSinceLastRepot(instance.lastRepot);
+    const daysSinceLastFlush = plantInstanceHelpers.calculateDaysSinceLastFlush(instance.lastFlush);
     const displayName = plantInstanceHelpers.getDisplayName(instance, plant);
     const primaryImage = plantInstanceHelpers.getPrimaryImage(instance, plant);
 
@@ -277,6 +290,7 @@ export const plantInstanceHelpers = {
       daysUntilFertilizerDue,
       daysSinceLastFertilized,
       daysSinceLastRepot,
+      daysSinceLastFlush,
       displayName,
       primaryImage,
     };

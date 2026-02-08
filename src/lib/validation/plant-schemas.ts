@@ -130,6 +130,7 @@ export const plantInstanceSchema = z.object({
   lastFertilized: z.date().optional().nullable(),
   fertilizerDue: z.date().optional().nullable(),
   lastRepot: z.date().optional().nullable(),
+  lastFlush: z.date().optional().nullable(),
   
   notes: z.string()
     .max(2000, 'Notes too long')

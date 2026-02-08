@@ -4,6 +4,7 @@ import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { updatePlantInstanceSchema } from '@/lib/validation/plant-schemas';
 import { validateRequest } from '@/lib/auth/server';
 import { S3ImageService } from '@/lib/services/s3-image-service';
+import { CareCalculator } from '@/lib/services/care-calculator';
 
 // GET /api/plant-instances/[id] - Get a specific plant instance
 export async function GET(
@@ -140,6 +141,7 @@ export async function PUT(
       ...body,
       lastFertilized: body.lastFertilized && body.lastFertilized !== '' ? new Date(body.lastFertilized) : null,
       lastRepot: body.lastRepot && body.lastRepot !== '' ? new Date(body.lastRepot) : null,
+      lastFlush: body.lastFlush && body.lastFlush !== '' ? new Date(body.lastFlush) : null,
     };
 
     // Validate the update data
@@ -151,6 +153,19 @@ export async function PUT(
 
     // Remove id and userId from update data as they shouldn't be updated
     const { id: _, userId: __, ...dataToUpdate } = updateData;
+
+    // Recalculate fertilizerDue when lastFertilized or fertilizerSchedule changes
+    const newLastFertilized = dataToUpdate.lastFertilized ?? existingInstance.lastFertilized;
+    const newSchedule = dataToUpdate.fertilizerSchedule ?? existingInstance.fertilizerSchedule;
+    if (newLastFertilized && newSchedule) {
+      dataToUpdate.fertilizerDue = CareCalculator.calculateNextFertilizerDue(
+        new Date(newLastFertilized),
+        newSchedule
+      );
+    } else if (dataToUpdate.lastFertilized === null) {
+      // If lastFertilized was explicitly cleared, clear fertilizerDue too
+      dataToUpdate.fertilizerDue = null;
+    }
 
     // Update the plant instance
     const updatedInstance = await PlantInstanceQueries.update(id, dataToUpdate);

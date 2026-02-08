@@ -1,0 +1,1 @@
+ALTER TABLE "plant_instances" ADD COLUMN "last_flush" timestamp;

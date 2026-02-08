@@ -41,6 +41,7 @@ export default function QuickCareForm({
     { value: 'repot', label: 'Repot', icon: '🪴' },
     { value: 'prune', label: 'Prune', icon: '✂️' },
     { value: 'inspect', label: 'Inspect', icon: '🔍' },
+    { value: 'flush', label: 'Flush', icon: '🚿' },
     { value: 'other', label: 'Other', icon: '📝' },
   ];
 

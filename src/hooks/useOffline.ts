@@ -12,7 +12,7 @@ export interface OfflineData {
 export interface PendingCareEntry {
   id: string;
   plantInstanceId: number;
-  careType: 'fertilizer' | 'repot' | 'water' | 'prune' | 'inspect' | 'other';
+  careType: 'fertilizer' | 'repot' | 'water' | 'prune' | 'inspect' | 'flush' | 'other';
   notes?: string;
   timestamp: string;
 }

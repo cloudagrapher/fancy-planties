@@ -98,6 +98,7 @@ export const plantInstances = pgTable('plant_instances', {
   fertilizerSchedule: text('fertilizer_schedule').notNull(),
   fertilizerDue: timestamp('fertilizer_due'),
   lastRepot: timestamp('last_repot'),
+  lastFlush: timestamp('last_flush'),
   notes: text('notes'),
   images: jsonb('images').$type<string[]>().default([]).notNull(),
   s3ImageKeys: jsonb('s3_image_keys').$type<string[]>().default([]).notNull(), // S3 object keys for migrated images
@@ -154,7 +155,7 @@ export const careHistory = pgTable('care_history', {
   userId: integer('user_id').notNull().references(() => users.id),
   plantInstanceId: integer('plant_instance_id').notNull().references(() => plantInstances.id),
   careType: text('care_type', { 
-    enum: ['fertilizer', 'water', 'repot', 'prune', 'inspect', 'other'] 
+    enum: ['fertilizer', 'water', 'repot', 'prune', 'inspect', 'flush', 'other'] 
   }).notNull(),
   careDate: timestamp('care_date').notNull(),
   notes: text('notes'),

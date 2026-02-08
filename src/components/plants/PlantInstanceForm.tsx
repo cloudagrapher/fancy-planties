@@ -52,6 +52,9 @@ const plantInstanceFormSchema = z.object({
   lastRepot: z.string()
     .optional()
     .refine(val => !val || !isNaN(Date.parse(val)), 'Invalid date format'),
+  lastFlush: z.string()
+    .optional()
+    .refine(val => !val || !isNaN(Date.parse(val)), 'Invalid date format'),
   notes: z.string()
     .max(2000, 'Notes must be less than 2000 characters')
     .optional()
@@ -84,6 +87,18 @@ const plantInstanceFormSchema = z.object({
 }, {
   message: 'Last repot date cannot be in the future',
   path: ['lastRepot']
+}).refine(data => {
+  // Custom validation: lastFlush cannot be in the future
+  if (data.lastFlush) {
+    const flushDate = new Date(data.lastFlush);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+    return flushDate <= today;
+  }
+  return true;
+}, {
+  message: 'Last flush date cannot be in the future',
+  path: ['lastFlush']
 });
 
 type PlantInstanceFormData = z.infer<typeof plantInstanceFormSchema>;
@@ -140,6 +155,7 @@ export default function PlantInstanceForm({
       fertilizerSchedule: 'every_4_weeks' as const,
       lastFertilized: '',
       lastRepot: '',
+      lastFlush: '',
       notes: '',
       s3ImageKeys: [],
       isActive: true,
@@ -320,6 +336,9 @@ export default function PlantInstanceForm({
           : '',
         lastRepot: plantInstance.lastRepot
           ? new Date(plantInstance.lastRepot).toISOString().split('T')[0]
+          : '',
+        lastFlush: plantInstance.lastFlush
+          ? new Date(plantInstance.lastFlush).toISOString().split('T')[0]
           : '',
         notes: plantInstance.notes || '',
         s3ImageKeys: plantInstance.s3ImageKeys || [],
@@ -883,7 +902,7 @@ export default function PlantInstanceForm({
               </div>
 
               {/* Care History */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Last Fertilized
@@ -908,6 +927,24 @@ export default function PlantInstanceForm({
                   </label>
                   <Controller
                     name="lastRepot"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        type="date"
+                        max={new Date().toISOString().split('T')[0]}
+                        className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Last Flushed
+                  </label>
+                  <Controller
+                    name="lastFlush"
                     control={control}
                     render={({ field }) => (
                       <input
