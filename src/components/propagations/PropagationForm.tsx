@@ -59,6 +59,24 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Close on Escape key and lock body scroll
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
   // Load plant data if editing
   useEffect(() => {
     if (propagation?.plant) {

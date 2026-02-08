@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 import AdvancedSearchInterface from '@/components/search/AdvancedSearchInterface';
 import SearchResults from '@/components/search/SearchResults';
 import SearchPresetManager from '@/components/search/SearchPresetManager';
@@ -86,7 +87,7 @@ export default function PlantSearchFilter({
   const { data: locations } = useQuery({
     queryKey: ['user-locations', filters.userId],
     queryFn: async () => {
-      const response = await fetch('/api/plant-instances/locations');
+      const response = await apiFetch('/api/plant-instances/locations');
       if (!response.ok) throw new Error('Failed to fetch locations');
       const data = await response.json();
       return data.locations as string[];
@@ -137,7 +138,7 @@ export default function PlantSearchFilter({
   // Handle preset selection
   const handlePresetSelect = useCallback(async (presetId: string) => {
     try {
-      const response = await fetch(`/api/search/presets/${presetId}`);
+      const response = await apiFetch(`/api/search/presets/${presetId}`);
       if (!response.ok) throw new Error('Failed to load preset');
 
       const data = await response.json();

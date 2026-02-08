@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import FertilizerCalendar from '@/components/calendar/FertilizerCalendar';
 import LogoutButton from '@/components/auth/LogoutButton';
+import { apiFetch } from '@/lib/api-client';
 import type { DashboardStats, FertilizerEvent } from '@/app/api/dashboard/route';
 
 interface DashboardClientProps {
@@ -24,7 +25,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   useEffect(() => {
     const checkCuratorStatus = async () => {
       try {
-        const response = await fetch('/api/auth/curator-status');
+        const response = await apiFetch('/api/auth/curator-status');
         if (response.ok) {
           const data = await response.json();
           setIsCurator(data.isCurator);
@@ -50,7 +51,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
-      const response = await fetch('/api/dashboard');
+      const response = await apiFetch('/api/dashboard');
       if (!response.ok) throw new Error('Failed to fetch dashboard stats');
       return response.json() as Promise<DashboardStats>;
     },
@@ -61,6 +62,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     totalPlants: 0,
     activePlants: 0,
     careDueToday: 0,
+    overdueCount: 0,
     totalPropagations: 0,
     activePropagations: 0,
     successfulPropagations: 0,
@@ -139,9 +141,14 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                   <h3 className="text-lg font-semibold text-salmon-900">Care Tasks</h3>
                   <p className="text-salmon-700 text-sm" style={{ marginBottom: '12px' }}>Track care schedules</p>
                   <div className="stat-value text-salmon-600">
-                    {isLoading ? '--' : displayStats.careDueToday}
+                    {isLoading ? '--' : (displayStats.overdueCount || 0) + displayStats.careDueToday}
                   </div>
-                  <div className="stat-label text-salmon-600">due today</div>
+                  <div className="stat-label text-salmon-600">
+                    {(displayStats.overdueCount || 0) > 0 
+                      ? `${displayStats.overdueCount} overdue · ${displayStats.careDueToday} today`
+                      : 'due today'
+                    }
+                  </div>
                 </div>
 
                 <div className="stat-card card--lavender">

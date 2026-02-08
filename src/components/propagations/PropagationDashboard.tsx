@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 import { Plus, TrendingUp, Clock, CheckCircle, Sprout } from 'lucide-react';
 import PropagationCard from './PropagationCard';
 import PropagationForm from './PropagationForm';
@@ -39,7 +40,7 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
   } = useQuery({
     queryKey: ['propagations'],
     queryFn: async (): Promise<PropagationWithDetails[]> => {
-      const response = await fetch('/api/propagations');
+      const response = await apiFetch('/api/propagations');
       if (!response.ok) {
         throw new Error('Failed to fetch propagations');
       }
@@ -58,7 +59,7 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
   } = useQuery({
     queryKey: ['propagations', 'stats'],
     queryFn: async (): Promise<PropagationStats> => {
-      const response = await fetch('/api/propagations/stats');
+      const response = await apiFetch('/api/propagations/stats');
       if (!response.ok) {
         throw new Error('Failed to fetch propagation statistics');
       }

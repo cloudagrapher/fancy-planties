@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import { 
@@ -427,67 +427,94 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Delete Propagation
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete "{propagation.nickname}"? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="Delete Propagation"
+          message={`Are you sure you want to delete "${propagation.nickname}"? This action cannot be undone.`}
+          confirmLabel="Delete"
+          confirmClassName="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
       )}
 
       {/* Convert to Plant Modal */}
       {showConvertModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Convert to Plant Instance
-            </h3>
-            <p className="text-gray-600 mb-6">
-              This will create a new plant instance from "{propagation.nickname}" and mark the propagation as established.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowConvertModal(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConvertToPlant}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Convert to Plant
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          title="Convert to Plant Instance"
+          message={`This will create a new plant instance from "${propagation.nickname}" and mark the propagation as established.`}
+          confirmLabel="Convert to Plant"
+          confirmClassName="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          onConfirm={handleConvertToPlant}
+          onCancel={() => setShowConvertModal(false)}
+        />
       )}
 
-      {/* Click outside to close menu */}
+      {/* Click outside to close menu — use z-[5] so it sits above card content
+          but below the dropdown (z-10) and any modals (z-50) */}
       {showMenu && (
         <div
-          className="fixed inset-0 z-0"
+          className="fixed inset-0 z-[5]"
           onClick={() => setShowMenu(false)}
         />
       )}
     </>
+  );
+}
+
+/** Reusable confirmation dialog with Escape key support and body scroll lock */
+function ConfirmDialog({
+  title,
+  message,
+  confirmLabel,
+  confirmClassName,
+  onConfirm,
+  onCancel,
+}: {
+  title: string;
+  message: string;
+  confirmLabel: string;
+  confirmClassName: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCancel();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onCancel]);
+
+  return (
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel();
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
+        <p className="text-gray-600 mb-6">{message}</p>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Cancel
+          </button>
+          <button onClick={onConfirm} className={confirmClassName}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

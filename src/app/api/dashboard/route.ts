@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     todayEnd.setHours(23, 59, 59, 999);
 
     // Get plant statistics
-    // BUG FIX: careDueToday was using `<= end of today` which included ALL overdue plants.
+    // BUG FIX: careDueToday previously used `<= end of today` which included ALL overdue plants.
     // Now we separately count plants due specifically today vs all overdue plants.
     const [plantStats] = await db
       .select({
