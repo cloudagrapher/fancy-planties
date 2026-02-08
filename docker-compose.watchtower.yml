@@ -1,5 +1,13 @@
 services:
-  # Your existing services from docker-compose.prod.yml
+  # WARNING: This compose file does NOT include automated database migrations.
+  # When Watchtower pulls a new app image with schema changes, migrations will NOT run automatically.
+  #
+  # To run migrations after app updates:
+  # 1. Use docker-compose.prod.yml with the db-migrate service, OR
+  # 2. Manually run migrations using: docker exec fancy-planties-app-prod npm run db:migrate
+  #
+  # Future improvement: Add app-level migration hook that runs on container startup.
+
   postgres:
     image: postgres:16-alpine
     container_name: fancy-planties-db-prod
@@ -14,7 +22,7 @@ services:
       - /mnt/user/appdata/fancy-planties-volumes/postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-fancy_planties}"]
       interval: 30s
       timeout: 10s
       retries: 5
