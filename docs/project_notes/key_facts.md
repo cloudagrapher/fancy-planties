@@ -72,9 +72,10 @@ Project configuration, infrastructure details, and frequently-needed reference i
 
 **Repository:**
 - `cloudagrapher/fancy-planties` (private)
-- Branch protection on `main` - requires PRs
-- SSH key for push: `~/.ssh/id_gh` with `IdentityAgent=none`
-- Push command: `GIT_SSH_COMMAND="ssh -i ~/.ssh/id_gh -o IdentitiesOnly=yes -o IdentityAgent=none" git push`
+- **NEVER push directly to `main`** — branch protection requires PRs. Always create a feature branch, push it, and open a PR.
+- SSH key for push: `~/.ssh/cloudagrapher` (configured via `github.personal` host alias in `~/.ssh/config`)
+- Remote URL uses `git@github.personal:` prefix to route through the correct SSH config
+- **SSH PUSH WORKFLOW:** Always run `ssh-add -D` before pushing to clear the SSH agent. The agent intercepts and offers `stefan-bekker-reply` key instead of `cloudagrapher`. The `IdentitiesOnly yes` in SSH config should handle it, but the agent overrides it. When in doubt: `ssh-add -D && git push`.
 
 **CI/CD:**
 - GitHub Actions builds Docker image on push to main
