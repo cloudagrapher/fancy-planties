@@ -425,11 +425,61 @@ export default function PlantsGrid({
               </div>
             )}
 
-          {/* View Toggle */}
+          {/* View Toggle and Sort */}
           {showViewToggle && (
-            <div className="flex items-center justify-end gap-2 mt-3">
-              <span className="text-xs text-neutral-500 mr-1">View:</span>
-              <div className="inline-flex rounded-lg border border-neutral-200 bg-neutral-50 p-0.5">
+            <div className="flex items-center justify-between gap-2 mt-3">
+              {/* Sort Controls (always visible) */}
+              <div className="flex items-center gap-2 min-w-0">
+                <label htmlFor="sort-select" className="text-xs text-neutral-500 flex-shrink-0">Sort:</label>
+                <select
+                  id="sort-select"
+                  value={enhancedFilters.sortBy}
+                  onChange={(e) => {
+                    const field = e.target.value as PlantInstanceSortField;
+                    // Smart default order: name/location/plant_name = asc, dates/urgency = desc
+                    const defaultOrder = ['nickname', 'location', 'plant_name'].includes(field) ? 'asc' : 'desc';
+                    setEnhancedFilters(prev => ({
+                      ...prev,
+                      sortBy: field,
+                      sortOrder: defaultOrder,
+                      offset: 0,
+                    }));
+                  }}
+                  className="text-xs border border-neutral-200 rounded-md px-2 py-1.5 bg-white text-neutral-900 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 min-w-0"
+                >
+                  <option value="nickname">Name</option>
+                  <option value="location">Location</option>
+                  <option value="created_at">Date Added</option>
+                  <option value="last_fertilized">Last Fertilized</option>
+                  <option value="fertilizer_due">Care Due</option>
+                  <option value="care_urgency">Care Priority</option>
+                  <option value="plant_name">Plant Type</option>
+                </select>
+                <button
+                  onClick={() => {
+                    setEnhancedFilters(prev => ({
+                      ...prev,
+                      sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc',
+                      offset: 0,
+                    }));
+                  }}
+                  className="flex-shrink-0 p-1.5 rounded-md border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 transition-colors"
+                  title={enhancedFilters.sortOrder === 'asc' ? 'Ascending — click to reverse' : 'Descending — click to reverse'}
+                >
+                  {enhancedFilters.sortOrder === 'asc' ? (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+
+              {/* View Toggle */}
+              <div className="inline-flex rounded-lg border border-neutral-200 bg-neutral-50 p-0.5 flex-shrink-0">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
