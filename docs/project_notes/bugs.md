@@ -2,6 +2,28 @@
 
 Bug investigations and solutions. Detailed write-ups live in individual files; this is the quick-reference index.
 
+## 2026-02-08 - Bug Hunt Round 1 (PR #67)
+
+### Fixed:
+- **Flush care type validation missing** (`care-history.ts`) — `validCareTypes` array omitted `'flush'`, so Flush button threw an error
+- **Missing FK cascades — plant deletion crashes** (`schema.ts`) — Deleting any plant with care history threw unhandled FK constraint error. Added cascades on all FK relationships. ⚠️ Requires DB migration after merge.
+- **CSRF token missing on admin taxonomy mutations** (`TaxonomyManagementClient.tsx`) — Used raw `fetch()` instead of `apiFetch()`, failing with 403
+- **Plant instance delete always returns false** (`plant-instances.ts`) — `db.delete().where()` without `.returning()` has no meaningful `.length`
+- **Calendar timezone bug** (`FertilizerCalendar.tsx`) — `new Date('2026-02-15')` parses as UTC midnight = Feb 14 in EST. Events on wrong day west of UTC.
+
+### Known but unfixed:
+- Dashboard `careDueToday` count misleadingly includes all overdue plants, not just today
+- Middleware makes extra HTTP call per page load for email verification check
+- Monthly fertilizer calculation permanently drifts (Jan 31 → Feb 28 → Mar 28, never back to 31)
+
+## 2026-02-08 - Morning Review (PR #66)
+
+- **Care API auth pattern** — `/api/care/log`, `/api/care/quick-log`, `/api/care/dashboard` used `requireAuthSession()` which redirects on failure. API clients got unexpected redirects instead of 401 JSON.
+- **CSS `var()` bugs** — Plant card backgrounds used bare `--color-mint-100` instead of `var(--color-mint-100)` — silently failed.
+- **QuickCareActions modal** — Missing backdrop click-to-close, no ARIA attributes, buttons not thumb-reachable on mobile.
+- **PlantCard max-width constraints** — Artificial caps prevented cards from filling grid cells on tablets.
+- **Leaked Zod validation details** in error responses.
+
 ## 2026-02-06 - S3Image Cookie Race Condition
 - **Issue**: Plant images showed 403 errors then permanently fell back to placeholders on first page load
 - **Root Cause**: `S3Image` component tried loading images before CloudFront signed cookies were set
