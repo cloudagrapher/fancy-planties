@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import type { TaxonomyNode, TaxonomyStats, TaxonomyPlant } from '@/lib/db/queries/admin-taxonomy';
+import { apiFetch } from '@/lib/api-client';
 
 interface TaxonomyManagementClientProps {
   initialHierarchy: TaxonomyNode[];
@@ -72,7 +73,7 @@ export default function TaxonomyManagementClient({
     if (!reason) return;
 
     try {
-      const response = await fetch('/api/admin/taxonomy/merge', {
+      const response = await apiFetch('/api/admin/taxonomy/merge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sourceId, targetId, reason }),
@@ -101,7 +102,7 @@ export default function TaxonomyManagementClient({
     }
 
     try {
-      const response = await fetch('/api/admin/taxonomy/bulk-delete', {
+      const response = await apiFetch('/api/admin/taxonomy/bulk-delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plantIds: Array.from(selectedPlants) }),
