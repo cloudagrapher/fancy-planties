@@ -19,6 +19,109 @@ import type {
   EnhancedPlantInstanceFilter
 } from '@/lib/validation/plant-schemas';
 
+interface SortDropdownProps {
+  sortBy: PlantInstanceSortField;
+  sortOrder: 'asc' | 'desc';
+  onChange: (field: PlantInstanceSortField, order: 'asc' | 'desc') => void;
+}
+
+function SortDropdown({ sortBy, sortOrder, onChange }: SortDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const sortOptions: Array<{ field: PlantInstanceSortField; label: string }> = [
+    { field: 'nickname', label: 'Name' },
+    { field: 'location', label: 'Location' },
+    { field: 'created_at', label: 'Date Added' },
+    { field: 'last_fertilized', label: 'Last Fertilized' },
+    { field: 'fertilizer_due', label: 'Care Due' },
+    { field: 'care_urgency', label: 'Care Priority' },
+    { field: 'plant_name', label: 'Plant Type' },
+  ];
+
+  const currentOption = sortOptions.find(opt => opt.field === sortBy);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isOpen]);
+
+  return (
+    <div ref={dropdownRef} className="relative flex-shrink-0">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="inline-flex items-center gap-1.5 px-2 py-2 border rounded-lg text-xs font-medium transition-colors whitespace-nowrap bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+        </svg>
+        <span>{currentOption?.label}</span>
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+          <div className="py-1">
+            {sortOptions.map((option) => (
+              <button
+                key={option.field}
+                onClick={() => {
+                  // Smart default order: name/location/plant_name = asc, dates/urgency = desc
+                  const defaultOrder = ['nickname', 'location', 'plant_name'].includes(option.field) ? 'asc' : 'desc';
+                  onChange(option.field, defaultOrder);
+                  setIsOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors ${
+                  sortBy === option.field ? 'text-primary-700 bg-primary-50' : 'text-gray-700'
+                }`}
+              >
+                <span>{option.label}</span>
+                {sortBy === option.field && (
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {sortOrder === 'asc' ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    )}
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Sort order toggle */}
+          <div className="border-t border-gray-200 py-1">
+            <button
+              onClick={() => {
+                onChange(sortBy, sortOrder === 'asc' ? 'desc' : 'asc');
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors text-gray-700"
+            >
+              <span>Reverse Order</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface PlantsGridProps {
   userId: number;
   onPlantSelect?: (plant: EnhancedPlantInstance) => void;
@@ -430,52 +533,18 @@ export default function PlantsGrid({
             <div className="flex items-center justify-between gap-2 mt-3">
               {/* Sort Controls (always visible) */}
               <div className="flex items-center gap-2 min-w-0">
-                <label htmlFor="sort-select" className="text-xs text-neutral-500 flex-shrink-0">Sort:</label>
-                <select
-                  id="sort-select"
-                  value={enhancedFilters.sortBy}
-                  onChange={(e) => {
-                    const field = e.target.value as PlantInstanceSortField;
-                    // Smart default order: name/location/plant_name = asc, dates/urgency = desc
-                    const defaultOrder = ['nickname', 'location', 'plant_name'].includes(field) ? 'asc' : 'desc';
+                <SortDropdown
+                  sortBy={enhancedFilters.sortBy}
+                  sortOrder={enhancedFilters.sortOrder}
+                  onChange={(field, order) => {
                     setEnhancedFilters(prev => ({
                       ...prev,
                       sortBy: field,
-                      sortOrder: defaultOrder,
+                      sortOrder: order,
                       offset: 0,
                     }));
                   }}
-                  className="text-xs border border-neutral-200 rounded-md px-2 py-1.5 bg-white text-neutral-900 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 min-w-0"
-                >
-                  <option value="nickname">Name</option>
-                  <option value="location">Location</option>
-                  <option value="created_at">Date Added</option>
-                  <option value="last_fertilized">Last Fertilized</option>
-                  <option value="fertilizer_due">Care Due</option>
-                  <option value="care_urgency">Care Priority</option>
-                  <option value="plant_name">Plant Type</option>
-                </select>
-                <button
-                  onClick={() => {
-                    setEnhancedFilters(prev => ({
-                      ...prev,
-                      sortOrder: prev.sortOrder === 'asc' ? 'desc' : 'asc',
-                      offset: 0,
-                    }));
-                  }}
-                  className="flex-shrink-0 p-1.5 rounded-md border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 transition-colors"
-                  title={enhancedFilters.sortOrder === 'asc' ? 'Ascending — click to reverse' : 'Descending — click to reverse'}
-                >
-                  {enhancedFilters.sortOrder === 'asc' ? (
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                    </svg>
-                  ) : (
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
-                    </svg>
-                  )}
-                </button>
+                />
               </div>
 
               {/* View Toggle */}
