@@ -83,7 +83,7 @@ Decisions that shape the project. Numbered sequentially. Update if revisited.
 - Want automatic updates from GitHub Container Registry
 
 **Decision:**
-- `docker-compose.watchtower.yml` with Watchtower for auto-pulls
+- `docker-compose.prod.yml` with Watchtower for auto-pulls, plus db-migrate service for migrations
 - GitHub Actions builds and pushes to `ghcr.io/cloudagrapher/fancy-planties:latest`
 - PostgreSQL 16-alpine as separate container
 - Environment variables via `.env` file on Unraid host (NOT from GitHub Secrets at runtime)

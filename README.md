@@ -123,9 +123,8 @@ A comprehensive plant management Progressive Web Application (PWA) built with Ne
 
 5. **Available Docker Compose Files:**
    - `docker-compose.dev.yml` - Development environment (database on port 5432)
-   - `docker-compose.prod.yml` - Production environment with migrations
+   - `docker-compose.prod.yml` - Production environment with migrations, Watchtower auto-updates, and all services
    - `docker-compose.yml` - Default production setup
-   - `docker-compose.watchtower.yml` - Production with auto-updates
 
 6. **Managing Docker Environments:**
 

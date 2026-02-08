@@ -44,7 +44,7 @@ Project configuration, infrastructure details, and frequently-needed reference i
 - Built by GitHub Actions, pulled by Watchtower every 5 min
 
 **Docker Compose:**
-- Production: `docker-compose.watchtower.yml`
+- Production: `docker-compose.prod.yml` (includes postgres, db-migrate, app, and watchtower)
 - Env vars come from `.env` file on Unraid host (NOT GitHub Secrets)
 - GitHub Secrets are build-time only (for Docker image build in CI)
 

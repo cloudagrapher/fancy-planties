@@ -1,4 +1,13 @@
 services:
+  # WARNING: Watchtower does NOT automatically run database migrations.
+  # When Watchtower pulls a new app image with schema changes, the db-migrate service will NOT run.
+  #
+  # To run migrations after app updates:
+  # 1. Manually run: docker compose -f docker-compose.prod.yml up db-migrate, OR
+  # 2. Manually run: docker exec fancy-planties-app-prod npm run db:migrate
+  #
+  # Future improvement: Add app-level migration hook that runs on container startup.
+
   postgres:
     image: postgres:16-alpine
     container_name: fancy-planties-db-prod
@@ -13,7 +22,7 @@ services:
       - /mnt/user/appdata/fancy-planties-volumes/postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-fancy_planties}"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -101,6 +110,24 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Watchtower for automatic updates
+  watchtower:
+    image: containrrr/watchtower
+    container_name: fancy-planties-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=300  # Check every 5 minutes
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_REVIVE_STOPPED=false
+    command: fancy-planties-app-prod
+    networks:
+      - fancy-planties-network
 
 
 # Note: Volumes are defined as bind mounts in the postgres service
