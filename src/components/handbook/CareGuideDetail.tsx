@@ -12,7 +12,7 @@ export interface CareGuideDetailProps {
 }
 
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-2xl shadow-sm border border-slate-200/70 bg-white/70 backdrop-blur ${className}`}>
+  <div className={`rounded-2xl shadow-sm border ${className}`} style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
     {children}
   </div>
 );
