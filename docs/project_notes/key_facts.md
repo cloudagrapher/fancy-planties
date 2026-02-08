@@ -73,8 +73,9 @@ Project configuration, infrastructure details, and frequently-needed reference i
 **Repository:**
 - `cloudagrapher/fancy-planties` (private)
 - Branch protection on `main` - requires PRs
-- SSH key for push: `~/.ssh/id_gh` with `IdentityAgent=none`
-- Push command: `GIT_SSH_COMMAND="ssh -i ~/.ssh/id_gh -o IdentitiesOnly=yes -o IdentityAgent=none" git push`
+- SSH key for push: `~/.ssh/cloudagrapher` (configured via `github.personal` host alias in `~/.ssh/config`)
+- Remote URL uses `git@github.personal:` prefix to route through the correct SSH config
+- **IMPORTANT:** If push fails with "Permission denied to stefan-bekker-reply", the SSH agent is intercepting and offering a different key. Fix by running: `ssh-add -D` to clear the agent, then retry. The `IdentitiesOnly yes` in SSH config should handle it, but the agent can override.
 
 **CI/CD:**
 - GitHub Actions builds Docker image on push to main
