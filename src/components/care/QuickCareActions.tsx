@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { QuickCareAction, CareType } from '@/lib/types/care-types';
+import type { QuickCareAction } from '@/lib/types/care-types';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { careHelpers } from '@/lib/types/care-types';
 
@@ -47,15 +47,16 @@ export default function QuickCareActions({
             key={action.id}
             onClick={() => handleActionClick(action)}
             disabled={!action.isEnabled || isLoading}
+            aria-label={`Log ${action.label} care`}
             className={`
-              flex flex-col items-center justify-center p-4 rounded-lg transition-all
+              flex flex-col items-center justify-center p-4 rounded-lg transition-all min-h-[72px]
               ${action.isEnabled && !isLoading
-                ? `${action.color} hover:shadow-md`
+                ? `${action.color} hover:shadow-md active:scale-95`
                 : 'bg-gray-100 cursor-not-allowed opacity-50'
               }
             `}
           >
-            <span className="text-2xl mb-2">{action.icon}</span>
+            <span className="text-2xl mb-2" aria-hidden="true">{action.icon}</span>
             <span className="text-sm font-medium text-white">{action.label}</span>
           </button>
         ))}
@@ -63,8 +64,23 @@ export default function QuickCareActions({
 
       {/* Notes Modal */}
       {showNotesModal && selectedAction && (
-        <div className="modal-overlay">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div
+          className="modal-overlay"
+          onClick={() => {
+            if (!isLoading) {
+              setShowNotesModal(false);
+              setSelectedAction(null);
+              setNotes('');
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Log ${selectedAction.label}`}
+        >
+          <div
+            className="bg-white rounded-lg max-w-md w-full mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h3 className="text-lg font-semibold mb-4">
               Log {selectedAction.label} for {plantInstance.displayName}
             </h3>
@@ -74,19 +90,20 @@ export default function QuickCareActions({
                 {selectedAction.description}
               </p>
               
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="care-notes" className="block text-sm font-medium text-gray-700 mb-2">
                 Notes (optional)
               </label>
               <textarea
+                id="care-notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Add any notes about this care activity..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none text-base"
                 rows={3}
               />
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex flex-col-reverse sm:flex-row sm:space-x-3 gap-2 sm:gap-0">
               <button
                 onClick={() => {
                   setShowNotesModal(false);
@@ -94,14 +111,14 @@ export default function QuickCareActions({
                   setNotes('');
                 }}
                 disabled={isLoading}
-                className="btn btn--ghost"
+                className="btn btn--ghost min-h-[44px]"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmitCare}
                 disabled={isLoading}
-                className={`btn btn--primary ${isLoading ? 'btn--loading' : ''}`}
+                className={`btn btn--primary min-h-[44px] ${isLoading ? 'btn--loading' : ''}`}
               >
                 {isLoading ? 'Logging...' : `Log ${selectedAction.label}`}
               </button>

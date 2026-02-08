@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuthSession } from '@/lib/auth/server';
+import { validateRequest } from '@/lib/auth/server';
 import { CareService } from '@/lib/services/care-service';
 
 export async function GET(request: NextRequest) {
   try {
-    const { user } = await requireAuthSession();
+    const { user } = await validateRequest();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
     const dashboardData = await CareService.getCareDashboard(user.id);
     

@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuthSession } from '@/lib/auth/server';
+import { validateRequest } from '@/lib/auth/server';
 import { CareService } from '@/lib/services/care-service';
 import { careValidation } from '@/lib/validation/care-schemas';
 
 export async function POST(request: NextRequest) {
   try {
-    const { user } = await requireAuthSession();
+    const { user } = await validateRequest();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const body = await request.json();
     
     // Validate the quick care log data
@@ -15,12 +18,11 @@ export async function POST(request: NextRequest) {
     });
     
     if (!validation.success) {
-      console.error('Quick care validation error:', validation.error.issues);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Quick care validation error:', validation.error.issues);
+      }
       return NextResponse.json(
-        { 
-          error: validation.error.issues[0]?.message || 'Invalid quick care data',
-          details: validation.error.issues 
-        },
+        { error: validation.error.issues[0]?.message || 'Invalid quick care data' },
         { status: 400 }
       );
     }

@@ -25,8 +25,7 @@ export function ServiceWorkerProvider({ children }: { children: React.ReactNode 
     };
 
     // Listen for sync complete
-    const handleSyncComplete = (event: CustomEvent) => {
-      console.log('Sync completed:', event.detail);
+    const handleSyncComplete = () => {
       // Refresh cached data after sync
       cacheData();
     };

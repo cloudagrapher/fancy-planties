@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAuthSession } from '@/lib/auth/server';
+import { validateRequest } from '@/lib/auth/server';
 import { CareService } from '@/lib/services/care-service';
 import { careValidation } from '@/lib/validation/care-schemas';
 
 export async function POST(request: NextRequest) {
   try {
-    const { user } = await requireAuthSession();
+    const { user } = await validateRequest();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const body = await request.json();
     
     // Validate the care form data
