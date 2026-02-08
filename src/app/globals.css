@@ -711,6 +711,8 @@ select {
   width: 100%;
   max-height: 90vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
@@ -752,6 +754,8 @@ select {
 .modal-body {
   padding: 20px;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .modal-body--no-padding {
@@ -964,10 +968,17 @@ select {
     padding: 10px;
   }
   
-  /* Adjust modal sizing for small screens */
+  /* Anchor modals to top on mobile so content isn't pushed off-screen */
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 8px;
+  }
+
   .modal-content {
-    margin: 8px;
+    margin: 0;
     max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 16px);
+    border-radius: 12px;
   }
   
   /* Improve button sizing on mobile */
