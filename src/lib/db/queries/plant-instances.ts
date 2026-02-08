@@ -1113,49 +1113,50 @@ export class PlantInstanceQueries {
 
       const totalCount = countResult.count;
 
-      // Determine sort order
-      let orderBy;
+      // Determine sort order based on sortBy field
+      let orderByClause;
       switch (sortBy) {
         case "nickname":
-          orderBy =
+          orderByClause =
             sortOrder === "asc"
-              ? asc(plantInstances.nickname)
-              : desc(plantInstances.nickname);
+              ? [asc(plantInstances.nickname)]
+              : [desc(plantInstances.nickname)];
           break;
         case "location":
-          orderBy =
+          orderByClause =
             sortOrder === "asc"
-              ? asc(plantInstances.location)
-              : desc(plantInstances.location);
+              ? [asc(plantInstances.location)]
+              : [desc(plantInstances.location)];
           break;
         case "last_fertilized":
-          orderBy =
+          orderByClause =
             sortOrder === "asc"
-              ? asc(plantInstances.lastFertilized)
-              : desc(plantInstances.lastFertilized);
+              ? [asc(plantInstances.lastFertilized)]
+              : [desc(plantInstances.lastFertilized)];
           break;
         case "fertilizer_due":
-          orderBy =
+          orderByClause =
             sortOrder === "asc"
-              ? asc(plantInstances.fertilizerDue)
-              : desc(plantInstances.fertilizerDue);
+              ? [asc(plantInstances.fertilizerDue)]
+              : [desc(plantInstances.fertilizerDue)];
           break;
         case "plant_name":
-          orderBy =
+          // Sort by taxonomy: family → genus → species → cultivar (nulls last for cultivar)
+          orderByClause =
             sortOrder === "asc"
-              ? asc(plants.commonName)
-              : desc(plants.commonName);
+              ? [asc(plants.family), asc(plants.genus), asc(plants.species), asc(plants.cultivar)]
+              : [desc(plants.family), desc(plants.genus), desc(plants.species), desc(plants.cultivar)];
           break;
         case "care_urgency":
           // Sort by care urgency (overdue first, then due soon, then by due date)
-          orderBy = asc(plantInstances.fertilizerDue);
+          orderByClause = [asc(plantInstances.fertilizerDue)];
           break;
         case "created_at":
         default:
-          orderBy =
+          orderByClause =
             sortOrder === "asc"
-              ? asc(plantInstances.createdAt)
-              : desc(plantInstances.createdAt);
+              ? [asc(plantInstances.createdAt)]
+              : [desc(plantInstances.createdAt)];
           break;
       }
 
@@ -1165,7 +1166,7 @@ export class PlantInstanceQueries {
         .from(plantInstances)
         .leftJoin(plants, eq(plantInstances.plantId, plants.id))
         .where(and(...conditions))
-        .orderBy(orderBy)
+        .orderBy(...orderByClause)
         .limit(limit)
         .offset(offset);
 
