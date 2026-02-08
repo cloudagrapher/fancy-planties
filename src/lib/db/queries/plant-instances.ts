@@ -392,7 +392,8 @@ export class PlantInstanceQueries {
     try {
       const result = await db
         .delete(plantInstances)
-        .where(eq(plantInstances.id, id));
+        .where(eq(plantInstances.id, id))
+        .returning({ id: plantInstances.id });
       return result.length > 0;
     } catch (error) {
       console.error("Failed to delete plant instance:", error);

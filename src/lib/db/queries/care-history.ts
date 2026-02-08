@@ -31,7 +31,7 @@ export class CareHistoryQueries {
    */
   static async createCareHistory(data: NewCareHistory): Promise<CareHistory> {
     // Validate care type enum constraint
-    const validCareTypes = ['fertilizer', 'water', 'repot', 'prune', 'inspect', 'other'];
+    const validCareTypes = ['fertilizer', 'water', 'repot', 'prune', 'inspect', 'flush', 'other'];
     if (!validCareTypes.includes(data.careType)) {
       throw new Error(`Invalid care type: ${data.careType}. Must be one of: ${validCareTypes.join(', ')}`);
     }

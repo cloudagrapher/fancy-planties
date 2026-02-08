@@ -52,7 +52,7 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
 // Sessions table for Lucia auth
 export const sessions = pgTable('sessions', {
   id: text('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
 }, (table) => ({
   // Indexes for session management
@@ -70,7 +70,7 @@ export const plants = pgTable('plants', {
   commonName: text('common_name').notNull(),
   careInstructions: text('care_instructions'),
   defaultImage: text('default_image'),
-  createdBy: integer('created_by').references(() => users.id),
+  createdBy: integer('created_by').references(() => users.id, { onDelete: 'set null' }),
   isVerified: boolean('is_verified').default(false).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -90,8 +90,8 @@ export const plants = pgTable('plants', {
 // Plant instances table
 export const plantInstances = pgTable('plant_instances', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
-  plantId: integer('plant_id').notNull().references(() => plants.id),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  plantId: integer('plant_id').notNull().references(() => plants.id, { onDelete: 'restrict' }),
   nickname: text('nickname').notNull(),
   location: text('location').notNull(),
   lastFertilized: timestamp('last_fertilized'),
@@ -118,9 +118,9 @@ export const plantInstances = pgTable('plant_instances', {
 // Propagations table
 export const propagations = pgTable('propagations', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
-  plantId: integer('plant_id').notNull().references(() => plants.id),
-  parentInstanceId: integer('parent_instance_id').references(() => plantInstances.id), // Now nullable for external sources
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  plantId: integer('plant_id').notNull().references(() => plants.id, { onDelete: 'restrict' }),
+  parentInstanceId: integer('parent_instance_id').references(() => plantInstances.id, { onDelete: 'set null' }), // Now nullable for external sources
   nickname: text('nickname').notNull(),
   location: text('location').notNull(),
   dateStarted: timestamp('date_started').defaultNow().notNull(),
@@ -152,8 +152,8 @@ export const propagations = pgTable('propagations', {
 // Care history table for tracking all care activities
 export const careHistory = pgTable('care_history', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
-  plantInstanceId: integer('plant_instance_id').notNull().references(() => plantInstances.id),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  plantInstanceId: integer('plant_instance_id').notNull().references(() => plantInstances.id, { onDelete: 'cascade' }),
   careType: text('care_type', { 
     enum: ['fertilizer', 'water', 'repot', 'prune', 'inspect', 'flush', 'other'] 
   }).notNull(),
@@ -194,7 +194,7 @@ export const rateLimits = pgTable('rate_limits', {
 // Care guides table for plant care instructions
 export const careGuides = pgTable('care_guides', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   
   // Taxonomy level - determines which level this guide applies to
   taxonomyLevel: text('taxonomy_level', { 

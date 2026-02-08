@@ -114,9 +114,10 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
   const displayEvents = events;
   
   // Filter events for current month
+  // Parse YYYY-MM-DD strings with explicit parts to avoid timezone offset issues
   const monthEvents = displayEvents.filter(event => {
-    const eventDate = new Date(event.date);
-    return eventDate.getMonth() === currentMonth && eventDate.getFullYear() === currentYear;
+    const [year, month] = event.date.split('-').map(Number);
+    return (month - 1) === currentMonth && year === currentYear;
   });
   
   return (
@@ -210,10 +211,14 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
                   <span className="font-medium text-slate-800">{event.plantName}</span>
                 </div>
                 <div className="text-slate-500 text-xs">
-                  {new Date(event.date).toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })}
+                  {/* Parse date parts to avoid timezone offset shifting the displayed day */}
+                  {(() => {
+                    const [y, m, d] = event.date.split('-').map(Number);
+                    return new Date(y, m - 1, d).toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    });
+                  })()}
                 </div>
               </div>
             ))}
