@@ -2,6 +2,54 @@
 
 Bug investigations and solutions. Detailed write-ups live in individual files; this is the quick-reference index.
 
+## 2026-02-08 - Bug Hunt Day (PRs #65-#69)
+
+### Fixed — 30 bugs total across 5 PRs:
+
+**PR #65 — Modal fixes:**
+- Modal vertical centering pushed content above viewport on mobile
+- Hardcoded `max-h-96` scroll container fought with modal's `max-height: 90vh`
+- Note edit/delete buttons invisible on touch (hover-only)
+
+**PR #66 — Morning review:**
+- Care API auth (`/api/care/log`, `/quick-log`, `/dashboard`) used `requireAuthSession()` → redirected instead of returning 401 JSON
+- CSS `var()` bugs — plant card backgrounds used bare `--color-mint-100` (invalid CSS, silently failed)
+- QuickCareActions modal: no backdrop close, no ARIA, buttons not thumb-reachable on mobile
+- PlantCard max-width constraints prevented cards from filling grid on tablets
+- Leaked Zod validation details in error responses
+
+**PR #67 — Bug hunt round 1:**
+- Flush care type missing from `validCareTypes` array (button threw error)
+- Missing FK cascades on plant deletion → crashes with care history (⚠️ needs DB migration)
+- CSRF token missing on admin taxonomy merge/delete (raw `fetch()` vs `apiFetch()`)
+- Plant instance delete always returned false (missing `.returning()`)
+- Calendar timezone bug: `new Date('2026-02-15')` = UTC midnight = Feb 14 in EST
+
+**PR #68 — Bug hunt round 2:**
+- Dashboard `careDueToday` counted all overdue, not just today → split into `careDueToday` + `overdueCount`
+- Monthly fertilizer drift: "1 month" → flat 30 days caused permanent drift → uses `setMonth()` now
+- Rate limiter race condition: non-atomic read-then-write → SQL atomic increment
+- Image upload: no file type validation on contentType/extension
+- Care guide search: ILIKE wildcard injection (`%`, `_` not escaped)
+- Care history `careType`: `as any` cast bypassed validation
+- Offline sync schema missing 'flush' care type
+- Propagation: backward status transitions allowed (ready→started)
+- Propagation: missing sourceType fields (DB columns existed, API didn't accept)
+
+**PR #69 — Bug hunt round 3:**
+- PlantImageGallery: stale keyboard handler (arrow keys broke after first nav)
+- Body overflow conflict: gallery closing clobbered parent modal's scroll lock
+- PropagationForm: missing Escape key handler + scroll lock (+ overflow save/restore from review feedback)
+- Propagation confirm dialogs: no Escape, no ARIA, no backdrop close → extracted reusable ConfirmDialog
+- Propagation card dropdown: click-outside overlay (`z-0 fixed inset-0`) blocked ALL page clicks
+- Dashboard overdue count: TypeScript interface missing field, UI never showed it
+- 7 components used raw `fetch()` instead of `apiFetch()` — session expiry silently failed
+- useOffline: duplicate auto-sync effect with missing deps (redundant with OfflineManager)
+
+### Still unfixed (needs discussion):
+- **Middleware extra HTTP call** — self-referencing HTTP call per page navigation for email verification check. Performance impact on every route transition.
+
+
 ## 2026-02-06 - S3Image Cookie Race Condition
 - **Issue**: Plant images showed 403 errors then permanently fell back to placeholders on first page load
 - **Root Cause**: `S3Image` component tried loading images before CloudFront signed cookies were set
