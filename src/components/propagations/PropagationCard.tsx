@@ -58,7 +58,7 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
       icon: CheckCircle,
       color: 'bg-green-100 text-green-800 border-green-200',
       nextStatus: 'planted',
-      nextLabel: 'Convert to Plant'
+      nextLabel: 'Mark as Planted'
     },
     planted: {
       label: 'Planted',
@@ -313,14 +313,14 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
                   {isUpdatingStatus ? 'Updating...' : (
                     currentStatus.nextStatus === 'rooting' ? 'Mark Rooting' :
                     currentStatus.nextStatus === 'ready' ? 'Mark Ready' :
-                    currentStatus.nextStatus === 'planted' ? 'Convert' :
+                    currentStatus.nextStatus === 'planted' ? 'Mark Planted' :
                     currentStatus.nextLabel
                   )}
                 </button>
               )}
 
-              {/* Convert button for ready - mobile */}
-              {propagation.status === 'ready' && (
+              {/* Convert button for planted propagations - mobile */}
+              {propagation.status === 'planted' && (
                 <button
                   onClick={() => setShowConvertModal(true)}
                   className="flex items-center justify-center px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors min-h-[36px] touch-action-manipulation"
@@ -362,8 +362,8 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
                 </button>
               )}
 
-              {/* Convert to plant button (for ready propagations) */}
-              {propagation.status === 'ready' && (
+              {/* Convert to plant button (for planted propagations) */}
+              {propagation.status === 'planted' && (
                 <button
                   onClick={() => setShowConvertModal(true)}
                   className="flex items-center px-3 py-1.5 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors"
