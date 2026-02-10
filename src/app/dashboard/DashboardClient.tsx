@@ -75,24 +75,24 @@ export default function DashboardClient({ user }: DashboardClientProps) {
       <div className="container">
         <div className="page-content">
           {/* Header */}
-          <div className="flex-between" style={{ marginBottom: '24px' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style={{ marginBottom: '24px' }}>
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900" style={{ marginBottom: '4px' }}>
+              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900" style={{ marginBottom: '4px' }}>
                 Hey {user.name}! ✨
               </h1>
               <p className="text-neutral-600 text-sm">
                 Your plants are looking great today
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               {isCurator && (
                 <Link 
                   href="/admin"
-                  className="btn btn--ghost btn--sm text-neutral-600 flex items-center gap-2 relative"
+                  className="btn btn--ghost btn--sm text-neutral-600 flex items-center gap-1 sm:gap-2 relative"
                   title={`Admin Dashboard${pendingApprovals > 0 ? ` (${pendingApprovals} pending approvals)` : ''}`}
                 >
                   <span>⚙️</span>
-                  Admin
+                  <span className="hidden sm:inline">Admin</span>
                   {pendingApprovals > 0 && (
                     <span 
                       className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium"
@@ -105,10 +105,10 @@ export default function DashboardClient({ user }: DashboardClientProps) {
               )}
               <Link 
                 href="/dashboard/profile"
-                className="btn btn--ghost btn--sm text-neutral-600 flex items-center gap-2"
+                className="btn btn--ghost btn--sm text-neutral-600 flex items-center gap-1 sm:gap-2"
               >
                 <span>👤</span>
-                Profile
+                <span className="hidden sm:inline">Profile</span>
               </Link>
               <LogoutButton 
                 className="btn btn--ghost btn--sm text-neutral-600"
