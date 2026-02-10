@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 
 interface GuideStats {
   total: number;
@@ -39,7 +39,7 @@ export default function DashboardStatistics({ userId, className = '' }: Dashboar
   const { data: guideStats, isLoading: guideLoading, error: guideError } = useQuery({
     queryKey: ['guide-stats', userId],
     queryFn: async (): Promise<GuideStats> => {
-      const response = await fetch('/api/care-guides/stats');
+      const response = await apiFetch('/api/care-guides/stats');
       if (!response.ok) {
         throw new Error('Failed to fetch guide statistics');
       }
@@ -53,7 +53,7 @@ export default function DashboardStatistics({ userId, className = '' }: Dashboar
   const { data: propagationStats, isLoading: propagationLoading, error: propagationError } = useQuery({
     queryKey: ['propagation-stats', userId],
     queryFn: async (): Promise<PropagationStats> => {
-      const response = await fetch('/api/propagations/stats');
+      const response = await apiFetch('/api/propagations/stats');
       if (!response.ok) {
         throw new Error('Failed to fetch propagation statistics');
       }
@@ -67,7 +67,7 @@ export default function DashboardStatistics({ userId, className = '' }: Dashboar
   const { data: careStats, isLoading: careLoading, error: careError } = useQuery({
     queryKey: ['care-dashboard-stats', userId],
     queryFn: async (): Promise<CareStats> => {
-      const response = await fetch('/api/care/dashboard');
+      const response = await apiFetch('/api/care/dashboard');
       if (!response.ok) {
         throw new Error('Failed to fetch care statistics');
       }

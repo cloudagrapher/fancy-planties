@@ -47,9 +47,9 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
       ? new Date(propagation.dateStarted).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0],
     status: propagation?.status || 'started',
-    sourceType: (propagation as any)?.sourceType || 'internal',
-    externalSource: (propagation as any)?.externalSource || null,
-    externalSourceDetails: (propagation as any)?.externalSourceDetails || '',
+    sourceType: propagation?.sourceType || 'internal',
+    externalSource: propagation?.externalSource || null,
+    externalSourceDetails: propagation?.externalSourceDetails || '',
     notes: propagation?.notes || '',
     images: propagation?.images || [],
   });
@@ -425,7 +425,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                   ) : (
                     <div className="p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
                       <p className="text-sm text-yellow-800">
-                        No existing plants of this type found. You'll need to add a plant instance first, or select "External Source" instead.
+                        No existing plants of this type found. You&apos;ll need to add a plant instance first, or select &quot;External Source&quot; instead.
                       </p>
                     </div>
                   )}

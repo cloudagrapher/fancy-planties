@@ -12,7 +12,6 @@ import {
   ArrowRight,
   Sprout,
   TrendingUp,
-  Clock,
   CheckCircle,
   TreePine
 } from 'lucide-react';
@@ -250,7 +249,7 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
                 </div>
                 
                 {/* Source type indicator - simplified on mobile */}
-                {(propagation as any).sourceType === 'internal' && propagation.parentInstance && (
+                {propagation.sourceType === 'internal' && propagation.parentInstance && (
                   <div className="flex items-center">
                     <TreePine className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     <span className="sm:hidden">Parent</span>
@@ -258,34 +257,34 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
                   </div>
                 )}
                 
-                {(propagation as any).sourceType === 'external' && (
+                {propagation.sourceType === 'external' && (
                   <div className="flex items-center">
                     <div className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex items-center justify-center text-xs">
-                      {(propagation as any).externalSource === 'gift' && '🎁'}
-                      {(propagation as any).externalSource === 'trade' && '🔄'}
-                      {(propagation as any).externalSource === 'purchase' && '🛒'}
-                      {(propagation as any).externalSource === 'other' && '📦'}
+                      {propagation.externalSource === 'gift' && '🎁'}
+                      {propagation.externalSource === 'trade' && '🔄'}
+                      {propagation.externalSource === 'purchase' && '🛒'}
+                      {propagation.externalSource === 'other' && '📦'}
                     </div>
                     <span className="sm:hidden">
-                      {(propagation as any).externalSource === 'gift' && 'Gift'}
-                      {(propagation as any).externalSource === 'trade' && 'Trade'}
-                      {(propagation as any).externalSource === 'purchase' && 'Buy'}
-                      {(propagation as any).externalSource === 'other' && 'Other'}
+                      {propagation.externalSource === 'gift' && 'Gift'}
+                      {propagation.externalSource === 'trade' && 'Trade'}
+                      {propagation.externalSource === 'purchase' && 'Buy'}
+                      {propagation.externalSource === 'other' && 'Other'}
                     </span>
                     <span className="hidden sm:inline">
-                      {(propagation as any).externalSource === 'gift' && 'Gift'}
-                      {(propagation as any).externalSource === 'trade' && 'Trade'}
-                      {(propagation as any).externalSource === 'purchase' && 'Purchase'}
-                      {(propagation as any).externalSource === 'other' && 'Other source'}
+                      {propagation.externalSource === 'gift' && 'Gift'}
+                      {propagation.externalSource === 'trade' && 'Trade'}
+                      {propagation.externalSource === 'purchase' && 'Purchase'}
+                      {propagation.externalSource === 'other' && 'Other source'}
                     </span>
                   </div>
                 )}
               </div>
               
               {/* External source details */}
-              {(propagation as any).sourceType === 'external' && (propagation as any).externalSourceDetails && (
+              {propagation.sourceType === 'external' && propagation.externalSourceDetails && (
                 <div className="mt-1 text-xs text-gray-500">
-                  {(propagation as any).externalSourceDetails}
+                  {propagation.externalSourceDetails}
                 </div>
               )}
 

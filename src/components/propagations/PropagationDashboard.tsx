@@ -8,8 +8,6 @@ import PropagationCard from './PropagationCard';
 import PropagationForm from './PropagationForm';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 
-// Force recompilation
-
 interface PropagationWithDetails extends Propagation {
   plant: Plant;
   parentInstance?: PlantInstance;
@@ -19,14 +17,10 @@ interface PropagationStats {
   totalPropagations: number;
   byStatus: Record<string, number>;
   successRate: number;
-  averageDaysToEstablished: number;
+  averageDaysToReady: number;
 }
 
-interface PropagationDashboardProps {
-  userId: number;
-}
-
-export default function PropagationDashboard({ userId }: PropagationDashboardProps) {
+export default function PropagationDashboard() {
   const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
@@ -221,8 +215,8 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
             <div className="text-sm text-green-700">Success Rate</div>
           </div>
           <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-sky-50/70 backdrop-blur p-6">
-            <div className="text-2xl font-bold text-sky-600">{stats.averageDaysToEstablished}</div>
-            <div className="text-sm text-sky-700">Avg Days to Establish</div>
+            <div className="text-2xl font-bold text-sky-600">{stats.averageDaysToReady}</div>
+            <div className="text-sm text-sky-700">Avg Days to Ready</div>
           </div>
           <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-amber-50/70 backdrop-blur p-6">
             <div className="text-2xl font-bold text-amber-600">
