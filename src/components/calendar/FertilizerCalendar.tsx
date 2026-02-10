@@ -51,12 +51,12 @@ const SectionHeader = ({
   title: string; 
   actions?: React.ReactNode; 
 }) => (
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-2">
-      <Icon className="h-5 w-5 text-slate-500" />
-      <h3 className="text-sm font-semibold text-slate-700 tracking-wide">{title}</h3>
+  <div className="flex items-center justify-between gap-2">
+    <div className="flex items-center gap-2 min-w-0">
+      <Icon className="h-5 w-5 text-slate-500 flex-shrink-0" />
+      <h3 className="text-xs sm:text-sm font-semibold text-slate-700 tracking-wide truncate">{title}</h3>
     </div>
-    <div className="flex items-center gap-2">{actions}</div>
+    <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>
   </div>
 );
 
@@ -137,10 +137,11 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
         }
       />
       
-      <div className="mt-4 grid grid-cols-7 gap-1 text-xs">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+      <div className="mt-4 grid grid-cols-7 gap-0.5 sm:gap-1 text-xs">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, i) => (
           <div key={day} className="text-center text-slate-500 font-medium py-1">
-            {day}
+            <span className="hidden sm:inline">{day}</span>
+            <span className="sm:hidden">{['S','M','T','W','T','F','S'][i]}</span>
           </div>
         ))}
         
@@ -168,24 +169,34 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
               </div>
               
               {hasFertilizer && (
-                <div className="flex flex-col gap-1">
-                  {dayEvents.slice(0, 2).map((event) => (
-                    <Chip
-                      key={event.id}
-                      className="bg-amber-50 text-amber-700 ring-amber-200 text-[9px] truncate"
-                    >
-                      <FlaskConical className="h-2 w-2 mr-0.5" />
-                      {event.plantName.length > 8 
-                        ? `${event.plantName.substring(0, 8)}...` 
-                        : event.plantName
-                      }
-                    </Chip>
-                  ))}
-                  {dayEvents.length > 2 && (
-                    <Chip className="bg-slate-50 text-slate-600 ring-slate-200 text-[9px]">
-                      +{dayEvents.length - 2} more
-                    </Chip>
-                  )}
+                <div className="flex flex-col gap-0.5">
+                  {/* On mobile (< sm): show dot indicators; on larger screens: show event chips */}
+                  <div className="hidden sm:flex sm:flex-col sm:gap-0.5">
+                    {dayEvents.slice(0, 2).map((event) => (
+                      <Chip
+                        key={event.id}
+                        className="bg-amber-50 text-amber-700 ring-amber-200 text-[10px] truncate"
+                      >
+                        <FlaskConical className="h-2.5 w-2.5 mr-0.5 flex-shrink-0" />
+                        {event.plantName.length > 8 
+                          ? `${event.plantName.substring(0, 8)}…` 
+                          : event.plantName
+                        }
+                      </Chip>
+                    ))}
+                    {dayEvents.length > 2 && (
+                      <Chip className="bg-slate-50 text-slate-600 ring-slate-200 text-[10px]">
+                        +{dayEvents.length - 2} more
+                      </Chip>
+                    )}
+                  </div>
+                  {/* Mobile: compact dot indicators with count */}
+                  <div className="flex sm:hidden items-center justify-center gap-0.5 mt-0.5">
+                    <div className="w-2 h-2 rounded-full bg-amber-400" title={`${dayEvents.length} plant${dayEvents.length > 1 ? 's' : ''} due`} />
+                    {dayEvents.length > 1 && (
+                      <span className="text-[10px] font-medium text-amber-600">{dayEvents.length}</span>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

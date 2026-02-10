@@ -430,7 +430,7 @@ select {
 }
 
 .stat-card {
-  padding: 20px;
+  padding: 16px;
   border-radius: 16px;
   text-align: center;
   transition: all 0.3s ease;
@@ -439,9 +439,26 @@ select {
   overflow: hidden;
 }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+@media (min-width: 640px) {
+  .stat-card {
+    padding: 20px;
+  }
+}
+
+/* Only apply hover transform on devices with hover capability (not touch) */
+@media (hover: hover) {
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Touch devices: subtle active feedback instead of hover */
+@media (hover: none) {
+  .stat-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .stat-card::before {
@@ -478,10 +495,16 @@ select {
 }
 
 .stat-value {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1;
   margin: 8px 0;
+}
+
+@media (min-width: 640px) {
+  .stat-value {
+    font-size: 2.5rem;
+  }
 }
 
 .stat-label {
@@ -522,13 +545,25 @@ select {
   box-sizing: border-box;
 }
 
-.plant-card:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  -webkit-transform: translateY(-4px); /* Safari */
-  -moz-transform: translateY(-4px); /* Firefox */
-  -ms-transform: translateY(-4px); /* IE */
-  transform: translateY(-4px);
-  border-color: var(--color-primary-300);
+/* Only apply hover lift on devices with hover capability (not touch) */
+@media (hover: hover) {
+  .plant-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    -webkit-transform: translateY(-4px); /* Safari */
+    -moz-transform: translateY(-4px); /* Firefox */
+    -ms-transform: translateY(-4px); /* IE */
+    transform: translateY(-4px);
+    border-color: var(--color-primary-300);
+  }
+}
+
+/* Touch devices: subtle active feedback instead of hover */
+@media (hover: none) {
+  .plant-card:active {
+    transform: scale(0.98);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary-300);
+  }
 }
 
 /* Ensure consistent behavior across browsers */
@@ -537,9 +572,11 @@ select {
   outline-offset: 2px;
 }
 
-.plant-card:active {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+@media (hover: hover) {
+  .plant-card:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
 }
 
 /* Fix for Safari and Firefox scaling issues */
