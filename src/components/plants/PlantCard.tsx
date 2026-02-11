@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Image from 'next/image';
 import S3Image from '@/components/shared/S3Image';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
@@ -26,7 +26,7 @@ interface PlantCardProps {
   className?: string;
 }
 
-export default function PlantCard({
+function PlantCard({
   plant,
   size = 'medium',
   showCareStatus = true,
@@ -361,3 +361,5 @@ export default function PlantCard({
     </div>
   );
 }
+
+export default memo(PlantCard);
