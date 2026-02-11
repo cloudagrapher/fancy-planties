@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { lucia } from './lucia';
 import { cache } from 'react';
 import { getUserById } from './index';
+import { SessionQueries } from '../db/queries/sessions';
 import type { User, Session } from '../db/schema';
 
 // Session cookie management
@@ -185,7 +186,7 @@ export async function getCuratorStatus(): Promise<{ isCurator: boolean; isAuthen
 // that purges expired rows from the sessions table.
 export async function cleanupExpiredSessions(): Promise<void> {
   try {
-    await lucia.deleteExpiredSessions();
+    await SessionQueries.deleteExpired();
   } catch (error) {
     console.error('Session cleanup error:', error);
   }
