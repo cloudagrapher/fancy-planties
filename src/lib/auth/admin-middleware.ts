@@ -2,13 +2,14 @@ import 'server-only';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCuratorRequest } from './server';
+import type { User, Session } from '../db/schema';
 
 /**
  * Middleware for protecting admin API routes
  * Validates curator session and returns appropriate responses
  */
 export async function withCuratorAuth<T>(
-  handler: (request: NextRequest, context: T, user: any, session: any) => Promise<NextResponse>
+  handler: (request: NextRequest, context: T, user: User, session: Session) => Promise<NextResponse>
 ) {
   return async (request: NextRequest, context: T) => {
     const result = await validateCuratorRequest();

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { lucia } from './lucia';
 import { cache } from 'react';
 import { getUserById } from './index';
+import { SessionQueries } from '../db/queries/sessions';
 import type { User, Session } from '../db/schema';
 
 // Session cookie management
@@ -180,11 +181,12 @@ export async function getCuratorStatus(): Promise<{ isCurator: boolean; isAuthen
 }
 
 // Session cleanup utility
+// Lucia handles session expiration internally via validateSession().
+// This function is reserved for future batch cleanup (e.g. cron job)
+// that purges expired rows from the sessions table.
 export async function cleanupExpiredSessions(): Promise<void> {
   try {
-    // This would typically be run as a background job
-    // For now, we'll rely on Lucia's built-in cleanup
-    console.log('Session cleanup would run here');
+    await SessionQueries.deleteExpired();
   } catch (error) {
     console.error('Session cleanup error:', error);
   }
