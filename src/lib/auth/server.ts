@@ -180,11 +180,12 @@ export async function getCuratorStatus(): Promise<{ isCurator: boolean; isAuthen
 }
 
 // Session cleanup utility
+// Lucia handles session expiration internally via validateSession().
+// This function is reserved for future batch cleanup (e.g. cron job)
+// that purges expired rows from the sessions table.
 export async function cleanupExpiredSessions(): Promise<void> {
   try {
-    // This would typically be run as a background job
-    // For now, we'll rely on Lucia's built-in cleanup
-    console.log('Session cleanup would run here');
+    await lucia.deleteExpiredSessions();
   } catch (error) {
     console.error('Session cleanup error:', error);
   }

@@ -26,7 +26,7 @@ const authRoutes = [
   '/auth/forgot-password',
 ];
 
-// Define public API routes that don't require authentication
+// Define public API routes that don't require authentication (or CSRF tokens)
 const publicApiRoutes = [
   '/api/auth/signin',
   '/api/auth/signup',
@@ -34,6 +34,8 @@ const publicApiRoutes = [
   '/api/auth/verify-email',
   '/api/auth/resend-verification',
   '/api/auth/check-verification',
+  '/api/auth/forgot-password',
+  '/api/auth/reset-password',
   '/api/health',
 ];
 
