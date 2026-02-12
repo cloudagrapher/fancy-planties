@@ -36,17 +36,17 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   }, [queryClient]);
 
   // Handle plant selection (open detail modal)
-  const handlePlantSelect = (plant: EnhancedPlantInstance) => {
+  const handlePlantSelect = useCallback((plant: EnhancedPlantInstance) => {
     setSelectedPlant(plant);
     setIsDetailModalOpen(true);
-  };
+  }, []);
 
   // Handle plant editing
-  const handlePlantEdit = (plant: EnhancedPlantInstance) => {
+  const handlePlantEdit = useCallback((plant: EnhancedPlantInstance) => {
     setEditingPlant(plant);
     setIsFormModalOpen(true);
     setIsDetailModalOpen(false);
-  };
+  }, []);
 
   // Handle care actions — log quick care and refresh data
   const handleCareAction = useCallback(async (plant: EnhancedPlantInstance, action: 'fertilize' | 'repot') => {
@@ -126,38 +126,37 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   }, [refreshPlantData, showToast]);
 
   // Handle add new plant
-  const handleAddPlant = () => {
+  const handleAddPlant = useCallback(() => {
     setEditingPlant(null);
     setIsFormModalOpen(true);
-  };
+  }, []);
 
   // Handle form success
-  const handleFormSuccess = async () => {
+  const handleFormSuccess = useCallback(async () => {
     setIsFormModalOpen(false);
     setEditingPlant(null);
 
     // Force a grid refresh to ensure immediate updates
-    // Clear both regular and enhanced plant instance queries
-    await queryClient.invalidateQueries({
-      queryKey: ['plant-instances'],
-      exact: false,
-      refetchType: 'all'
-    });
-    await queryClient.invalidateQueries({
-      queryKey: ['plant-instances-enhanced'],
-      exact: false,
-      refetchType: 'all'
-    });
+    // Clear both regular and enhanced plant instance queries in parallel
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: ['plant-instances'],
+        exact: false,
+        refetchType: 'all'
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['plant-instances-enhanced'],
+        exact: false,
+        refetchType: 'all'
+      }),
+    ]);
 
     // Force refetch to ensure immediate update
     await queryClient.refetchQueries({
       queryKey: ['plant-instances-enhanced'],
       type: 'active'
     });
-
-    // Don't automatically open detail modal - let user decide
-    // This prevents the white line issue from modal conflicts
-  };
+  }, [queryClient]);
 
   return (
     <div className="page">
