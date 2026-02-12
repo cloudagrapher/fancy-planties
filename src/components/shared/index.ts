@@ -16,4 +16,3 @@ export { OptimizedImage, LazyImageGallery } from './OptimizedImage';
 export { PullToRefreshIndicator } from './PullToRefreshIndicator';
 export { PWAInstallPrompt, StandaloneModeIndicator } from './PWAInstallPrompt';
 export { ServiceWorkerProvider } from './ServiceWorkerProvider';
-export { VirtualScrollList, VirtualGrid, useVirtualScroll } from './VirtualScrollList';

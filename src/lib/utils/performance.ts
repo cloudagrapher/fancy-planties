@@ -110,38 +110,8 @@ export const virtualScrolling = {
   },
 };
 
-// Bundle optimization utilities
-export const bundleOptimization = {
-  // Preload critical resources
-  preloadCriticalResources: () => {
-    // Preload critical CSS
-    const criticalCSS = document.createElement('link');
-    criticalCSS.rel = 'preload';
-    criticalCSS.as = 'style';
-    criticalCSS.href = '/globals.css';
-    document.head.appendChild(criticalCSS);
 
-    // Preload critical fonts
-    const font = document.createElement('link');
-    font.rel = 'preload';
-    font.as = 'font';
-    font.type = 'font/woff2';
-    font.crossOrigin = 'anonymous';
-    font.href = '/fonts/system-font.woff2';
-    document.head.appendChild(font);
-  },
 
-  // Tree shaking helper for unused imports
-  removeUnusedImports: (imports: Record<string, any>, used: string[]) => {
-    const optimized: Record<string, any> = {};
-    used.forEach(key => {
-      if (imports[key]) {
-        optimized[key] = imports[key];
-      }
-    });
-    return optimized;
-  },
-};
 // React optimization utilities
 export const reactOptimization = {
   // Optimized state update with startTransition
