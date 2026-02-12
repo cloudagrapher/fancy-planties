@@ -1,12 +1,10 @@
 export { default as PlantSelector } from './PlantSelector';
 export { default as PlantTaxonomySelector } from './PlantTaxonomySelector';
 export { default as PlantTaxonomyForm } from './PlantTaxonomyForm';
-export { default as PlantSelectorExample } from './PlantSelectorExample';
 export { default as PlantCard } from './PlantCard';
 export { default as PlantsGrid } from './PlantsGrid';
 export { default as PlantSearchFilter } from './PlantSearchFilter';
 export { default as PlantCardSkeleton } from './PlantCardSkeleton';
-export { default as PlantsGridExample } from './PlantsGridExample';
 export { default as PlantDetailModal } from './PlantDetailModal';
 export { default as PlantInstanceForm } from './PlantInstanceForm';
 export { default as PlantNotes } from './PlantNotes';
