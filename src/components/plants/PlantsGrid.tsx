@@ -682,10 +682,19 @@ export default function PlantsGrid({
             {plants.map((plant) => (
               <div
                 key={plant.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => handlePlantSelect(plant)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handlePlantSelect(plant);
+                  }
+                }}
                 className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors hover:bg-neutral-50 ${
                   selectedPlants.includes(plant.id) ? 'bg-mint-50 ring-1 ring-mint-200' : ''
                 }`}
+                aria-label={`${plant.displayName || 'Unnamed Plant'}${plant.careStatus === 'overdue' ? ' - Overdue' : plant.careStatus === 'due_soon' ? ' - Due Soon' : ''}`}
               >
                 {/* Selection checkbox in selection mode */}
                 {isSelectionMode && (
@@ -799,14 +808,6 @@ export default function PlantsGrid({
                 </div>
               </div>
             ))}
-          </div>
-        )}
-
-        {/* Loading more indicator and manual load button */}
-        {isFetchingNextPage && (
-          <div className="flex-center py-4">
-            <div className="spinner" />
-            <span className="ml-2 text-sm text-neutral-600">Loading more...</span>
           </div>
         )}
 
