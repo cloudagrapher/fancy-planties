@@ -2,11 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
 import FertilizerCalendar from '@/components/calendar/FertilizerCalendar';
 import LogoutButton from '@/components/auth/LogoutButton';
 import { apiFetch } from '@/lib/api-client';
-import type { DashboardStats, FertilizerEvent } from '@/app/api/dashboard/route';
+import type { DashboardStats } from '@/app/api/dashboard/route';
 
 interface DashboardClientProps {
   user: {
@@ -18,34 +17,18 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ user }: DashboardClientProps) {
-  const [isCurator, setIsCurator] = useState(false);
-  const [pendingApprovals, setPendingApprovals] = useState(0);
+  // Check curator status via useQuery for proper caching and deduplication
+  const { data: curatorData } = useQuery({
+    queryKey: ['curator-status'],
+    queryFn: async () => {
+      const response = await apiFetch('/api/auth/curator-status');
+      if (!response.ok) return { isCurator: false };
+      return response.json() as Promise<{ isCurator: boolean }>;
+    },
+    staleTime: 1000 * 60 * 30, // 30 minutes — curator status rarely changes
+  });
 
-  // Check curator status and fetch pending approvals
-  useEffect(() => {
-    const checkCuratorStatus = async () => {
-      try {
-        const response = await apiFetch('/api/auth/curator-status');
-        if (response.ok) {
-          const data = await response.json();
-          setIsCurator(data.isCurator);
-          
-          // If user is curator, fetch pending approval count
-          // if (data.isCurator) {
-          //   const pendingResponse = await fetch('/api/admin/pending-count');
-          //   if (pendingResponse.ok) {
-          //     const pendingData = await pendingResponse.json();
-          //     setPendingApprovals(pendingData.count || 0);
-          //   }
-          // }
-        }
-      } catch (error) {
-        console.error('Failed to check curator status:', error);
-      }
-    };
-
-    checkCuratorStatus();
-  }, []);
+  const isCurator = curatorData?.isCurator ?? false;
 
   // Fetch dashboard stats
   const { data: stats, isLoading } = useQuery({
@@ -89,18 +72,10 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 <Link 
                   href="/admin"
                   className="btn btn--ghost btn--sm text-neutral-600 flex items-center gap-1 sm:gap-2 relative"
-                  title={`Admin Dashboard${pendingApprovals > 0 ? ` (${pendingApprovals} pending approvals)` : ''}`}
+                  title="Admin Dashboard"
                 >
                   <span>⚙️</span>
                   <span className="hidden sm:inline">Admin</span>
-                  {pendingApprovals > 0 && (
-                    <span 
-                      className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium"
-                      aria-label={`${pendingApprovals} pending approvals`}
-                    >
-                      {pendingApprovals > 99 ? '99+' : pendingApprovals}
-                    </span>
-                  )}
                 </Link>
               )}
               <Link 
