@@ -136,8 +136,8 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
     setIsFormModalOpen(false);
     setEditingPlant(null);
 
-    // Force a grid refresh to ensure immediate updates
-    // Clear both regular and enhanced plant instance queries in parallel
+    // Invalidate and refetch all plant instance queries
+    // refetchType: 'all' already triggers refetch for active queries — no separate refetchQueries needed
     await Promise.all([
       queryClient.invalidateQueries({
         queryKey: ['plant-instances'],
@@ -150,12 +150,6 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
         refetchType: 'all'
       }),
     ]);
-
-    // Force refetch to ensure immediate update
-    await queryClient.refetchQueries({
-      queryKey: ['plant-instances-enhanced'],
-      type: 'active'
-    });
   }, [queryClient]);
 
   return (
