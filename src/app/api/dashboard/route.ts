@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateRequest } from '@/lib/auth/server';
 import { db } from '@/lib/db';
 import { plantInstances, propagations } from '@/lib/db/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, lte, isNotNull } from 'drizzle-orm';
 
 export interface FertilizerEvent {
   id: string;
@@ -70,7 +70,10 @@ export async function GET(request: NextRequest) {
     const totalCount = propagationStats?.totalPropagations || 0;
     const propagationSuccessRate = totalCount > 0 ? Math.round((successfulCount / totalCount) * 100) : 0;
 
-    // Get fertilizer events from plant instances with due dates
+    // Get fertilizer events — filter in SQL to avoid fetching all active plants
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
     const fertilizerEventData = await db
       .select({
         id: plantInstances.id,
@@ -81,23 +84,19 @@ export async function GET(request: NextRequest) {
       .where(
         and(
           eq(plantInstances.userId, userId),
-          eq(plantInstances.isActive, true)
+          eq(plantInstances.isActive, true),
+          isNotNull(plantInstances.fertilizerDue),
+          lte(plantInstances.fertilizerDue, thirtyDaysFromNow)
         )
       );
 
-    // Convert to fertilizer events with proper date filtering (show events for next 30 days)
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-    
-    const fertilizerEvents: FertilizerEvent[] = fertilizerEventData
-      .filter(plant => plant.fertilizerDue && plant.fertilizerDue <= thirtyDaysFromNow)
-      .map(plant => ({
-        id: `fertilizer-${plant.id}`,
-        plantName: plant.nickname,
-        plantId: plant.id.toString(),
-        date: plant.fertilizerDue!.toISOString().split('T')[0], // Format as YYYY-MM-DD
-        type: 'fertilize' as const
-      }));
+    const fertilizerEvents: FertilizerEvent[] = fertilizerEventData.map(plant => ({
+      id: `fertilizer-${plant.id}`,
+      plantName: plant.nickname,
+      plantId: plant.id.toString(),
+      date: plant.fertilizerDue!.toISOString().split('T')[0],
+      type: 'fertilize' as const
+    }));
 
     const dashboardStats: DashboardStats = {
       totalPlants: plantStats?.totalPlants || 0,

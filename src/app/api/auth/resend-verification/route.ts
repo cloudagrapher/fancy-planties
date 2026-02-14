@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
           await sendEmailWithRetry(emailService, normalizedEmail, verificationCode, user.name);
           
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Verification code resent to ${normalizedEmail} for user ${user.id}`);
+            if (process.env.NODE_ENV === 'development') console.log(`Verification code resent to ${normalizedEmail} for user ${user.id}`);
           }
           
           return NextResponse.json({
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
           }
           
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Resend verification failed for ${normalizedEmail}: ${error.code} - ${errorMessage}`);
+            if (process.env.NODE_ENV === 'development') console.log(`Resend verification failed for ${normalizedEmail}: ${error.code} - ${errorMessage}`);
           }
           
           return NextResponse.json(
