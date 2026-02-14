@@ -1,5 +1,3 @@
-import { db } from './index';
-import { eq, and } from 'drizzle-orm';
 import type { ImportProgress } from '@/lib/validation/csv-schemas';
 
 // Simple table-like structure using local storage for progress tracking
@@ -18,18 +16,14 @@ class ImportProgressStore {
 
   set(importId: string, progress: ImportProgress): void {
     this.store.set(importId, { ...progress });
-    console.log(`Storing progress for import ${importId}:`, progress.status, progress.progress);
   }
 
   get(importId: string): ImportProgress | null {
-    const progress = this.store.get(importId);
-    console.log(`Retrieved progress for import ${importId}:`, progress?.status || 'not found');
-    return progress || null;
+    return this.store.get(importId) || null;
   }
 
   delete(importId: string): void {
     this.store.delete(importId);
-    console.log(`Deleted progress for import ${importId}`);
   }
 
   getAllForUser(userId: number): ImportProgress[] {
