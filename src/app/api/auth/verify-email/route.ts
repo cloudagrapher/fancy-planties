@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
         if (isValid) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Email verification successful for ${email}`);
+            if (process.env.NODE_ENV === 'development') console.log(`Email verification successful for ${email}`);
           }
 
           // Get the verified user
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
           await setSessionCookie(session.id);
 
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Session created for verified user ${email}: ${session.id}`);
+            if (process.env.NODE_ENV === 'development') console.log(`Session created for verified user ${email}: ${session.id}`);
           }
 
           return NextResponse.json({
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
           }
           
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Email verification failed for ${email}: ${error.code} - ${errorMessage}`);
+            if (process.env.NODE_ENV === 'development') console.log(`Email verification failed for ${email}: ${error.code} - ${errorMessage}`);
           }
           
           return NextResponse.json(

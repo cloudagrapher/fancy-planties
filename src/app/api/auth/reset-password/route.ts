@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         await passwordResetService.cleanupUserTokens(tokenValidation.userId);
         
         if (process.env.NODE_ENV === 'development') {
-          console.log(`Password reset successful for user ${tokenValidation.userId}`);
+          if (process.env.NODE_ENV === 'development') console.log(`Password reset successful for user ${tokenValidation.userId}`);
         }
         
         return NextResponse.json({
