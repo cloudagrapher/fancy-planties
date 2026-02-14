@@ -278,15 +278,17 @@ export async function logAdminAction(
     const { user } = await requireAdminAuth();
     
     // This would typically insert into an audit log table
-    console.log('Admin action logged:', {
-      action,
-      entityType,
-      entityId,
-      performedBy: user.id,
-      performedByName: user.name,
-      timestamp: new Date().toISOString(),
-      details,
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Admin action logged:', {
+        action,
+        entityType,
+        entityId,
+        performedBy: user.id,
+        performedByName: user.name,
+        timestamp: new Date().toISOString(),
+        details,
+      });
+    }
     
     // In a real implementation, this would insert into the database:
     // await db.insert(auditLogs).values({
