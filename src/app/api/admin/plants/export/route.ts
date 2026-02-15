@@ -1,7 +1,7 @@
 import 'server-only';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCuratorSession } from '@/lib/auth/server';
-import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
+import { AdminPlantQueries, PlantWithDetails } from '@/lib/db/queries/admin-plants';
 import { AuditLogger, AUDIT_ACTIONS } from '@/lib/services/audit-logger';
 import { z } from 'zod';
 
@@ -17,7 +17,7 @@ const exportSchema = z.object({
   }).optional(),
 });
 
-function convertToCSV(plants: any[]): string {
+function convertToCSV(plants: PlantWithDetails[]): string {
   if (plants.length === 0) return '';
 
   const headers = [

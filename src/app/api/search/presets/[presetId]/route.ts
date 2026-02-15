@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 import { validateRequest } from '@/lib/auth/server';
 import { advancedSearchService } from '@/lib/services/advanced-search';
-import { plantInstanceFilterSchema } from '@/lib/validation/plant-schemas';
+import { PlantInstanceFilter } from '@/lib/validation/plant-schemas';
 
 // GET /api/search/presets/[presetId] - Search with a saved preset
 export async function GET(
@@ -19,7 +18,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     
     // Parse any filter overrides from query params
-    const overrides: any = {};
+    const overrides: Partial<PlantInstanceFilter> = {};
     
     if (searchParams.get('location')) {
       overrides.location = searchParams.get('location')!;

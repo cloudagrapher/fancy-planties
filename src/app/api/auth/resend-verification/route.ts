@@ -15,8 +15,8 @@ const resendVerificationSchema = z.object({
 
 export async function POST(request: NextRequest) {
   return withResendRateLimit(request, async (req) => {
-    // Extract parsed body from middleware
-    const body = (req as any)._parsedBody || await req.json();
+    // Extract parsed body from middleware (set by withResendRateLimit)
+    const body = (req as NextRequest & { _parsedBody?: unknown })._parsedBody || await req.json();
     try {
       // Validate input
       const validation = resendVerificationSchema.safeParse(body);
