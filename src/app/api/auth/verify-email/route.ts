@@ -16,8 +16,8 @@ const verifyEmailSchema = z.object({
 
 export async function POST(request: NextRequest) {
   return withVerificationRateLimit(request, async (req) => {
-    // Extract parsed body from middleware
-    const body = (req as any)._parsedBody || await req.json();
+    // Extract parsed body from middleware (set by withVerificationRateLimit)
+    const body = (req as NextRequest & { _parsedBody?: unknown })._parsedBody || await req.json();
     try {
       // Validate input
       const validation = verifyEmailSchema.safeParse(body);

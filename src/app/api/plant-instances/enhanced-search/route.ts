@@ -40,10 +40,10 @@ export async function GET(request: NextRequest) {
       hasImages: searchParams.get('hasImages') ? searchParams.get('hasImages') === 'true' : undefined,
       imageCount: searchParams.get('imageCount') ? JSON.parse(searchParams.get('imageCount')!) : undefined,
       fertilizerFrequency: searchParams.get('fertilizerFrequency') ? JSON.parse(searchParams.get('fertilizerFrequency')!) : undefined,
-      datePreset: searchParams.get('datePreset') as any || undefined,
+      datePreset: (searchParams.get('datePreset') as 'today' | 'this_week' | 'this_month' | 'last_month' | 'last_3_months') || undefined,
       
       // Sorting and pagination
-      sortBy: (searchParams.get('sortBy') as any) || 'created_at',
+      sortBy: (searchParams.get('sortBy') as 'nickname' | 'location' | 'created_at' | 'last_fertilized' | 'fertilizer_due' | 'care_urgency' | 'plant_name') || 'created_at',
       sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
       limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : 20,
       offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!, 10) : 0,
