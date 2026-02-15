@@ -36,7 +36,7 @@ export async function PATCH(
     const validatedData = updatePlantSchema.parse(body);
 
     // Clean up empty strings for cultivar and careInstructions
-    const updateData: any = { ...validatedData };
+    const updateData: Record<string, string | boolean | null | undefined> = { ...validatedData };
     if (updateData.cultivar === '') {
       updateData.cultivar = null;
     }

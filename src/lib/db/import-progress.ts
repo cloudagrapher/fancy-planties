@@ -19,7 +19,8 @@ class ImportProgressStore {
   }
 
   get(importId: string): ImportProgress | null {
-    return this.store.get(importId) || null;
+    const progress = this.store.get(importId);
+    return progress || null;
   }
 
   delete(importId: string): void {

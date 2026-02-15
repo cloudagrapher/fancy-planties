@@ -16,8 +16,8 @@ const verifyEmailSchema = z.object({
 
 export async function POST(request: NextRequest) {
   return withVerificationRateLimit(request, async (req) => {
-    // Extract parsed body from middleware
-    const body = (req as any)._parsedBody || await req.json();
+    // Extract parsed body from middleware (set by withVerificationRateLimit)
+    const body = (req as NextRequest & { _parsedBody?: unknown })._parsedBody || await req.json();
     try {
       // Validate input
       const validation = verifyEmailSchema.safeParse(body);
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
         if (isValid) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Email verification successful for ${email}`);
+            if (process.env.NODE_ENV === 'development') console.log(`Email verification successful for ${email}`);
           }
 
           // Get the verified user
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
           await setSessionCookie(session.id);
 
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Session created for verified user ${email}: ${session.id}`);
+            if (process.env.NODE_ENV === 'development') console.log(`Session created for verified user ${email}: ${session.id}`);
           }
 
           return NextResponse.json({
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
           }
           
           if (process.env.NODE_ENV === 'development') {
-            console.log(`Email verification failed for ${email}: ${error.code} - ${errorMessage}`);
+            if (process.env.NODE_ENV === 'development') console.log(`Email verification failed for ${email}: ${error.code} - ${errorMessage}`);
           }
           
           return NextResponse.json(

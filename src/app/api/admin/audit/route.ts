@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     }
     
     if (searchParams.get('entityType')) {
-      filters.entityType = searchParams.get('entityType') as any;
+      filters.entityType = searchParams.get('entityType') as 'user' | 'plant' | 'plant_instance' | 'propagation' | 'system';
     }
     
     if (searchParams.get('performedBy')) {

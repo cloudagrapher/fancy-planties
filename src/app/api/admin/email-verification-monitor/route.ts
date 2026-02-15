@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
  * Generate alerts based on system status
  */
 function generateAlerts(
-  systemStatus: any,
+  systemStatus: Awaited<ReturnType<typeof emailVerificationCleanupService.getSystemStatus>>,
   emailHealth: { status: string; issues: string[]; recommendations: string[] }
 ): Array<{
   level: 'info' | 'warning' | 'critical';

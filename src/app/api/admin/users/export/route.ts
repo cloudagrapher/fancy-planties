@@ -1,7 +1,7 @@
 import 'server-only';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCuratorSession } from '@/lib/auth/server';
-import { AdminUserQueries } from '@/lib/db/queries/admin-users';
+import { AdminUserQueries, UserWithStats } from '@/lib/db/queries/admin-users';
 import { AuditLogger, AUDIT_ACTIONS } from '@/lib/services/audit-logger';
 import { z } from 'zod';
 
@@ -15,7 +15,7 @@ const exportSchema = z.object({
   }).optional(),
 });
 
-function convertToCSV(users: any[]): string {
+function convertToCSV(users: UserWithStats[]): string {
   if (users.length === 0) return '';
 
   const headers = [
