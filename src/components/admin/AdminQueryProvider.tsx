@@ -18,7 +18,7 @@ export default function AdminQueryProvider({ children }: AdminQueryProviderProps
             retry: (failureCount, error) => {
               // Don't retry on 401/403 errors
               if (error instanceof Error && 'status' in error) {
-                const status = (error as any).status;
+                const status = (error as Error & { status: number }).status;
                 if (status === 401 || status === 403) {
                   return false;
                 }

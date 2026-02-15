@@ -250,8 +250,6 @@ export default function PlantsGrid({
 
       const response = await apiFetch(`${endpoint}?${params}`);
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to fetch plants:', response.status, errorText);
         throw new Error(`Failed to fetch plants: ${response.status}`);
       }
       return response.json() as Promise<PlantInstanceSearchResult>;

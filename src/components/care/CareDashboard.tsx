@@ -100,7 +100,6 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
       const results = await Promise.allSettled(promises);
       const successCount = results.filter(r => r.status === 'fulfilled').length;
-      const failureCount = results.length - successCount;
 
       if (successCount > 0) {
         await queryClient.invalidateQueries({ 

@@ -190,7 +190,7 @@ export default function TaxonomyManagementClient({
           />
           <select
             value={filterLevel}
-            onChange={(e) => setFilterLevel(e.target.value as any)}
+            onChange={(e) => setFilterLevel(e.target.value as 'all' | 'family' | 'genus' | 'species')}
             className="filter-select"
           >
             <option value="all">All Levels</option>
