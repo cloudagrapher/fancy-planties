@@ -4,6 +4,17 @@ import { useCallback } from 'react';
 
 export type HapticFeedbackType = 'light' | 'medium' | 'heavy' | 'selection' | 'impact' | 'notification';
 
+/** Telegram WebApp-style haptic feedback API (non-standard) */
+interface HapticFeedbackAPI {
+  impactOccurred: (style: 'light' | 'medium' | 'heavy') => void;
+  selectionChanged: () => void;
+  notificationOccurred: (type: 'success' | 'error' | 'warning') => void;
+}
+
+interface NavigatorWithHaptics extends Navigator {
+  hapticFeedback: HapticFeedbackAPI;
+}
+
 /**
  * Hook for providing haptic feedback on supported devices
  */
@@ -14,31 +25,32 @@ export function useHapticFeedback() {
       return;
     }
 
-    // For devices with advanced haptic feedback (iOS Safari)
+    // For devices with advanced haptic feedback (Telegram WebApp / iOS Safari)
     if ('hapticFeedback' in navigator) {
+      const hapticNav = navigator as NavigatorWithHaptics;
       try {
         switch (type) {
           case 'light':
-            (navigator as any).hapticFeedback.impactOccurred('light');
+            hapticNav.hapticFeedback.impactOccurred('light');
             break;
           case 'medium':
-            (navigator as any).hapticFeedback.impactOccurred('medium');
+            hapticNav.hapticFeedback.impactOccurred('medium');
             break;
           case 'heavy':
-            (navigator as any).hapticFeedback.impactOccurred('heavy');
+            hapticNav.hapticFeedback.impactOccurred('heavy');
             break;
           case 'selection':
-            (navigator as any).hapticFeedback.selectionChanged();
+            hapticNav.hapticFeedback.selectionChanged();
             break;
           case 'notification':
-            (navigator as any).hapticFeedback.notificationOccurred('success');
+            hapticNav.hapticFeedback.notificationOccurred('success');
             break;
           default:
-            (navigator as any).hapticFeedback.impactOccurred('light');
+            hapticNav.hapticFeedback.impactOccurred('light');
         }
         return;
-      } catch (error) {
-        console.log('Haptic feedback not available:', error);
+      } catch {
+        // Haptic feedback not available — fall through to vibration API
       }
     }
 
@@ -69,8 +81,8 @@ export function useHapticFeedback() {
       if (typeof navigator !== 'undefined' && navigator.vibrate) {
         navigator.vibrate(pattern);
       }
-    } catch (error) {
-      console.log('Vibration not supported:', error);
+    } catch {
+      // Vibration not supported
     }
   }, []);
 
