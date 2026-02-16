@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 
 interface NavigationItem {
   id: string;
@@ -22,53 +24,35 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
   const pathname = usePathname();
   const { triggerHaptic } = useHapticFeedback();
   const [pressedItem, setPressedItem] = useState<string | null>(null);
-  const [isCurator, setIsCurator] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [pendingApprovals, setPendingApprovals] = useState(0);
 
-  // Check curator status on mount
-  useEffect(() => {
-    const checkCuratorStatus = async () => {
-      try {
-        const response = await fetch('/api/auth/curator-status');
-        if (response.ok) {
-          const data = await response.json();
-          setIsCurator(data.isCurator);
-          
-          // If user is curator, fetch pending approval count
-          if (data.isCurator) {
-            const pendingResponse = await fetch('/api/admin/pending-count');
-            if (pendingResponse.ok) {
-              const pendingData = await pendingResponse.json();
-              setPendingApprovals(pendingData.count || 0);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Failed to check curator status:', error);
-      }
-    };
+  // Check curator status — shared cache with DashboardClient (same queryKey)
+  const { data: curatorData } = useQuery({
+    queryKey: ['curator-status'],
+    queryFn: async () => {
+      const response = await apiFetch('/api/auth/curator-status');
+      if (!response.ok) return { isCurator: false };
+      return response.json() as Promise<{ isCurator: boolean }>;
+    },
+    staleTime: 1000 * 60 * 30, // 30 minutes — curator status rarely changes
+  });
 
-    checkCuratorStatus();
-  }, []);
-  
-  // Refresh pending count every 30 seconds — only runs when user is a curator
-  useEffect(() => {
-    if (!isCurator) return;
-    
-    const interval = setInterval(() => {
-      fetch('/api/admin/pending-count')
-        .then(response => response.ok ? response.json() : null)
-        .then(data => {
-          if (data) {
-            setPendingApprovals(data.count || 0);
-          }
-        })
-        .catch(error => console.error('Failed to refresh pending count:', error));
-    }, 30000);
+  const isCurator = curatorData?.isCurator ?? false;
 
-    return () => clearInterval(interval);
-  }, [isCurator]);
+  // Fetch pending approval count — only when user is a curator
+  const { data: pendingData } = useQuery({
+    queryKey: ['admin-pending-count'],
+    queryFn: async () => {
+      const response = await apiFetch('/api/admin/pending-count');
+      if (!response.ok) return { count: 0 };
+      return response.json() as Promise<{ count: number }>;
+    },
+    enabled: isCurator,
+    staleTime: 1000 * 30, // 30 seconds
+    refetchInterval: 1000 * 30, // Poll every 30 seconds
+  });
+
+  const pendingApprovals = pendingData?.count ?? 0;
 
   const allNavigationItems: NavigationItem[] = [
     {

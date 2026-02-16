@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 
 interface AdminNavigationItem {
   id: string;
@@ -14,27 +15,20 @@ interface AdminNavigationItem {
 
 export default function AdminNavigation() {
   const pathname = usePathname();
-  const [pendingApprovals, setPendingApprovals] = useState(0);
 
-  // Fetch pending approval count
-  useEffect(() => {
-    const fetchPendingCount = async () => {
-      try {
-        const response = await fetch('/api/admin/pending-count');
-        if (response.ok) {
-          const data = await response.json();
-          setPendingApprovals(data.count || 0);
-        }
-      } catch (error) {
-        console.error('Failed to fetch pending approvals:', error);
-      }
-    };
+  // Fetch pending approval count — shared cache with BottomNavigation (same queryKey)
+  const { data: pendingData } = useQuery({
+    queryKey: ['admin-pending-count'],
+    queryFn: async () => {
+      const response = await apiFetch('/api/admin/pending-count');
+      if (!response.ok) return { count: 0 };
+      return response.json() as Promise<{ count: number }>;
+    },
+    staleTime: 1000 * 30,
+    refetchInterval: 1000 * 30,
+  });
 
-    fetchPendingCount();
-    // Refresh count every 30 seconds
-    const interval = setInterval(fetchPendingCount, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  const pendingApprovals = pendingData?.count ?? 0;
 
   const navigationItems: AdminNavigationItem[] = [
     {
