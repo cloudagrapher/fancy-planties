@@ -14,7 +14,9 @@ export async function GET(request: NextRequest) {
 
     const stats = await PropagationQueries.getStats(user.id);
 
-    return NextResponse.json(stats);
+    const response = NextResponse.json(stats);
+    response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    return response;
   } catch (error) {
     console.error('Error fetching propagation stats:', error);
     return NextResponse.json(
