@@ -94,8 +94,8 @@ export class CareHistoryQueries {
     
     const sortOrder = filters?.sortOrder === 'asc' ? asc(sortField) : desc(sortField);
 
-    // Build the query
-    let query = db
+    // Build the query with default pagination to avoid unbounded results
+    const results = await db
       .select({
         careHistory: careHistory,
         plantInstance: plantInstances,
@@ -105,17 +105,9 @@ export class CareHistoryQueries {
       .leftJoin(plantInstances, eq(careHistory.plantInstanceId, plantInstances.id))
       .leftJoin(plants, eq(plantInstances.plantId, plants.id))
       .where(and(...conditions))
-      .orderBy(sortOrder);
-
-    // Apply pagination
-    if (filters?.limit) {
-      query = query.limit(filters.limit) as any;
-    }
-    if (filters?.offset) {
-      query = query.offset(filters.offset) as any;
-    }
-
-    const results = await query;
+      .orderBy(sortOrder)
+      .limit(filters?.limit ?? 100)
+      .offset(filters?.offset ?? 0);
 
     return results.map(result => this.enhanceCareHistory(result.careHistory, result.plantInstance, result.plant));
   }
@@ -155,8 +147,8 @@ export class CareHistoryQueries {
     
     const sortOrder = filters?.sortOrder === 'asc' ? asc(sortField) : desc(sortField);
 
-    // Build the query
-    let query = db
+    // Build the query with default pagination to avoid unbounded results
+    const results = await db
       .select({
         careHistory: careHistory,
         plantInstance: plantInstances,
@@ -166,17 +158,9 @@ export class CareHistoryQueries {
       .leftJoin(plantInstances, eq(careHistory.plantInstanceId, plantInstances.id))
       .leftJoin(plants, eq(plantInstances.plantId, plants.id))
       .where(and(...conditions))
-      .orderBy(sortOrder);
-
-    // Apply pagination
-    if (filters?.limit) {
-      query = query.limit(filters.limit) as any;
-    }
-    if (filters?.offset) {
-      query = query.offset(filters.offset) as any;
-    }
-
-    const results = await query;
+      .orderBy(sortOrder)
+      .limit(filters?.limit ?? 100)
+      .offset(filters?.offset ?? 0);
 
     return results.map(result => this.enhanceCareHistory(result.careHistory, result.plantInstance, result.plant));
   }

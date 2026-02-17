@@ -3,7 +3,7 @@ import type { PlantInstanceData, PlantInstanceFilter } from '@/lib/validation/pl
 import type { CareStatus, CareUrgency } from './care-types';
 
 // Advanced search result interface
-export interface AdvancedSearchResult extends PlantInstanceSearchResult {
+export interface AdvancedSearchResult extends Omit<PlantInstanceSearchResult, 'facets'> {
   // Search metadata
   searchId: string;
   searchType: 'basic' | 'advanced' | 'fuzzy' | 'preset';
@@ -89,6 +89,15 @@ export interface PlantInstanceSearchResult {
   hasMore: boolean;
   searchTime: number;
   filters: PlantInstanceFilter;
+  stats?: {
+    totalPlants: number;
+    activePlants: number;
+    overdueFertilizer: number;
+    dueSoon: number;
+  };
+  facets?: {
+    locations: string[];
+  };
 }
 
 // Plant instance grid view options

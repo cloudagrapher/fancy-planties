@@ -56,7 +56,7 @@ export interface SearchHistoryEntry {
 }
 
 // Advanced search result with metadata
-export interface AdvancedSearchResult extends PlantInstanceSearchResult {
+export interface AdvancedSearchResult extends Omit<PlantInstanceSearchResult, 'facets'> {
   // Search metadata
   searchId: string;
   searchType: 'basic' | 'advanced' | 'fuzzy' | 'preset';
@@ -258,8 +258,10 @@ export class AdvancedSearchService {
 
     const searchResult = await PlantInstanceQueries.getWithFilters(filters);
     
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { facets: _baseFacets, ...baseResult } = searchResult;
     const result: AdvancedSearchResult = {
-      ...searchResult,
+      ...baseResult,
       searchId: this.generateSearchId(),
       searchType: 'preset',
       suggestions: [],

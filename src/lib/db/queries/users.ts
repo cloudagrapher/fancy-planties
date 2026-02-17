@@ -64,8 +64,9 @@ export class UserQueries {
   static async delete(id: number): Promise<boolean> {
     try {
       const result = await db.delete(users).where(eq(users.id, id));
-      // Drizzle returns an array-like object with rowCount property
-      return (result as any).rowCount > 0;
+      // Drizzle pg driver returns { rowCount: number }
+      const rowCount = (result as { rowCount?: number }).rowCount ?? 0;
+      return rowCount > 0;
     } catch (error) {
       console.error("Failed to delete user:", error);
       throw new Error("Failed to delete user");
