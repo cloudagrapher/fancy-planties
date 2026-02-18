@@ -102,8 +102,7 @@ export class S3ImageService {
 
     if (!uploadResponse.ok) {
       const errorText = await uploadResponse.text();
-      console.error('S3 upload failed:', errorText);
-      throw new Error('Failed to upload image to S3');
+      throw new Error(`Failed to upload image to S3: ${errorText}`);
     }
 
     // Return the S3 key for database storage
