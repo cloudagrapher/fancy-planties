@@ -1190,17 +1190,13 @@ export class PlantInstanceQueries {
 
       // Add stats if requested
       if (includeStats) {
-        const stats = await this.getCareStats(userId);
-        (result as any).stats = stats;
+        result.stats = await this.getCareStats(userId);
       }
 
       // Add facets if requested (simplified implementation)
       if (includeFacets) {
         const locations = await this.getUserLocations(userId);
-        (result as any).facets = {
-          locations,
-          // You could add more facets here like plant families, care status, etc.
-        };
+        result.facets = { locations };
       }
 
       return result;
