@@ -141,8 +141,7 @@ export class S3ImageService {
       throw new Error(error.error || 'Failed to initialize CloudFront cookies');
     }
 
-    const data = await response.json();
-    console.log('[S3ImageService] CloudFront cookies initialized:', data);
+    await response.json();
   }
 
   /**
