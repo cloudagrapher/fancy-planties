@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo, useMemo } from 'react';
 import Image from 'next/image';
 import S3Image from '@/components/shared/S3Image';
 import type { EnhancedPlantInstance } from '@/lib/types/care-types';
@@ -43,7 +43,7 @@ interface CareTaskCardProps {
   showUrgency?: boolean;
 }
 
-export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }: CareTaskCardProps) {
+const CareTaskCard = memo(function CareTaskCard({ plant, onQuickCare, showUrgency = false }: CareTaskCardProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleQuickCare = async (careType: string) => {
@@ -55,7 +55,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
     }
   };
 
-  const getCareStatusInfo = () => {
+  const statusInfo = useMemo(() => {
     switch (plant.careStatus) {
       case 'overdue':
         return {
@@ -86,9 +86,7 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
           message: 'Recently cared for',
         };
     }
-  };
-
-  const statusInfo = getCareStatusInfo();
+  }, [plant.careStatus, plant.daysUntilFertilizerDue]);
 
   return (
     <div className={`rounded-lg border p-3 sm:p-4 ${statusInfo.color} transition-all hover:shadow-md w-full max-w-full overflow-hidden`}>
@@ -170,4 +168,6 @@ export default function CareTaskCard({ plant, onQuickCare, showUrgency = false }
       </div>
     </div>
   );
-}
+});
+
+export default CareTaskCard;

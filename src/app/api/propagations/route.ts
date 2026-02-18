@@ -75,7 +75,9 @@ export async function GET(request: NextRequest) {
       propagations = await PropagationQueries.getByUserId(user.id);
     }
 
-    return NextResponse.json(propagations);
+    const response = NextResponse.json(propagations);
+    response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    return response;
   } catch (error) {
     console.error('Error fetching propagations:', error);
     return NextResponse.json(

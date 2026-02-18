@@ -1,5 +1,7 @@
 'use client';
 
+import { memo } from 'react';
+
 interface CareStatisticsProps {
   statistics: {
     totalActivePlants: number;
@@ -12,7 +14,7 @@ interface CareStatisticsProps {
   };
 }
 
-export default function CareStatistics({ statistics }: CareStatisticsProps) {
+const CareStatistics = memo(function CareStatistics({ statistics }: CareStatisticsProps) {
   const getStreakMessage = (days: number) => {
     if (days === 0) return 'Start your streak!';
     if (days === 1) return '1 day streak';
@@ -115,4 +117,6 @@ export default function CareStatistics({ statistics }: CareStatisticsProps) {
       </div>
     </div>
   );
-}
+});
+
+export default CareStatistics;
