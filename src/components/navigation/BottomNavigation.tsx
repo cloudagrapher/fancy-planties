@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { useState } from 'react';
 
 interface NavigationItem {
   id: string;
@@ -35,6 +35,8 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
       return response.json() as Promise<{ isCurator: boolean }>;
     },
     staleTime: 1000 * 60 * 30, // 30 minutes — curator status rarely changes
+    gcTime: 1000 * 60 * 30,
+    retry: 1,
   });
 
   const isCurator = curatorData?.isCurator ?? false;
@@ -50,6 +52,8 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
     enabled: isCurator,
     staleTime: 1000 * 30, // 30 seconds
     refetchInterval: 1000 * 30, // Poll every 30 seconds
+    gcTime: 1000 * 60 * 5,
+    retry: 1,
   });
 
   const pendingApprovals = pendingData?.count ?? 0;
