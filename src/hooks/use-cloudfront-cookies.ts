@@ -20,13 +20,9 @@ export function useCloudFrontCookies(isAuthenticated: boolean) {
       const cookiesInitialized = document.cookie.includes('CloudFront-Key-Pair-Id');
 
       if (!cookiesInitialized) {
-        console.log('[useCloudFrontCookies] Initializing CloudFront signed cookies...');
-        S3ImageService.initializeSignedCookies().catch(error => {
-          console.error('[useCloudFrontCookies] Failed to initialize cookies:', error);
+        S3ImageService.initializeSignedCookies().catch(() => {
           // Non-fatal: images will still work if cookies are set later
         });
-      } else {
-        console.log('[useCloudFrontCookies] CloudFront cookies already initialized');
       }
     }
   }, [isAuthenticated]);

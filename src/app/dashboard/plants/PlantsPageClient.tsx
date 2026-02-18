@@ -231,9 +231,7 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
             setSelectedPlant(null);
           }}
           onEdit={handlePlantEdit}
-          onCareLog={(plantId, careType) => {
-            // Care logged successfully
-          }}
+          onCareLog={refreshPlantData}
         />
       )}
 
