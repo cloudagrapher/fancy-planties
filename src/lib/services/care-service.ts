@@ -33,47 +33,51 @@ export class CareService {
       // Validate input
       const validation = careValidation.validateCareForm(careData);
       if (!validation.success) {
+        console.error('logCareEvent validation failed:', validation.error.issues);
         return {
           success: false,
           error: validation.error.issues[0]?.message || 'Invalid care data'
         };
       }
 
+      // Use validated data to ensure defaults/transforms are applied
+      const validatedData = validation.data;
+
       // Create care history entry
       const newCareHistory = await CareHistoryQueries.createCareHistory({
         userId,
-        plantInstanceId: careData.plantInstanceId,
-        careType: careData.careType,
-        careDate: careData.careDate,
-        notes: careData.notes,
-        fertilizerType: careData.fertilizerType,
-        potSize: careData.potSize,
-        soilType: careData.soilType,
-        images: careData.images || [],
+        plantInstanceId: validatedData.plantInstanceId,
+        careType: validatedData.careType,
+        careDate: validatedData.careDate,
+        notes: validatedData.notes,
+        fertilizerType: validatedData.fertilizerType,
+        potSize: validatedData.potSize,
+        soilType: validatedData.soilType,
+        images: validatedData.images || [],
       });
 
       // Update plant instance if needed
-      if (careData.updateSchedule && careData.careType === 'fertilizer') {
+      if (validatedData.updateSchedule && validatedData.careType === 'fertilizer') {
         await this.updatePlantFertilizerSchedule(
-          careData.plantInstanceId,
+          validatedData.plantInstanceId,
           userId,
-          careData.careDate
+          validatedData.careDate
         );
       }
 
-      if (careData.careType === 'repot') {
+      if (validatedData.careType === 'repot') {
         await this.updatePlantRepotDate(
-          careData.plantInstanceId,
+          validatedData.plantInstanceId,
           userId,
-          careData.careDate
+          validatedData.careDate
         );
       }
 
-      if (careData.careType === 'flush') {
+      if (validatedData.careType === 'flush') {
         await this.updatePlantFlushDate(
-          careData.plantInstanceId,
+          validatedData.plantInstanceId,
           userId,
-          careData.careDate
+          validatedData.careDate
         );
       }
 
@@ -119,16 +123,8 @@ export class CareService {
     quickCareData: QuickCareLogInput
   ): Promise<{ success: boolean; careHistory?: EnhancedCareHistory; error?: string }> {
     try {
-      // Validate input
-      const validation = careValidation.validateQuickCareLog(quickCareData);
-      if (!validation.success) {
-        return {
-          success: false,
-          error: validation.error.issues[0]?.message || 'Invalid quick care data'
-        };
-      }
-
-      // Convert to full care form data
+      // Data is already validated by the API route — no need to re-validate here.
+      // Convert to full care form data for logCareEvent.
       const careFormData: CareFormInput = {
         plantInstanceId: quickCareData.plantInstanceId,
         careType: quickCareData.careType,
@@ -472,17 +468,29 @@ export class CareService {
     userId: number,
     flushDate: Date
   ): Promise<void> {
-    await db
-      .update(plantInstances)
-      .set({
-        lastFlush: flushDate,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(plantInstances.id, plantInstanceId),
-          eq(plantInstances.userId, userId)
+    try {
+      const result = await db
+        .update(plantInstances)
+        .set({
+          lastFlush: flushDate,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(plantInstances.id, plantInstanceId),
+            eq(plantInstances.userId, userId)
+          )
         )
-      );
+        .returning({ id: plantInstances.id });
+
+      if (result.length === 0) {
+        console.error(
+          `updatePlantFlushDate: No rows updated for plantInstanceId=${plantInstanceId}, userId=${userId}`
+        );
+      }
+    } catch (error) {
+      console.error('updatePlantFlushDate failed:', error);
+      throw error;
+    }
   }
 }
