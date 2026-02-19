@@ -110,6 +110,9 @@ export default function PlantDetailModal({
       queryClient.invalidateQueries({ queryKey: ['plant-instances'] });
       queryClient.invalidateQueries({ queryKey: ['care-dashboard'] });
     },
+    onError: (error) => {
+      console.error('Quick care mutation failed:', error);
+    },
   });
 
   // Handle quick care action
@@ -358,6 +361,20 @@ function PlantOverview({
               <label className="text-sm font-medium text-gray-700">Family</label>
               <p className="text-gray-900">{plant.plant.family}</p>
             </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Genus</label>
+              <p className="text-gray-900">{plant.plant.genus}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Species</label>
+              <p className="text-gray-900">{plant.plant.species}</p>
+            </div>
+            {plant.plant.cultivar && (
+              <div>
+                <label className="text-sm font-medium text-gray-700">Cultivar</label>
+                <p className="text-gray-900">{plant.plant.cultivar}</p>
+              </div>
+            )}
             <div>
               <label className="text-sm font-medium text-gray-700">Common Name</label>
               <p className="text-gray-900">{plant.plant.commonName}</p>
