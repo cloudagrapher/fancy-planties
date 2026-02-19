@@ -104,31 +104,6 @@ export async function rateLimit(identifier: string, dbInstance = db): Promise<{ 
   }
 }
 
-// Authentication middleware for API routes
-export async function withAuth(
-  request: NextRequest,
-  handler: (request: NextRequest, user: User) => Promise<NextResponse>
-): Promise<NextResponse> {
-  try {
-    const { user, session } = await validateRequest();
-    
-    if (!user || !session) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-    
-    return await handler(request, user);
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
 // Rate limiting middleware for API routes
 export async function withRateLimit(
   request: NextRequest,
@@ -169,55 +144,6 @@ export async function withRateLimit(
     return response;
   } catch (error) {
     console.error('Rate limit middleware error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-// Combined middleware for authenticated and rate-limited routes
-export async function withAuthAndRateLimit(
-  request: NextRequest,
-  handler: (request: NextRequest, user: User) => Promise<NextResponse>
-): Promise<NextResponse> {
-  return withRateLimit(request, async (req) => {
-    return withAuth(req, handler);
-  });
-}
-
-// CSRF protection middleware
-export async function withCSRFProtection(
-  request: NextRequest,
-  handler: (request: NextRequest) => Promise<NextResponse>
-): Promise<NextResponse> {
-  try {
-    // Skip CSRF for GET requests
-    if (request.method === 'GET') {
-      return await handler(request);
-    }
-    
-    const csrfToken = request.headers.get('x-csrf-token');
-    const sessionCookie = request.cookies.get('auth-session');
-    
-    if (!csrfToken || !sessionCookie) {
-      return NextResponse.json(
-        { error: 'CSRF token missing' },
-        { status: 403 }
-      );
-    }
-    
-    const { session } = await validateRequest();
-    if (!session || !validateCSRFToken(csrfToken, session.id)) {
-      return NextResponse.json(
-        { error: 'Invalid CSRF token' },
-        { status: 403 }
-      );
-    }
-    
-    return await handler(request);
-  } catch (error) {
-    console.error('CSRF middleware error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
