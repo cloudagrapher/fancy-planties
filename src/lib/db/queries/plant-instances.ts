@@ -24,6 +24,7 @@ import {
 } from "drizzle-orm";
 import { db } from "../index";
 import {
+  careHistory,
   plantInstances,
   plants,
   type NewPlantInstance,
@@ -702,12 +703,6 @@ export class PlantInstanceQueries {
     userId: number
   ): Promise<CareDashboardData> {
     try {
-      const now = new Date();
-      const tomorrow = new Date();
-      tomorrow.setDate(now.getDate() + 1);
-      const weekFromNow = new Date();
-      weekFromNow.setDate(now.getDate() + 7);
-
       // Get all active instances with plant data
       const instances = await this.getEnhancedByUserId(userId, true);
 
@@ -753,41 +748,58 @@ export class PlantInstanceQueries {
     }
   }
 
-  // Calculate care streak
+  /**
+   * Calculate care streak: count consecutive days (ending today or yesterday)
+   * where at least one care action was logged in care_history.
+   *
+   * Uses a single SQL query to get distinct care dates in the last 90 days,
+   * then walks backwards from the most recent date.
+   */
   static async calculateCareStreak(userId: number): Promise<number> {
     try {
-      // This is a simplified implementation
-      // In a real app, you might want to track care events in a separate table
-      const instances = await db
-        .select({
-          lastFertilized: plantInstances.lastFertilized,
+      // Get distinct care dates for the user in the last 90 days, ordered desc
+      const rows = await db
+        .selectDistinct({
+          careDay: sql<string>`date(${careHistory.careDate})`.as("care_day"),
         })
-        .from(plantInstances)
+        .from(careHistory)
         .where(
           and(
-            eq(plantInstances.userId, userId),
-            eq(plantInstances.isActive, true),
-            isNotNull(plantInstances.lastFertilized)
+            eq(careHistory.userId, userId),
+            gte(
+              careHistory.careDate,
+              sql`now() - interval '90 days'`
+            )
           )
         )
-        .orderBy(desc(plantInstances.lastFertilized));
+        .orderBy(desc(sql`date(${careHistory.careDate})`));
 
-      if (instances.length === 0) return 0;
+      if (rows.length === 0) return 0;
 
-      // Simple streak calculation based on recent fertilizer applications
-      let streak = 0;
-      const now = new Date();
+      // Convert to Date objects (date-only strings like "2026-02-18")
+      const careDates = rows.map((r) => new Date(r.careDay + "T00:00:00"));
 
-      for (const instance of instances) {
-        if (!instance.lastFertilized) break;
+      // The streak must start from today or yesterday to be "active"
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
 
-        const daysSince = Math.floor(
-          (now.getTime() - instance.lastFertilized.getTime()) /
-            (1000 * 60 * 60 * 24)
-        );
+      const mostRecent = careDates[0];
+      if (mostRecent.getTime() !== today.getTime() && mostRecent.getTime() !== yesterday.getTime()) {
+        return 0; // Streak is broken
+      }
 
-        if (daysSince <= 1) {
-          streak = Math.max(streak, 1);
+      // Walk backwards counting consecutive days
+      let streak = 1;
+      for (let i = 1; i < careDates.length; i++) {
+        const expected = new Date(careDates[i - 1]);
+        expected.setDate(expected.getDate() - 1);
+
+        if (careDates[i].getTime() === expected.getTime()) {
+          streak++;
+        } else {
+          break;
         }
       }
 
