@@ -416,8 +416,8 @@ export class CareHistoryQueries {
       p.lastFertilized && p.lastFertilized >= threeDaysAgo
     );
 
-    // Calculate care streak (consecutive days with proper care)
-    const careStreakDays = this.calculateUserCareStreak(userId, recentCareHistory);
+    // Calculate care streak (consecutive days with at least one care event)
+    const careStreakDays = await this.calculateUserCareStreak(userId);
 
     // Calculate average care consistency across all plants
     const averageCareConsistency = enhancedPlants.length > 0
@@ -540,29 +540,51 @@ export class CareHistoryQueries {
   /**
    * Private helper to calculate user care streak
    */
-  private static calculateUserCareStreak(
-    userId: number,
-    recentCareHistory: CareHistory[]
-  ): number {
-    // Simplified care streak calculation
-    // Count consecutive days with at least one care event
-    const careByDate = recentCareHistory.reduce((acc, care) => {
-      const dateKey = care.careDate.toISOString().split('T')[0];
-      acc[dateKey] = true;
-      return acc;
-    }, {} as Record<string, boolean>);
+  /**
+   * Calculate a user's care streak: consecutive days (ending today or yesterday)
+   * with at least one care event logged.
+   *
+   * Queries the last 90 days of care_history to avoid being limited by the
+   * 7-day window of the `recentCareHistory` parameter that was previously used.
+   */
+  static async calculateUserCareStreak(userId: number): Promise<number> {
+    // Get distinct care dates for the user in the last 90 days
+    const rows = await db
+      .selectDistinct({
+        careDay: sql<string>`date(${careHistory.careDate})`.as("care_day"),
+      })
+      .from(careHistory)
+      .where(
+        and(
+          eq(careHistory.userId, userId),
+          gte(careHistory.careDate, sql`now() - interval '90 days'`)
+        )
+      )
+      .orderBy(desc(sql`date(${careHistory.careDate})`));
 
-    let streak = 0;
+    if (rows.length === 0) return 0;
+
+    const careDates = rows.map((r) => new Date(r.careDay + "T00:00:00"));
+
+    // The streak must start from today or yesterday to be "active"
     const today = new Date();
-    
-    for (let i = 0; i < 30; i++) { // Check last 30 days
-      const checkDate = new Date(today);
-      checkDate.setDate(checkDate.getDate() - i);
-      const dateKey = checkDate.toISOString().split('T')[0];
-      
-      if (careByDate[dateKey]) {
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const mostRecent = careDates[0];
+    if (mostRecent.getTime() !== today.getTime() && mostRecent.getTime() !== yesterday.getTime()) {
+      return 0;
+    }
+
+    let streak = 1;
+    for (let i = 1; i < careDates.length; i++) {
+      const expected = new Date(careDates[i - 1]);
+      expected.setDate(expected.getDate() - 1);
+
+      if (careDates[i].getTime() === expected.getTime()) {
         streak++;
-      } else if (i > 0) { // Don't break on first day (today) if no care
+      } else {
         break;
       }
     }
