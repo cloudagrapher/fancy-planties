@@ -64,17 +64,20 @@ export default function DashboardStatistics({ userId, className = '' }: Dashboar
   });
 
   // Fetch care dashboard statistics
+  // Uses the same queryKey as CareDashboard so the cache is shared and we
+  // don't fire a duplicate request for the same endpoint.
   const { data: careStats, isLoading: careLoading, error: careError } = useQuery({
-    queryKey: ['care-dashboard-stats', userId],
-    queryFn: async (): Promise<CareStats> => {
-      const response = await apiFetch('/api/care/dashboard');
+    queryKey: ['care-dashboard', userId],
+    queryFn: async () => {
+      const response = await apiFetch(`/api/care/dashboard?userId=${userId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch care statistics');
       }
-      const data = await response.json();
-      return data.statistics;
+      return response.json();
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes (more frequent for care data)
+    select: (data): CareStats => data.statistics,
+    staleTime: 1000 * 30, // 30 seconds — match CareDashboard's staleTime
+    gcTime: 1000 * 60 * 5,
     retry: 2,
   });
 

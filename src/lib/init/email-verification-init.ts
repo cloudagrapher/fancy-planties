@@ -12,7 +12,7 @@ export async function initializeEmailVerification(): Promise<void> {
     return;
   }
   
-  console.log('[INIT] Initializing email verification system...');
+  if (process.env.NODE_ENV === 'development') console.log('[INIT] Initializing email verification system...');
   
   try {
     // Run startup cleanup
@@ -27,7 +27,7 @@ export async function initializeEmailVerification(): Promise<void> {
     }
     
     isInitialized = true;
-    console.log('[INIT] Email verification system initialized successfully');
+    if (process.env.NODE_ENV === 'development') console.log('[INIT] Email verification system initialized successfully');
     
   } catch (error) {
     console.error('[INIT] Failed to initialize email verification system:', error);

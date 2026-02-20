@@ -140,7 +140,7 @@ export class SessionQueries {
   static async cleanup(): Promise<{ deletedCount: number }> {
     try {
       const deletedCount = await this.deleteExpired();
-      console.log(`Cleaned up ${deletedCount} expired sessions`);
+      if (process.env.NODE_ENV === 'development') console.log(`Cleaned up ${deletedCount} expired sessions`);
       return { deletedCount };
     } catch (error) {
       console.error("Failed to cleanup sessions:", error);

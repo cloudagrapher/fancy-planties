@@ -63,7 +63,7 @@ export class ResendEmailService implements EmailService {
       // Record success in monitor
       emailServiceMonitor.recordSuccess(responseTime);
       
-      console.log('Password reset email sent successfully:', data?.id);
+      if (process.env.NODE_ENV === 'development') console.log('Password reset email sent successfully:', data?.id);
       return true;
       
     } catch (error) {
@@ -129,7 +129,7 @@ export class ResendEmailService implements EmailService {
       // Record success in monitor
       emailServiceMonitor.recordSuccess(responseTime);
       
-      console.log('Verification email sent successfully:', data?.id);
+      if (process.env.NODE_ENV === 'development') console.log('Verification email sent successfully:', data?.id);
       return true;
       
     } catch (error) {
