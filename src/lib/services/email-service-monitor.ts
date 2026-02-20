@@ -168,7 +168,7 @@ export class EmailServiceMonitor {
    * Reset daily statistics (called automatically)
    */
   resetDailyStats(): void {
-    console.log('[EMAIL_MONITOR] Resetting daily statistics');
+    if (process.env.NODE_ENV === 'development') console.log('[EMAIL_MONITOR] Resetting daily statistics');
     
     this.stats.totalSent = 0;
     this.stats.totalFailed = 0;
@@ -186,7 +186,7 @@ export class EmailServiceMonitor {
    * Force reset statistics (for testing or manual reset)
    */
   forceReset(): void {
-    console.log('[EMAIL_MONITOR] Force resetting statistics');
+    if (process.env.NODE_ENV === 'development') console.log('[EMAIL_MONITOR] Force resetting statistics');
     this.resetDailyStats();
   }
 

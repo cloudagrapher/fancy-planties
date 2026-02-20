@@ -32,11 +32,11 @@ export class EmailVerificationCleanupService {
     const startTime = Date.now();
     
     try {
-      console.log('[CLEANUP] Starting email verification cleanup...');
+      if (process.env.NODE_ENV === 'development') console.log('[CLEANUP] Starting email verification cleanup...');
       
       // Clean up expired verification codes
       const expiredCodes = await emailVerificationCodeService.cleanupExpiredCodes();
-      console.log(`[CLEANUP] Removed ${expiredCodes} expired verification codes`);
+      if (process.env.NODE_ENV === 'development') console.log(`[CLEANUP] Removed ${expiredCodes} expired verification codes`);
       
       // Clean up rate limit data
       const rateLimitStatsBefore = emailVerificationRateLimiter.getStats();
@@ -49,7 +49,7 @@ export class EmailVerificationCleanupService {
         (rateLimitStatsBefore.emailVerificationActivity - rateLimitStatsAfter.emailVerificationActivity) +
         (rateLimitStatsBefore.resendCooldowns - rateLimitStatsAfter.resendCooldowns);
       
-      console.log(`[CLEANUP] Cleaned up ${rateLimitDataCleaned} rate limit entries`);
+      if (process.env.NODE_ENV === 'development') console.log(`[CLEANUP] Cleaned up ${rateLimitDataCleaned} rate limit entries`);
       
       // Check email service health
       const emailHealth = emailServiceMonitor.getHealthStatus();
@@ -83,7 +83,7 @@ export class EmailVerificationCleanupService {
       this.lastCleanup = startTime;
       
       const duration = Date.now() - startTime;
-      console.log(`[CLEANUP] Email verification cleanup completed in ${duration}ms`);
+      if (process.env.NODE_ENV === 'development') console.log(`[CLEANUP] Email verification cleanup completed in ${duration}ms`);
       
       return stats;
       
@@ -99,7 +99,7 @@ export class EmailVerificationCleanupService {
    * Schedule automatic cleanup to run periodically
    */
   scheduleCleanup(intervalMs: number = 60 * 60 * 1000): void { // Default: 1 hour
-    console.log(`[CLEANUP] Scheduling email verification cleanup every ${intervalMs / 1000} seconds`);
+    if (process.env.NODE_ENV === 'development') console.log(`[CLEANUP] Scheduling email verification cleanup every ${intervalMs / 1000} seconds`);
     
     const runScheduledCleanup = async () => {
       try {
@@ -120,11 +120,11 @@ export class EmailVerificationCleanupService {
    * Run startup cleanup to clean any leftover data
    */
   async runStartupCleanup(): Promise<CleanupStats> {
-    console.log('[CLEANUP] Running startup cleanup...');
+    if (process.env.NODE_ENV === 'development') console.log('[CLEANUP] Running startup cleanup...');
     
     try {
       const stats = await this.runCleanup();
-      console.log('[CLEANUP] Startup cleanup completed successfully');
+      if (process.env.NODE_ENV === 'development') console.log('[CLEANUP] Startup cleanup completed successfully');
       return stats;
     } catch (error) {
       console.error('[CLEANUP] Startup cleanup failed:', error);
@@ -224,7 +224,7 @@ export class EmailVerificationCleanupService {
       throw new Error('Cleanup is already running. Please wait for it to complete.');
     }
     
-    console.log('[CLEANUP] Force cleanup requested');
+    if (process.env.NODE_ENV === 'development') console.log('[CLEANUP] Force cleanup requested');
     return await this.runCleanup();
   }
 }

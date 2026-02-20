@@ -24,7 +24,7 @@ export class ServiceWorkerManager {
    */
   async register(): Promise<boolean> {
     if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
-      console.log('Service Worker not supported');
+      if (process.env.NODE_ENV === 'development') console.log('Service Worker not supported');
       return false;
     }
 
@@ -33,7 +33,7 @@ export class ServiceWorkerManager {
         scope: '/',
       });
 
-      console.log('Service Worker registered successfully');
+      if (process.env.NODE_ENV === 'development') console.log('Service Worker registered successfully');
 
       // Listen for updates
       this.registration.addEventListener('updatefound', () => {
@@ -112,13 +112,13 @@ export class ServiceWorkerManager {
 
     switch (type) {
       case 'SYNC_COMPLETE':
-        console.log('Background sync completed:', data);
+        if (process.env.NODE_ENV === 'development') console.log('Background sync completed:', data);
         // Dispatch custom event for React components to listen to
         window.dispatchEvent(new CustomEvent('sw-sync-complete', { detail: data }));
         break;
 
       default:
-        console.log('Unknown message from service worker:', type);
+        if (process.env.NODE_ENV === 'development') console.log('Unknown message from service worker:', type);
     }
   }
 
