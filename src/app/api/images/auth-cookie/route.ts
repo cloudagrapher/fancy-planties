@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
       if (process.env.NODE_ENV === 'development') {
         console.log(`[CloudFront Cookie] Setting cookies for domain: ${cookieDomain} with sameSite=none`);
       }
-    } else {
+    } else if (process.env.NODE_ENV === 'development') {
       console.warn('[CloudFront Cookie] WARNING: Could not determine cookie domain - CloudFront cookies may not work!');
       console.warn('[CloudFront Cookie] Current host:', requestHost);
       console.warn('[CloudFront Cookie] CloudFront domain:', cloudfrontDomain);

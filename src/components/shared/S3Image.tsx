@@ -1,9 +1,49 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import Image from 'next/image';
 import { S3ImageService, type ThumbnailSize } from '@/lib/services/s3-image-service';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
+
+/**
+ * Shared singleton that tracks CloudFront cookie readiness.
+ * All S3Image instances subscribe to a single store instead of each
+ * running its own 100ms polling interval.
+ */
+const cloudfrontCookieStore = (() => {
+  let ready = false;
+  const listeners = new Set<() => void>();
+
+  function check() {
+    if (ready) return;
+    if (typeof document !== 'undefined' && document.cookie.includes('CloudFront-Key-Pair-Id')) {
+      ready = true;
+      listeners.forEach(fn => fn());
+    }
+  }
+
+  // Start polling only once on the client
+  if (typeof window !== 'undefined') {
+    check();
+    if (!ready) {
+      const id = setInterval(() => {
+        check();
+        if (ready) clearInterval(id);
+      }, 200);
+      // Give up after 3 seconds — cookies should be set by then
+      setTimeout(() => clearInterval(id), 3000);
+    }
+  }
+
+  return {
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => { listeners.delete(listener); };
+    },
+    getSnapshot() { return ready; },
+    getServerSnapshot() { return false; },
+  };
+})();
 
 interface S3ImageBaseProps {
   s3Key: string;
@@ -64,37 +104,23 @@ export default function S3Image(props: S3ImageProps) {
 
   const [thumbnailFailed, setThumbnailFailed] = useState(false);
   const [originalFailed, setOriginalFailed] = useState(false);
-  // State triggers re-render when cookies arrive; ref avoids re-starting the poll
-  const [, setCookiesReady] = useState(false);
-  const cookiesReadyRef = useRef(false);
 
-  // Monitor CloudFront cookies and reset failure states when cookies become available
+  // Subscribe to the shared cookie readiness store instead of per-component polling
+  const cookiesReady = useSyncExternalStore(
+    cloudfrontCookieStore.subscribe,
+    cloudfrontCookieStore.getSnapshot,
+    cloudfrontCookieStore.getServerSnapshot,
+  );
+
+  // Reset failure states when cookies become available (allows retry)
+  const prevCookiesReady = useRef(false);
   useEffect(() => {
-    const checkCookies = () => {
-      if (cookiesReadyRef.current) return; // Already ready, stop checking
-      const hasCookies = document.cookie.includes('CloudFront-Key-Pair-Id');
-      if (hasCookies) {
-        cookiesReadyRef.current = true;
-        setCookiesReady(true);
-        // Reset failure states to allow retry now that cookies are available
-        setThumbnailFailed(false);
-        setOriginalFailed(false);
-      }
-    };
-
-    // Check immediately
-    checkCookies();
-
-    // Only poll if cookies aren't ready yet
-    if (!cookiesReadyRef.current) {
-      const intervalId = setInterval(checkCookies, 100);
-      const timeoutId = setTimeout(() => clearInterval(intervalId), 2000);
-      return () => {
-        clearInterval(intervalId);
-        clearTimeout(timeoutId);
-      };
+    if (cookiesReady && !prevCookiesReady.current) {
+      prevCookiesReady.current = true;
+      setThumbnailFailed(false);
+      setOriginalFailed(false);
     }
-  }, []); // No dependencies — runs once, ref tracks state
+  }, [cookiesReady]);
 
   // Determine which URL to use (thumbnail or original)
   const imageUrl = (() => {

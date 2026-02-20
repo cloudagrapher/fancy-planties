@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   BookOpen, 
   Plus, 
   Search, 
   Filter, 
-  Leaf, 
   Tag,
   Globe,
   Lock,
@@ -84,7 +84,7 @@ const SectionHeader = ({
   </div>
 );
 
-const CareGuideCard = ({ guide, onClick, userId }: { guide: CareGuide; onClick: () => void; userId: number }) => {
+const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => void }) => {
   const getTaxonomyDisplay = (guide: CareGuide) => {
     switch (guide.taxonomyLevel) {
       case 'family':
@@ -212,14 +212,28 @@ const CareGuideCard = ({ guide, onClick, userId }: { guide: CareGuide; onClick: 
   );
 };
 
-export default function HandbookDashboard({ careGuides, userId }: HandbookDashboardProps) {
+export default function HandbookDashboard({ careGuides: initialCareGuides, userId }: HandbookDashboardProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedGuide, setSelectedGuide] = useState<CareGuide | null>(null);
   const [editingGuide, setEditingGuide] = useState<CareGuide | null>(null);
+  const queryClient = useQueryClient();
 
+  // Use React Query with server-rendered data as initial value — no full-page reload needed
+  const { data: careGuides = initialCareGuides } = useQuery<CareGuide[]>({
+    queryKey: ['care-guides', userId],
+    queryFn: async () => {
+      const response = await apiFetch('/api/care-guides');
+      if (!response.ok) throw new Error('Failed to fetch care guides');
+      return response.json();
+    },
+    initialData: initialCareGuides,
+    staleTime: 1000 * 60,
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleCreateGuide = async (formData: any) => {
     try {
       const response = await apiFetch('/api/care-guides', {
@@ -235,17 +249,16 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
         throw new Error(errorData.error || 'Failed to create care guide');
       }
 
-      const newCareGuide = await response.json();
-      
-      // Refresh the page to show the new guide
-      window.location.reload();
-      
+      // Invalidate query to refetch — no full-page reload
+      await queryClient.invalidateQueries({ queryKey: ['care-guides', userId] });
+      setShowCreateForm(false);
     } catch (error) {
       console.error('Failed to create care guide:', error);
       alert(`Failed to create care guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUpdateGuide = async (formData: any) => {
     if (!editingGuide) return;
     
@@ -263,9 +276,9 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
         throw new Error(errorData.error || 'Failed to update care guide');
       }
 
-      // Refresh the page to show the updated guide
-      window.location.reload();
-      
+      // Invalidate query to refetch — no full-page reload
+      await queryClient.invalidateQueries({ queryKey: ['care-guides', userId] });
+      setEditingGuide(null);
     } catch (error) {
       console.error('Failed to update care guide:', error);
       alert(`Failed to update care guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -475,7 +488,6 @@ export default function HandbookDashboard({ careGuides, userId }: HandbookDashbo
               key={guide.id} 
               guide={guide} 
               onClick={() => handleOpenDetail(guide)}
-              userId={userId}
             />
           ))}
         </div>
