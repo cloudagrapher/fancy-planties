@@ -177,7 +177,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       <CareStatistics statistics={dashboardData.statistics} />
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
         {dashboardData.quickActions.map((action) => {
           const hasPlants = dashboardData?.statistics?.totalActivePlants > 0;
           const plantsNeedingCare = dashboardData ? [
