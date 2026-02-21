@@ -2,10 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import S3Image from '@/components/shared/S3Image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
 interface PlantImageGalleryProps {
   images: string[];
+  /** S3 object keys for optimized thumbnail/image loading via CloudFront */
+  s3ImageKeys?: string[];
   initialIndex: number;
   plantName: string;
   isOpen: boolean;
@@ -14,6 +17,7 @@ interface PlantImageGalleryProps {
 
 export default function PlantImageGallery({
   images,
+  s3ImageKeys,
   initialIndex,
   plantName,
   isOpen,
@@ -184,21 +188,31 @@ export default function PlantImageGallery({
             ? 'w-full h-full' 
             : 'max-w-4xl max-h-full'
         }`}>
-          <Image
-            src={images[currentIndex]}
-            alt={`${plantName} photo ${currentIndex + 1}`}
-            fill
-            className={`object-contain transition-all duration-300 ${
-              isZoomed ? 'object-cover' : 'object-contain'
-            }`}
-            sizes="100vw"
-            priority
-            unoptimized={shouldUnoptimizeImage(images[currentIndex])}
-            onError={(e) => {
-              console.error('Failed to load image:', images[currentIndex]);
-              // Could show a fallback image here
-            }}
-          />
+          {s3ImageKeys?.[currentIndex] ? (
+            <S3Image
+              s3Key={s3ImageKeys[currentIndex]}
+              alt={`${plantName} photo ${currentIndex + 1}`}
+              fill
+              className={`object-contain transition-all duration-300 ${
+                isZoomed ? 'object-cover' : 'object-contain'
+              }`}
+              sizes="100vw"
+              priority
+              thumbnailSize="original"
+            />
+          ) : (
+            <Image
+              src={images[currentIndex]}
+              alt={`${plantName} photo ${currentIndex + 1}`}
+              fill
+              className={`object-contain transition-all duration-300 ${
+                isZoomed ? 'object-cover' : 'object-contain'
+              }`}
+              sizes="100vw"
+              priority
+              unoptimized={shouldUnoptimizeImage(images[currentIndex])}
+            />
+          )}
         </div>
       </div>
 
@@ -206,7 +220,7 @@ export default function PlantImageGallery({
       {images.length > 1 && (
         <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-black/50 to-transparent">
           <div className="flex justify-center space-x-2 overflow-x-auto pb-2">
-            {images.map((image, index) => (
+            {(s3ImageKeys || images).map((keyOrImage, index) => (
               <button
                 key={index}
                 onClick={() => {
@@ -219,18 +233,27 @@ export default function PlantImageGallery({
                     : 'border-white/30 hover:border-white/60'
                 }`}
               >
-                <Image
-                  src={image}
-                  alt={`${plantName} thumbnail ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="64px"
-                  loading="lazy"
-                  unoptimized={shouldUnoptimizeImage(image)}
-                  onError={(e) => {
-                    console.error('Failed to load thumbnail:', image);
-                  }}
-                />
+                {s3ImageKeys?.[index] ? (
+                  <S3Image
+                    s3Key={s3ImageKeys[index]}
+                    alt={`${plantName} thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    thumbnailSize="tiny"
+                    sizes="64px"
+                    loading="lazy"
+                  />
+                ) : (
+                  <Image
+                    src={keyOrImage}
+                    alt={`${plantName} thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="64px"
+                    loading="lazy"
+                    unoptimized={shouldUnoptimizeImage(keyOrImage)}
+                  />
+                )}
               </button>
             ))}
           </div>

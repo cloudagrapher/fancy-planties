@@ -2,18 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Image from 'next/image';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
-import type { EnhancedCareHistory, CareTimelineEntry } from '@/lib/types/care-types';
+import type { EnhancedCareHistory } from '@/lib/types/care-types';
 import type { Propagation } from '@/lib/db/schema';
-import { careHelpers } from '@/lib/types/care-types';
 import { plantInstanceHelpers } from '@/lib/types/plant-instance-types';
 import CareHistoryTimeline from '../care/CareHistoryTimeline';
 import PlantNotes from './PlantNotes';
 import PlantImageGallery from './PlantImageGallery';
 import PlantLineage from './PlantLineage';
 import QuickCareActions from '../care/QuickCareActions';
-import { shouldUnoptimizeImage } from '@/lib/image-loader';
+import S3Image from '@/components/shared/S3Image';
 import { apiFetch } from '@/lib/api-client';
 
 interface PlantDetailModalProps {
@@ -272,9 +270,10 @@ export default function PlantDetailModal({
       </div>
 
       {/* Image Gallery Modal */}
-      {isImageGalleryOpen && data?.plant.images && (
+      {isImageGalleryOpen && data?.plant.s3ImageKeys && data.plant.s3ImageKeys.length > 0 && (
         <PlantImageGallery
-          images={data.plant.images}
+          images={data.plant.images || []}
+          s3ImageKeys={data.plant.s3ImageKeys}
           initialIndex={selectedImageIndex}
           plantName={data.plant.displayName}
           isOpen={isImageGalleryOpen}
@@ -302,21 +301,21 @@ function PlantOverview({
       {/* Plant Images */}
       <div className="space-y-4">
         <h3 className="text-lg font-medium text-gray-900">Photos</h3>
-        {plant.images && plant.images.length > 0 ? (
+        {plant.s3ImageKeys && plant.s3ImageKeys.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {plant.images.slice(0, 6).map((image, index) => (
+            {plant.s3ImageKeys.slice(0, 6).map((s3Key, index) => (
               <button
                 key={index}
                 onClick={() => onImageClick(index)}
                 className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 hover:opacity-90 transition-opacity"
               >
-                <Image
-                  src={image}
+                <S3Image
+                  s3Key={s3Key}
                   alt={`${plant.displayName} photo ${index + 1}`}
                   fill
                   className="object-cover"
+                  thumbnailSize="small"
                   sizes="(max-width: 640px) 50vw, 33vw"
-                  unoptimized={shouldUnoptimizeImage(image)}
                 />
                 {index === 0 && (
                   <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
@@ -325,13 +324,13 @@ function PlantOverview({
                 )}
               </button>
             ))}
-            {plant.images.length > 6 && (
+            {plant.s3ImageKeys.length > 6 && (
               <button
                 onClick={() => onImageClick(6)}
                 className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
               >
                 <div className="text-center">
-                  <div className="text-2xl mb-1">+{plant.images.length - 6}</div>
+                  <div className="text-2xl mb-1">+{plant.s3ImageKeys.length - 6}</div>
                   <div className="text-xs">more</div>
                 </div>
               </button>
