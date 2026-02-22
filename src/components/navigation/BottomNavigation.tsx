@@ -50,8 +50,8 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
       return response.json() as Promise<{ count: number }>;
     },
     enabled: isCurator,
-    staleTime: 1000 * 30, // 30 seconds
-    refetchInterval: 1000 * 30, // Poll every 30 seconds
+    staleTime: 1000 * 60 * 2, // 2 minutes
+    refetchInterval: 1000 * 60 * 2, // Poll every 2 minutes (admin count rarely changes)
     gcTime: 1000 * 60 * 5,
     retry: 1,
   });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
 import { Plus, TrendingUp, Clock, CheckCircle, Sprout } from 'lucide-react';
@@ -66,19 +66,25 @@ export default function PropagationDashboard() {
   const loading = propagationsLoading || statsLoading;
   const error = propagationsError || statsError;
 
-  // Group propagations by status
-  const groupedPropagations = propagations.reduce((acc, prop) => {
-    if (!acc[prop.status]) {
-      acc[prop.status] = [];
-    }
-    acc[prop.status].push(prop);
-    return acc;
-  }, {} as Record<string, PropagationWithDetails[]>);
+  // Group propagations by status (memoized to avoid recalculating on every render)
+  const groupedPropagations = useMemo(() => 
+    propagations.reduce((acc, prop) => {
+      if (!acc[prop.status]) {
+        acc[prop.status] = [];
+      }
+      acc[prop.status].push(prop);
+      return acc;
+    }, {} as Record<string, PropagationWithDetails[]>),
+    [propagations]
+  );
 
   // Filter propagations based on selected status
-  const filteredPropagations = selectedStatus 
-    ? groupedPropagations[selectedStatus] || []
-    : propagations;
+  const filteredPropagations = useMemo(() => 
+    selectedStatus 
+      ? groupedPropagations[selectedStatus] || []
+      : propagations,
+    [selectedStatus, groupedPropagations, propagations]
+  );
 
   // Status configuration - Updated enum values
   // Note: Status values changed from ['started', 'rooting', 'planted', 'established']
