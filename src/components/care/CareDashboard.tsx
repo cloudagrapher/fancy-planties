@@ -102,9 +102,11 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       const successCount = results.filter(r => r.status === 'fulfilled').length;
 
       if (successCount > 0) {
-        await queryClient.invalidateQueries({ 
-          queryKey: ['care-dashboard', userId],
-        });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['care-dashboard', userId] }),
+          queryClient.invalidateQueries({ queryKey: ['plant-instances'] }),
+          queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'] }),
+        ]);
       } else {
         throw new Error('Failed to log care for any plants');
       }

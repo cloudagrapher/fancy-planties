@@ -134,22 +134,24 @@ export default function PlantDetailModal({
     }
   };
 
-  // Close modal on escape key
+  // Close modal on escape key and lock body scroll
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
+    // Save the current overflow value so we can restore it on cleanup
+    const previousOverflow = document.body.style.overflow;
+    document.addEventListener('keydown', handleEscape);
+    document.body.style.overflow = 'hidden';
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = previousOverflow;
     };
   }, [isOpen, onClose]);
 
