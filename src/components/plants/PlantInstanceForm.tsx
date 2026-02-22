@@ -132,6 +132,7 @@ export default function PlantInstanceForm({
     commonName: '',
   });
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [initialS3ImageKeys, setInitialS3ImageKeys] = useState<string[]>([]);
   const [newNoteInput, setNewNoteInput] = useState('');
   const queryClient = useQueryClient();
   const isEditing = !!plantInstance;
@@ -309,6 +310,7 @@ export default function PlantInstanceForm({
       // Reset form state
       reset();
       setS3ImageKeys([]);
+      setInitialS3ImageKeys([]);
       setSelectedPlant(null);
       setShowTaxonomyForm(false);
       setHasUnsavedChanges(false);
@@ -355,10 +357,12 @@ export default function PlantInstanceForm({
       });
 
       setS3ImageKeys(plantInstance.s3ImageKeys || []);
+      setInitialS3ImageKeys(plantInstance.s3ImageKeys || []);
     } else {
       reset();
       setSelectedPlant(null);
       setS3ImageKeys([]);
+      setInitialS3ImageKeys([]);
       setShowTaxonomyForm(false);
       setTaxonomyData({
         family: '',
@@ -470,10 +474,12 @@ export default function PlantInstanceForm({
     mutation.mutate(submitData);
   };
 
-  // Track unsaved changes
+  // Track unsaved changes — compare images against initial state, not just length > 0
   useEffect(() => {
-    setHasUnsavedChanges(isDirty || s3ImageKeys.length > 0 || showTaxonomyForm);
-  }, [isDirty, s3ImageKeys.length, showTaxonomyForm]);
+    const imagesChanged = s3ImageKeys.length !== initialS3ImageKeys.length ||
+      s3ImageKeys.some((key, i) => key !== initialS3ImageKeys[i]);
+    setHasUnsavedChanges(isDirty || imagesChanged || showTaxonomyForm);
+  }, [isDirty, s3ImageKeys, initialS3ImageKeys, showTaxonomyForm]);
 
   // Warn about unsaved changes before page unload
   useEffect(() => {
