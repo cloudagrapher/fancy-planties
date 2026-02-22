@@ -340,9 +340,25 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
                 </button>
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100 transition-colors"
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100 transition-colors relative"
                 >
                   <MoreVertical className="w-4 h-4" />
+                  {/* Mobile dropdown menu */}
+                  {showMenu && (
+                    <div className="absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowDeleteConfirm(true);
+                          setShowMenu(false);
+                        }}
+                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4 mr-3" />
+                        Delete Propagation
+                      </button>
+                    </div>
+                  )}
                 </button>
               </div>
             </div>
