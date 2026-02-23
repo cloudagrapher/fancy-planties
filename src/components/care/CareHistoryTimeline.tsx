@@ -1,20 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { memo } from 'react';
 import type { EnhancedCareHistory } from '@/lib/types/care-types';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { careHelpers } from '@/lib/types/care-types';
 
 interface CareHistoryTimelineProps {
   careHistory: EnhancedCareHistory[];
-  plantInstance: EnhancedPlantInstance;
+  /** @deprecated Unused — kept for backward compatibility. */
+  plantInstance?: EnhancedPlantInstance;
   limit?: number;
   showPlantName?: boolean;
 }
 
-export default function CareHistoryTimeline({ 
+export default memo(function CareHistoryTimeline({ 
   careHistory,
-  plantInstance,
   limit = 10, 
   showPlantName = false 
 }: CareHistoryTimelineProps) {
@@ -156,4 +156,4 @@ export default function CareHistoryTimeline({
       )}
     </div>
   );
-}
+})
