@@ -82,26 +82,27 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     try {
       setQuickCareLoading(-1); // Use -1 to indicate bulk operation
       
-      // Log care for multiple plants
-      const promises = plantsNeedingCare.slice(0, 10).map(plant => // Limit to first 10 plants
-        apiFetch('/api/care/quick-log', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            plantInstanceId: plant.id,
-            careType,
-            careDate: new Date().toISOString(),
-            userId,
-          }),
-        })
-      );
+      // Use bulk care endpoint instead of N individual requests
+      const plantIds = plantsNeedingCare.slice(0, 10).map(plant => plant.id);
+      const response = await apiFetch('/api/care/bulk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          plantInstanceIds: plantIds,
+          careType,
+          careDate: new Date().toISOString(),
+        }),
+      });
 
-      const results = await Promise.allSettled(promises);
-      const successCount = results.filter(r => r.status === 'fulfilled').length;
+      if (!response.ok) {
+        throw new Error('Failed to log bulk care');
+      }
 
-      if (successCount > 0) {
+      const result = await response.json();
+
+      if (result.successCount > 0) {
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['care-dashboard', userId] }),
           queryClient.invalidateQueries({ queryKey: ['plant-instances'] }),
