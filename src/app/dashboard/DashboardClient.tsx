@@ -58,9 +58,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
       <div className="container">
         <div className="page-content">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3" style={{ marginBottom: '24px' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900" style={{ marginBottom: '4px' }}>
+              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
                 Hey {user.name}! ✨
               </h1>
               <p className="text-neutral-600 text-sm">
@@ -100,9 +100,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
               {/* Stats Grid */}
               <div className="dashboard-stats-grid">
                 <div className="stat-card card--mint">
-                  <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🌱</div>
+                  <div className="text-3xl mb-2">🌱</div>
                   <h3 className="text-lg font-semibold text-mint-900">Plants</h3>
-                  <p className="text-mint-700 text-sm" style={{ marginBottom: '12px' }}>Manage your plant collection</p>
+                  <p className="text-mint-700 text-sm" >Manage your plant collection</p>
                   <div className="stat-value text-mint-600">
                     {isLoading ? '--' : displayStats.activePlants}
                   </div>
@@ -112,9 +112,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 </div>
 
                 <div className="stat-card card--salmon">
-                  <div style={{ fontSize: '2rem', marginBottom: '8px' }}>💧</div>
+                  <div className="text-3xl mb-2">💧</div>
                   <h3 className="text-lg font-semibold text-salmon-900">Care Tasks</h3>
-                  <p className="text-salmon-700 text-sm" style={{ marginBottom: '12px' }}>Track care schedules</p>
+                  <p className="text-salmon-700 text-sm" >Track care schedules</p>
                   <div className="stat-value text-salmon-600">
                     {isLoading ? '--' : (displayStats.overdueCount || 0) + displayStats.careDueToday}
                   </div>
@@ -127,9 +127,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 </div>
 
                 <div className="stat-card card--lavender">
-                  <div style={{ fontSize: '2rem', marginBottom: '8px' }}>🌿</div>
+                  <div className="text-3xl mb-2">🌿</div>
                   <h3 className="text-lg font-semibold text-lavender-900">Propagations</h3>
-                  <p className="text-lavender-700 text-sm" style={{ marginBottom: '12px' }}>Monitor propagation progress</p>
+                  <p className="text-lavender-700 text-sm" >Monitor propagation progress</p>
                   <div className="stat-value text-lavender-600">
                     {isLoading ? '--' : displayStats.activePropagations}
                   </div>
@@ -137,9 +137,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 </div>
 
                 <div className="stat-card card--neutral">
-                  <div style={{ fontSize: '2rem', marginBottom: '8px' }}>📊</div>
+                  <div className="text-3xl mb-2">📊</div>
                   <h3 className="text-lg font-semibold text-neutral-900">Success Rate</h3>
-                  <p className="text-neutral-700 text-sm" style={{ marginBottom: '12px' }}>Propagation success</p>
+                  <p className="text-neutral-700 text-sm" >Propagation success</p>
                   <div className="stat-value text-neutral-600">
                     {isLoading ? '--' : displayStats.propagationSuccessRate}
                   </div>
@@ -154,8 +154,8 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 ) : (
                   <div className="card card--flat">
                     <div className="card-header">
-                      <div className="flex-center" style={{ marginBottom: '8px' }}>
-                        <span style={{ fontSize: '1.5rem', marginRight: '8px' }}>🌟</span>
+                      <div className="flex-center mb-2">
+                        <span className="text-2xl mr-2">🌟</span>
                         <h2 className="text-xl font-semibold text-neutral-900">Getting Started</h2>
                       </div>
                       <p className="text-neutral-600 text-sm text-center">Let&apos;s help you create your dream plant collection</p>
