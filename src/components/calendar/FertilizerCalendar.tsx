@@ -122,6 +122,7 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
   
   return (
     <Card>
+      <h2 className="text-lg font-semibold text-slate-800 mb-3">🗓️ Care Calendar</h2>
       <SectionHeader
         icon={CalendarDays}
         title={`${monthNames[currentMonth]} ${currentYear} - Fertilizer Schedule`}
@@ -204,6 +205,16 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
         })}
       </div>
       
+      {/* Legend */}
+      <div className="mt-3 flex items-center gap-4 text-xs text-slate-500">
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" /> Fertilize due
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block border border-emerald-500" /> Today
+        </span>
+      </div>
+
       {monthEvents.length > 0 && (
         <div className="mt-4 pt-4 border-t border-slate-200/70">
           <h4 className="text-sm font-medium text-slate-700 mb-2">

@@ -17,7 +17,7 @@ export default async function SignInPage() {
           </p>
         </div>
         
-        <div className="bg-white rounded-2xl shadow-soft p-8">
+        <div className="bg-white rounded-2xl shadow-lg p-8">
           <SignInForm />
         </div>
         
@@ -26,7 +26,7 @@ export default async function SignInPage() {
             Don&apos;t have an account?{' '}
             <a 
               href="/auth/signup" 
-              className="font-medium text-primary-600 hover:text-primary-500 transition-colors"
+              className="font-medium text-primary-600 hover:text-primary-500 transition-colors py-2 px-4 inline-block"
             >
               Sign up here
             </a>
