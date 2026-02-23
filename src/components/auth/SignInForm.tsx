@@ -169,7 +169,7 @@ export default function SignInForm() {
         <div className="text-center mt-4">
           <a 
             href="/auth/forgot-password" 
-            className="text-sm text-primary-600 hover:text-primary-500 transition-colors"
+            className="text-sm text-primary-600 hover:text-primary-500 transition-colors py-2 px-4 inline-block"
           >
             Forgot your password?
           </a>

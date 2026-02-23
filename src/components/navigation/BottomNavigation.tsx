@@ -80,7 +80,7 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
     },
     {
       id: 'propagations',
-      label: 'Propag.',
+      label: 'Props',
       icon: '🌿',
       href: '/dashboard/propagations',
     },
