@@ -76,10 +76,19 @@ const CareStatistics = memo(function CareStatistics({ statistics }: CareStatisti
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs sm:text-sm font-medium text-green-700">Consistency</p>
-            <p className="text-xl sm:text-2xl font-bold text-green-600">{statistics.averageCareConsistency}%</p>
-            <p className={`text-xs px-2 py-0.5 sm:py-1 rounded-full ${getConsistencyColor(statistics.averageCareConsistency)}`}>
-              {getConsistencyLabel(statistics.averageCareConsistency)}
-            </p>
+            {statistics.totalCareEventsThisWeek === 0 && statistics.careStreakDays === 0 ? (
+              <>
+                <p className="text-xl sm:text-2xl font-bold text-gray-400">N/A</p>
+                <p className="text-xs px-2 py-0.5 sm:py-1 rounded-full text-gray-500 bg-gray-50">No data yet</p>
+              </>
+            ) : (
+              <>
+                <p className="text-xl sm:text-2xl font-bold text-green-600">{statistics.averageCareConsistency}%</p>
+                <p className={`text-xs px-2 py-0.5 sm:py-1 rounded-full ${getConsistencyColor(statistics.averageCareConsistency)}`}>
+                  {getConsistencyLabel(statistics.averageCareConsistency)}
+                </p>
+              </>
+            )}
           </div>
           <div className="text-xl sm:text-2xl">📊</div>
         </div>
