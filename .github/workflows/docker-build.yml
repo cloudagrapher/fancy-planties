@@ -34,7 +34,7 @@ jobs:
       run: npx tsc --noEmit
 
     - name: Run tests
-      run: npm run test:ci -- --testPathIgnorePatterns='database/' --testPathIgnorePatterns='integration/'
+      run: npm run test:ci -- --testPathIgnorePatterns='src/__tests__/'
 
     - name: Upload coverage
       if: always()
