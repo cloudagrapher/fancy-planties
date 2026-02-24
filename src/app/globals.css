@@ -412,8 +412,8 @@ select {
 .dashboard-stats-grid,
 .card-body .dashboard-stats-grid {
   display: grid !important;
-  gap: 16px !important;
-  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+  grid-template-columns: repeat(2, 1fr) !important;
   margin-bottom: 24px !important;
 }
 
@@ -499,28 +499,46 @@ select {
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   line-height: 1;
-  margin: 8px 0;
+  margin: 4px 0;
 }
 
 @media (min-width: 640px) {
   .stat-value {
     font-size: 2.5rem;
+    margin: 8px 0;
   }
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  opacity: 0.8;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 640px) {
+  .stat-label {
+    font-size: 0.875rem;
+    white-space: normal;
+  }
 }
 
 .stat-card h3 {
-  font-size: 1.125rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+}
+
+@media (min-width: 640px) {
+  .stat-card h3 {
+    font-size: 1.125rem;
+    margin-bottom: 4px;
+  }
 }
 
 .stat-card p {

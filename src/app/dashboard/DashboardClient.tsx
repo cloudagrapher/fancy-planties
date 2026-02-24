@@ -59,15 +59,15 @@ export default function DashboardClient({ user }: DashboardClientProps) {
         <div className="page-content">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-neutral-900 mb-1">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-bold text-neutral-900 mb-1 truncate">
                 Hey {user.name}! ✨
               </h1>
               <p className="text-neutral-600 text-sm">
                 Your plants are looking great today
               </p>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               {isCurator && (
                 <Link 
                   href="/admin"
@@ -102,7 +102,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 <Link href="/dashboard/plants" className="stat-card card--mint">
                   <div className="text-3xl mb-2">🌱</div>
                   <h3 className="text-lg font-semibold text-mint-900">Plants</h3>
-                  <p className="text-mint-700 text-sm" >Manage your plant collection</p>
+                  <p className="text-mint-700 text-sm hidden sm:block">Manage your plant collection</p>
                   <div className="stat-value text-mint-600">
                     {isLoading ? '--' : displayStats.activePlants}
                   </div>
@@ -114,7 +114,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 <Link href="/dashboard/care" className="stat-card card--salmon">
                   <div className="text-3xl mb-2">💧</div>
                   <h3 className="text-lg font-semibold text-salmon-900">Care Tasks</h3>
-                  <p className="text-salmon-700 text-sm" >Track care schedules</p>
+                  <p className="text-salmon-700 text-sm hidden sm:block">Track care schedules</p>
                   <div className="stat-value text-salmon-600">
                     {isLoading ? '--' : (displayStats.overdueCount || 0) + displayStats.careDueToday}
                   </div>
@@ -129,7 +129,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 <Link href="/dashboard/propagations" className="stat-card card--lavender">
                   <div className="text-3xl mb-2">🌿</div>
                   <h3 className="text-lg font-semibold text-lavender-900">Propagations</h3>
-                  <p className="text-lavender-700 text-sm" >Monitor propagation progress</p>
+                  <p className="text-lavender-700 text-sm hidden sm:block">Monitor propagation progress</p>
                   <div className="stat-value text-lavender-600">
                     {isLoading ? '--' : displayStats.activePropagations}
                   </div>
@@ -139,7 +139,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 <Link href="/dashboard/propagations" className="stat-card card--neutral">
                   <div className="text-3xl mb-2">📊</div>
                   <h3 className="text-lg font-semibold text-neutral-900">Success Rate</h3>
-                  <p className="text-neutral-700 text-sm" >Propagation success</p>
+                  <p className="text-neutral-700 text-sm hidden sm:block">Propagation success</p>
                   <div className="stat-value text-neutral-600">
                     {isLoading ? '--' : displayStats.propagationSuccessRate}
                   </div>
