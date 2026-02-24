@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import Image from 'next/image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import { 
@@ -29,7 +29,7 @@ interface PropagationCardProps {
   onUpdate: () => void;
 }
 
-export default function PropagationCard({ propagation, onUpdate }: PropagationCardProps) {
+export default memo(function PropagationCard({ propagation, onUpdate }: PropagationCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -474,7 +474,7 @@ export default function PropagationCard({ propagation, onUpdate }: PropagationCa
       )}
     </>
   );
-}
+});
 
 /** Reusable confirmation dialog with Escape key support and body scroll lock */
 function ConfirmDialog({

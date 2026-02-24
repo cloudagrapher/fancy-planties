@@ -1,4 +1,10 @@
+import type { Metadata } from 'next';
 import { requireVerifiedSession } from '@/lib/auth/server';
+
+export const metadata: Metadata = {
+  title: 'Care Handbook — Fancy Planties',
+  description: 'Your personal plant care guides and reference handbook.',
+};
 import HandbookDashboard from '@/components/handbook/HandbookDashboard';
 import { db } from '@/lib/db';
 import { careGuides } from '@/lib/db/schema';
