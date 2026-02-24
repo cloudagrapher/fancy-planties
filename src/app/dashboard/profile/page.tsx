@@ -1,7 +1,13 @@
+import type { Metadata } from 'next';
 import { requireVerifiedSession } from '@/lib/auth/server';
 import { DataImport } from '@/components/import/DataImport';
 import LogoutButton from '@/components/auth/LogoutButton';
 import { User, Database, FileText, Download, Upload } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Profile — Fancy Planties',
+  description: 'Manage your account settings and import or export plant data.',
+};
 
 export default async function ProfilePage() {
   const { user } = await requireVerifiedSession();
@@ -21,7 +27,7 @@ export default async function ProfilePage() {
           </div>
 
           {/* User Info Card */}
-          <div className="card card--flat" style={{ marginBottom: '24px' }}>
+          <div className="card card--flat mb-6">
             <div className="card-header">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-primary-100 rounded-lg">
@@ -54,7 +60,7 @@ export default async function ProfilePage() {
                   </p>
                 </div>
               </div>
-              <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
+              <div className="mt-6 pt-4 border-t border-gray-200">
                 <LogoutButton className="btn btn--danger btn--sm">
                   Sign Out of Account
                 </LogoutButton>
@@ -81,7 +87,7 @@ export default async function ProfilePage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="card card--flat" style={{ marginTop: '24px' }}>
+          <div className="card card--flat mt-6">
             <div className="card-header">
               <h3 className="text-lg font-semibold text-neutral-900">Quick Actions</h3>
               <p className="text-sm text-neutral-600">Common profile tasks</p>
