@@ -14,15 +14,15 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 14'] },
+      name: 'Mobile',
+      use: { ...devices['iPhone 14'], browserName: 'chromium' },
     },
     {
       name: 'Tablet',
-      use: { ...devices['iPad (gen 7)'] },
+      use: { ...devices['iPad (gen 7)'], browserName: 'chromium' },
     },
     {
-      name: 'Desktop Chrome',
+      name: 'Desktop',
       use: { ...devices['Desktop Chrome'] },
     },
   ],
