@@ -422,10 +422,11 @@ select {
   .dashboard-stats-grid,
   .card-body .dashboard-stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
   .stats-grid,
   .dashboard-stats-grid,
   .card-body .dashboard-stats-grid {
@@ -516,15 +517,13 @@ select {
   font-size: 0.75rem;
   font-weight: 500;
   opacity: 0.85;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 @media (min-width: 640px) {
   .stat-label {
     font-size: 0.875rem;
-    white-space: normal;
   }
 }
 
@@ -548,7 +547,13 @@ select {
 }
 
 .stat-card {
-  min-height: 180px;
+  min-height: 140px;
+}
+
+@media (min-width: 640px) {
+  .stat-card {
+    min-height: 180px;
+  }
 }
 
 /* Plant Card */
