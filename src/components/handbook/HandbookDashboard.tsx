@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   BookOpen, 
@@ -166,19 +166,24 @@ const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => vo
         </div>
 
         {/* Care Categories */}
-        <div className="flex flex-wrap gap-1">
-          {getCareCategories(guide).slice(0, 4).map(({ icon: Icon, label, color }) => (
-            <Chip key={label} className="bg-slate-50 text-slate-600 ring-slate-200">
-              <Icon className={`h-2.5 w-2.5 mr-0.5 ${color}`} />
-              {label}
-            </Chip>
-          ))}
-          {getCareCategories(guide).length > 4 && (
-            <Chip className="bg-slate-50 text-slate-600 ring-slate-200">
-              +{getCareCategories(guide).length - 4} more
-            </Chip>
-          )}
-        </div>
+        {(() => {
+          const categories = getCareCategories(guide);
+          return (
+            <div className="flex flex-wrap gap-1">
+              {categories.slice(0, 4).map(({ icon: Icon, label, color }) => (
+                <Chip key={label} className="bg-slate-50 text-slate-600 ring-slate-200">
+                  <Icon className={`h-2.5 w-2.5 mr-0.5 ${color}`} />
+                  {label}
+                </Chip>
+              ))}
+              {categories.length > 4 && (
+                <Chip className="bg-slate-50 text-slate-600 ring-slate-200">
+                  +{categories.length - 4} more
+                </Chip>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Tags */}
         {guide.tags && guide.tags.length > 0 && (
@@ -357,23 +362,24 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
     };
   };
 
-  // Filter care guides
-  const filteredGuides = careGuides.filter((guide) => {
+  // Filter care guides (memoized to avoid recalc on unrelated state changes)
+  const filteredGuides = useMemo(() => careGuides.filter((guide) => {
+    const query = searchQuery.toLowerCase();
     const matchesSearch = !searchQuery || 
-      guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guide.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guide.commonName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guide.family?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guide.genus?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guide.species?.toLowerCase().includes(searchQuery.toLowerCase());
+      guide.title.toLowerCase().includes(query) ||
+      guide.description?.toLowerCase().includes(query) ||
+      guide.commonName?.toLowerCase().includes(query) ||
+      guide.family?.toLowerCase().includes(query) ||
+      guide.genus?.toLowerCase().includes(query) ||
+      guide.species?.toLowerCase().includes(query);
     
     const matchesLevel = selectedLevel === 'all' || guide.taxonomyLevel === selectedLevel;
     
     return matchesSearch && matchesLevel;
-  });
+  }), [careGuides, searchQuery, selectedLevel]);
 
-  // Statistics
-  const stats = {
+  // Statistics (memoized — only depends on the full careGuides list)
+  const stats = useMemo(() => ({
     total: careGuides.length,
     public: careGuides.filter(g => g.isPublic).length,
     private: careGuides.filter(g => !g.isPublic).length,
@@ -383,7 +389,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
       species: careGuides.filter(g => g.taxonomyLevel === 'species').length,
       cultivar: careGuides.filter(g => g.taxonomyLevel === 'cultivar').length,
     }
-  };
+  }), [careGuides]);
 
   return (
     <div className="space-y-6">
