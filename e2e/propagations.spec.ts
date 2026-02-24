@@ -5,7 +5,7 @@ test.describe('Propagations', () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
     await page.goto('/dashboard/propagations');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('propagations page loads', async ({ page }) => {

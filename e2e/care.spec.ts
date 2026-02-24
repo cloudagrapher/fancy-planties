@@ -5,7 +5,7 @@ test.describe('Care', () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
     await page.goto('/dashboard/care');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('care page loads', async ({ page }) => {

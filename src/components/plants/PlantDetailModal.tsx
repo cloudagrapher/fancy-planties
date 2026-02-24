@@ -161,6 +161,9 @@ export default function PlantDetailModal({
     <div className="modal-overlay" onClick={onClose}>
       <div 
         className="modal-content modal-content--large"
+        role="dialog"
+        aria-modal="true"
+        aria-label={data ? `Details for ${data.plant.displayName}` : 'Plant details'}
         onClick={(e) => e.stopPropagation()}
       >
           {isLoading ? (
