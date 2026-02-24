@@ -27,7 +27,7 @@ describe('BottomNavigation', () => {
       expect(screen.getByRole('link', { name: /navigate to plants/i })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /navigate to care/i })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /navigate to dashboard/i })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: /navigate to propagations/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /navigate to props/i })).toBeInTheDocument();
     });
 
     it('should show handbook in overflow menu for non-curators', async () => {
@@ -92,7 +92,7 @@ describe('BottomNavigation', () => {
     it('should highlight active propagations route', () => {
       renderWithProviders(<BottomNavigation />, { route: '/dashboard/propagations' });
 
-      const propagationsLink = screen.getByRole('link', { name: /navigate to propagations/i });
+      const propagationsLink = screen.getByRole('link', { name: /navigate to props/i });
       expect(propagationsLink).toHaveClass('bottom-nav-item--active');
     });
 
@@ -225,7 +225,7 @@ describe('BottomNavigation', () => {
       renderWithProviders(<BottomNavigation />, { route: '/dashboard' });
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status');
+        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status', expect.anything());
       });
     });
 
@@ -238,7 +238,7 @@ describe('BottomNavigation', () => {
       renderWithProviders(<BottomNavigation />, { route: '/dashboard' });
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status');
+        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status', expect.anything());
         expect(global.fetch).toHaveBeenCalledWith('/api/admin/pending-count');
       });
     });
@@ -251,7 +251,7 @@ describe('BottomNavigation', () => {
       renderWithProviders(<BottomNavigation />, { route: '/dashboard' });
 
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status');
+        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status', expect.anything());
       });
 
       // Should not call pending count endpoint
@@ -388,7 +388,7 @@ describe('BottomNavigation', () => {
 
       // Wait for initial load
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status');
+        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status', expect.anything());
       });
 
       // Clear the mock

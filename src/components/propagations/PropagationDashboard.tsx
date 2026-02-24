@@ -221,7 +221,7 @@ export default function PropagationDashboard() {
             <div className="text-sm text-green-700">Success Rate</div>
           </div>
           <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-sky-50/70 backdrop-blur p-6">
-            <div className="text-2xl font-bold text-sky-600">{stats.averageDaysToReady}</div>
+            <div className="text-2xl font-bold text-sky-600">{stats.averageDaysToReady || '--'}</div>
             <div className="text-sm text-sky-700">Avg Days to Ready</div>
           </div>
           <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-amber-50/70 backdrop-blur p-6">

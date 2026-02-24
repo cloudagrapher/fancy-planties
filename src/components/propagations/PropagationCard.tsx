@@ -196,13 +196,7 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
                   {/* Mobile status badge - compact */}
                   <div className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border ${currentStatus.color} flex-shrink-0`}>
                     <StatusIcon className="w-2.5 h-2.5 mr-1" />
-                    <span className="hidden xs:inline">{currentStatus.label}</span>
-                    <span className="xs:hidden">
-                      {currentStatus.label === 'Started' && 'Start'}
-                      {currentStatus.label === 'Rooting' && 'Root'}
-                      {currentStatus.label === 'Ready' && 'Ready'}
-                      {currentStatus.label === 'Planted' && 'Plant'}
-                    </span>
+                    {currentStatus.label}
                   </div>
                 </div>
                 {/* Hide scientific name on mobile */}

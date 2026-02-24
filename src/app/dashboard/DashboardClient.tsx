@@ -99,7 +99,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
 
               {/* Stats Grid */}
               <div className="dashboard-stats-grid">
-                <div className="stat-card card--mint">
+                <Link href="/dashboard/plants" className="stat-card card--mint">
                   <div className="text-3xl mb-2">🌱</div>
                   <h3 className="text-lg font-semibold text-mint-900">Plants</h3>
                   <p className="text-mint-700 text-sm" >Manage your plant collection</p>
@@ -109,9 +109,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                   <div className="stat-label text-mint-600">
                     {displayStats.activePlants === 1 ? 'active plant' : 'active plants'}
                   </div>
-                </div>
+                </Link>
 
-                <div className="stat-card card--salmon">
+                <Link href="/dashboard/care" className="stat-card card--salmon">
                   <div className="text-3xl mb-2">💧</div>
                   <h3 className="text-lg font-semibold text-salmon-900">Care Tasks</h3>
                   <p className="text-salmon-700 text-sm" >Track care schedules</p>
@@ -124,9 +124,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                       : 'due today'
                     }
                   </div>
-                </div>
+                </Link>
 
-                <div className="stat-card card--lavender">
+                <Link href="/dashboard/propagations" className="stat-card card--lavender">
                   <div className="text-3xl mb-2">🌿</div>
                   <h3 className="text-lg font-semibold text-lavender-900">Propagations</h3>
                   <p className="text-lavender-700 text-sm" >Monitor propagation progress</p>
@@ -134,9 +134,9 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                     {isLoading ? '--' : displayStats.activePropagations}
                   </div>
                   <div className="stat-label text-lavender-600">active</div>
-                </div>
+                </Link>
 
-                <div className="stat-card card--neutral">
+                <Link href="/dashboard/propagations" className="stat-card card--neutral">
                   <div className="text-3xl mb-2">📊</div>
                   <h3 className="text-lg font-semibold text-neutral-900">Success Rate</h3>
                   <p className="text-neutral-700 text-sm" >Propagation success</p>
@@ -144,7 +144,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                     {isLoading ? '--' : displayStats.propagationSuccessRate}
                   </div>
                   <div className="stat-label text-neutral-600">%</div>
-                </div>
+                </Link>
               </div>
 
               {/* Calendar or Getting Started Card */}
