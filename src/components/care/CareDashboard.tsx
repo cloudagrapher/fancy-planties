@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CareDashboardData } from '@/lib/types/care-types';
 import CareTaskCard from './CareTaskCard';
@@ -33,7 +33,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     refetchOnMount: true,
   });
 
-  const handleQuickCare = async (plantInstanceId: number, careType: string) => {
+  const handleQuickCare = useCallback(async (plantInstanceId: number, careType: string) => {
     try {
       setQuickCareLoading(plantInstanceId);
       const response = await apiFetch('/api/care/quick-log', {
@@ -63,9 +63,9 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     } finally {
       setQuickCareLoading(null);
     }
-  };
+  }, [userId, queryClient]);
 
-  const handleBulkQuickCare = async (careType: string) => {
+  const handleBulkQuickCare = useCallback(async (careType: string) => {
     if (!dashboardData) return;
     
     // Get plants that need this type of care based on urgency
@@ -117,7 +117,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     } finally {
       setQuickCareLoading(null);
     }
-  };
+  }, [dashboardData, userId, queryClient]);
 
   if (loading) {
     return (
@@ -182,12 +182,11 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
         {dashboardData.quickActions.map((action) => {
-          const hasPlants = dashboardData?.statistics?.totalActivePlants > 0;
-          const plantsNeedingCare = dashboardData ? [
-            ...dashboardData.overdue,
-            ...dashboardData.dueToday,
-            ...(action.careType !== 'fertilizer' ? dashboardData.dueSoon : [])
-          ].length : 0;
+          const hasPlants = dashboardData.statistics.totalActivePlants > 0;
+          const urgentCount = dashboardData.overdue.length + dashboardData.dueToday.length;
+          const plantsNeedingCare = action.careType !== 'fertilizer'
+            ? urgentCount + dashboardData.dueSoon.length
+            : urgentCount;
           
           return (
             <button
