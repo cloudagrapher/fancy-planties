@@ -5,7 +5,7 @@ test.describe('Plants', () => {
   test.beforeEach(async ({ page }) => {
     await login(page);
     await page.goto('/dashboard/plants');
-    await page.waitForLoadState('networkidle');
+    await page.waitForSelector('[aria-label^="Plant card for"]', { timeout: 15000 });
   });
 
   test('plants page loads with plant cards', async ({ page }) => {

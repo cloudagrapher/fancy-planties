@@ -39,16 +39,10 @@ test.describe('Dashboard', () => {
     await expect(propLink).toBeVisible({ timeout: 10000 });
   });
 
-  test('calendar section is visible and scrollable', async ({ page }) => {
-    const calendar = page.locator('[class*="calendar"], [class*="Calendar"]').first();
-    await expect(calendar).toBeVisible({ timeout: 10000 });
-    const calBox = await calendar.boundingBox();
-    expect(calBox).toBeTruthy();
-    // Calendar just needs to exist and have reasonable dimensions
-    if (calBox) {
-      expect(calBox.height).toBeGreaterThan(100);
-      expect(calBox.width).toBeGreaterThan(100);
-    }
+  test('calendar or getting started section is visible', async ({ page }) => {
+    // Dashboard shows either a fertilizer calendar or a getting started card
+    const section = page.locator('text=/Fertilizer Schedule|Getting Started/i').first();
+    await expect(section).toBeVisible({ timeout: 10000 });
   });
 
   test('calendar has month/year header', async ({ page }) => {

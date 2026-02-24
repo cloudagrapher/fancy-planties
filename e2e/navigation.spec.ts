@@ -29,7 +29,7 @@ test.describe('Navigation', () => {
   test('dashboard nav item navigates to /dashboard', async ({ page }) => {
     // First navigate away
     await page.goto('/dashboard/plants');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     const dashLink = page.locator('nav a[href="/dashboard"], nav a[href="/dashboard/"]').first();
     if (await dashLink.count() > 0) {
       await dashLink.click();
