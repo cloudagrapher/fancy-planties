@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { PlantsGrid, PlantDetailModal, PlantInstanceForm } from '@/components/plants';
+import { PlantsGrid } from '@/components/plants';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { apiFetch } from '@/lib/api-client';
+
+// Lazy load heavy modal components — they're not needed until user interaction
+const PlantDetailModal = lazy(() => import('@/components/plants/PlantDetailModal'));
+const PlantInstanceForm = lazy(() => import('@/components/plants/PlantInstanceForm'));
 
 interface ToastState {
   message: string;
@@ -221,31 +225,37 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
         </div>
       </div>
 
-      {/* Plant Detail Modal */}
+      {/* Plant Detail Modal — lazy loaded on first open */}
       {selectedPlant && (
-        <PlantDetailModal
-          plantId={selectedPlant.id}
-          isOpen={isDetailModalOpen}
-          onClose={() => {
-            setIsDetailModalOpen(false);
-            setSelectedPlant(null);
-          }}
-          onEdit={handlePlantEdit}
-          onCareLog={refreshPlantData}
-        />
+        <Suspense fallback={null}>
+          <PlantDetailModal
+            plantId={selectedPlant.id}
+            isOpen={isDetailModalOpen}
+            onClose={() => {
+              setIsDetailModalOpen(false);
+              setSelectedPlant(null);
+            }}
+            onEdit={handlePlantEdit}
+            onCareLog={refreshPlantData}
+          />
+        </Suspense>
       )}
 
-      {/* Plant Form Modal */}
-      <PlantInstanceForm
-        plantInstance={editingPlant || undefined}
-        isOpen={isFormModalOpen}
-        onClose={() => {
-          setIsFormModalOpen(false);
-          setEditingPlant(null);
-        }}
-        onSuccess={handleFormSuccess}
-        userId={userId}
-      />
+      {/* Plant Form Modal — lazy loaded on first open */}
+      {isFormModalOpen && (
+        <Suspense fallback={null}>
+          <PlantInstanceForm
+            plantInstance={editingPlant || undefined}
+            isOpen={isFormModalOpen}
+            onClose={() => {
+              setIsFormModalOpen(false);
+              setEditingPlant(null);
+            }}
+            onSuccess={handleFormSuccess}
+            userId={userId}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

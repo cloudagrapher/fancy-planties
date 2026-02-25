@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
 import { Plus, TrendingUp, Clock, CheckCircle, Sprout } from 'lucide-react';
 import PropagationCard from './PropagationCard';
-import PropagationForm from './PropagationForm';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
+
+// Lazy load the form — only needed when user clicks "Add"
+const PropagationForm = lazy(() => import('./PropagationForm'));
 
 interface PropagationWithDetails extends Propagation {
   plant: Plant;
@@ -300,12 +302,14 @@ export default function PropagationDashboard() {
         </div>
       )}
 
-      {/* Add Propagation Modal */}
+      {/* Add Propagation Modal — lazy loaded on first open */}
       {showAddForm && (
-        <PropagationForm
-          onClose={() => setShowAddForm(false)}
-          onSuccess={handlePropagationUpdate}
-        />
+        <Suspense fallback={null}>
+          <PropagationForm
+            onClose={() => setShowAddForm(false)}
+            onSuccess={handlePropagationUpdate}
+          />
+        </Suspense>
       )}
     </div>
   );
