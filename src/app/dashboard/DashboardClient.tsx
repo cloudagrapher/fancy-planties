@@ -1,11 +1,14 @@
 'use client';
 
+import { lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import FertilizerCalendar from '@/components/calendar/FertilizerCalendar';
 import LogoutButton from '@/components/auth/LogoutButton';
 import { apiFetch } from '@/lib/api-client';
 import type { DashboardStats } from '@/app/api/dashboard/route';
+
+// Lazy load calendar — only needed when user has fertilizer events
+const FertilizerCalendar = lazy(() => import('@/components/calendar/FertilizerCalendar'));
 
 interface DashboardClientProps {
   user: {
@@ -150,7 +153,11 @@ export default function DashboardClient({ user }: DashboardClientProps) {
               {/* Calendar or Getting Started Card */}
               <div className="section--sm">
                 {displayStats.fertilizerEvents.length > 0 ? (
-                  <FertilizerCalendar events={displayStats.fertilizerEvents} />
+                  <Suspense fallback={
+                    <div className="rounded-2xl border border-slate-200/70 bg-white/70 p-4 animate-pulse h-64" />
+                  }>
+                    <FertilizerCalendar events={displayStats.fertilizerEvents} />
+                  </Suspense>
                 ) : (
                   <div className="card card--flat">
                     <div className="card-header">
