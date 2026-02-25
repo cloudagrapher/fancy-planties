@@ -24,8 +24,8 @@ export default function AdminNavigation() {
       if (!response.ok) return { count: 0 };
       return response.json() as Promise<{ count: number }>;
     },
-    staleTime: 1000 * 30,
-    refetchInterval: 1000 * 30,
+    staleTime: 1000 * 60 * 2, // 2 minutes — matches BottomNavigation (same queryKey)
+    refetchInterval: 1000 * 60 * 2,
   });
 
   const pendingApprovals = pendingData?.count ?? 0;

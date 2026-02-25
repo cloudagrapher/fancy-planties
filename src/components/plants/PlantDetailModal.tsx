@@ -174,44 +174,46 @@ export default function PlantDetailModal({
             <>
               {/* Header */}
               <div className="modal-header">
-                <div className="flex items-center space-x-3">
-                  <button
-                    onClick={onClose}
-                    className="modal-close"
-                    aria-label="Close modal"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                  <div>
-                    <h2 className="modal-title">{data.plant.displayName}</h2>
-                    <p className="text-sm text-gray-600 italic">
-                      {data.plant.plant.genus} {data.plant.plant.species}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  {/* Care Status Badge */}
-                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${plantInstanceHelpers.getCareStatusColor(data.plant.careStatus)}`}>
-                    <div className={`w-2 h-2 rounded-full mr-2 ${plantInstanceHelpers.getCareUrgencyColor(data.plant.careUrgency)}`} />
-                    {data.plant.careStatus === 'overdue' && 'Overdue'}
-                    {data.plant.careStatus === 'due_today' && 'Due Today'}
-                    {data.plant.careStatus === 'due_soon' && 'Due Soon'}
-                    {data.plant.careStatus === 'healthy' && 'Healthy'}
-                    {data.plant.careStatus === 'unknown' && 'No Schedule'}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <button
+                      onClick={onClose}
+                      className="modal-close flex-shrink-0"
+                      aria-label="Close modal"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <div className="min-w-0">
+                      <h2 className="modal-title truncate">{data.plant.displayName}</h2>
+                      <p className="text-sm text-gray-600 italic truncate">
+                        {data.plant.plant.genus} {data.plant.plant.species}
+                      </p>
+                    </div>
                   </div>
                   
-                  <button
-                    onClick={handleEdit}
-                    className="btn btn--icon btn--ghost"
-                    aria-label="Edit plant"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
+                  <div className="flex items-center space-x-2 flex-shrink-0">
+                    {/* Care Status Badge */}
+                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs sm:text-sm sm:px-3 font-medium whitespace-nowrap ${plantInstanceHelpers.getCareStatusColor(data.plant.careStatus)}`}>
+                      <div className={`w-2 h-2 rounded-full mr-1.5 sm:mr-2 ${plantInstanceHelpers.getCareUrgencyColor(data.plant.careUrgency)}`} />
+                      {data.plant.careStatus === 'overdue' && 'Overdue'}
+                      {data.plant.careStatus === 'due_today' && 'Due Today'}
+                      {data.plant.careStatus === 'due_soon' && 'Due Soon'}
+                      {data.plant.careStatus === 'healthy' && 'Healthy'}
+                      {data.plant.careStatus === 'unknown' && 'No Schedule'}
+                    </div>
+                    
+                    <button
+                      onClick={handleEdit}
+                      className="btn btn--icon btn--ghost flex-shrink-0"
+                      aria-label="Edit plant"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
 
