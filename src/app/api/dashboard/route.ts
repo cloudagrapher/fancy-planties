@@ -128,7 +128,11 @@ export async function GET(request: NextRequest) {
       fertilizerEvents,
     };
     
-    return NextResponse.json(dashboardStats);
+    return NextResponse.json(dashboardStats, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to get dashboard stats:', error);
     return NextResponse.json(
