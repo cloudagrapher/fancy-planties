@@ -21,7 +21,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
   const { data: dashboardData, isLoading: loading, error } = useQuery({
     queryKey: ['care-dashboard', userId],
     queryFn: async (): Promise<CareDashboardData> => {
-      const response = await apiFetch(`/api/care/dashboard?userId=${userId}`);
+      const response = await apiFetch('/api/care/dashboard');
       if (!response.ok) {
         throw new Error('Failed to load care dashboard');
       }

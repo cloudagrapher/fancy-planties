@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { imageOptimization } from '@/lib/utils/performance';
 
@@ -129,9 +129,9 @@ export function LazyImageGallery({
 }: LazyImageGalleryProps) {
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0])); // Load first image immediately
 
-  const handleImageInView = (index: number) => {
+  const handleImageInView = useCallback((index: number) => {
     setLoadedImages(prev => new Set([...prev, index]));
-  };
+  }, []);
 
   return (
     <div className={`grid grid-cols-2 gap-2 ${className}`}>
@@ -169,19 +169,21 @@ function LazyGalleryImage({
 }: LazyGalleryImageProps) {
   const imgRef = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const onInViewRef = useRef(onInView);
+  onInViewRef.current = onInView;
 
   useEffect(() => {
     if (!imgRef.current || shouldLoad) return;
 
     const observer = imageOptimization.createLazyLoadObserver(() => {
       setIsInView(true);
-      onInView();
+      onInViewRef.current();
     });
 
     observer.observe(imgRef.current);
 
     return () => observer.disconnect();
-  }, [shouldLoad, onInView]);
+  }, [shouldLoad]);
 
   return (
     <div

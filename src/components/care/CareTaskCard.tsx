@@ -24,14 +24,18 @@ function CareActionButton({ careType, bgColor, hoverColor, icon, label, plantNam
       onClick={() => onAction(careType)}
       disabled={isLoading}
       className={`${bgColor} text-white rounded-md ${hoverColor} disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation
-        flex-1 px-2 py-2 text-xs min-h-[36px] sm:flex-none sm:px-3 sm:py-1.5 sm:text-sm sm:min-h-0`}
+        flex-1 px-2 py-2 text-xs min-h-[44px] sm:flex-none sm:px-3 sm:py-1.5 sm:text-sm sm:min-h-0
+        inline-flex items-center justify-center gap-1`}
       title={`Quick ${label.toLowerCase()}`}
       aria-label={`Quick ${label.toLowerCase()} ${plantName}`}
     >
       {isLoading ? (
         <span role="status" aria-label="Processing">...</span>
       ) : (
-        <span aria-hidden="true">{icon}</span>
+        <>
+          <span aria-hidden="true">{icon}</span>
+          <span className="sm:hidden text-[11px]">{label}</span>
+        </>
       )}
     </button>
   );
