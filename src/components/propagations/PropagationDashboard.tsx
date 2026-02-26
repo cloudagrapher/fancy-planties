@@ -214,32 +214,32 @@ export default function PropagationDashboard() {
       {/* Statistics Cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-emerald-50/70 backdrop-blur p-6">
-            <div className="text-2xl font-bold text-emerald-600">{stats.totalPropagations}</div>
-            <div className="text-sm text-emerald-700">Total Propagations</div>
+          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-emerald-50/70 backdrop-blur p-3 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold text-emerald-600">{stats.totalPropagations}</div>
+            <div className="text-xs sm:text-sm text-emerald-700">Total Propagations</div>
           </div>
-          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-green-50/70 backdrop-blur p-6">
-            <div className="text-2xl font-bold text-green-600">{stats.successRate}%</div>
-            <div className="text-sm text-green-700">Success Rate</div>
+          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-green-50/70 backdrop-blur p-3 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{stats.successRate}%</div>
+            <div className="text-xs sm:text-sm text-green-700">Success Rate</div>
           </div>
-          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-sky-50/70 backdrop-blur p-6">
-            <div className="text-2xl font-bold text-sky-600">{stats.averageDaysToReady || '--'}</div>
-            <div className="text-sm text-sky-700">Avg Days to Ready</div>
+          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-sky-50/70 backdrop-blur p-3 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold text-sky-600">{stats.averageDaysToReady || '--'}</div>
+            <div className="text-xs sm:text-sm text-sky-700">Avg Days to Ready</div>
           </div>
-          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-amber-50/70 backdrop-blur p-6">
-            <div className="text-2xl font-bold text-amber-600">
+          <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-amber-50/70 backdrop-blur p-3 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold text-amber-600">
               {(stats.byStatus.started || 0) + (stats.byStatus.rooting || 0) + (stats.byStatus.ready || 0)}
             </div>
-            <div className="text-sm text-amber-700">Active Propagations</div>
+            <div className="text-xs sm:text-sm text-amber-700">Active Propagations</div>
           </div>
         </div>
       )}
 
       {/* Status Filter Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         <button
           onClick={() => setSelectedStatus(null)}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors touch-manipulation ${
             selectedStatus === null
               ? 'bg-primary-600 text-white shadow-sm'
               : 'bg-white/50 text-gray-700 hover:bg-white/70 border border-slate-200/70'
@@ -255,7 +255,7 @@ export default function PropagationDashboard() {
             <button
               key={status}
               onClick={() => setSelectedStatus(status)}
-              className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors touch-manipulation ${
                 selectedStatus === status
                   ? 'bg-primary-600 text-white shadow-sm'
                   : 'bg-white/50 text-gray-700 hover:bg-white/70 border border-slate-200/70'

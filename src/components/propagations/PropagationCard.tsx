@@ -15,8 +15,11 @@ import {
   CheckCircle,
   TreePine
 } from 'lucide-react';
-import PropagationForm from './PropagationForm';
+import { lazy, Suspense } from 'react';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
+
+// Lazy load form — only needed when user taps Edit
+const PropagationForm = lazy(() => import('./PropagationForm'));
 import { apiFetch } from '@/lib/api-client';
 
 interface PropagationWithDetails extends Propagation {
@@ -300,7 +303,7 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
                 <button
                   onClick={() => handleStatusUpdate(currentStatus.nextStatus!)}
                   disabled={isUpdatingStatus}
-                  className="flex items-center justify-center px-3 py-2 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 min-h-[36px] touch-action-manipulation"
+                  className="flex items-center justify-center px-3 py-2 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 min-h-[36px] touch-manipulation"
                 >
                   <ArrowRight className="w-4 h-4 mr-1" />
                   {isUpdatingStatus ? 'Updating...' : (
@@ -316,7 +319,7 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
               {propagation.status === 'planted' && (
                 <button
                   onClick={() => setShowConvertModal(true)}
-                  className="flex items-center justify-center px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors min-h-[36px] touch-action-manipulation"
+                  className="flex items-center justify-center px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors min-h-[36px] touch-manipulation"
                 >
                   <TreePine className="w-4 h-4 mr-1" />
                   Convert to Plant
@@ -422,16 +425,18 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
         </div>
       </div>
 
-      {/* Edit Form Modal */}
+      {/* Edit Form Modal — lazy loaded */}
       {showEditForm && (
-        <PropagationForm
-          propagation={propagation}
-          onClose={() => setShowEditForm(false)}
-          onSuccess={() => {
-            setShowEditForm(false);
-            onUpdate();
-          }}
-        />
+        <Suspense fallback={null}>
+          <PropagationForm
+            propagation={propagation}
+            onClose={() => setShowEditForm(false)}
+            onSuccess={() => {
+              setShowEditForm(false);
+              onUpdate();
+            }}
+          />
+        </Suspense>
       )}
 
       {/* Delete Confirmation Modal */}
