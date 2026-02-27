@@ -7,7 +7,7 @@ import { apiFetch } from '@/lib/api-client';
 interface SearchHistoryEntry {
   id: string;
   query: string;
-  filters: any;
+  filters: Record<string, string | string[] | boolean | number | undefined>;
   resultCount: number;
   searchTime: number;
   timestamp: Date;
