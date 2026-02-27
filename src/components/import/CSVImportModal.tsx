@@ -6,21 +6,25 @@ import { FileUpload } from './FileUpload';
 import { ImportTypeSelector, type ImportType } from './ImportTypeSelector';
 import { CSVPreview } from './CSVPreview';
 import { ImportProgress } from './ImportProgress';
-import type { ImportProgress as ImportProgressType } from '@/lib/validation/csv-schemas';
+import type { ImportProgress as ImportProgressType, ImportSummary } from '@/lib/validation/csv-schemas';
 import { apiFetch } from '@/lib/api-client';
 
 interface CSVImportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImportComplete?: (summary: any) => void;
+  onImportComplete?: (summary: ImportSummary | undefined) => void;
 }
 
 type Step = 'select-type' | 'upload-file' | 'preview' | 'importing' | 'complete';
 
+interface CSVPreviewRow {
+  [key: string]: string | number | boolean | null | undefined;
+}
+
 interface ValidationResult {
   isValid: boolean;
   errors: string[];
-  preview: any[];
+  preview: CSVPreviewRow[];
 }
 
 export function CSVImportModal({

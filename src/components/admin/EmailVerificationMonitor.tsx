@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '@/lib/api-client';
 
 interface MonitoringData {
@@ -35,14 +35,33 @@ interface MonitoringData {
     };
   };
   emailService: {
-    stats: any;
-    health: any;
-    recentEvents: any[];
-    errorSummary: any;
+    stats: {
+      totalSent: number;
+      totalFailed: number;
+      successRate: number;
+      averageResponseTime: number;
+    };
+    health: {
+      status: 'healthy' | 'warning' | 'critical';
+      issues: string[];
+    };
+    recentEvents: Array<{
+      type: string;
+      timestamp: number;
+      details?: string;
+    }>;
+    errorSummary: {
+      totalErrors: number;
+      errorsByType: Record<string, number>;
+    };
     quotaWarning: boolean;
     quotaCritical: boolean;
   };
-  cleanup: any;
+  cleanup: {
+    lastRun: number;
+    recordsCleaned: number;
+    nextScheduled: number;
+  };
   alerts: Array<{
     level: 'info' | 'warning' | 'critical';
     message: string;
@@ -58,7 +77,7 @@ export default function EmailVerificationMonitor() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const response = await apiFetch('/api/admin/email-verification-monitor');
       if (!response.ok) {
@@ -73,7 +92,7 @@ export default function EmailVerificationMonitor() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const performAction = async (action: string) => {
     try {
@@ -97,7 +116,7 @@ export default function EmailVerificationMonitor() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   useEffect(() => {
     if (!autoRefresh) return;
@@ -155,15 +174,15 @@ export default function EmailVerificationMonitor() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Email Verification Monitor</h2>
-          <p className="text-gray-600">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Email Verification Monitor</h2>
+          <p className="text-sm text-gray-600">
             Last updated: {lastUpdated?.toLocaleString() || 'Never'}
           </p>
         </div>
-        <div className="flex space-x-2">
-          <label className="flex items-center">
+        <div className="flex items-center gap-3">
+          <label className="flex items-center text-sm">
             <input
               type="checkbox"
               checked={autoRefresh}
@@ -175,7 +194,7 @@ export default function EmailVerificationMonitor() {
           <button
             onClick={fetchData}
             disabled={loading}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 text-sm"
           >
             {loading ? 'Refreshing...' : 'Refresh'}
           </button>
@@ -351,25 +370,25 @@ export default function EmailVerificationMonitor() {
       {/* Admin Actions */}
       <div className="bg-white border rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Admin Actions</h3>
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-3">
           <button
             onClick={() => performAction('force-cleanup')}
             disabled={loading || data.systemStatus.cleanup.isRunning}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            className="bg-blue-600 text-white px-4 py-2.5 rounded hover:bg-blue-700 disabled:opacity-50 text-sm min-h-[44px]"
           >
             Force Cleanup
           </button>
           <button
             onClick={() => performAction('reset-email-stats')}
             disabled={loading}
-            className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 disabled:opacity-50"
+            className="bg-yellow-600 text-white px-4 py-2.5 rounded hover:bg-yellow-700 disabled:opacity-50 text-sm min-h-[44px]"
           >
             Reset Email Stats
           </button>
           <button
             onClick={() => performAction('get-error-details')}
             disabled={loading}
-            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 disabled:opacity-50"
+            className="bg-gray-600 text-white px-4 py-2.5 rounded hover:bg-gray-700 disabled:opacity-50 text-sm min-h-[44px]"
           >
             Get Error Details
           </button>

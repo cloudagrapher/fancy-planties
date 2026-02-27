@@ -2,8 +2,12 @@
 
 import { CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
+interface CSVPreviewRow {
+  [key: string]: string | number | boolean | null | undefined;
+}
+
 interface CSVPreviewProps {
-  data: any[];
+  data: CSVPreviewRow[];
   errors: string[];
   isValid: boolean;
   className?: string;
@@ -78,7 +82,7 @@ export function CSVPreview({ data, errors, isValid, className = '' }: CSVPreview
                       <td
                         key={header}
                         className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate"
-                        title={row[header]}
+                        title={row[header] != null ? String(row[header]) : undefined}
                       >
                         {row[header] || (
                           <span className="text-gray-400 italic">empty</span>

@@ -13,7 +13,8 @@ export function DataImport({ className = '' }: DataImportProps) {
   const [showImportModal, setShowImportModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'import' | 'history'>('import');
 
-  const handleImportComplete = (summary: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleImportComplete = (_summary: unknown) => {
     // Refresh the history when import completes
     if (activeTab === 'history') {
       // The ImportHistory component will automatically refresh
