@@ -65,6 +65,7 @@ services:
       - RESEND_API_KEY=${RESEND_API_KEY}
       - FROM_EMAIL=${FROM_EMAIL}
       - FROM_NAME=${FROM_NAME}
+      - AWS_API_ENDPOINT=${AWS_API_ENDPOINT}
     depends_on:
       postgres:
         condition: service_healthy

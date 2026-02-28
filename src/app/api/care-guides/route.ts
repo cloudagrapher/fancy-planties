@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
 
     const query = db.select().from(careGuides);
     
-    const conditions = [eq(careGuides.userId, user.id)];
+    const conditions = [or(eq(careGuides.userId, user.id), eq(careGuides.isPublic, true))];
 
     if (filters.taxonomyLevel) {
       conditions.push(eq(careGuides.taxonomyLevel, filters.taxonomyLevel));

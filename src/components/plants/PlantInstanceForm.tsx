@@ -8,6 +8,7 @@ import { z } from 'zod';
 import S3Image from '../shared/S3Image';
 import PlantTaxonomySelector from './PlantTaxonomySelector';
 import S3ImageUpload from '../shared/S3ImageUpload';
+import Modal from '../shared/Modal';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
 import { apiFetch } from '@/lib/api-client';
@@ -509,58 +510,67 @@ export default function PlantInstanceForm({
     onClose();
   }, [hasUnsavedChanges, onClose]);
 
-  // Close modal on escape
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleClose();
-      }
-    };
+  // Prepare footer content
+  const footerContent = (
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center text-sm text-gray-500">
+        {!isValid && Object.keys(errors).length === 0 && (
+          <span>Fill in required fields to continue</span>
+        )}
+        {isValid && (
+          <span className="text-green-600 flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            Ready to save
+          </span>
+        )}
+      </div>
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, handleClose]);
-
-  if (!isOpen) return null;
+      <div className="flex space-x-3">
+        <button
+          type="button"
+          onClick={handleClose}
+          disabled={mutation.isPending}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 disabled:opacity-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          form="plant-instance-form"
+          disabled={mutation.isPending || !isValid || (isEditing ? false : !selectedPlant)}
+          className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-lg hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {mutation.isPending ? (
+            <span className="flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              {isEditing ? 'Updating...' : 'Adding...'}
+            </span>
+          ) : (
+            isEditing ? 'Update Plant' : 'Add Plant'
+          )}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black bg-opacity-50 transition-opacity"
-        onClick={handleClose}
-      />
-
-      {/* Modal */}
-      <div className="relative h-full flex items-end sm:items-center justify-center p-4 pb-20 sm:pb-4">
-        <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-full overflow-hidden shadow-2xl">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {isEditing ? 'Edit Plant' : 'Add New Plant'}
-            </h2>
-            <button
-              onClick={handleClose}
-              className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
-              aria-label="Close form"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-auto max-h-[60vh] sm:max-h-[70vh]">
-            <div className="p-6 space-y-6">
-              {/* Plant Type Selection */}
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={isEditing ? 'Edit Plant' : 'Add New Plant'}
+      size="large"
+      closeOnBackdropClick={!hasUnsavedChanges}
+      footer={footerContent}
+    >
+      {/* Form */}
+      <form id="plant-instance-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div>
+          {/* Plant Type Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Plant Type *
@@ -1161,87 +1171,40 @@ export default function PlantInstanceForm({
                   />
                 </div>
               )}
-            </div>
 
-            {/* Validation Summary */}
-            {Object.keys(errors).length > 0 && (
-              <div className="mx-6 mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-start">
-                  <svg className="w-5 h-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</h4>
-                    <ul className="text-sm text-red-700 space-y-1">
-                      {Object.entries(errors).map(([field, error]) => (
-                        <li key={field}>
-                          • {field === 'plantId' ? 'Plant type' :
-                            field === 'fertilizerSchedule' ? 'Fertilizer schedule' :
-                              field.charAt(0).toUpperCase() + field.slice(1)}: {error.message}
-                        </li>
-                      ))}
-                    </ul>
+              {/* Validation Summary */}
+              {Object.keys(errors).length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start">
+                    <svg className="w-5 h-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</h4>
+                      <ul className="text-sm text-red-700 space-y-1">
+                        {Object.entries(errors).map(([field, error]) => (
+                          <li key={field}>
+                            • {field === 'plantId' ? 'Plant type' :
+                              field === 'fertilizerSchedule' ? 'Fertilizer schedule' :
+                                field.charAt(0).toUpperCase() + field.slice(1)}: {error.message}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Footer */}
-            <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
-              <div className="flex items-center text-sm text-gray-500">
-                {!isValid && Object.keys(errors).length === 0 && (
-                  <span>Fill in required fields to continue</span>
-                )}
-                {isValid && (
-                  <span className="text-green-600 flex items-center">
-                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    Ready to save
-                  </span>
-                )}
-              </div>
-
-              <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  disabled={mutation.isPending}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-primary-500 disabled:opacity-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={mutation.isPending || !isValid || (isEditing ? false : !selectedPlant)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-lg hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {mutation.isPending ? (
-                    <span className="flex items-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      {isEditing ? 'Updating...' : 'Adding...'}
-                    </span>
-                  ) : (
-                    isEditing ? 'Update Plant' : 'Add Plant'
-                  )}
-                </button>
-              </div>
+              {/* Error Display */}
+              {mutation.isError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-600">
+                    {mutation.error instanceof Error ? mutation.error.message : 'An error occurred'}
+                  </p>
+                </div>
+              )}
             </div>
-          </form>
-
-          {/* Error Display */}
-          {mutation.isError && (
-            <div className="p-4 bg-red-50 border-t border-red-200">
-              <p className="text-sm text-red-600">
-                {mutation.error instanceof Error ? mutation.error.message : 'An error occurred'}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }
