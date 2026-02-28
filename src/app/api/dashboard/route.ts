@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
         .select({
           totalPropagations: sql<number>`count(*)`,
           activePropagations: sql<number>`count(*) FILTER (WHERE ${propagations.status} IN ('started', 'rooting'))`,
-          successfulPropagations: sql<number>`count(*) FILTER (WHERE ${propagations.status} IN ('planted', 'ready'))`,
+          successfulPropagations: sql<number>`count(*) FILTER (WHERE ${propagations.status} IN ('planted', 'ready', 'converted'))`,
         })
         .from(propagations)
         .where(eq(propagations.userId, userId)),

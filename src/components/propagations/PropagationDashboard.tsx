@@ -3,7 +3,7 @@
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
-import { Plus, TrendingUp, Clock, CheckCircle, Sprout } from 'lucide-react';
+import { Plus, TrendingUp, Clock, CheckCircle, Sprout, TreePine } from 'lucide-react';
 import PropagationCard from './PropagationCard';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 
@@ -81,12 +81,13 @@ export default function PropagationDashboard() {
   );
 
   // Filter propagations based on selected status
-  const filteredPropagations = useMemo(() => 
-    selectedStatus 
-      ? groupedPropagations[selectedStatus] || []
-      : propagations,
-    [selectedStatus, groupedPropagations, propagations]
-  );
+  const filteredPropagations = useMemo(() => {
+    if (selectedStatus) {
+      return groupedPropagations[selectedStatus] || [];
+    }
+    // Default view excludes converted propagations
+    return propagations.filter(prop => prop.status !== 'converted');
+  }, [selectedStatus, groupedPropagations, propagations]);
 
   // Status configuration - Updated enum values
   // Note: Status values changed from ['started', 'rooting', 'planted', 'established']
@@ -116,6 +117,12 @@ export default function PropagationDashboard() {
       icon: Clock,
       color: 'bg-purple-100 text-purple-800',
       description: 'Planted and establishing'
+    },
+    converted: {
+      label: 'Converted',
+      icon: TreePine,
+      color: 'bg-emerald-100 text-emerald-800',
+      description: 'Converted to plant instances'
     }
   };
 

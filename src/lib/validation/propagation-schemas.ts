@@ -16,7 +16,7 @@ export const propagationSchema = z.object({
   
   dateStarted: z.date().optional(),
   
-  status: z.enum(['started', 'rooting', 'ready', 'planted']).default('started'),
+  status: z.enum(['started', 'rooting', 'ready', 'planted', 'converted']).default('started'),
   
   sourceType: z.enum(['internal', 'external']).default('internal'),
   
@@ -73,7 +73,7 @@ export const updatePropagationSchema = propagationSchema.partial().extend({
 // Propagation status update schema
 export const propagationStatusUpdateSchema = z.object({
   id: z.number().int().positive(),
-  status: z.enum(['started', 'rooting', 'ready', 'planted']),
+  status: z.enum(['started', 'rooting', 'ready', 'planted', 'converted']),
   notes: z.string().max(500, 'Status notes too long').optional(),
 });
 
@@ -101,7 +101,7 @@ export const propagationSearchSchema = z.object({
 export const propagationFilterSchema = z.object({
   userId: z.number().int().positive('User ID is required'),
   
-  status: z.enum(['started', 'rooting', 'ready', 'planted']).optional(),
+  status: z.enum(['started', 'rooting', 'ready', 'planted', 'converted']).optional(),
   sourceType: z.enum(['internal', 'external']).optional(),
   externalSource: z.enum(['gift', 'trade', 'purchase', 'other']).optional(),
   plantId: z.number().int().positive().optional(),
@@ -158,7 +158,7 @@ export const bulkPropagationOperationSchema = z.object({
   operation: z.enum(['update_status', 'delete', 'convert']),
   
   // Optional data for specific operations
-  status: z.enum(['started', 'rooting', 'ready', 'planted']).optional(),
+  status: z.enum(['started', 'rooting', 'ready', 'planted', 'converted']).optional(),
   notes: z.string().max(500, 'Notes too long').optional(),
   
   // For conversion operations
@@ -193,7 +193,7 @@ export const advancedPropagationSearchSchema = z.object({
   cultivar: z.string().optional(),
   
   // Propagation-specific fields
-  status: z.array(z.enum(['started', 'rooting', 'ready', 'planted'])).optional(),
+  status: z.array(z.enum(['started', 'rooting', 'ready', 'planted', 'converted'])).optional(),
   sourceType: z.array(z.enum(['internal', 'external'])).optional(),
   externalSource: z.array(z.enum(['gift', 'trade', 'purchase', 'other'])).optional(),
   

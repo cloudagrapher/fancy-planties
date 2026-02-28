@@ -27,7 +27,7 @@ interface FormData {
   nickname: string;
   location: string;
   dateStarted: string;
-  status: 'started' | 'rooting' | 'ready' | 'planted';
+  status: 'started' | 'rooting' | 'ready' | 'planted' | 'converted';
   sourceType: 'internal' | 'external';
   externalSource: 'gift' | 'trade' | 'purchase' | 'other' | null;
   externalSourceDetails: string;

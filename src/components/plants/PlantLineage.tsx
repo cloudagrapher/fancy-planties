@@ -41,6 +41,8 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
         return 'bg-green-100 text-green-800 border-green-200';
       case 'planted':
         return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'converted':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -57,6 +59,8 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
         return '🪴';
       case 'planted':
         return '🌳';
+      case 'converted':
+        return '🌲';
       default:
         return '❓';
     }
@@ -72,7 +76,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
 
   // Get progress index for status
   const getStatusIndex = (status: string) => {
-    const statusOrder = ['started', 'rooting', 'ready', 'planted'];
+    const statusOrder = ['started', 'rooting', 'ready', 'planted', 'converted'];
     return statusOrder.indexOf(status);
   };
 
@@ -296,7 +300,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                     <div className="space-y-2">
                       <h5 className="text-sm font-medium text-gray-700">Progress Timeline</h5>
                       <div className="flex items-center space-x-2">
-                        {['started', 'rooting', 'ready', 'planted'].map((status, index) => {
+                        {['started', 'rooting', 'ready', 'planted', 'converted'].map((status, index) => {
                           const currentStatusIndex = getStatusIndex(propagation.status);
                           const isCompleted = currentStatusIndex >= index;
                           
@@ -409,7 +413,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                   <span className="text-gray-600">Success Rate:</span>
                   <span className="ml-2 font-medium">
                     {propagations.length > 0 
-                      ? Math.round((propagations.filter(p => p.status === 'ready' || p.status === 'planted').length / propagations.length) * 100)
+                      ? Math.round((propagations.filter(p => p.status === 'ready' || p.status === 'planted' || p.status === 'converted').length / propagations.length) * 100)
                       : 0
                     }%
                   </span>
@@ -418,7 +422,7 @@ export default function PlantLineage({ plant, propagations, parentPlant }: Plant
                 <div>
                   <span className="text-gray-600">Active Props:</span>
                   <span className="ml-2 font-medium">
-                    {propagations.filter(p => p.status !== 'planted').length}
+                    {propagations.filter(p => p.status !== 'planted' && p.status !== 'converted').length}
                   </span>
                 </div>
               </>
