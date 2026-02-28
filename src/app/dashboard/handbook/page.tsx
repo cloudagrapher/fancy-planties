@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 import HandbookDashboard from '@/components/handbook/HandbookDashboard';
 import { db } from '@/lib/db';
 import { careGuides } from '@/lib/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, or, desc } from 'drizzle-orm';
 
 export default async function HandbookPage() {
   const { user } = await requireVerifiedSession();
@@ -17,7 +17,7 @@ export default async function HandbookPage() {
   const userCareGuides = await db
     .select()
     .from(careGuides)
-    .where(eq(careGuides.userId, user.id))
+    .where(or(eq(careGuides.userId, user.id), eq(careGuides.isPublic, true)))
     .orderBy(desc(careGuides.updatedAt));
   
   return (
