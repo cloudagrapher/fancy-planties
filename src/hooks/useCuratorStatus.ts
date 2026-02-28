@@ -1,66 +1,46 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { checkCuratorStatus } from '@/lib/auth/client';
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api-client';
 
-interface CuratorStatus {
+interface CuratorStatusData {
   isCurator: boolean;
   isAuthenticated: boolean;
   isVerified: boolean;
-  loading: boolean;
 }
 
+const defaultStatus: CuratorStatusData = {
+  isCurator: false,
+  isAuthenticated: false,
+  isVerified: false,
+};
+
+/**
+ * Hook to check curator status using React Query.
+ *
+ * Shares the ['curator-status'] cache with BottomNavigation and DashboardClient,
+ * eliminating redundant API calls that the old useState/useEffect version caused.
+ */
 export function useCuratorStatus() {
-  const [status, setStatus] = useState<CuratorStatus>({
-    isCurator: false,
-    isAuthenticated: false,
-    isVerified: false,
-    loading: true,
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['curator-status'],
+    queryFn: async (): Promise<CuratorStatusData> => {
+      const response = await apiFetch('/api/auth/curator-status');
+      if (!response.ok) {
+        return defaultStatus;
+      }
+      return response.json();
+    },
+    staleTime: 1000 * 60 * 30, // 30 minutes — matches BottomNavigation/DashboardClient
+    gcTime: 1000 * 60 * 30,
+    retry: 1,
   });
 
-  useEffect(() => {
-    async function fetchStatus() {
-      try {
-        const curatorStatus = await checkCuratorStatus();
-        setStatus({
-          ...curatorStatus,
-          loading: false,
-        });
-      } catch (error) {
-        console.error('Failed to fetch curator status:', error);
-        setStatus({
-          isCurator: false,
-          isAuthenticated: false,
-          isVerified: false,
-          loading: false,
-        });
-      }
-    }
-
-    fetchStatus();
-  }, []);
-
-  const refresh = async () => {
-    setStatus(prev => ({ ...prev, loading: true }));
-    try {
-      const curatorStatus = await checkCuratorStatus();
-      setStatus({
-        ...curatorStatus,
-        loading: false,
-      });
-    } catch (error) {
-      console.error('Failed to refresh curator status:', error);
-      setStatus({
-        isCurator: false,
-        isAuthenticated: false,
-        isVerified: false,
-        loading: false,
-      });
-    }
-  };
-
   return {
-    ...status,
-    refresh,
+    isCurator: data?.isCurator ?? false,
+    isAuthenticated: data?.isAuthenticated ?? false,
+    isVerified: data?.isVerified ?? false,
+    loading: isLoading,
+    refresh: refetch,
   };
 }
