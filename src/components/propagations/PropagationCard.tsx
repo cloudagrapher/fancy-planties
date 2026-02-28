@@ -68,6 +68,13 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
       color: 'bg-purple-100 text-purple-800 border-purple-200',
       nextStatus: null,
       nextLabel: null
+    },
+    converted: {
+      label: '🌱 Converted',
+      icon: TreePine,
+      color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      nextStatus: null,
+      nextLabel: null
     }
   };
 
@@ -296,8 +303,20 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
 
           {/* Actions - mobile responsive */}
           <div className="mt-3 sm:mt-0 sm:ml-4">
-            {/* Mobile actions - stacked layout */}
-            <div className="sm:hidden flex flex-col gap-2">
+            {/* Show converted indicator if propagation is converted */}
+            {propagation.status === 'converted' ? (
+              <div className="text-center sm:text-right">
+                <div className="text-sm text-emerald-600 font-medium">
+                  Converted to plant
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  This propagation has been successfully converted
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Mobile actions - stacked layout */}
+                <div className="sm:hidden flex flex-col gap-2">
               {/* Primary action button */}
               {currentStatus.nextStatus && (
                 <button
@@ -421,6 +440,8 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
                 )}
               </div>
             </div>
+              </>
+            )}
           </div>
         </div>
       </div>

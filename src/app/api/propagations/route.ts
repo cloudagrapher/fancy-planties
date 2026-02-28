@@ -5,7 +5,7 @@ import { validateRequest } from '@/lib/auth/server';
 import { PropagationQueries } from '@/lib/db/queries/propagations';
 import { z } from 'zod';
 
-const VALID_STATUSES = ['started', 'rooting', 'ready', 'planted'] as const;
+const VALID_STATUSES = ['started', 'rooting', 'ready', 'planted', 'converted'] as const;
 
 // Validation schema for creating propagations
 const createPropagationSchema = z.object({

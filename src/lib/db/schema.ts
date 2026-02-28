@@ -127,7 +127,7 @@ export const propagations = pgTable('propagations', {
   // Status enum: Updated from ['started', 'rooting', 'planted', 'established'] 
   // to ['started', 'rooting', 'ready', 'planted']
   // 'established' was renamed to 'ready' to better reflect the propagation stage
-  status: text('status', { enum: ['started', 'rooting', 'ready', 'planted'] }).default('started').notNull(),
+  status: text('status', { enum: ['started', 'rooting', 'ready', 'planted', 'converted'] }).default('started').notNull(),
   sourceType: text('source_type', { enum: ['internal', 'external'] }).default('internal').notNull(), // New field
   externalSource: text('external_source', { enum: ['gift', 'trade', 'purchase', 'other'] }), // New field, nullable
   externalSourceDetails: text('external_source_details'), // New field for additional details

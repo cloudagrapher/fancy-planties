@@ -69,7 +69,7 @@ export class PropagationQueries {
   }
 
   // Get propagations by status
-  static async getByStatus(userId: number, status: 'started' | 'rooting' | 'ready' | 'planted'): Promise<(Propagation & { 
+  static async getByStatus(userId: number, status: 'started' | 'rooting' | 'ready' | 'planted' | 'converted'): Promise<(Propagation & { 
     plant: typeof plants.$inferSelect;
     parentInstance?: typeof plantInstances.$inferSelect;
   })[]> {
@@ -241,7 +241,7 @@ export class PropagationQueries {
   }
 
   // Update propagation status
-  static async updateStatus(id: number, status: 'started' | 'rooting' | 'ready' | 'planted', notes?: string): Promise<Propagation> {
+  static async updateStatus(id: number, status: 'started' | 'rooting' | 'ready' | 'planted' | 'converted', notes?: string): Promise<Propagation> {
     try {
       const updateData: Partial<NewPropagation> = {
         status,
@@ -311,11 +311,11 @@ export class PropagationQueries {
           })
           .returning();
 
-        // Update propagation status to planted
+        // Update propagation status to converted
         const [updatedPropagation] = await tx
           .update(propagations)
           .set({
-            status: 'planted',
+            status: 'converted',
             notes: `${propagation.notes || ''}\nConverted to plant instance #${newInstance.id} on ${new Date().toDateString()}`,
             updatedAt: new Date()
           })
@@ -362,15 +362,16 @@ export class PropagationQueries {
           rooting: sql<number>`count(*) filter (where status = 'rooting')`,
           ready: sql<number>`count(*) filter (where status = 'ready')`,
           planted: sql<number>`count(*) filter (where status = 'planted')`,
+          converted: sql<number>`count(*) filter (where status = 'converted')`,
           internal: sql<number>`count(*) filter (where source_type = 'internal')`,
           external: sql<number>`count(*) filter (where source_type = 'external')`,
           gift: sql<number>`count(*) filter (where external_source = 'gift')`,
           trade: sql<number>`count(*) filter (where external_source = 'trade')`,
           purchase: sql<number>`count(*) filter (where external_source = 'purchase')`,
           other: sql<number>`count(*) filter (where external_source = 'other')`,
-          internalReady: sql<number>`count(*) filter (where source_type = 'internal' and (status = 'ready' or status = 'planted'))`,
-          externalReady: sql<number>`count(*) filter (where source_type = 'external' and (status = 'ready' or status = 'planted'))`,
-          avgDays: sql<number>`avg(extract(day from (updated_at - date_started))) filter (where status = 'ready' or status = 'planted')`
+          internalReady: sql<number>`count(*) filter (where source_type = 'internal' and (status = 'ready' or status = 'planted' or status = 'converted'))`,
+          externalReady: sql<number>`count(*) filter (where source_type = 'external' and (status = 'ready' or status = 'planted' or status = 'converted'))`,
+          avgDays: sql<number>`avg(extract(day from (updated_at - date_started))) filter (where status = 'ready' or status = 'planted' or status = 'converted')`
         })
         .from(propagations)
         .where(eq(propagations.userId, userId));
@@ -378,7 +379,8 @@ export class PropagationQueries {
       const total = Number(stats.totalPropagations);
       const ready = Number(stats.ready);
       const planted = Number(stats.planted);
-      const successful = ready + planted;
+      const converted = Number(stats.converted);
+      const successful = ready + planted + converted;
       const internal = Number(stats.internal);
       const external = Number(stats.external);
       const internalReady = Number(stats.internalReady);

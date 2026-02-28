@@ -7,7 +7,7 @@ import { z } from 'zod';
 
 // Validation schema for status updates
 const updateStatusSchema = z.object({
-  status: z.enum(['started', 'rooting', 'ready', 'planted']),
+  status: z.enum(['started', 'rooting', 'ready', 'planted', 'converted']),
   notes: z.string().max(500).optional(),
 });
 
@@ -43,7 +43,7 @@ export async function PATCH(
 
     // Validate status transition — only allow forward progression
     // started → rooting → ready → planted
-    const STATUS_ORDER = ['started', 'rooting', 'ready', 'planted'] as const;
+    const STATUS_ORDER = ['started', 'rooting', 'ready', 'planted', 'converted'] as const;
     const currentIndex = STATUS_ORDER.indexOf(existingPropagation.status as typeof STATUS_ORDER[number]);
     const newIndex = STATUS_ORDER.indexOf(status);
     if (newIndex <= currentIndex) {

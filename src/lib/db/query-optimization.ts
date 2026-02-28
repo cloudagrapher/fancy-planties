@@ -187,7 +187,7 @@ export const optimizedPlantQueries = {
  */
 export const optimizedPropagationQueries = {
   // Get user propagations by status (uses user_status_idx)
-  getUserPropagationsByStatus: async (userId: number, status?: 'started' | 'rooting' | 'ready' | 'planted') => {
+  getUserPropagationsByStatus: async (userId: number, status?: 'started' | 'rooting' | 'ready' | 'planted' | 'converted') => {
     const cacheKey = `user_propagations_${userId}_${status || 'all'}`;
     const cached = queryCache.get(cacheKey);
     if (cached) return cached;
