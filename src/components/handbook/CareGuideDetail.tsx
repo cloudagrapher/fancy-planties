@@ -65,7 +65,8 @@ const BlogSection = ({
   </div>
 );
 
-export default function CareGuideDetail({ guide, userId: _userId, onClose, onEdit }: CareGuideDetailProps) {
+export default function CareGuideDetail({ guide, userId, onClose, onEdit }: CareGuideDetailProps) {
+  const isOwner = guide.userId === userId;
   /**
    * Builds a formatted taxonomy string from the care guide's taxonomy fields
    * Handles different taxonomy levels (family, genus, species, cultivar)
@@ -95,9 +96,8 @@ export default function CareGuideDetail({ guide, userId: _userId, onClose, onEdi
   const hasTLDR = tldr.light || tldr.water || tldr.fertilizer || tldr.soil || tldr.tips;
 
   return (
-    <div className="modal-overlay">
-      <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
-      <div className="relative w-full max-w-4xl h-[90vh] flex flex-col">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="relative w-full max-w-4xl h-[90vh] flex flex-col mx-4" onClick={(e) => e.stopPropagation()}>
         <Card className="h-full flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-200/50 flex-shrink-0">
@@ -109,10 +109,12 @@ export default function CareGuideDetail({ guide, userId: _userId, onClose, onEdi
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Button variant="ghost" onClick={onEdit}>
-                <Edit className="h-4 w-4" />
-                Edit
-              </Button>
+              {isOwner && (
+                <Button variant="ghost" onClick={onEdit}>
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </Button>
+              )}
               <button
                 onClick={onClose}
                 className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
