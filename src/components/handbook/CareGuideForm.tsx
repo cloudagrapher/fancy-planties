@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, MessageCircle, TreeDeciduous } from 'lucide-react';
+import { Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, MessageCircle, TreeDeciduous } from 'lucide-react';
 import S3ImageUpload from '@/components/shared/S3ImageUpload';
+import Modal from '@/components/shared/Modal';
 
 interface CareGuideFormData {
   taxonomyLevel: 'family' | 'genus' | 'species' | 'cultivar';
@@ -313,27 +314,30 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="absolute inset-0 bg-slate-900/30" onClick={onClose} />
-      <div className="relative w-full max-w-2xl h-[90vh] flex flex-col">
-        <Card className="h-full flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-200/50 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <Leaf className="h-5 w-5 text-emerald-600" />
-              <h2 className="text-xl font-semibold text-slate-800">Create Care Guide</h2>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <X className="h-5 w-5 text-slate-500" />
-            </button>
-          </div>
-          
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
-            {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={initialData ? 'Edit Care Guide' : 'Create Care Guide'}
+      size="large"
+      footer={
+        <div className="flex items-center justify-end gap-3 w-full">
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <button
+            type="submit"
+            form="care-guide-form"
+            disabled={!formData.title || !formData.family}
+            className="btn btn--primary flex items-center gap-2 disabled:opacity-50"
+          >
+            <Save className="h-4 w-4" />
+            {initialData ? 'Update Guide' : 'Create Guide'}
+          </button>
+        </div>
+      }
+    >
+          <form id="care-guide-form" onSubmit={handleSubmit}>
+            <div className="space-y-4">
 
                 {/* Tabs */}
                 <div className="flex gap-2 mb-6">
@@ -746,20 +750,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
               </div>
             )}
             </div>
-            
-            {/* Form Actions */}
-            <div className="flex items-center justify-end gap-3 p-6 pt-4 border-t border-slate-200/50 flex-shrink-0">
-              <Button type="button" variant="ghost" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={!formData.title || !formData.family}>
-                <Save className="h-4 w-4" />
-                {initialData ? 'Update Guide' : 'Create Guide'}
-              </Button>
-            </div>
           </form>
-        </Card>
-      </div>
-    </div>
+    </Modal>
   );
 }
