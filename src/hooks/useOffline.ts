@@ -2,11 +2,45 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
+export interface OfflinePlant {
+  id: number;
+  nickname: string | null;
+  location: string | null;
+  plant: {
+    id: number;
+    family: string;
+    genus: string;
+    species: string;
+    commonName: string;
+    careInstructions: string | null;
+  } | null;
+  [key: string]: unknown;
+}
+
+export interface OfflinePropagation {
+  id: number;
+  nickname: string | null;
+  status: string;
+  [key: string]: unknown;
+}
+
+export interface OfflineCareEntry {
+  id: number;
+  careType: string;
+  careDate: string;
+  [key: string]: unknown;
+}
+
 export interface OfflineData {
-  plants: any[];
-  propagations: any[];
-  careHistory: any[];
+  plants: OfflinePlant[];
+  propagations: OfflinePropagation[];
+  careHistory: OfflineCareEntry[];
   lastSync: string;
+}
+
+interface SyncResultEntry {
+  success: boolean;
+  entry: { id: string };
 }
 
 export interface PendingCareEntry {
@@ -135,8 +169,8 @@ export function useOffline() {
         
         // Remove successfully synced entries
         const successfulIds = result.results
-          .filter((r: any) => r.success)
-          .map((r: any) => r.entry.id);
+          .filter((r: SyncResultEntry) => r.success)
+          .map((r: SyncResultEntry) => r.entry.id);
 
         const remaining = pendingEntries.filter(entry => !successfulIds.includes(entry.id));
         setPendingEntries(remaining);

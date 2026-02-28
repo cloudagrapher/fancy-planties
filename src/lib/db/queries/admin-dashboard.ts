@@ -2,51 +2,9 @@ import 'server-only';
 import { db } from '@/lib/db';
 import { users, plants, plantInstances, propagations, careHistory } from '@/lib/db/schema';
 import { sql, count, desc, and, gte, eq } from 'drizzle-orm';
+import type { AdminDashboardStats } from '@/lib/types/admin-types';
 
-export interface AdminDashboardStats {
-  users: {
-    total: number;
-    curators: number;
-    newThisMonth: number;
-    activeThisWeek: number;
-  };
-  plants: {
-    total: number;
-    verified: number;
-    pendingApproval: number;
-    submittedThisMonth: number;
-  };
-  activity: {
-    recentRegistrations: Array<{
-      id: number;
-      name: string;
-      email: string;
-      createdAt: Date;
-    }>;
-    recentSubmissions: Array<{
-      id: number;
-      commonName: string;
-      genus: string;
-      species: string;
-      createdAt: Date;
-    }>;
-    recentApprovals: Array<{
-      plantId: number;
-      curatorName: string;
-      notes?: string;
-    }>;
-  };
-  systemHealth: {
-    databaseSize: string;
-    activeConnections: number;
-    lastBackup?: Date;
-    alerts: Array<{
-      severity: 'info' | 'warning' | 'critical';
-      title: string;
-      message: string;
-    }>;
-  };
-}
+export type { AdminDashboardStats };
 
 export class AdminDashboardQueries {
   static async getDashboardStats(): Promise<AdminDashboardStats> {

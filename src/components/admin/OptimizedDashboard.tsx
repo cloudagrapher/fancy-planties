@@ -121,7 +121,7 @@ export default function OptimizedDashboard() {
           <div className="activity-card">
             <h3>Recent Registrations</h3>
             <div className="activity-list">
-              {stats?.activity.recentRegistrations?.slice(0, 5).map((user: any) => (
+              {stats?.activity.recentRegistrations?.slice(0, 5).map((user) => (
                 <div key={user.id} className="activity-item">
                   <div className="activity-icon">👤</div>
                   <div className="activity-content">
@@ -142,7 +142,7 @@ export default function OptimizedDashboard() {
           <div className="activity-card">
             <h3>Recent Plant Submissions</h3>
             <div className="activity-list">
-              {stats?.activity.recentSubmissions?.slice(0, 5).map((plant: any) => (
+              {stats?.activity.recentSubmissions?.slice(0, 5).map((plant) => (
                 <div key={plant.id} className="activity-item">
                   <div className="activity-icon">🌿</div>
                   <div className="activity-content">
@@ -163,7 +163,7 @@ export default function OptimizedDashboard() {
           <div className="activity-card">
             <h3>Recent Approvals</h3>
             <div className="activity-list">
-              {stats?.activity.recentApprovals?.slice(0, 5).map((approval: any) => (
+              {stats?.activity.recentApprovals?.slice(0, 5).map((approval) => (
                 <div key={approval.plantId} className="activity-item">
                   <div className="activity-icon">✅</div>
                   <div className="activity-content">
@@ -213,7 +213,7 @@ export default function OptimizedDashboard() {
           <div className="system-card">
             <h3>Alerts</h3>
             <div className="alerts-list">
-              {stats?.systemHealth.alerts?.map((alert: any, index: number) => (
+              {stats?.systemHealth.alerts?.map((alert, index) => (
                 <div key={index} className={`alert alert-${alert.severity}`}>
                   <div className="alert-icon">
                     {alert.severity === 'critical' ? '🚨' : 

@@ -11,6 +11,7 @@ import type {
   PlantFilters, 
   PlantSortConfig 
 } from '@/lib/db/queries/admin-plants';
+import type { AdminDashboardStats } from '@/lib/types/admin-types';
 
 // Query keys
 export const adminQueryKeys = {
@@ -164,7 +165,7 @@ export function useAdminAuditLogs(
 
 // Dashboard stats query
 export function useAdminDashboardStats() {
-  return useQuery({
+  return useQuery<AdminDashboardStats>({
     queryKey: adminQueryKeys.dashboard.stats(),
     queryFn: async () => {
       const response = await fetch('/api/admin/dashboard/stats');
@@ -173,7 +174,7 @@ export function useAdminDashboardStats() {
         throw new Error('Failed to fetch dashboard stats');
       }
 
-      return response.json();
+      return response.json() as Promise<AdminDashboardStats>;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes for dashboard stats
     refetchInterval: 5 * 60 * 1000, // Auto-refresh every 5 minutes
