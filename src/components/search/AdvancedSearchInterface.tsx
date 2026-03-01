@@ -14,6 +14,12 @@ import type {
 } from '@/lib/types/plant-instance-types';
 import { apiFetch } from '@/lib/api-client';
 
+interface SearchHistoryEntry {
+  query: string;
+  timestamp?: string;
+  resultCount?: number;
+}
+
 interface AdvancedSearchInterfaceProps {
   onResults: (results: AdvancedSearchResult) => void;
   onFiltersChange: (filters: EnhancedPlantInstanceFilter) => void;
@@ -86,13 +92,13 @@ export default function AdvancedSearchInterface({
   });
 
   // Search history query
-  const { data: history, error: historyError } = useQuery({
+  const { data: history, error: historyError } = useQuery<SearchHistoryEntry[]>({
     queryKey: ['search-history'],
-    queryFn: async () => {
+    queryFn: async (): Promise<SearchHistoryEntry[]> => {
       const response = await apiFetch('/api/search/history?limit=5');
       if (!response.ok) throw new Error('Failed to fetch history');
       const data = await response.json();
-      return data.data?.history || [];
+      return (data.data?.history || []) as SearchHistoryEntry[];
     },
     enabled: showHistory && showSuggestions,
     staleTime: 1000 * 60 * 2, // 2 minutes
@@ -162,7 +168,7 @@ export default function AdvancedSearchInterface({
     setSearchQuery(value);
     
     // Show suggestions if we have enough characters or history
-    if (value.length >= 2 || (showHistory && history?.length > 0)) {
+    if (value.length >= 2 || (showHistory && (history?.length ?? 0) > 0)) {
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
@@ -188,7 +194,7 @@ export default function AdvancedSearchInterface({
   }, [smartSearchMutation, searchTimeout, showHistory, history?.length]);
 
   // Handle filter changes
-  const handleFilterChange = useCallback((key: keyof EnhancedPlantInstanceFilter, value: any) => {
+  const handleFilterChange = useCallback((key: keyof EnhancedPlantInstanceFilter, value: EnhancedPlantInstanceFilter[keyof EnhancedPlantInstanceFilter]) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFiltersChange(newFilters);
@@ -260,7 +266,7 @@ export default function AdvancedSearchInterface({
 
   // Focus management
   const handleInputFocus = useCallback(() => {
-    if (searchQuery.length >= 2 || (showHistory && history?.length > 0)) {
+    if (searchQuery.length >= 2 || (showHistory && (history?.length ?? 0) > 0)) {
       setShowSuggestions(true);
     }
   }, [searchQuery.length, showHistory, history?.length]);
@@ -277,7 +283,7 @@ export default function AdvancedSearchInterface({
 
   // Show suggestions when query changes and meets criteria
   useEffect(() => {
-    if (searchQuery.length >= 2 || (showHistory && history?.length > 0)) {
+    if (searchQuery.length >= 2 || (showHistory && (history?.length ?? 0) > 0)) {
       setShowSuggestions(true);
     } else {
       setShowSuggestions(false);
@@ -401,10 +407,10 @@ export default function AdvancedSearchInterface({
                 )}
 
                 {/* Search History */}
-                {showHistory && history?.length > 0 && (
+                {showHistory && (history?.length ?? 0) > 0 && (
                   <div className={`p-2 ${suggestions?.suggestions?.length > 0 ? 'border-t border-gray-100' : ''}`}>
                     <div className="text-xs font-medium text-gray-500 mb-2">Recent Searches</div>
-                    {history.slice(0, 3).map((entry: any, index: number) => (
+                    {history?.slice(0, 3).map((entry: SearchHistoryEntry, index: number) => (
                       <button
                         key={index}
                         onClick={() => handleSuggestionSelect(entry.query)}
@@ -429,10 +435,10 @@ export default function AdvancedSearchInterface({
                 )}
 
                 {/* Show history only when no search query */}
-                {searchQuery.length < 2 && showHistory && history?.length > 0 && (
+                {searchQuery.length < 2 && showHistory && (history?.length ?? 0) > 0 && (
                   <div className="p-2">
                     <div className="text-xs font-medium text-gray-500 mb-2">Recent Searches</div>
-                    {history.slice(0, 3).map((entry: any, index: number) => (
+                    {history?.slice(0, 3).map((entry: SearchHistoryEntry, index: number) => (
                       <button
                         key={index}
                         onClick={() => handleSuggestionSelect(entry.query)}

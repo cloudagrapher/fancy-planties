@@ -123,7 +123,7 @@ export default function UserManagementClient({
   }, [filters, sort, updateURL]);
   
   // Handle filter change
-  const handleFilterChange = useCallback((key: keyof UserFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof UserFilters, value: UserFilters[keyof UserFilters]) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     updateURL(newFilters, sort);
@@ -342,7 +342,7 @@ export default function UserManagementClient({
 interface UserManagementFiltersProps {
   filters: UserFilters;
   onSearch: (search: string) => void;
-  onFilterChange: (key: keyof UserFilters, value: any) => void;
+  onFilterChange: (key: keyof UserFilters, value: UserFilters[keyof UserFilters]) => void;
 }
 
 function UserManagementFilters({ filters, onSearch, onFilterChange }: UserManagementFiltersProps) {

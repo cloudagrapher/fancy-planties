@@ -5,7 +5,7 @@ import { Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileT
 import S3ImageUpload from '@/components/shared/S3ImageUpload';
 import Modal from '@/components/shared/Modal';
 
-interface CareGuideFormData {
+export interface CareGuideFormData {
   taxonomyLevel: 'family' | 'genus' | 'species' | 'cultivar';
   family: string;
   genus: string;

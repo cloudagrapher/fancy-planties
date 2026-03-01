@@ -67,7 +67,7 @@ export function AdminValidatedForm<T extends Record<string, any>>({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges, notifyUnsavedChanges]);
 
-  const validateField = useCallback((name: string, value: any) => {
+  const validateField = useCallback((name: string, value: unknown) => {
     const field = fields.find(f => f.name === name);
     if (!field?.validation) return null;
 
@@ -75,7 +75,7 @@ export function AdminValidatedForm<T extends Record<string, any>>({
     return result.success ? null : result.errors[name] || 'Invalid value';
   }, [fields]);
 
-  const handleFieldChange = useCallback((name: string, value: any) => {
+  const handleFieldChange = useCallback((name: string, value: unknown) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Clear field error when user starts typing

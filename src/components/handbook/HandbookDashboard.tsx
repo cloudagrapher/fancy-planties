@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
 import CareGuideForm from './CareGuideForm';
+import type { CareGuideFormData } from './CareGuideForm';
 import CareGuideDetail from './CareGuideDetail';
 import S3Image from '@/components/shared/S3Image';
 import { apiFetch } from '@/lib/api-client';
@@ -238,8 +239,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
     staleTime: 1000 * 60,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleCreateGuide = async (formData: any) => {
+  const handleCreateGuide = async (formData: CareGuideFormData) => {
     try {
       const response = await apiFetch('/api/care-guides', {
         method: 'POST',
@@ -263,8 +263,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleUpdateGuide = async (formData: any) => {
+  const handleUpdateGuide = async (formData: CareGuideFormData) => {
     if (!editingGuide) return;
     
     try {

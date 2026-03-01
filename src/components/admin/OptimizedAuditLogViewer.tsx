@@ -88,7 +88,7 @@ export default function OptimizedAuditLogViewer({
   }, []);
   
   // Handle filter change
-  const handleFilterChange = useCallback((key: keyof AuditFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof AuditFilters, value: AuditFilters[keyof AuditFilters]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setCurrentPage(1);
   }, []);
@@ -162,7 +162,7 @@ interface AuditLogFiltersProps {
   filters: AuditFilters;
   searchTerm: string;
   onSearch: (search: string) => void;
-  onFilterChange: (key: keyof AuditFilters, value: any) => void;
+  onFilterChange: (key: keyof AuditFilters, value: AuditFilters[keyof AuditFilters]) => void;
 }
 
 function AuditLogFilters({ 
@@ -267,7 +267,7 @@ interface VirtualizedAuditLogTableProps {
   virtualScrollProps: {
     totalHeight: number;
     offsetY: number;
-    scrollElementProps: any;
+    scrollElementProps: { style: React.CSSProperties; onScroll: (e: React.UIEvent<HTMLElement>) => void; };
     itemHeight: number;
   };
 }
