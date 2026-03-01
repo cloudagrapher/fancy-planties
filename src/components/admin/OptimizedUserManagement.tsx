@@ -114,7 +114,7 @@ export default function OptimizedUserManagement({
   }, []);
   
   // Handle filter change
-  const handleFilterChange = useCallback((key: keyof UserFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof UserFilters, value: UserFilters[keyof UserFilters]) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     setCurrentPage(1);
@@ -294,7 +294,7 @@ interface UserManagementFiltersProps {
   filters: UserFilters;
   searchTerm: string;
   onSearch: (search: string) => void;
-  onFilterChange: (key: keyof UserFilters, value: any) => void;
+  onFilterChange: (key: keyof UserFilters, value: UserFilters[keyof UserFilters]) => void;
 }
 
 function UserManagementFilters({ 
@@ -356,7 +356,10 @@ interface VirtualizedUserTableProps {
   virtualScrollProps: {
     totalHeight: number;
     offsetY: number;
-    scrollElementProps: any;
+    scrollElementProps: {
+      style: React.CSSProperties;
+      onScroll: (e: React.UIEvent<HTMLElement>) => void;
+    };
     itemHeight: number;
   };
 }

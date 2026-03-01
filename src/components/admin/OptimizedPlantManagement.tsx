@@ -396,7 +396,7 @@ interface VirtualizedPlantTableProps {
   virtualScrollProps: {
     totalHeight: number;
     offsetY: number;
-    scrollElementProps: any;
+    scrollElementProps: { style: React.CSSProperties; onScroll: (e: React.UIEvent<HTMLElement>) => void; };
     itemHeight: number;
   };
 }
