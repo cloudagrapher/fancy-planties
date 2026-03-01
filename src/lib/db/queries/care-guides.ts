@@ -53,7 +53,7 @@ export async function findCareGuidesForPlant(
 /**
  * Create a new care guide
  */
-export async function createCareGuide(careGuide: any) {
+export async function createCareGuide(careGuide: Record<string, unknown>) {
   throw new Error('Care guides feature temporarily disabled - database types being configured');
 }
 
@@ -63,7 +63,7 @@ export async function createCareGuide(careGuide: any) {
 export async function updateCareGuide(
   id: number, 
   userId: number, 
-  updates: any
+  updates: Record<string, unknown>
 ) {
   throw new Error('Care guides feature temporarily disabled - database types being configured');
 }

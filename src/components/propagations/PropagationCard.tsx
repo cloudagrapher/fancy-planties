@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, lazy, Suspense } from 'react';
 import Image from 'next/image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import { 
@@ -15,7 +15,6 @@ import {
   CheckCircle,
   TreePine
 } from 'lucide-react';
-import { lazy, Suspense } from 'react';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 
 // Lazy load form — only needed when user taps Edit
