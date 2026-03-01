@@ -132,7 +132,7 @@ export class PlantMatcher {
    */
   private calculateMatch(
     csvData: { family: string; genus: string; species: string; cultivar: string; commonName: string },
-    dbPlant: any
+    dbPlant: typeof plants.$inferSelect
   ): PlantMatch {
     const matchedFields: string[] = [];
     let totalScore = 0;

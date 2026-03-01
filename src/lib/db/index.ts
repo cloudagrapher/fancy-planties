@@ -53,8 +53,7 @@ export async function clearUserContext() {
 
 // Database transaction wrapper with error handling
 export async function withTransaction<T>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  callback: (tx: any) => Promise<T>
+  callback: (tx: Parameters<Parameters<typeof db.transaction>[0]>[0]) => Promise<T>
 ): Promise<T> {
   try {
     return await db.transaction(callback);

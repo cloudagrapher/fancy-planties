@@ -310,7 +310,7 @@ export class CSVImportProcessor {
 
   // Helper methods for processing different row types
 
-  private processPlantTaxonomyRow(rawData: any, rowIndex: number): ProcessedPlantTaxonomy {
+  private processPlantTaxonomyRow(rawData: Record<string, string>, rowIndex: number): ProcessedPlantTaxonomy {
     // Handle both new separate fields and legacy combined field
     const cultivar = this.cleanField(rawData['Cultivar']) || null;
     const commonName = this.cleanField(rawData['Common Name']) || 
@@ -326,7 +326,7 @@ export class CSVImportProcessor {
     };
   }
 
-  private async processPlantInstanceRow(rawData: any, rowIndex: number): Promise<ProcessedPlantInstance> {
+  private async processPlantInstanceRow(rawData: Record<string, string>, rowIndex: number): Promise<ProcessedPlantInstance> {
     const lastFertilized = DateParser.parseDate(rawData['Last Fertilized']);
     const fertilizerSchedule = ScheduleParser.parseSchedule(rawData['Fertilizer Schedule']);
     const fertilizerDue = DateParser.parseDate(rawData['Fertilizer Due']) || 
@@ -354,7 +354,7 @@ export class CSVImportProcessor {
     };
   }
 
-  private async processPropagationRow(rawData: any, rowIndex: number): Promise<ProcessedPropagation> {
+  private async processPropagationRow(rawData: Record<string, string>, rowIndex: number): Promise<ProcessedPropagation> {
     const dateStarted = DateParser.parseDate(rawData['Date Started']);
     if (!dateStarted) {
       throw new Error('Invalid or missing date started');
@@ -412,16 +412,16 @@ export class CSVImportProcessor {
 
   // Helper methods for data validation and processing
 
-  private isEmptyPlantRow(data: any): boolean {
+  private isEmptyPlantRow(data: Record<string, string>): boolean {
     return !data['Family'] && !data['Genus'] && !data['Species'] && 
            !data['Common Name'] && !data['Common Name/Variety'];
   }
 
-  private isEmptyInstanceRow(data: any): boolean {
+  private isEmptyInstanceRow(data: Record<string, string>): boolean {
     return !data['Common Name'] && !data['Common Name/Variety'] && !data['Location'];
   }
 
-  private isEmptyPropagationRow(data: any): boolean {
+  private isEmptyPropagationRow(data: Record<string, string>): boolean {
     return !data['Common Name'] && !data['Common Name/Variety'] && 
            !data['Location'] && !data['Date Started'];
   }
@@ -592,7 +592,7 @@ export class CSVImportProcessor {
     return instances[0]?.id || null;
   }
 
-  private handleDuplicatePlant(data: ProcessedPlantTaxonomy, existing: any, rowIndex: number) {
+  private handleDuplicatePlant(data: ProcessedPlantTaxonomy, existing: typeof plants.$inferSelect[], rowIndex: number) {
     this.conflicts.push({
       type: 'duplicate_plant',
       rowIndex,
