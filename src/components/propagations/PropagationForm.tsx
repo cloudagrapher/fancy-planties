@@ -548,6 +548,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                       <option value="rooting">Rooting</option>
                       <option value="ready">Ready</option>
                       <option value="planted">Planted</option>
+                      <option value="converted">Converted</option>
                     </select>
                   </div>
                 </div>
