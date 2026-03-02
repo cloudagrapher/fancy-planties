@@ -14,11 +14,9 @@ export function DataImport({ className = '' }: DataImportProps) {
   const [activeTab, setActiveTab] = useState<'import' | 'history'>('import');
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleImportComplete = (_summary: unknown) => {
-    // Refresh the history when import completes
-    if (activeTab === 'history') {
-      // The ImportHistory component will automatically refresh
-    }
+  const handleImportComplete = (_summary?: unknown) => {
+    // Switch to history tab to show the completed import
+    setActiveTab('history');
   };
 
   const downloadTemplate = (type: 'plant_taxonomy' | 'plant_instances' | 'propagations') => {
