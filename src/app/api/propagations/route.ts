@@ -75,9 +75,11 @@ export async function GET(request: NextRequest) {
       propagations = await PropagationQueries.getByUserId(user.id);
     }
 
-    const response = NextResponse.json(propagations);
-    response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    return response;
+    return NextResponse.json(propagations, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Error fetching propagations:', error);
     return NextResponse.json(

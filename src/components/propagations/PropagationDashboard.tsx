@@ -42,7 +42,7 @@ export default function PropagationDashboard() {
       }
       return response.json();
     },
-    staleTime: 1000 * 10, // 10 seconds
+    staleTime: 1000 * 60, // 60 seconds — propagation data doesn't change frequently
     gcTime: 1000 * 60 * 5, // 5 minutes
   });
 
@@ -61,7 +61,7 @@ export default function PropagationDashboard() {
       }
       return response.json();
     },
-    staleTime: 1000 * 10, // 10 seconds
+    staleTime: 1000 * 60 * 2, // 2 minutes — stats change even less frequently
     gcTime: 1000 * 60 * 5, // 5 minutes
   });
 
@@ -243,14 +243,16 @@ export default function PropagationDashboard() {
       )}
 
       {/* Status Filter Tabs */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide" role="tablist" aria-label="Filter by propagation status">
         <button
           onClick={() => setSelectedStatus(null)}
-          className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors touch-manipulation ${
+          className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors touch-manipulation whitespace-nowrap ${
             selectedStatus === null
               ? 'bg-primary-600 text-white shadow-sm'
               : 'bg-white/50 text-gray-700 hover:bg-white/70 border border-slate-200/70'
           }`}
+          role="tab"
+          aria-selected={selectedStatus === null}
         >
           All ({propagations.length})
         </button>
@@ -262,11 +264,13 @@ export default function PropagationDashboard() {
             <button
               key={status}
               onClick={() => setSelectedStatus(status)}
-              className={`flex items-center px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors touch-manipulation ${
+              className={`flex items-center px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors touch-manipulation whitespace-nowrap ${
                 selectedStatus === status
                   ? 'bg-primary-600 text-white shadow-sm'
                   : 'bg-white/50 text-gray-700 hover:bg-white/70 border border-slate-200/70'
               }`}
+              role="tab"
+              aria-selected={selectedStatus === status}
             >
               <Icon className="w-4 h-4 mr-2" />
               {config.label} ({count})
