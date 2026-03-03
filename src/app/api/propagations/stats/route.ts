@@ -1,11 +1,11 @@
 import 'server-only';
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { validateRequest } from '@/lib/auth/server';
 import { PropagationQueries } from '@/lib/db/queries/propagations';
 
 // GET /api/propagations/stats - Get propagation statistics for the authenticated user
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { user } = await validateRequest();
     if (!user) {
@@ -14,9 +14,11 @@ export async function GET(request: NextRequest) {
 
     const stats = await PropagationQueries.getStats(user.id);
 
-    const response = NextResponse.json(stats);
-    response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    return response;
+    return NextResponse.json(stats, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Error fetching propagation stats:', error);
     return NextResponse.json(

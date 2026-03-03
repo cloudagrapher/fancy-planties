@@ -45,9 +45,11 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const response = NextResponse.json(propagation);
-    response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    return response;
+    return NextResponse.json(propagation, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Error fetching propagation:', error);
     return NextResponse.json(
