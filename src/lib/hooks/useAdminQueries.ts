@@ -12,6 +12,11 @@ import type {
   PlantSortConfig 
 } from '@/lib/db/queries/admin-plants';
 import type { AdminDashboardStats } from '@/lib/types/admin-types';
+import type { AuditLogFilters } from '@/lib/db/queries/audit-logs';
+
+interface FetchError extends Error {
+  status?: number;
+}
 
 // Query keys
 export const adminQueryKeys = {
@@ -28,7 +33,7 @@ export const adminQueryKeys = {
   },
   auditLogs: {
     all: ['admin', 'audit-logs'] as const,
-    paginated: (page: number, pageSize: number, filters: any) =>
+    paginated: (page: number, pageSize: number, filters: AuditLogFilters) =>
       [...adminQueryKeys.auditLogs.all, 'paginated', { page, pageSize, filters }] as const,
   },
   dashboard: {
@@ -64,7 +69,7 @@ export function useAdminUsers(
       const response = await fetch(`/api/admin/users?${params.toString()}`);
       
       if (!response.ok) {
-        const error = new Error('Failed to fetch users') as any;
+        const error: FetchError = new Error('Failed to fetch users');
         error.status = response.status;
         throw error;
       }
@@ -103,7 +108,7 @@ export function useAdminPlants(
       const response = await fetch(`/api/admin/plants?${params.toString()}`);
       
       if (!response.ok) {
-        const error = new Error('Failed to fetch plants') as any;
+        const error: FetchError = new Error('Failed to fetch plants');
         error.status = response.status;
         throw error;
       }
@@ -134,7 +139,7 @@ export function useAdminPlantTaxonomy() {
 export function useAdminAuditLogs(
   page: number,
   pageSize: number,
-  filters: any
+  filters: AuditLogFilters
 ) {
   return useQuery({
     queryKey: adminQueryKeys.auditLogs.paginated(page, pageSize, filters),
@@ -145,9 +150,9 @@ export function useAdminAuditLogs(
       });
 
       // Add filters to params
-      Object.entries(filters).forEach(([key, value]) => {
+      (Object.entries(filters) as [string, string | number | boolean | Date | undefined][]).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
-          params.set(key, value.toString());
+          params.set(key, value instanceof Date ? value.toISOString() : String(value));
         }
       });
 

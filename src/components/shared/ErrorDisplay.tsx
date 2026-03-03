@@ -28,7 +28,7 @@ export default function ErrorDisplay({
               {error.message}
             </p>
             
-            {showDetails && error.details && (
+            {showDetails && error.details != null && (
               <details className="mt-2">
                 <summary className="cursor-pointer text-xs text-red-600 hover:text-red-800">
                   Show technical details
