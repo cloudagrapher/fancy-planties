@@ -1,7 +1,7 @@
 import 'server-only';
 import { db } from '@/lib/db';
-import { users, plants, plantInstances, propagations, careHistory } from '@/lib/db/schema';
-import { sql, count, desc, and, gte, eq } from 'drizzle-orm';
+import { users, plants } from '@/lib/db/schema';
+import { sql, count, desc, gte, eq } from 'drizzle-orm';
 import type { AdminDashboardStats } from '@/lib/types/admin-types';
 
 export type { AdminDashboardStats };
@@ -99,16 +99,16 @@ export class AdminDashboardQueries {
 
     try {
       // Get database size (PostgreSQL specific)
-      const dbSizeResult = await db.execute(
+      const dbSizeResult = await db.execute<{ size: string }>(
         sql`SELECT pg_size_pretty(pg_database_size(current_database())) as size`
       );
-      const databaseSize = (dbSizeResult[0] as any)?.size as string || 'Unknown';
+      const databaseSize = (dbSizeResult[0] as { size: string } | undefined)?.size ?? 'Unknown';
 
       // Get active connections
-      const connectionsResult = await db.execute(
+      const connectionsResult = await db.execute<{ active_connections: string }>(
         sql`SELECT count(*) as active_connections FROM pg_stat_activity WHERE state = 'active'`
       );
-      const activeConnections = Number((connectionsResult[0] as any)?.active_connections) || 0;
+      const activeConnections = Number((connectionsResult[0] as { active_connections: string } | undefined)?.active_connections) || 0;
 
       // Check for potential issues
       if (activeConnections > 50) {

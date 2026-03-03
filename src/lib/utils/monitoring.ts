@@ -175,11 +175,11 @@ class MonitoringService {
 export const monitoring = new MonitoringService();
 
 // Middleware helper for API route monitoring
-export function withMonitoring<T extends (...args: any[]) => Promise<Response>>(
+export function withMonitoring<T extends (...args: unknown[]) => Promise<Response>>(
   handler: T,
   routeName: string
 ): T {
-  return (async (...args: any[]) => {
+  return (async (...args: unknown[]) => {
     const startTime = Date.now();
     const request = args[0] as Request;
     

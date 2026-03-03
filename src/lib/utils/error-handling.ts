@@ -8,7 +8,7 @@ export interface ErrorState {
   message: string;
   code?: string;
   retryable?: boolean;
-  details?: any;
+  details?: unknown;
 }
 
 export interface LoadingState {
@@ -34,7 +34,7 @@ export function createErrorState(
   if (error instanceof Error) {
     return {
       message: error.message,
-      code: (error as any).code,
+      code: (error as Error & { code?: string }).code,
       retryable,
       details: error
     };

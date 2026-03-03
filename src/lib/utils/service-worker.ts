@@ -79,7 +79,7 @@ export class ServiceWorkerManager {
   /**
    * Send message to service worker
    */
-  postMessage(message: any): void {
+  postMessage(message: Record<string, unknown>): void {
     if (this.registration?.active) {
       this.registration.active.postMessage(message);
     }
@@ -88,7 +88,7 @@ export class ServiceWorkerManager {
   /**
    * Cache offline data in service worker
    */
-  cacheOfflineData(data: any): void {
+  cacheOfflineData(data: unknown): void {
     this.postMessage({
       type: 'CACHE_OFFLINE_DATA',
       data,
@@ -154,7 +154,7 @@ export function useServiceWorker() {
     register: () => swManager.register(),
     update: () => swManager.update(),
     skipWaiting: () => swManager.skipWaiting(),
-    cacheOfflineData: (data: any) => swManager.cacheOfflineData(data),
+    cacheOfflineData: (data: unknown) => swManager.cacheOfflineData(data),
     registerBackgroundSync: () => swManager.registerBackgroundSync(),
     isUpdateAvailable: () => swManager.isUpdateAvailable(),
     isRegistered: () => swManager.isRegistered(),
