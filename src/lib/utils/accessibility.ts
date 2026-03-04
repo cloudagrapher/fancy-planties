@@ -174,7 +174,7 @@ export class ScreenReader {
         if (announcement.parentNode === document.body) {
           document.body.removeChild(announcement);
         }
-      } catch (error) {
+      } catch {
         // Silently handle case where element was already removed
       }
     }, 1000);

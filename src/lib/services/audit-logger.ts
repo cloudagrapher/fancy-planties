@@ -8,7 +8,7 @@ export interface AuditLogData {
   entityType: 'user' | 'plant' | 'plant_instance' | 'propagation' | 'system';
   entityId?: number;
   performedBy: number;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   success?: boolean;
   errorMessage?: string;
 }

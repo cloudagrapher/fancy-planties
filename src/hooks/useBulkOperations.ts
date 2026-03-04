@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 
-export interface BulkOperationProgress<T = any> {
+export interface BulkOperationProgress<T = number> {
   total: number;
   completed: number;
   failed: number;
@@ -80,7 +80,7 @@ export function useBulkOperations<T = number>(): UseBulkOperationsReturn<T> {
       if (result.success) {
         setSelectedItems(new Set());
       }
-    } catch (error) {
+    } catch (_error) {
       setProgress(prev => prev ? {
         ...prev,
         failed: prev.total,

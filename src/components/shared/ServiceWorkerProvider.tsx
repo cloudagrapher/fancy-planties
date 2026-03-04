@@ -9,9 +9,8 @@ import { useOffline } from '@/hooks/useOffline';
  * Handles service worker registration and update notifications
  */
 export function ServiceWorkerProvider({ children }: { children: React.ReactNode }) {
-  const { register, skipWaiting, cacheOfflineData } = useServiceWorker();
+  const { register, skipWaiting } = useServiceWorker();
   const { cacheOfflineData: cacheData } = useOffline();
-  const [updateAvailable, setUpdateAvailable] = useState(false);
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
 
   useEffect(() => {
@@ -20,7 +19,6 @@ export function ServiceWorkerProvider({ children }: { children: React.ReactNode 
 
     // Listen for update available
     const handleUpdateAvailable = () => {
-      setUpdateAvailable(true);
       setShowUpdatePrompt(true);
     };
 

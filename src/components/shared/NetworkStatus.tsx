@@ -111,7 +111,7 @@ export function OfflineBanner() {
           <WifiOff className="w-5 h-5 text-yellow-600" />
           <div>
             <p className="text-sm font-medium text-yellow-800">
-              You're currently offline
+              You&apos;re currently offline
             </p>
             {hasCachedData ? (
               <p className="text-xs text-yellow-700">
