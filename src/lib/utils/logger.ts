@@ -6,7 +6,7 @@ interface LogEntry {
   level: LogLevel;
   message: string;
   timestamp: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   error?: Error;
   userId?: number;
   requestId?: string;
@@ -51,7 +51,7 @@ class Logger {
     return JSON.stringify(logData);
   }
 
-  private log(level: LogLevel, message: string, context?: Record<string, any>, error?: Error): void {
+  private log(level: LogLevel, message: string, context?: Record<string, unknown>, error?: Error): void {
     if (!this.shouldLog(level)) return;
 
     const entry: LogEntry = {
@@ -99,28 +99,28 @@ class Logger {
     }
   }
 
-  debug(message: string, context?: Record<string, any>): void {
+  debug(message: string, context?: Record<string, unknown>): void {
     this.log('debug', message, context);
   }
 
-  info(message: string, context?: Record<string, any>): void {
+  info(message: string, context?: Record<string, unknown>): void {
     this.log('info', message, context);
   }
 
-  warn(message: string, context?: Record<string, any>): void {
+  warn(message: string, context?: Record<string, unknown>): void {
     this.log('warn', message, context);
   }
 
-  error(message: string, error?: Error, context?: Record<string, any>): void {
+  error(message: string, error?: Error, context?: Record<string, unknown>): void {
     this.log('error', message, context, error);
   }
 
   // Specific logging methods for common scenarios
-  authEvent(event: string, userId?: number, context?: Record<string, any>): void {
+  authEvent(event: string, userId?: number, context?: Record<string, unknown>): void {
     this.info(`Auth: ${event}`, { ...context, userId });
   }
 
-  databaseEvent(event: string, context?: Record<string, any>): void {
+  databaseEvent(event: string, context?: Record<string, unknown>): void {
     this.debug(`Database: ${event}`, context);
   }
 
@@ -128,7 +128,7 @@ class Logger {
     this.info(`API: ${method} ${path}`, { userId, duration });
   }
 
-  securityEvent(event: string, context?: Record<string, any>): void {
+  securityEvent(event: string, context?: Record<string, unknown>): void {
     this.warn(`Security: ${event}`, context);
   }
 }

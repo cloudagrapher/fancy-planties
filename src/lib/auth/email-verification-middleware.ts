@@ -66,9 +66,9 @@ export async function withEmailVerificationRateLimit(
         });
         
         // Copy the parsed body to the new request for the handler to use
-        (newRequest as any)._parsedBody = body;
+        (newRequest as unknown as { _parsedBody: unknown })._parsedBody = body;
         request = newRequest;
-      } catch (error) {
+      } catch {
         return NextResponse.json(
           { error: 'Invalid JSON in request body' },
           { status: 400 }

@@ -51,7 +51,7 @@ export interface SecurityEvent {
   identifier: string;
   email?: string;
   timestamp: number;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
 }
 
 const securityEvents: SecurityEvent[] = [];

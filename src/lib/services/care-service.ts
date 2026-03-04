@@ -200,7 +200,7 @@ export class CareService {
               error: result.error
             });
           }
-        } catch (error) {
+        } catch {
           failureCount++;
           results.push({
             plantInstanceId,

@@ -7,6 +7,11 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
+// Safari on iOS exposes `standalone` on navigator (non-standard)
+interface SafariNavigator extends Navigator {
+  standalone?: boolean;
+}
+
 /**
  * Hook for managing PWA installation prompts and detection
  */
@@ -21,7 +26,7 @@ export function usePWAInstall() {
     const checkStandalone = () => {
       const isStandaloneMode = 
         window.matchMedia('(display-mode: standalone)').matches ||
-        (window.navigator as any).standalone ||
+        (window.navigator as SafariNavigator).standalone ||
         document.referrer.includes('android-app://');
       
       setIsStandalone(isStandaloneMode);

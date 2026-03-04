@@ -98,7 +98,12 @@ export class OfflineService {
   /**
    * Process offline care log entries when back online
    */
-  static async processPendingCareEntries(userId: number, pendingEntries: any[]) {
+  static async processPendingCareEntries(userId: number, pendingEntries: Array<{
+    plantInstanceId: number;
+    careType: 'fertilizer' | 'water' | 'repot' | 'prune' | 'inspect' | 'flush' | 'other';
+    timestamp: string;
+    notes?: string;
+  }>) {
     const results = [];
     
     for (const entry of pendingEntries) {
@@ -133,7 +138,8 @@ export class OfflineService {
    * Get data that has changed since last sync
    */
   static async getDataSince(userId: number, lastSync: string) {
-    const syncDate = new Date(lastSync);
+    // lastSync timestamp — reserved for future updatedAt filtering
+    void lastSync;
 
     try {
       // Get plants updated since last sync

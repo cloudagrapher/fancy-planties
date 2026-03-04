@@ -95,8 +95,8 @@ export class ResendEmailService implements EmailService {
     throw lastError || new EmailServiceError('All retry attempts failed', 'API_ERROR');
   }
 
-  private mapResendErrorCode(error: any): EmailServiceError['code'] {
-    const message = error.message?.toLowerCase() || '';
+  private mapResendErrorCode(error: unknown): EmailServiceError['code'] {
+    const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
     
     if (message.includes('quota') || message.includes('limit')) {
       return 'QUOTA_EXCEEDED';

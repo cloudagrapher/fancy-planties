@@ -31,25 +31,34 @@ export function ensureTouchTargetSize(element: HTMLElement, config = TOUCH_TARGE
   }
 }
 
+// Vendor-prefixed CSS properties not in the standard CSSStyleDeclaration
+type VendorPrefixedStyle = CSSStyleDeclaration & {
+  webkitUserSelect?: string;
+  webkitTouchCallout?: string;
+  webkitTapHighlightColor?: string;
+};
+
 /**
  * Add touch-friendly styles to interactive elements
  */
 export function addTouchStyles(element: HTMLElement): void {
+  const style = element.style as VendorPrefixedStyle;
+
   // Prevent text selection on touch
-  element.style.userSelect = 'none';
-  (element.style as any).webkitUserSelect = 'none';
+  style.userSelect = 'none';
+  style.webkitUserSelect = 'none';
   
   // Prevent callout on touch and hold
-  (element.style as any).webkitTouchCallout = 'none';
+  style.webkitTouchCallout = 'none';
   
   // Prevent tap highlight
-  (element.style as any).webkitTapHighlightColor = 'transparent';
+  style.webkitTapHighlightColor = 'transparent';
   
   // Ensure proper touch action
-  element.style.touchAction = 'manipulation';
+  style.touchAction = 'manipulation';
   
   // Add cursor pointer for better UX
-  element.style.cursor = 'pointer';
+  style.cursor = 'pointer';
 }
 
 /**
@@ -71,7 +80,7 @@ export function addTouchFeedback(
 
   let touchTimeout: NodeJS.Timeout | null = null;
 
-  const handleTouchStart = (e: TouchEvent) => {
+  const handleTouchStart = (_e: TouchEvent) => {
     // Add active state
     element.classList.add(activeClass);
     
@@ -101,13 +110,13 @@ export function addTouchFeedback(
   };
 
   // Add event listeners
-  element.addEventListener('touchstart', handleTouchStart, { passive: true });
+  element.addEventListener('touchstart', handleTouchStart as EventListener, { passive: true });
   element.addEventListener('touchend', handleTouchEnd, { passive: true });
   element.addEventListener('touchcancel', handleTouchCancel, { passive: true });
 
   // Return cleanup function
   return () => {
-    element.removeEventListener('touchstart', handleTouchStart);
+    element.removeEventListener('touchstart', handleTouchStart as EventListener);
     element.removeEventListener('touchend', handleTouchEnd);
     element.removeEventListener('touchcancel', handleTouchCancel);
     
