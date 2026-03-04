@@ -623,6 +623,14 @@ select {
   overflow: hidden;
 }
 
+/* On mobile, use square aspect ratio so portrait plant photos don't get
+   aggressively cropped — 1:1 is more forgiving for mixed orientations. */
+@media (max-width: 480px) {
+  .plant-card-image {
+    aspect-ratio: 1 / 1;
+  }
+}
+
 .plant-card-content {
   padding: 12px;
   background-color: var(--color-mint-100);
