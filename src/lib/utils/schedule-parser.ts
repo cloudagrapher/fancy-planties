@@ -23,14 +23,23 @@ const SCHEDULE_MAP: Record<string, number> = {
   '2 months': 60,
   '3 months': 90,
   // Database / form formats
+  'every week': 7,
+  'every 1-2 weeks': 10,
   'every 2 weeks': 14,
   'every 2-3 weeks': 18,
   'every 2-4 weeks': 21,
+  'every 3 weeks': 21,
   'every 3-4 weeks': 24,
   'every 4 weeks': 28,
   'every 4-6 weeks': 35,
+  'every 6 weeks': 42,
   'every 6-8 weeks': 49,
+  'every 8 weeks': 56,
   'every 17 weeks': 119,
+  'every month': 30,
+  'every 2 months': 60,
+  'every 3 months': 90,
+  'every 6 months': 180,
 };
 
 /** Default fallback when a schedule string can't be parsed. */
@@ -56,8 +65,9 @@ export function parseFertilizerScheduleToDays(schedule: string): number {
     return SCHEDULE_MAP[normalized];
   }
 
-  // 2. "<N> day(s)/week(s)/month(s)" pattern
-  const match = normalized.match(/^(\d+)\s*(day|week|month)s?$/i);
+  // 2. "[every] <N> day(s)/week(s)/month(s)" pattern
+  //    Matches "3 weeks", "every 3 weeks", "every 1 month", etc.
+  const match = normalized.match(/^(?:every\s+)?(\d+)\s*(day|week|month)s?$/i);
   if (match) {
     const amount = parseInt(match[1], 10);
     const unit = match[2].toLowerCase();

@@ -49,22 +49,26 @@ function PlantCard({
 
   // Size configurations with aspect-ratio-based image sizing
   // Cards fill their grid cell — the grid's minmax() controls actual width
+  // NOTE: The image aspect ratio is driven by CSS (.plant-card-image) which
+  // switches from 4:3 to 1:1 on mobile (≤480px) to reduce aggressive
+  // cropping of portrait plant photos. The Tailwind class here is just a
+  // fallback / initial value.
   const sizeConfig = {
     small: {
       container: 'w-full',
-      image: 'aspect-[4/3]',
+      image: '',
       text: 'text-xs',
       title: 'text-sm',
     },
     medium: {
       container: 'w-full',
-      image: 'aspect-[4/3]',
+      image: '',
       text: 'text-xs',
       title: 'text-sm',
     },
     large: {
       container: 'w-full',
-      image: 'aspect-[4/3]',
+      image: '',
       text: 'text-sm',
       title: 'text-base',
     },
