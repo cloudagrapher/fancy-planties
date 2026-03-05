@@ -6,10 +6,8 @@ import {
   plants, 
   propagations, 
   careHistory,
-  careGuides,
-  users 
 } from '@/lib/db/schema';
-import { eq, and, or, desc, asc, sql, inArray, isNull, isNotNull, gte, lte, like, ilike } from 'drizzle-orm';
+import { eq, and, or, desc, asc, sql, isNull, lte, ilike } from 'drizzle-orm';
 import { queryOptimization } from '@/lib/utils/performance';
 
 // Create query cache instance

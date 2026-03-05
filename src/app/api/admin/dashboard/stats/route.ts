@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireCuratorSession } from '@/lib/auth/server';
 import { AdminDashboardQueries } from '@/lib/db/queries/admin-dashboard';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Ensure user is a curator
     await requireCuratorSession();

@@ -47,7 +47,7 @@ export default function PlantNotes({ plantId, initialNotes, onNotesUpdate }: Pla
   // Serialize note entries back to string for storage
   const serializeNotes = (entries: NoteEntry[]): string => {
     if (entries.length === 0) return '';
-    return JSON.stringify(entries.map(({ isEditing, ...entry }) => entry));
+    return JSON.stringify(entries.map(({ isEditing: _isEditing, ...entry }) => entry));
   };
 
   // Update notes mutation

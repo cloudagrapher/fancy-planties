@@ -5,7 +5,6 @@ import PlantCard from '@/components/plants/PlantCard';
 import type { 
   AdvancedSearchResult,
   EnhancedPlantInstance,
-  SearchFacets 
 } from '@/lib/types/plant-instance-types';
 
 interface SearchResultsProps {
@@ -69,19 +68,6 @@ export default function SearchResults({
   // Clear all facets
   const clearFacets = () => {
     setSelectedFacets({});
-  };
-
-  // Highlight text helper
-  const highlightText = (text: string, terms: string[]) => {
-    if (!terms.length) return text;
-    
-    let highlighted = text;
-    terms.forEach(term => {
-      const regex = new RegExp(`(${term})`, 'gi');
-      highlighted = highlighted.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
-    });
-    
-    return highlighted;
   };
 
   if (isLoading && !results) {

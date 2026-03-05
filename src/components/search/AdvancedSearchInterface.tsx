@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import type { 
   MultiFieldSearch, 
   EnhancedPlantInstanceFilter,
   SearchPreset 
 } from '@/lib/validation/plant-schemas';
 import type { 
-  EnhancedPlantInstance, 
   PlantInstanceSortField,
   AdvancedSearchResult 
 } from '@/lib/types/plant-instance-types';
@@ -37,7 +36,7 @@ export default function AdvancedSearchInterface({
   placeholder = "Search plants...",
   showPresets = true,
   showHistory = true,
-  compact = false,
+  compact: _compact = false,
 }: AdvancedSearchInterfaceProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -47,7 +46,7 @@ export default function AdvancedSearchInterface({
   const [isPendingSearch, setIsPendingSearch] = useState(false);
   
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const queryClient = useQueryClient();
+  
 
   // Current filters state
   const [filters, setFilters] = useState<EnhancedPlantInstanceFilter>(

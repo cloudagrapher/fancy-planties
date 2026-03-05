@@ -135,7 +135,7 @@ class MonitoringService {
     
     // Calculate database metrics
     const dbQueries = this.metrics.filter(m => m.name === 'database_query_time');
-    const dbErrors = this.metrics.filter(m => m.name === 'database_error_count');
+    const _dbErrors = this.metrics.filter(m => m.name === 'database_error_count');
     
     // Calculate application metrics
     const apiRequests = this.metrics.filter(m => m.name === 'api_request_count');

@@ -6,7 +6,7 @@ import { OfflineService } from '@/lib/services/offline-service';
  * GET /api/offline/data
  * Get user's data for offline caching
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { user } = await validateRequest();
     if (!user) {

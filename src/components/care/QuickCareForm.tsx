@@ -71,7 +71,7 @@ export default function QuickCareForm({
         }
       } else {
         // Offline: Add to pending queue
-        const pendingId = addPendingCareEntry({
+        addPendingCareEntry({
           plantInstanceId: Number(formData.plantInstanceId),
           careType: formData.careType as CareType,
           notes: formData.notes || undefined,

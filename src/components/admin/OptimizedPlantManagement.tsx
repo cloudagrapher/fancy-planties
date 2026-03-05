@@ -7,7 +7,7 @@ import {
   useUpdatePlant, 
   useBulkPlantOperation 
 } from '@/lib/hooks/useAdminQueries';
-import { useDebounce, useDebouncedCallback } from '@/lib/hooks/useDebounce';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 import { useVirtualScroll, VirtualTableRow } from '@/lib/hooks/useVirtualScroll';
 import { useBulkOperations } from '@/hooks/useBulkOperations';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
@@ -154,7 +154,7 @@ export default function OptimizedPlantManagement({
   
   // Bulk operation handlers
   const handleBulkAction = useCallback(async (actionId: string) => {
-    const selectedPlantIds = Array.from(selectedPlants);
+    const _selectedPlantIds = Array.from(selectedPlants);
     
     await executeBulkOperation(async (plantIds) => {
       const result = await bulkPlantOperation.mutateAsync({

@@ -19,21 +19,21 @@ export interface CareGuideFilters {
  * Get care guides for a specific user
  * Temporarily returning empty array until database types are configured
  */
-export async function getUserCareGuides(userId: number, filters?: CareGuideFilters) {
+export async function getUserCareGuides(_userId: number, _filters?: CareGuideFilters) {
   return [];
 }
 
 /**
  * Get public care guides (for browsing community guides)
  */
-export async function getPublicCareGuides(filters?: CareGuideFilters) {
+export async function getPublicCareGuides(_filters?: CareGuideFilters) {
   return [];
 }
 
 /**
  * Get care guide by ID
  */
-export async function getCareGuideById(id: number, userId?: number) {
+export async function getCareGuideById(_id: number, _userId?: number) {
   return null;
 }
 
@@ -41,11 +41,11 @@ export async function getCareGuideById(id: number, userId?: number) {
  * Find care guides matching plant taxonomy
  */
 export async function findCareGuidesForPlant(
-  family: string,
-  genus: string,
-  species: string,
-  cultivar?: string,
-  userId?: number
+  _family: string,
+  _genus: string,
+  _species: string,
+  _cultivar?: string,
+  _userId?: number
 ) {
   return [];
 }
@@ -53,7 +53,7 @@ export async function findCareGuidesForPlant(
 /**
  * Create a new care guide
  */
-export async function createCareGuide(careGuide: Record<string, unknown>) {
+export async function createCareGuide(_careGuide: Record<string, unknown>) {
   throw new Error('Care guides feature temporarily disabled - database types being configured');
 }
 
@@ -61,9 +61,9 @@ export async function createCareGuide(careGuide: Record<string, unknown>) {
  * Update a care guide
  */
 export async function updateCareGuide(
-  id: number, 
-  userId: number, 
-  updates: Record<string, unknown>
+  _id: number, 
+  _userId: number, 
+  _updates: Record<string, unknown>
 ) {
   throw new Error('Care guides feature temporarily disabled - database types being configured');
 }
@@ -71,14 +71,14 @@ export async function updateCareGuide(
 /**
  * Delete a care guide
  */
-export async function deleteCareGuide(id: number, userId: number) {
+export async function deleteCareGuide(_id: number, _userId: number) {
   return false;
 }
 
 /**
  * Get care guide statistics for user
  */
-export async function getUserCareGuideStats(userId: number) {
+export async function getUserCareGuideStats(_userId: number) {
   return {
     total: 0,
     public: 0,
@@ -95,7 +95,7 @@ export async function getUserCareGuideStats(userId: number) {
 /**
  * Get unique taxonomy values for search/filtering
  */
-export async function getCareGuideTaxonomyValues(userId?: number) {
+export async function getCareGuideTaxonomyValues(_userId?: number) {
   return {
     families: [],
     genera: [],

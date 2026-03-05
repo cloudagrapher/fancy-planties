@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { type AuditLogWithUser, type AuditLogFilters } from '@/lib/db/queries/audit-logs';
 
 interface AuditLogViewerProps {
@@ -31,7 +31,7 @@ export default function AuditLogViewer({
         page: page.toString(),
         pageSize: pageSize.toString(),
         ...Object.fromEntries(
-          Object.entries(newFilters).filter(([_, value]) => value !== undefined && value !== '')
+          Object.entries(newFilters).filter(([, value]) => value !== undefined && value !== '')
         ),
       });
 

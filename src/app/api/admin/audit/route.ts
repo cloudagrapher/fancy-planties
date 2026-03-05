@@ -6,7 +6,7 @@ import { AuditLogQueries, type AuditLogFilters } from '@/lib/db/queries/audit-lo
 export async function GET(request: NextRequest) {
   try {
     // Validate curator access
-    const { user } = await validateCuratorRequest();
+    await validateCuratorRequest();
     
     const { searchParams } = new URL(request.url);
     

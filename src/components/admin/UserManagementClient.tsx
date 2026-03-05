@@ -424,9 +424,7 @@ function UserManagementTable({
     return sort.direction === 'asc' ? '↑' : '↓';
   };
   
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString();
-  };
+
   
   return (
     <div className="user-table-container">

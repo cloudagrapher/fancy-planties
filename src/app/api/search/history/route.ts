@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 }
 
 // DELETE /api/search/history - Clear user's search history
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   try {
     const { user } = await validateRequest();
     if (!user) {

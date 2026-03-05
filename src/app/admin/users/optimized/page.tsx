@@ -1,9 +1,8 @@
 import 'server-only';
-import { AdminUserQueries } from '@/lib/db/queries/admin-users';
 import OptimizedUserManagement from '@/components/admin/OptimizedUserManagement';
 import { AdminUserErrorBoundary } from '@/components/admin/AdminErrorBoundary';
 import { requirePermission } from '@/lib/auth/admin-auth';
-import { safeValidate, paginationSchema, userFiltersSchema, userSortSchema } from '@/lib/validation/admin-schemas';
+import { safeValidate, userFiltersSchema, userSortSchema } from '@/lib/validation/admin-schemas';
 
 // Force dynamic rendering for search params
 export const dynamic = 'force-dynamic';

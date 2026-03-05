@@ -130,7 +130,7 @@ function getHttpStatusForAuthError(errorType: AuthError['type']): number {
 }
 
 // Check specific admin permissions
-export async function checkAdminPermission(permission: AdminPermission): Promise<boolean> {
+export async function checkAdminPermission(_permission: AdminPermission): Promise<boolean> {
   try {
     const result = await validateCuratorRequest();
     

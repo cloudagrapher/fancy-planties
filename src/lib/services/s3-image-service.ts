@@ -181,7 +181,7 @@ export class S3ImageService {
    * Delete an image from S3 (called via application API, not direct S3 access)
    * This should be implemented in a separate API route that validates ownership
    */
-  static async deleteImage(userId: string, s3Key: string): Promise<void> {
+  static async deleteImage(_userId: string, _s3Key: string): Promise<void> {
     // TODO: Implement delete endpoint in API
     throw new Error('Delete functionality not yet implemented');
   }

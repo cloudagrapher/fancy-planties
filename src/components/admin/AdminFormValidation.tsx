@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { z } from 'zod';
-import { formatValidationErrors, safeValidate } from '@/lib/validation/admin-schemas';
+import { safeValidate } from '@/lib/validation/admin-schemas';
 import { useFormValidationNotifications } from './AdminNotificationSystem';
 
 export interface FormField {

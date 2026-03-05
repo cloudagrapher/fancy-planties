@@ -4,7 +4,6 @@ import type {
   CareScheduleCalculation,
   PlantCareStatistics,
   CareSchedule,
-  CareFrequency,
   CareType
 } from '@/lib/types/care-types';
 import type { CareHistory, PlantInstance } from '@/lib/db/schema';
@@ -236,7 +235,7 @@ export class CareCalculator {
   calculateCareStreak(
     careHistory: Array<{ careDate: Date; careType: string }>, 
     schedule: CareSchedule,
-    currentDate: Date = new Date()
+    _currentDate: Date = new Date()
   ): number {
     if (careHistory.length === 0) return 0;
     
@@ -527,7 +526,7 @@ export class CareCalculator {
     careHistory: CareHistory[]
   ): PlantCareStatistics {
     const currentDate = new Date();
-    const plantAge = Math.floor(
+    const _plantAge = Math.floor(
       (currentDate.getTime() - plantInstance.createdAt.getTime()) / (1000 * 60 * 60 * 24)
     );
 

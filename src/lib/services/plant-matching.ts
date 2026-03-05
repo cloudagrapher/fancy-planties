@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { plants } from '@/lib/db/schema';
-import { eq, or, ilike, sql } from 'drizzle-orm';
+import { or, ilike, sql } from 'drizzle-orm';
 import type { PlantMatch, PlantMatchResult } from '@/lib/validation/csv-schemas';
 
 export class PlantMatcher {

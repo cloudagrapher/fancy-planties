@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { virtualScrolling } from '@/lib/utils/performance';
 
 interface VirtualScrollListProps<T> {

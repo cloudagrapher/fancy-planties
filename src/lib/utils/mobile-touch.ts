@@ -80,6 +80,7 @@ export function addTouchFeedback(
 
   let touchTimeout: NodeJS.Timeout | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleTouchStart = (_e: TouchEvent) => {
     // Add active state
     element.classList.add(activeClass);

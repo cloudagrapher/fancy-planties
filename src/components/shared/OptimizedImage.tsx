@@ -162,7 +162,7 @@ interface LazyGalleryImageProps {
 function LazyGalleryImage({
   src,
   alt,
-  index,
+  index: _index,
   shouldLoad,
   onInView,
   onClick,

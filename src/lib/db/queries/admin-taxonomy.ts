@@ -1,7 +1,7 @@
 import 'server-only';
 import { db } from '@/lib/db';
 import { plants, plantInstances, propagations } from '@/lib/db/schema';
-import { eq, and, sql, count, desc, asc, inArray } from 'drizzle-orm';
+import { eq, and, sql, count, desc, asc } from 'drizzle-orm';
 
 export interface TaxonomyNode {
   id: string;
@@ -288,7 +288,7 @@ async function findDuplicateCandidates(): Promise<TaxonomyPlant[]> {
 
 // Merge two plants (move all instances and propagations from source to target)
 export async function mergePlants(request: TaxonomyMergeRequest): Promise<void> {
-  const { sourceId, targetId, reason } = request;
+  const { sourceId, targetId, reason: _reason } = request;
 
   await db.transaction(async (tx) => {
     // Update all plant instances to point to target plant

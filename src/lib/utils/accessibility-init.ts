@@ -3,7 +3,7 @@
  * Automatically sets up accessibility features when the app loads
  */
 
-import { KeyboardNavigation, ScreenReader, ReducedMotion } from './accessibility';
+import { KeyboardNavigation, ScreenReader } from './accessibility';
 
 /**
  * Initialize all accessibility features
@@ -93,11 +93,9 @@ function setupFocusManagement(): void {
  * Set up ARIA live regions for announcements
  */
 function setupLiveRegions(): void {
-  // Create polite live region
-  const politeRegion = ScreenReader.createLiveRegion('aria-live-polite', 'polite');
-  
-  // Create assertive live region
-  const assertiveRegion = ScreenReader.createLiveRegion('aria-live-assertive', 'assertive');
+  // Create live regions (side effect: inserts into DOM)
+  ScreenReader.createLiveRegion('aria-live-polite', 'polite');
+  ScreenReader.createLiveRegion('aria-live-assertive', 'assertive');
 
   // Global announcement function
   (window as unknown as Record<string, unknown>).announceToScreenReader = (message: string, priority: 'polite' | 'assertive' = 'polite') => {
