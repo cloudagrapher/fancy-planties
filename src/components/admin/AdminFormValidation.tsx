@@ -12,7 +12,7 @@ export interface FormField {
   required?: boolean;
   placeholder?: string;
   options?: Array<{ value: string; label: string }>;
-  validation?: z.ZodSchema<any>;
+  validation?: z.ZodSchema<unknown>;
 }
 
 export interface FormValidationProps<T> {
@@ -28,6 +28,7 @@ export interface FormValidationProps<T> {
   className?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function AdminValidatedForm<T extends Record<string, any>>({
   schema,
   initialData = {},

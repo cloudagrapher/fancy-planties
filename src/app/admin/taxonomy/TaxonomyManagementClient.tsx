@@ -83,10 +83,10 @@ export default function TaxonomyManagementClient({
         alert('Plants merged successfully');
         window.location.reload();
       } else {
-        const error = await response.json();
-        alert(`Failed to merge plants: ${error.message}`);
+        const errorData = await response.json();
+        alert(`Failed to merge plants: ${errorData.message}`);
       }
-    } catch (error) {
+    } catch {
       alert('Failed to merge plants');
     }
   };
@@ -116,10 +116,10 @@ export default function TaxonomyManagementClient({
         }
         window.location.reload();
       } else {
-        const error = await response.json();
-        alert(`Failed to delete plants: ${error.message}`);
+        const errorData = await response.json();
+        alert(`Failed to delete plants: ${errorData.message}`);
       }
-    } catch (error) {
+    } catch {
       alert('Failed to delete plants');
     }
   };
@@ -333,7 +333,7 @@ function TaxonomyNodeComponent({
                   />
                   <div className="plant-details">
                     <strong>{plant.commonName}</strong>
-                    {plant.cultivar && <span className="cultivar">'{plant.cultivar}'</span>}
+                    {plant.cultivar && <span className="cultivar">&apos;{plant.cultivar}&apos;</span>}
                     <span className="usage">
                       {plant.instanceCount}i, {plant.propagationCount}p
                     </span>

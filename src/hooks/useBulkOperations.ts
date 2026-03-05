@@ -80,7 +80,7 @@ export function useBulkOperations<T = number>(): UseBulkOperationsReturn<T> {
       if (result.success) {
         setSelectedItems(new Set());
       }
-    } catch (_error) {
+    } catch {
       setProgress(prev => prev ? {
         ...prev,
         failed: prev.total,

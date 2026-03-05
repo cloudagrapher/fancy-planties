@@ -100,7 +100,7 @@ function setupLiveRegions(): void {
   const assertiveRegion = ScreenReader.createLiveRegion('aria-live-assertive', 'assertive');
 
   // Global announcement function
-  (window as any).announceToScreenReader = (message: string, priority: 'polite' | 'assertive' = 'polite') => {
+  (window as unknown as Record<string, unknown>).announceToScreenReader = (message: string, priority: 'polite' | 'assertive' = 'polite') => {
     ScreenReader.announce(message, priority);
   };
 }

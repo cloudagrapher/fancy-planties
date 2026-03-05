@@ -214,7 +214,7 @@ export function useBulkOperationNotifications() {
     operation: string, 
     successCount: number, 
     failureCount: number, 
-    errors: Array<{ id: number; error: string }>
+    _errors: Array<{ id: number; error: string }>
   ) => {
     return showWarning(
       'Bulk Operation Partially Completed',

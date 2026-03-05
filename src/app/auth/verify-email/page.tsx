@@ -52,7 +52,7 @@ export default async function VerifyEmailPage({ searchParams }: PageProps) {
             Verify Your Email
           </h1>
           <p className="text-neutral-600 mb-2">
-            We've sent a verification code to
+            We&apos;ve sent a verification code to
           </p>
           <p className="font-semibold text-mint-700 text-lg">
             {email}

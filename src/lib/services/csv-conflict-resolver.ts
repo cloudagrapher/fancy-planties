@@ -6,7 +6,8 @@ import type { ImportConflict, ImportSummary } from '@/lib/validation/csv-schemas
 export interface ConflictResolution {
   conflictId: string;
   action: 'skip' | 'merge' | 'create_new' | 'manual_review';
-  data?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data?: Record<string, any>;
 }
 
 export class CSVConflictResolver {
@@ -25,7 +26,7 @@ export class CSVConflictResolver {
   ): Promise<ImportSummary> {
     const startTime = new Date();
     let successfulResolutions = 0;
-    const errors: any[] = [];
+    const errors: Array<{ rowIndex: number; message: string; severity: 'error' | 'warning'; field?: string; originalValue?: string }> = [];
 
     for (const resolution of resolutions) {
       const conflict = conflicts.find(c => 

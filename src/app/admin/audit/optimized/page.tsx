@@ -72,7 +72,7 @@ export default async function OptimizedAuditPage({
                   </div>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Today's Logs</p>
+                  <p className="text-sm font-medium text-gray-500">Today&apos;s Logs</p>
                   <p className="text-2xl font-semibold text-gray-900">{stats.todayLogs}</p>
                 </div>
               </div>

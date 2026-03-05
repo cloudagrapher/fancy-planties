@@ -138,7 +138,7 @@ export default function PlantReviewCard({
             {plant.cultivar && (
               <>
                 <span className="taxonomy-separator">→</span>
-                <span className="taxonomy-part cultivar">'{plant.cultivar}'</span>
+                <span className="taxonomy-part cultivar">&apos;{plant.cultivar}&apos;</span>
               </>
             )}
           </div>

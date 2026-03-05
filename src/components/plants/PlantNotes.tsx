@@ -249,7 +249,7 @@ export default function PlantNotes({ plantId, initialNotes, onNotesUpdate }: Pla
           <div className="text-center py-8 text-gray-500">
             <div className="text-4xl mb-2">📝</div>
             <p className="text-sm">No notes yet</p>
-            <p className="text-xs mt-1">Use the quick templates or "Add Notes" to record observations</p>
+            <p className="text-xs mt-1">Use the quick templates or &quot;Add Notes&quot; to record observations</p>
           </div>
         ) : (
           noteEntries.map((entry) => (
