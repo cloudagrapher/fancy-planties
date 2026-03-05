@@ -160,9 +160,9 @@ export class CSVImportService {
   async validateCSVContent(
     content: string,
     importType: ImportType
-  ): Promise<{ isValid: boolean; errors: string[]; preview: any[] }> {
+  ): Promise<{ isValid: boolean; errors: string[]; preview: Record<string, string>[] }> {
     const errors: string[] = [];
-    let preview: any[] = [];
+    let preview: Record<string, string>[] = [];
 
     try {
       // Basic CSV parsing validation
@@ -179,7 +179,7 @@ export class CSVImportService {
       if (rows.length > 0) {
         const headers = rows[0];
         preview = rows.slice(1).map(row => {
-          const obj: any = {};
+          const obj: Record<string, string> = {};
           headers.forEach((header, index) => {
             obj[header] = row[index] || '';
           });

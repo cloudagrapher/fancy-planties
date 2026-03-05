@@ -145,7 +145,7 @@ export function DataImport({ className = '' }: DataImportProps) {
                 </h3>
               </div>
               <p className="text-gray-600 mb-4">
-                Upload a CSV file with your plant data. We'll guide you through the process and validate your data.
+                Upload a CSV file with your plant data. We&apos;ll guide you through the process and validate your data.
               </p>
               <button
                 onClick={() => setShowImportModal(true)}
@@ -207,7 +207,7 @@ export function DataImport({ className = '' }: DataImportProps) {
                     <li>Common Name</li>
                   </ul>
                   <p><strong>Optional:</strong> Cultivar</p>
-                  <p className="text-xs italic">Legacy "Common Name/Variety" column still supported</p>
+                  <p className="text-xs italic">Legacy &quot;Common Name/Variety&quot; column still supported</p>
                 </div>
               </div>
               
@@ -221,7 +221,7 @@ export function DataImport({ className = '' }: DataImportProps) {
                     <li>Fertilizer Schedule</li>
                   </ul>
                   <p><strong>Optional:</strong> Cultivar, Last Fertilized, Last Repot</p>
-                  <p className="text-xs italic">Legacy "Common Name/Variety" column still supported</p>
+                  <p className="text-xs italic">Legacy &quot;Common Name/Variety&quot; column still supported</p>
                 </div>
               </div>
               

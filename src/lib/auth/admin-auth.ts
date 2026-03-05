@@ -272,7 +272,7 @@ export async function logAdminAction(
   action: string,
   entityType: 'user' | 'plant' | 'system',
   entityId?: number,
-  details?: Record<string, any>
+  details?: Record<string, unknown>
 ): Promise<void> {
   try {
     const { user } = await requireAdminAuth();

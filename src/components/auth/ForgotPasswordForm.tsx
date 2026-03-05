@@ -97,11 +97,11 @@ export default function ForgotPasswordForm() {
         </h3>
         
         <p className="text-gray-600 mb-4">
-          If an account with that email exists, we've sent you a password reset link.
+          If an account with that email exists, we&apos;ve sent you a password reset link.
         </p>
         
         <p className="text-sm text-gray-500 mb-6">
-          The link will expire in 1 hour. Check your spam folder if you don't see it.
+          The link will expire in 1 hour. Check your spam folder if you don&apos;t see it.
         </p>
         
         <div className="space-y-3">

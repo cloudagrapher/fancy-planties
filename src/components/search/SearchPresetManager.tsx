@@ -244,7 +244,7 @@ export default function SearchPresetManager({
                 </h4>
                 <div className="text-xs text-gray-600 space-y-1">
                   {currentFilters.searchQuery && (
-                    <div>Query: "{currentFilters.searchQuery}"</div>
+                    <div>Query: &quot;{currentFilters.searchQuery}&quot;</div>
                   )}
                   {currentFilters.location && (
                     <div>Location: {currentFilters.location}</div>

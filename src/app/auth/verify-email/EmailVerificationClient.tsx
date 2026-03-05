@@ -235,7 +235,7 @@ export default function EmailVerificationClient({ email }: EmailVerificationClie
             Enter verification code
           </h3>
           <p className="text-sm text-neutral-600">
-            We've sent a 6-digit code to your email. Enter it below to verify your account.
+            We&apos;ve sent a 6-digit code to your email. Enter it below to verify your account.
           </p>
         </div>
 

@@ -13,6 +13,7 @@ import { eq, and, or, desc, asc, sql, inArray, isNull, isNotNull, gte, lte, like
 import { queryOptimization } from '@/lib/utils/performance';
 
 // Create query cache instance
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const queryCache = queryOptimization.createQueryCache<any>(5 * 60 * 1000); // 5 minutes TTL
 
 /**

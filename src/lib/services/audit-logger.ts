@@ -48,7 +48,7 @@ export class AuditLogger {
     action: 'user_promoted' | 'user_demoted' | 'user_created' | 'user_updated' | 'user_deleted',
     userId: number,
     performedBy: number,
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ): Promise<void> {
     await this.logAction({
       action,
@@ -64,7 +64,7 @@ export class AuditLogger {
     action: 'plant_approved' | 'plant_rejected' | 'plant_created' | 'plant_updated' | 'plant_deleted' | 'plant_merged',
     plantId: number,
     performedBy: number,
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ): Promise<void> {
     await this.logAction({
       action,
@@ -79,7 +79,7 @@ export class AuditLogger {
   static async logSystemAction(
     action: 'system_backup' | 'system_maintenance' | 'bulk_operation' | 'data_export',
     performedBy: number,
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ): Promise<void> {
     await this.logAction({
       action,
@@ -96,7 +96,7 @@ export class AuditLogger {
     performedBy: number,
     error: Error,
     entityId?: number,
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ): Promise<void> {
     await this.logAction({
       action,
@@ -116,7 +116,7 @@ export class AuditLogger {
     performedBy: number,
     operation: () => Promise<T>,
     entityId?: number,
-    details?: Record<string, any>
+    details?: Record<string, unknown>
   ): Promise<T> {
     try {
       const result = await operation();

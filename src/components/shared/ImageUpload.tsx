@@ -152,7 +152,7 @@ export default function ImageUpload({
       // setSelectedFiles([]);
       // setPreviews([]);
       
-    } catch (error) {
+    } catch {
       setErrors(['Upload failed. Please try again.']);
     } finally {
       setIsUploading(false);
