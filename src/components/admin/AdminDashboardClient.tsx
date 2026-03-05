@@ -32,10 +32,6 @@ export default function AdminDashboardClient({ initialStats }: AdminDashboardCli
     return () => clearInterval(interval);
   }, []);
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString();
-  };
-
   const formatDateTime = (date: string) => {
     return new Date(date).toLocaleString();
   };

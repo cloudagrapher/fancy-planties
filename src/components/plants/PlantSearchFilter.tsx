@@ -9,7 +9,6 @@ import SearchPresetManager from '@/components/search/SearchPresetManager';
 import SearchHistory from '@/components/search/SearchHistory';
 import type { PlantInstanceSortField } from '@/lib/types/plant-instance-types';
 import type {
-  PlantInstanceFilter,
   EnhancedPlantInstanceFilter
 } from '@/lib/validation/plant-schemas';
 import type {

@@ -5,7 +5,7 @@ import { getCSRFToken, createCSRFCookieHeaders } from '@/lib/auth/csrf';
  * GET /api/csrf - Get CSRF token for authenticated users
  * This endpoint provides CSRF tokens for frontend forms
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const token = await getCSRFToken();
     

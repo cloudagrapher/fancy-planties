@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { TaxonomyNode, TaxonomyStats, TaxonomyPlant } from '@/lib/db/queries/admin-taxonomy';
+import type { TaxonomyNode, TaxonomyStats } from '@/lib/db/queries/admin-taxonomy';
 import { apiFetch } from '@/lib/api-client';
 
 interface TaxonomyManagementClientProps {

@@ -16,7 +16,7 @@ import { validateCuratorRequest } from '@/lib/auth/server';
  * 
  * This endpoint should be protected and only accessible to administrators.
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Require curator privileges
     const authResult = await validateCuratorRequest();
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         { status: authResult.error === 'Unauthorized' ? 401 : 403 }
       );
     }
-    const { user } = authResult;
+    const { user: _user } = authResult;
     
     // Get comprehensive system status
     const systemStatus = await emailVerificationCleanupService.getSystemStatus();
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         { status: authResult.error === 'Unauthorized' ? 401 : 403 }
       );
     }
-    const { user } = authResult;
+    const { user: _user } = authResult;
     
     const body = await request.json();
     const { action } = body;

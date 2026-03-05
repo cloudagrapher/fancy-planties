@@ -33,8 +33,6 @@ const taxonomyCache = queryOptimization.createQueryCache<{
   species: string[];
 }>(10 * 60 * 1000); // 10 minutes
 
-const plantCountCache = queryOptimization.createQueryCache<number>(5 * 60 * 1000); // 5 minutes
-
 export class AdminPlantQueries {
   // Get a single plant by ID
   static async getPlantById(id: number): Promise<Plant | null> {
@@ -374,7 +372,7 @@ export class AdminPlantQueries {
   // Bulk approve plants (verify + update)
   static async bulkApprovePlants(
     plantIds: number[], 
-    curatorId: number
+    _curatorId: number
   ): Promise<{ 
     approvedCount: number; 
     errors: Array<{ id: number; error: string }> 

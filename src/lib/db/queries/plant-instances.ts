@@ -819,7 +819,7 @@ export class PlantInstanceQueries {
         plantInstanceIds,
         operation: op,
         fertilizerDate,
-        notes,
+        notes: _notes,
       } = operation;
       const results: BulkOperationResult["results"] = [];
       let successCount = 0;
@@ -827,21 +827,18 @@ export class PlantInstanceQueries {
 
       for (const id of plantInstanceIds) {
         try {
-          let result: PlantInstance;
-
           switch (op) {
             case "activate":
-              result = await this.reactivate(id);
+              await this.reactivate(id);
               break;
             case "deactivate":
-              result = await this.deactivate(id);
+              await this.deactivate(id);
               break;
             case "delete":
               await this.delete(id);
-              result = { id } as PlantInstance; // Placeholder for deleted item
               break;
             case "fertilize":
-              result = await this.logFertilizer(id, fertilizerDate);
+              await this.logFertilizer(id, fertilizerDate);
               break;
             default:
               throw new Error(`Unknown operation: ${op}`);

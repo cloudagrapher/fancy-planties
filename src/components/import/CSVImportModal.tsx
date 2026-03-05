@@ -174,10 +174,6 @@ export function CSVImportModal({
   };
 
   const canGoBack = step !== 'select-type' && step !== 'importing';
-  const canGoNext = 
-    (step === 'select-type' && importType) ||
-    (step === 'upload-file' && selectedFile) ||
-    (step === 'preview' && validation?.isValid);
 
   if (!isOpen) return null;
 

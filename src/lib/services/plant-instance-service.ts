@@ -17,7 +17,7 @@ import type {
   BulkOperationResult,
   PlantInstanceFormData
 } from '@/lib/types/plant-instance-types';
-import { plantInstanceHelpers } from '@/lib/types/plant-instance-types';
+// plantInstanceHelpers available for future use from '@/lib/types/plant-instance-types'
 
 export class PlantInstanceService {
   // Create a new plant instance with validation

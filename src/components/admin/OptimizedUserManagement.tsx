@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { 
   useAdminUsers, 
   useUpdateCuratorStatus, 
@@ -28,7 +28,7 @@ export default function OptimizedUserManagement({
   initialSort,
 }: OptimizedUserManagementProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  
   
   const [filters, setFilters] = useState(initialFilters);
   const [sort, setSort] = useState(initialSort);
@@ -146,7 +146,7 @@ export default function OptimizedUserManagement({
   
   // Bulk operation handlers
   const handleBulkAction = useCallback(async (actionId: string) => {
-    const selectedUserIds = Array.from(selectedUsers);
+    const _selectedUserIds = Array.from(selectedUsers);
     
     await executeBulkOperation(async (userIds) => {
       const result = await bulkUserOperation.mutateAsync({

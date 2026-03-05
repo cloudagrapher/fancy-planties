@@ -6,7 +6,7 @@ import { requireAdminAuth, logAdminAction } from '@/lib/auth/admin-auth';
 
 export default async function AdminDashboard() {
   // Ensure admin authentication
-  const { user } = await requireAdminAuth();
+  await requireAdminAuth();
 
   // Log dashboard access
   await logAdminAction('view_dashboard', 'system', undefined, {

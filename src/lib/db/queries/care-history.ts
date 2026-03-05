@@ -10,7 +10,6 @@ import type {
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { 
   CareFilterInput,
-  CareStatsQueryInput,
   CareDashboardQueryInput 
 } from '@/lib/validation/care-schemas';
 import type { 
@@ -346,7 +345,7 @@ export class CareHistoryQueries {
     userId: number,
     options: Partial<CareDashboardQueryInput> = {}
   ): Promise<CareDashboardData> {
-    const { includeInactive = false, daysAhead = 7 } = options;
+    const { includeInactive = false, daysAhead: _daysAhead = 7 } = options;
 
     // Get all plant instances for the user
     const plantInstancesData = await db

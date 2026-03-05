@@ -7,7 +7,6 @@ import {
   plantInstances, 
   propagations, 
   careHistory,
-  sessions,
   type User 
 } from '../schema';
 

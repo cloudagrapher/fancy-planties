@@ -60,7 +60,7 @@ export default async function UserManagementPage({
   }
   
   // Get paginated users with validated parameters
-  const usersData = await AdminUserQueries.getPaginatedUsers(
+  await AdminUserQueries.getPaginatedUsers(
     paginationValidation.data.page,
     paginationValidation.data.pageSize,
     filtersValidation.data,

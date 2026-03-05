@@ -3,7 +3,7 @@ import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { validateRequest } from '@/lib/auth/server';
 
 // GET /api/plant-instances/locations - Get unique locations for the user
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { user } = await validateRequest();
     if (!user) {

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { sql, desc, gte, lte, and, eq } from 'drizzle-orm';
+import { sql, desc, gte, and, eq } from 'drizzle-orm';
 import { db } from '../index';
 import { 
   users, 

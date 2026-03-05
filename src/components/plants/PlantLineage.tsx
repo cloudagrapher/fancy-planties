@@ -15,7 +15,6 @@ interface PlantLineageProps {
 
 export default function PlantLineage({ plant, propagations, parentPlant }: PlantLineageProps) {
   const [selectedPropagation, setSelectedPropagation] = useState<Propagation | null>(null);
-  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
   // Add error handling for the component
   try {

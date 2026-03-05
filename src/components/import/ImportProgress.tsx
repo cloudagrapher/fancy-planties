@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, AlertTriangle, Loader2, Clock, FileText } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Clock, FileText } from 'lucide-react';
 import type { ImportProgress as ImportProgressType } from '@/lib/validation/csv-schemas';
 
 interface ImportProgressProps {

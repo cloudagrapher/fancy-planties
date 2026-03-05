@@ -23,7 +23,7 @@ export function VirtualScrollTable<T>({
   const [scrollTop, setScrollTop] = useState(0);
   const scrollElementRef = useRef<HTMLDivElement>(null);
 
-  const { startIndex, endIndex, visibleCount } = virtualScrolling.calculateVisibleItems(
+  const { startIndex, endIndex, visibleCount: _visibleCount } = virtualScrolling.calculateVisibleItems(
     scrollTop,
     containerHeight,
     itemHeight,

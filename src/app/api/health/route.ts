@@ -4,7 +4,7 @@ import { monitoring } from '@/lib/utils/monitoring';
 import { logger } from '@/lib/utils/logger';
 import '@/lib/init'; // Initialize server services
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const startTime = Date.now();
   
   try {

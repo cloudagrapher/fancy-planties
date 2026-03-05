@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateApiPermission, logAdminAction } from '@/lib/auth/admin-auth';
-import { AdminUserQueries, type UserFilters, type UserSortConfig } from '@/lib/db/queries/admin-users';
+import { AdminUserQueries } from '@/lib/db/queries/admin-users';
 import { safeValidate, paginationSchema, userFiltersSchema, userSortSchema } from '@/lib/validation/admin-schemas';
 
 export async function GET(request: NextRequest) {

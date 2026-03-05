@@ -4,7 +4,7 @@ import { validateRequest } from '@/lib/auth/server';
 import { S3ImageService } from '@/lib/services/s3-image-service';
 
 // GET /api/plant-instances/dashboard - Get care dashboard data
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { user } = await validateRequest();
     if (!user) {

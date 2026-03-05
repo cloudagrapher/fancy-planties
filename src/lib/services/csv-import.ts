@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 // CSV parsing utilities
 export class CSVParser {
   /**
@@ -59,7 +57,7 @@ export class CSVParser {
   /**
    * Convert parsed CSV rows to objects using headers
    */
-  static rowsToObjects<T>(rows: string[][], headerMapping?: Record<string, string>): Record<string, string>[] {
+  static rowsToObjects(rows: string[][], headerMapping?: Record<string, string>): Record<string, string>[] {
     if (rows.length === 0) return [];
     
     const headers = rows[0].map(header => {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateCuratorRequest } from '@/lib/auth/server';
 import { AdminAnalyticsQueries } from '@/lib/db/queries/admin-analytics';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Validate curator access
     const authResult = await validateCuratorRequest();

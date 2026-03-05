@@ -4,7 +4,6 @@ import { plantSearchService } from './plant-search';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import type { 
   PlantInstanceFilter, 
-  PlantInstanceSearch,
   PlantSuggestion 
 } from '@/lib/validation/plant-schemas';
 import type { 
@@ -216,7 +215,7 @@ export class AdvancedSearchService {
       includeInactive?: boolean;
     } = {}
   ): Promise<AdvancedSearchResult> {
-    const startTime = Date.now();
+    const _startTime = Date.now();
     const searchId = this.generateSearchId();
 
     try {
@@ -388,7 +387,7 @@ export class AdvancedSearchService {
   private async applyFuzzySearch(
     instances: EnhancedPlantInstance[],
     criteria: MultiFieldSearchCriteria,
-    totalCount: number
+    _totalCount: number
   ): Promise<EnhancedPlantInstance[]> {
     // Convert instances to searchable format
     const searchableData: PlantSuggestion[] = instances.map(instance => ({
@@ -451,7 +450,7 @@ export class AdvancedSearchService {
 
   private async generateRelatedSearches(
     criteria: MultiFieldSearchCriteria,
-    userId: number
+    _userId: number
   ): Promise<string[]> {
     // Generate related searches based on criteria
     const related: string[] = [];
@@ -470,7 +469,7 @@ export class AdvancedSearchService {
 
   private async calculateSearchFacets(
     instances: EnhancedPlantInstance[],
-    userId: number
+    _userId: number
   ): Promise<SearchFacets> {
     // Calculate facets from search results
     const locationCounts = new Map<string, number>();
@@ -514,7 +513,7 @@ export class AdvancedSearchService {
 
   private highlightSearchMatches(
     instances: EnhancedPlantInstance[],
-    criteria: MultiFieldSearchCriteria
+    _criteria: MultiFieldSearchCriteria
   ): EnhancedPlantInstance[] {
     // In a full implementation, this would highlight matching text
     // For now, just return the instances as-is
@@ -572,7 +571,7 @@ export class AdvancedSearchService {
       .slice(0, 3);
   }
 
-  private async getInstanceSuggestions(partialQuery: string, userId: number): Promise<string[]> {
+  private async getInstanceSuggestions(_partialQuery: string, _userId: number): Promise<string[]> {
     // Get suggestions from user's plant instances
     // This would query the database for matching nicknames, locations, etc.
     // For now, return empty array

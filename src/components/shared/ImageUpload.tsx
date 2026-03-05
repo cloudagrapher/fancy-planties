@@ -143,7 +143,7 @@ export default function ImageUpload({
         }, 100);
       });
 
-      const uploadedUrls = await onUpload(selectedFiles);
+      await onUpload(selectedFiles);
       
       // Clear progress after successful upload
       setUploadProgress({});

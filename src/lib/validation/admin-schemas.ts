@@ -108,7 +108,7 @@ export const taxonomyValidationSchema = z.object({
   species: z.string().min(1).max(100),
   cultivar: z.string().max(100).optional(),
 }).refine(
-  (data) => {
+  (_data) => {
     // Custom validation for taxonomy uniqueness
     // This would typically check against the database
     return true;

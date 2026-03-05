@@ -5,7 +5,7 @@ import { validateRequest } from '@/lib/auth/server';
 import { getUserCareGuideStats } from '@/lib/db/queries/care-guides';
 
 // GET /api/care-guides/stats - Get care guide statistics for the authenticated user
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { user } = await validateRequest();
     if (!user) {
