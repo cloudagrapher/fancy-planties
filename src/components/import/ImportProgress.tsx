@@ -21,7 +21,7 @@ export function ImportProgress({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    const stopPolling = () => clearInterval(intervalId);
 
     const fetchProgress = async () => {
       try {
@@ -49,7 +49,7 @@ export function ImportProgress({
             };
             setProgress(completedProgress);
             onComplete?.(completedProgress);
-            clearInterval(intervalId);
+            stopPolling();
             return;
           } else {
             throw new Error('Import not found - it may have expired');
@@ -65,15 +65,15 @@ export function ImportProgress({
 
         if (data.progress.status === 'completed') {
           onComplete?.(data.progress);
-          clearInterval(intervalId);
+          stopPolling();
         } else if (data.progress.status === 'failed') {
           onError?.(data.progress.errors[0]?.message || 'Import failed');
-          clearInterval(intervalId);
+          stopPolling();
         }
       } catch (error) {
         console.error('Error fetching progress:', error);
         onError?.(error instanceof Error ? error.message : 'Unknown error');
-        clearInterval(intervalId);
+        stopPolling();
       } finally {
         setLoading(false);
       }
@@ -83,9 +83,9 @@ export function ImportProgress({
     fetchProgress();
 
     // Poll for updates every 2 seconds
-    intervalId = setInterval(fetchProgress, 2000);
+    const intervalId = setInterval(fetchProgress, 2000);
 
-    return () => clearInterval(intervalId);
+    return () => stopPolling();
   }, [importId, onComplete, onError]);
 
   if (loading || !progress) {
