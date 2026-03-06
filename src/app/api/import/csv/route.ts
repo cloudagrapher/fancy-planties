@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 }
 
 // GET /api/import/csv - Get user's imports
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { user } = await validateRequest();
     if (!user) {

@@ -342,7 +342,7 @@ export async function getQuickSelectPlants(userId?: number): Promise<QuickSelect
 
   return {
     recent: Array.isArray(recent) ? recent : [],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     popular: popular.map(({ instanceCount: _instanceCount, ...plant }) => plant),
     verified,
   };

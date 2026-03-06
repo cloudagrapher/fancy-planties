@@ -152,7 +152,7 @@ export async function PUT(
     });
 
     // Remove id and userId from update data as they shouldn't be updated
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     const { id: _, userId: __, ...dataToUpdate } = updateData;
 
     // Recalculate fertilizerDue when lastFertilized or fertilizerSchedule changes

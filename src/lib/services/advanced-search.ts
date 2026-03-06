@@ -257,7 +257,7 @@ export class AdvancedSearchService {
 
     const searchResult = await PlantInstanceQueries.getWithFilters(filters);
     
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     const { facets: _baseFacets, ...baseResult } = searchResult;
     const result: AdvancedSearchResult = {
       ...baseResult,

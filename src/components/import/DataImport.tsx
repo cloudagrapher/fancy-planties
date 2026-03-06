@@ -13,7 +13,7 @@ export function DataImport({ className = '' }: DataImportProps) {
   const [showImportModal, setShowImportModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'import' | 'history'>('import');
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const handleImportComplete = (_summary?: unknown) => {
     // Switch to history tab to show the completed import
     setActiveTab('history');

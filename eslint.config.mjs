@@ -30,6 +30,20 @@ const eslintConfig = [
       "jest.*.js",
     ],
   },
+  {
+    rules: {
+      // Allow unused variables/args prefixed with _ (standard convention for intentionally unused params)
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

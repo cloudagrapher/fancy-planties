@@ -214,7 +214,7 @@ export function useBulkOperationNotifications() {
     operation: string, 
     successCount: number, 
     failureCount: number, 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     _errors: Array<{ id: number; error: string }>
   ) => {
     return showWarning(

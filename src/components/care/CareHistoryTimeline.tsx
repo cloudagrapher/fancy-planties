@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import Image from 'next/image';
 import type { EnhancedCareHistory } from '@/lib/types/care-types';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { careHelpers } from '@/lib/types/care-types';
@@ -110,10 +111,12 @@ export default memo(function CareHistoryTimeline({
                   {care.images && care.images.length > 0 && (
                     <div className="flex space-x-2 mt-3">
                       {care.images.slice(0, 3).map((image, imgIndex) => (
-                        <img
+                        <Image
                           key={imgIndex}
                           src={image}
                           alt={`Care photo ${imgIndex + 1}`}
+                          width={48}
+                          height={48}
                           className="w-12 h-12 rounded-lg object-cover border border-gray-200"
                         />
                       ))}

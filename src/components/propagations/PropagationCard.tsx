@@ -172,6 +172,7 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
               {propagation.images && Array.isArray(propagation.images) && propagation.images.length > 0 ? (
                 propagation.images[0].startsWith('data:') ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- data: URLs not supported by next/image
                   <img
                     src={propagation.images[0]}
                     alt={propagation.nickname}

@@ -293,6 +293,7 @@ export default function ImageUpload({
                 {/* Image Preview */}
                 <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
                   {previews[index] ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- blob/data URL previews not supported by next/image
                     <img
                       src={previews[index]}
                       alt={`Preview ${index + 1}`}

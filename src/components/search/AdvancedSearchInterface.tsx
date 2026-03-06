@@ -91,7 +91,7 @@ export default function AdvancedSearchInterface({
   });
 
   // Search history query
-  const { data: history, error: historyError } = useQuery<SearchHistoryEntry[]>({
+  const { data: history } = useQuery<SearchHistoryEntry[]>({
     queryKey: ['search-history'],
     queryFn: async (): Promise<SearchHistoryEntry[]> => {
       const response = await apiFetch('/api/search/history?limit=5');
