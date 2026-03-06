@@ -372,20 +372,6 @@ export const sharedComponentMocks = {
     },
   }),
 
-  DashboardStatistics: createTrackingMockComponent('DashboardStatistics', {
-    renderContent: (props) => {
-      return React.createElement(
-        'div',
-        {
-          'data-testid': 'dashboard-statistics',
-          'data-user-id': props.userId,
-          className: props.className,
-        },
-        'Dashboard Statistics'
-      );
-    },
-  }),
-
   PWAInstallPrompt: createTrackingMockComponent('PWAInstallPrompt', {
     renderContent: () => {
       return React.createElement(
@@ -1081,32 +1067,6 @@ export const adminComponentMocks = {
     },
   }),
 
-  UserManagementClient: createTrackingMockComponent('UserManagementClient', {
-    renderContent: (props) => {
-      return React.createElement(
-        'div',
-        {
-          'data-testid': 'user-management-client',
-          'data-user-count': props.initialData?.users?.length || 0,
-        },
-        'User Management'
-      );
-    },
-  }),
-
-  PlantManagementTable: createTrackingMockComponent('PlantManagementTable', {
-    renderContent: (props) => {
-      return React.createElement(
-        'div',
-        {
-          'data-testid': 'plant-management-table',
-          'data-plant-count': props.initialPlants?.length || 0,
-        },
-        'Plant Management Table'
-      );
-    },
-  }),
-
   BulkOperationsToolbar: createTrackingMockComponent('BulkOperationsToolbar', {
     renderContent: (props) => {
       return React.createElement(
@@ -1149,16 +1109,6 @@ export const adminComponentMocks = {
         React.createElement('input', { name: 'commonName', defaultValue: props.plant?.commonName }),
         React.createElement('input', { name: 'scientificName', defaultValue: props.plant?.scientificName }),
         React.createElement('button', { type: 'submit' }, 'Save')
-      );
-    },
-  }),
-
-  EmailVerificationMonitor: createTrackingMockComponent('EmailVerificationMonitor', {
-    renderContent: () => {
-      return React.createElement(
-        'div',
-        { 'data-testid': 'email-verification-monitor' },
-        'Email Verification Monitor'
       );
     },
   }),
@@ -1289,7 +1239,6 @@ export const selectiveMocks = {
     mockComponent('@/components/plants/PlantCard', 'PlantCard', plantComponentMocks.PlantCard);
     mockComponent('@/components/plants/PlantsGrid', 'PlantsGrid', plantComponentMocks.PlantsGrid);
     mockComponent('@/components/care/CareHistoryTimeline', 'CareHistoryTimeline', careComponentMocks.CareHistoryTimeline);
-    mockComponent('@/components/shared/DashboardStatistics', 'DashboardStatistics', sharedComponentMocks.DashboardStatistics);
   },
 
   /**
