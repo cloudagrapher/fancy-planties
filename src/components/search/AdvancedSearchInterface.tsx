@@ -91,7 +91,7 @@ export default function AdvancedSearchInterface({
   });
 
   // Search history query
-  const { data: history, error: historyError } = useQuery<SearchHistoryEntry[]>({
+  const { data: history } = useQuery<SearchHistoryEntry[]>({
     queryKey: ['search-history'],
     queryFn: async (): Promise<SearchHistoryEntry[]> => {
       const response = await apiFetch('/api/search/history?limit=5');
@@ -278,7 +278,8 @@ export default function AdvancedSearchInterface({
   // Call onFiltersChange with initial filters on mount
   useEffect(() => {
     onFiltersChange(filters);
-  }, []); // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally run only on mount
+  }, []);
 
   // Show suggestions when query changes and meets criteria
   useEffect(() => {

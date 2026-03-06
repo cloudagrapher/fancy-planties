@@ -31,6 +31,7 @@ export function VirtualScrollTable<T>({
     overscan
   );
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- scroll handler factory is stable
   const handleScroll = useCallback(
     virtualScrolling.createScrollHandler((scrollTop: number) => {
       setScrollTop(scrollTop);

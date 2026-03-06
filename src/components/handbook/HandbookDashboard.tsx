@@ -123,7 +123,7 @@ const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => vo
   };
 
   return (
-    <div onClick={onClick} className="cursor-pointer">
+    <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }} className="cursor-pointer">
       <Card className="p-0 overflow-hidden hover:shadow-lg transition-all hover:scale-[1.02]">
         {/* Thumbnail Image */}
         {guide.s3ImageKeys && guide.s3ImageKeys.length > 0 && (
