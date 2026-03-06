@@ -49,6 +49,10 @@ interface AdminNotificationProviderProps {
 export function AdminNotificationProvider({ children }: AdminNotificationProviderProps) {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
 
+  const removeNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
   const addNotification = useCallback((notification: Omit<AdminNotification, 'id'>) => {
     const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newNotification: AdminNotification = {
@@ -68,11 +72,7 @@ export function AdminNotificationProvider({ children }: AdminNotificationProvide
     }
 
     return id;
-  }, []);
-
-  const removeNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
+  }, [removeNotification]);
 
   const clearAll = useCallback(() => {
     setNotifications([]);

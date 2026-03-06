@@ -278,7 +278,8 @@ export default function AdvancedSearchInterface({
   // Call onFiltersChange with initial filters on mount
   useEffect(() => {
     onFiltersChange(filters);
-  }, []); // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally run only on mount
+  }, []);
 
   // Show suggestions when query changes and meets criteria
   useEffect(() => {
