@@ -13,7 +13,8 @@ import {
   Sprout,
   TrendingUp,
   CheckCircle,
-  TreePine
+  TreePine,
+  ChevronDown
 } from 'lucide-react';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 
@@ -37,6 +38,7 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [showConvertModal, setShowConvertModal] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   // Status configuration
   const statusConfig = {
@@ -166,8 +168,14 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 hover:shadow-md transition-shadow">
         {/* Mobile-first layout */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
-          {/* Top section - Image, name, and status */}
-          <div className="flex items-start space-x-3 sm:space-x-4 flex-1">
+          {/* Top section - Image, name, and status (tappable on mobile to expand) */}
+          <div
+            className="flex items-start space-x-3 sm:space-x-4 flex-1 sm:cursor-default cursor-pointer"
+            onClick={() => setExpanded(prev => !prev)}
+            role="button"
+            aria-expanded={expanded}
+            aria-label={`${expanded ? 'Collapse' : 'Expand'} details for ${propagation.nickname}`}
+          >
             {/* Propagation image */}
             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
               {propagation.images && Array.isArray(propagation.images) && propagation.images.length > 0 ? (
@@ -203,13 +211,19 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
                   <h3 className="text-sm font-medium text-gray-900 truncate flex-1 pr-2">
                     {propagation.nickname}
                   </h3>
-                  {/* Mobile status badge - compact */}
-                  <div className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border ${currentStatus.color} flex-shrink-0`}>
-                    <StatusIcon className="w-2.5 h-2.5 mr-1" />
-                    {currentStatus.label}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {/* Mobile status badge - compact */}
+                    <div className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border ${currentStatus.color}`}>
+                      <StatusIcon className="w-2.5 h-2.5 mr-1" />
+                      {currentStatus.label}
+                    </div>
+                    {/* Expand chevron */}
+                    <ChevronDown
+                      className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+                      aria-hidden="true"
+                    />
                   </div>
                 </div>
-                {/* Hide scientific name on mobile */}
                 <div className="text-xs text-gray-500 mb-2">
                   {propagation.plant.commonName || `${propagation.plant.genus} ${propagation.plant.species}`}
                 </div>
@@ -292,14 +306,72 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
                 </div>
               )}
 
-              {/* Notes preview - hidden on mobile */}
+              {/* Notes preview - hidden on mobile (shown in expanded panel) */}
               {propagation.notes && (
                 <p className="hidden sm:block text-sm text-gray-600 mt-2 line-clamp-2">
                   {propagation.notes}
                 </p>
               )}
             </div>
-          </div>
+          </div>{/* end clickable top section */}
+
+          {/* Expanded detail panel - mobile only */}
+          {expanded && (
+            <div
+              className="sm:hidden mt-3 pt-3 border-t border-gray-100 space-y-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Scientific name */}
+              <div>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Species</span>
+                <p className="text-sm text-gray-800 mt-0.5">
+                  <em>{propagation.plant.genus} {propagation.plant.species}</em>
+                </p>
+              </div>
+
+              {/* Full date */}
+              <div>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Started</span>
+                <p className="text-sm text-gray-800 mt-0.5">
+                  {new Date(propagation.dateStarted).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                  {' '}({daysSinceStarted} days ago)
+                </p>
+              </div>
+
+              {/* Location */}
+              <div>
+                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Location</span>
+                <p className="text-sm text-gray-800 mt-0.5">{propagation.location}</p>
+              </div>
+
+              {/* Parent plant */}
+              {propagation.sourceType === 'internal' && propagation.parentInstance && (
+                <div>
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Parent Plant</span>
+                  <p className="text-sm text-gray-800 mt-0.5">{propagation.parentInstance.nickname}</p>
+                </div>
+              )}
+
+              {/* External source */}
+              {propagation.sourceType === 'external' && (
+                <div>
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Source</span>
+                  <p className="text-sm text-gray-800 mt-0.5 capitalize">{propagation.externalSource}</p>
+                  {propagation.externalSourceDetails && (
+                    <p className="text-xs text-gray-500 mt-0.5">{propagation.externalSourceDetails}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Notes */}
+              {propagation.notes && (
+                <div>
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Notes</span>
+                  <p className="text-sm text-gray-800 mt-0.5">{propagation.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Actions - mobile responsive */}
           <div className="mt-3 sm:mt-0 sm:ml-4">
