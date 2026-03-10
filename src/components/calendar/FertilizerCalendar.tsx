@@ -75,12 +75,6 @@ export default memo(function FertilizerCalendar({ events = [] }: FertilizerCalen
   const todayMonth = today.getMonth();
   const todayYear = today.getFullYear();
   
-  // Get first day of month and days in month
-  const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-  const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
-  const startingDayOfWeek = firstDayOfMonth.getDay(); // 0 = Sunday
-  const daysInMonth = lastDayOfMonth.getDate();
-  
   const previousMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
   };
@@ -89,27 +83,30 @@ export default memo(function FertilizerCalendar({ events = [] }: FertilizerCalen
     setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
   };
   
-  // Create calendar grid
-  const calendarDays = [];
-  
-  // Add empty cells for days before month starts
-  for (let i = 0; i < startingDayOfWeek; i++) {
-    calendarDays.push(null);
-  }
-  
-  // Add days of the month
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const dayEvents = events.filter(event => event.date === dateString);
-    const isToday = day === todayDate && currentMonth === todayMonth && currentYear === todayYear;
-    
-    calendarDays.push({
-      day,
-      dateString,
-      events: dayEvents,
-      isToday
-    });
-  }
+  // Memoize calendar grid — only recompute when month, year, or events change
+  const calendarDays = useMemo(() => {
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+    const startingDayOfWeek = firstDayOfMonth.getDay();
+    const daysInMonth = lastDayOfMonth.getDate();
+
+    const days: (null | { day: number; dateString: string; events: FertilizerEvent[]; isToday: boolean })[] = [];
+
+    // Empty cells for days before month starts
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(null);
+    }
+
+    // Days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dayEvents = events.filter(event => event.date === dateString);
+      const isToday = day === todayDate && currentMonth === todayMonth && currentYear === todayYear;
+
+      days.push({ day, dateString, events: dayEvents, isToday });
+    }
+    return days;
+  }, [currentMonth, currentYear, events, todayDate, todayMonth, todayYear]);
   
   // Filter events for current month (memoized to avoid recalculating on every render)
   // Parse YYYY-MM-DD strings with explicit parts to avoid timezone offset issues

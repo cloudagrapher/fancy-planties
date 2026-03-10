@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import LogoutButton from '@/components/auth/LogoutButton';
@@ -44,7 +44,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const displayStats = stats || {
+  const displayStats = useMemo(() => stats || {
     totalPlants: 0,
     activePlants: 0,
     careDueToday: 0,
@@ -54,7 +54,25 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     successfulPropagations: 0,
     propagationSuccessRate: 0,
     fertilizerEvents: []
-  };
+  }, [stats]);
+
+  // Context-aware greeting based on plant care status
+  const greeting = useMemo(() => {
+    if (isLoading || !stats) return 'Loading your garden...';
+    const { overdueCount, careDueToday, activePlants } = displayStats;
+    if (overdueCount > 0) {
+      return overdueCount === 1
+        ? '1 plant needs attention — let\u2019s catch up!'
+        : `${overdueCount} plants need attention — let\u2019s catch up!`;
+    }
+    if (careDueToday > 0) {
+      return careDueToday === 1
+        ? '1 plant is due for care today'
+        : `${careDueToday} plants are due for care today`;
+    }
+    if (activePlants === 0) return 'Ready to start your plant journey?';
+    return 'All caught up — your plants are thriving! ✨';
+  }, [isLoading, stats, displayStats]);
 
   return (
     <div className="page">
@@ -67,7 +85,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 Hey {user.name}! ✨
               </h1>
               <p className="text-neutral-600 text-sm">
-                Your plants are looking great today
+                {greeting}
               </p>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
@@ -149,6 +167,33 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                   <div className="stat-label text-neutral-600">%</div>
                 </Link>
               </div>
+
+              {/* Care Nudge — show when plants need attention */}
+              {!isLoading && (displayStats.overdueCount > 0 || displayStats.careDueToday > 0) && (
+                <Link
+                  href="/dashboard/care"
+                  className="block mt-6 p-4 rounded-2xl border transition-colors hover:shadow-md bg-gradient-to-r from-salmon-50 to-amber-50 border-salmon-200 hover:border-salmon-300"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-2xl flex-shrink-0" role="img" aria-label="watering can">🚿</span>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-neutral-900 text-sm">
+                          {displayStats.overdueCount > 0
+                            ? `${displayStats.overdueCount} overdue${displayStats.careDueToday > 0 ? ` + ${displayStats.careDueToday} due today` : ''}`
+                            : `${displayStats.careDueToday} due today`}
+                        </p>
+                        <p className="text-xs text-neutral-600 mt-0.5">
+                          Tap to open Care Tasks and log care
+                        </p>
+                      </div>
+                    </div>
+                    <svg className="w-5 h-5 text-neutral-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </Link>
+              )}
 
               {/* Calendar or Getting Started Card */}
               <div className="section--sm">
