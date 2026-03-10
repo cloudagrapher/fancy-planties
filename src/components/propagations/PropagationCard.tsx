@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, memo, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, memo, lazy, Suspense } from 'react';
 import Image from 'next/image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import { 
@@ -38,6 +38,21 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [showConvertModal, setShowConvertModal] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setShowMenu(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showMenu, handleClickOutside]);
   const [expanded, setExpanded] = useState(false);
 
   // Status configuration
@@ -422,18 +437,24 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
                 <button
                   onClick={() => setShowEditForm(true)}
                   className="flex items-center justify-center px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors flex-1"
+                  aria-label={`Edit ${propagation.nickname || 'propagation'}`}
                 >
                   <Edit className="w-3 h-3 mr-1" />
                   Edit
                 </button>
-                <button
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100 transition-colors relative"
-                >
-                  <MoreVertical className="w-4 h-4" />
+                <div ref={menuRef} className="relative">
+                  <button
+                    onClick={() => setShowMenu(!showMenu)}
+                    className="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100 transition-colors"
+                    aria-label="More options"
+                    aria-expanded={showMenu}
+                    aria-haspopup="true"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
                   {/* Mobile dropdown menu */}
                   {showMenu && (
-                    <div className="absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                    <div className="absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10" role="menu">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -441,13 +462,14 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
                           setShowMenu(false);
                         }}
                         className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                        role="menuitem"
                       >
                         <Trash2 className="w-4 h-4 mr-3" />
                         Delete Propagation
                       </button>
                     </div>
                   )}
-                </button>
+                </div>
               </div>
             </div>
 
@@ -477,23 +499,27 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
               )}
 
               {/* Menu button */}
-              <div className="relative">
+              <div ref={menuRef} className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                  aria-label="More options"
+                  aria-expanded={showMenu}
+                  aria-haspopup="true"
                 >
                   <MoreVertical className="w-4 h-4" />
                 </button>
 
                 {/* Dropdown menu */}
                 {showMenu && (
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10" role="menu">
                     <button
                       onClick={() => {
                         setShowEditForm(true);
                         setShowMenu(false);
                       }}
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      role="menuitem"
                     >
                       <Edit className="w-4 h-4 mr-3" />
                       Edit Details
@@ -504,6 +530,7 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
                         setShowMenu(false);
                       }}
                       className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      role="menuitem"
                     >
                       <Trash2 className="w-4 h-4 mr-3" />
                       Delete Propagation

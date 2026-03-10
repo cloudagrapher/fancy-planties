@@ -89,3 +89,42 @@ export function parseFertilizerScheduleToDays(schedule: string): number {
 
   return DEFAULT_DAYS;
 }
+
+/**
+ * Convert a number of days into a human-friendly schedule string.
+ *
+ * Examples:
+ *   1  → "Daily"
+ *   7  → "Weekly"
+ *   14 → "Every 2 weeks"
+ *   30 → "Monthly"
+ *   60 → "Every 2 months"
+ *   10 → "Every 10 days"
+ */
+export function formatDaysToHumanSchedule(days: number): string {
+  if (days <= 0) return 'No schedule';
+  if (days === 1) return 'Daily';
+  if (days === 7) return 'Weekly';
+  if (days === 14) return 'Every 2 weeks';
+  if (days === 21) return 'Every 3 weeks';
+  if (days === 28) return 'Every 4 weeks';
+  if (days === 30) return 'Monthly';
+  if (days === 60) return 'Every 2 months';
+  if (days === 90) return 'Every 3 months';
+  if (days === 180) return 'Every 6 months';
+  if (days === 365) return 'Yearly';
+
+  // For values that divide cleanly into weeks
+  if (days % 7 === 0) {
+    const weeks = days / 7;
+    return `Every ${weeks} week${weeks > 1 ? 's' : ''}`;
+  }
+
+  // For values that divide cleanly into months (approximately)
+  if (days % 30 === 0) {
+    const months = days / 30;
+    return `Every ${months} month${months > 1 ? 's' : ''}`;
+  }
+
+  return `Every ${days} days`;
+}

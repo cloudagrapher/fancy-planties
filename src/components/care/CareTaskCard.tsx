@@ -5,6 +5,7 @@ import Image from 'next/image';
 import S3Image from '@/components/shared/S3Image';
 import type { EnhancedPlantInstance } from '@/lib/types/care-types';
 import { careHelpers } from '@/lib/types/care-types';
+import { formatDaysToHumanSchedule } from '@/lib/utils/schedule-parser';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
 interface CareActionButtonProps {
@@ -161,7 +162,7 @@ const CareTaskCard = memo(function CareTaskCard({ plant, onQuickCare, showUrgenc
       <div className="mt-3 pt-3 border-t border-gray-200">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 text-xs text-gray-500">
           <span className="truncate">
-            Schedule: {careHelpers.parseFertilizerSchedule(plant.fertilizerSchedule)} days
+            Schedule: {formatDaysToHumanSchedule(careHelpers.parseFertilizerSchedule(plant.fertilizerSchedule))}
           </span>
           {plant.fertilizerDue && (
             <span className="truncate sm:text-right">
