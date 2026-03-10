@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, FlaskConical, CalendarDays } from 'lucide-react';
 
 interface FertilizerEvent {
@@ -60,7 +60,7 @@ const SectionHeader = ({
   </div>
 );
 
-export default function FertilizerCalendar({ events = [] }: FertilizerCalendarProps) {
+export default memo(function FertilizerCalendar({ events = [] }: FertilizerCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   
   const monthNames = [
@@ -111,14 +111,15 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
     });
   }
   
-  const displayEvents = events;
-  
-  // Filter events for current month
+  // Filter events for current month (memoized to avoid recalculating on every render)
   // Parse YYYY-MM-DD strings with explicit parts to avoid timezone offset issues
-  const monthEvents = displayEvents.filter(event => {
-    const [year, month] = event.date.split('-').map(Number);
-    return (month - 1) === currentMonth && year === currentYear;
-  });
+  const monthEvents = useMemo(() => 
+    events.filter(event => {
+      const [year, month] = event.date.split('-').map(Number);
+      return (month - 1) === currentMonth && year === currentYear;
+    }),
+    [events, currentMonth, currentYear]
+  );
   
   return (
     <Card>
@@ -249,4 +250,4 @@ export default function FertilizerCalendar({ events = [] }: FertilizerCalendarPr
       )}
     </Card>
   );
-}
+});

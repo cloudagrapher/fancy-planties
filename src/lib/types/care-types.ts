@@ -1,6 +1,6 @@
 import type { CareHistory, PlantInstance, Plant } from '@/lib/db/schema';
 import type { EnhancedPlantInstance } from './plant-instance-types';
-import { parseFertilizerScheduleToDays } from '@/lib/utils/schedule-parser';
+import { parseFertilizerScheduleToDays, formatDaysToHumanSchedule } from '@/lib/utils/schedule-parser';
 
 // Re-export EnhancedPlantInstance for convenience
 export type { EnhancedPlantInstance } from './plant-instance-types';
@@ -263,6 +263,7 @@ export const careHelpers = {
 
   // Parse fertilizer schedule to days (delegates to shared utility)
   parseFertilizerSchedule: parseFertilizerScheduleToDays,
+  formatScheduleHuman: formatDaysToHumanSchedule,
 
   // Calculate next fertilizer due date
   calculateNextFertilizerDue: (lastFertilized: Date | null, schedule: string): Date | null => {
