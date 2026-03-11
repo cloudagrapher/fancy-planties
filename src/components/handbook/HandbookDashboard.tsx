@@ -16,7 +16,8 @@ import {
   Sun,
   Thermometer,
   Scissors,
-  RefreshCw
+  RefreshCw,
+  TreeDeciduous
 } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
 import CareGuideForm from './CareGuideForm';
@@ -119,6 +120,10 @@ const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => vo
     if (guide.temperature) categories.push({ icon: Thermometer, label: 'Temperature', color: 'text-red-600' });
     if (guide.pruning) categories.push({ icon: Scissors, label: 'Pruning', color: 'text-green-600' });
     if (guide.repotting) categories.push({ icon: RefreshCw, label: 'Repotting', color: 'text-purple-600' });
+    // Show root structure badge when any root/growth data is present
+    if (guide.rootStructure && (guide.rootStructure.type || guide.rootStructure.growthHabits || guide.rootStructure.tips)) {
+      categories.push({ icon: TreeDeciduous, label: 'Root & Growth', color: 'text-amber-700' });
+    }
     return categories;
   };
 
