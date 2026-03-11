@@ -230,6 +230,13 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedGuide, setSelectedGuide] = useState<CareGuide | null>(null);
   const [editingGuide, setEditingGuide] = useState<CareGuide | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('handbook-view-mode');
+      if (saved === 'list' || saved === 'grid') return saved as 'grid' | 'list';
+    }
+    return 'grid';
+  });
   const queryClient = useQueryClient();
 
   // Use React Query with server-rendered data as initial value — no full-page reload needed
@@ -400,7 +407,9 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
       guide.commonName?.toLowerCase().includes(query) ||
       guide.family?.toLowerCase().includes(query) ||
       guide.genus?.toLowerCase().includes(query) ||
-      guide.species?.toLowerCase().includes(query);
+      guide.species?.toLowerCase().includes(query) ||
+      guide.cultivar?.toLowerCase().includes(query) ||
+      (guide.tags && guide.tags.some(tag => tag.toLowerCase().includes(query)));
     
     const matchesLevel = selectedLevel === 'all' || guide.taxonomyLevel === selectedLevel;
     
@@ -481,10 +490,42 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
             icon={Search} 
             title="Browse Care Guides"
             actions={
-              <Button variant="ghost" onClick={() => setShowFilters(!showFilters)}>
-                <Filter className="h-4 w-4" />
-                Filters
-              </Button>
+              <div className="flex items-center gap-2">
+                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+                  <button
+                    onClick={() => { setViewMode('grid'); localStorage.setItem('handbook-view-mode', 'grid'); }}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      viewMode === 'grid'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                    title="Grid view"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    Grid
+                  </button>
+                  <button
+                    onClick={() => { setViewMode('list'); localStorage.setItem('handbook-view-mode', 'list'); }}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                      viewMode === 'list'
+                        ? 'bg-white text-slate-900 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                    title="List view"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                    List
+                  </button>
+                </div>
+                <Button variant="ghost" onClick={() => setShowFilters(!showFilters)}>
+                  <Filter className="h-4 w-4" />
+                  Filters
+                </Button>
+              </div>
             }
           />
           
@@ -533,17 +574,113 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
         </div>
       </Card>
 
-      {/* Care Guides Grid */}
+      {/* Care Guides Grid / List */}
       {filteredGuides.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredGuides.map((guide) => (
-            <CareGuideCard 
-              key={guide.id} 
-              guide={guide} 
-              onClick={() => handleOpenDetail(guide)}
-            />
-          ))}
-        </div>
+        viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredGuides.map((guide) => (
+              <CareGuideCard 
+                key={guide.id} 
+                guide={guide} 
+                onClick={() => handleOpenDetail(guide)}
+              />
+            ))}
+          </div>
+        ) : (
+          /* List View */
+          <Card className="p-0 overflow-hidden divide-y divide-slate-100">
+            {filteredGuides.map((guide) => {
+              const getTaxonomyIcon = (level: string) => {
+                switch (level) {
+                  case 'family': return '🌳';
+                  case 'genus': return '🌿';
+                  case 'species': return '🌱';
+                  case 'cultivar': return '🏷️';
+                  default: return '📖';
+                }
+              };
+              const careIcons = [];
+              if (guide.watering) careIcons.push(<Droplets key="water" className="h-3.5 w-3.5 text-blue-400" aria-label="Watering" />);
+              if (guide.fertilizing) careIcons.push(<FlaskConical key="fert" className="h-3.5 w-3.5 text-amber-400" aria-label="Fertilizing" />);
+              if (guide.lighting) careIcons.push(<Sun key="light" className="h-3.5 w-3.5 text-yellow-400" aria-label="Lighting" />);
+              if (guide.temperature) careIcons.push(<Thermometer key="temp" className="h-3.5 w-3.5 text-red-400" aria-label="Temperature" />);
+              if (guide.pruning) careIcons.push(<Scissors key="prune" className="h-3.5 w-3.5 text-green-400" aria-label="Pruning" />);
+              if (guide.repotting) careIcons.push(<RefreshCw key="repot" className="h-3.5 w-3.5 text-purple-400" aria-label="Repotting" />);
+              if (guide.rootStructure?.type || guide.rootStructure?.growthHabits) careIcons.push(<TreeDeciduous key="root" className="h-3.5 w-3.5 text-amber-600" aria-label="Root & Growth" />);
+              return (
+                <div
+                  key={guide.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleOpenDetail(guide)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleOpenDetail(guide); } }}
+                  className="flex items-center gap-3 p-3 hover:bg-slate-50 cursor-pointer transition-colors"
+                  aria-label={`Open care guide for ${guide.title}`}
+                >
+                  {/* Taxonomy icon or thumbnail */}
+                  {guide.s3ImageKeys && guide.s3ImageKeys.length > 0 ? (
+                    <div className="flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden bg-slate-100 relative">
+                      <S3Image
+                        s3Key={guide.s3ImageKeys[0]}
+                        alt={guide.title}
+                        fill
+                        className="object-cover"
+                        thumbnailSize="tiny"
+                        sizes="40px"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-xl">
+                      {getTaxonomyIcon(guide.taxonomyLevel)}
+                    </div>
+                  )}
+
+                  {/* Main info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="text-sm font-semibold text-slate-800 truncate">{guide.title}</h4>
+                      {guide.isPublic ? (
+                        <Globe className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                      ) : (
+                        <Lock className="h-3 w-3 text-slate-400 flex-shrink-0" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {guide.commonName && (
+                        <span className="text-xs text-slate-500 truncate">{guide.commonName}</span>
+                      )}
+                      {guide.commonName && guide.genus && <span className="text-xs text-slate-300">·</span>}
+                      {guide.genus && (
+                        <span className="text-xs text-slate-400 italic truncate">{guide.genus}{guide.species ? ` ${guide.species}` : ''}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Care icons */}
+                  <div className="flex-shrink-0 flex items-center gap-1">
+                    {careIcons.slice(0, 5)}
+                    {careIcons.length > 5 && (
+                      <span className="text-xs text-slate-400">+{careIcons.length - 5}</span>
+                    )}
+                  </div>
+
+                  {/* Tags */}
+                  {guide.tags && guide.tags.length > 0 && (
+                    <div className="hidden sm:flex flex-shrink-0 items-center gap-1">
+                      {guide.tags.slice(0, 2).map(tag => (
+                        <span key={tag} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <ChevronRight className="flex-shrink-0 h-4 w-4 text-slate-300" />
+                </div>
+              );
+            })}
+          </Card>
+        )
       ) : (
         <Card className="text-center py-12">
           <div className="text-6xl mb-4">📖</div>
