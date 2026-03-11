@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, MessageCircle, TreeDeciduous } from 'lucide-react';
+import { Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, Scissors, MessageCircle, TreeDeciduous } from 'lucide-react';
 import S3ImageUpload from '@/components/shared/S3ImageUpload';
 import Modal from '@/components/shared/Modal';
 
@@ -45,6 +45,12 @@ export interface CareGuideFormData {
   };
   repotting: {
     frequency: string;
+    tips: string;
+  };
+  pruning: {
+    frequency: string;
+    method: string;
+    season: string;
     tips: string;
   };
   propagation: {
@@ -242,6 +248,12 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
         frequency: '',
         tips: ''
       },
+      pruning: {
+        frequency: '',
+        method: '',
+        season: '',
+        tips: ''
+      },
       propagation: {
         methods: '',
         tips: ''
@@ -266,6 +278,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
         humidity: { ...defaults.humidity, ...initialData.humidity },
         soil: { ...defaults.soil, ...initialData.soil },
         repotting: { ...defaults.repotting, ...initialData.repotting },
+        pruning: { ...defaults.pruning, ...initialData.pruning },
         propagation: { ...defaults.propagation, ...initialData.propagation },
         rootStructure: { ...defaults.rootStructure, ...initialData.rootStructure },
       };
@@ -703,6 +716,41 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                       value={formData.repotting.tips}
                       onChange={(value) => updateFormData('repotting.tips', value)}
                       placeholder="Repotting tips and best practices..."
+                      rows={2}
+                    />
+                  </div>
+                </Card>
+
+                {/* Pruning Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Scissors className="h-4 w-4 text-green-600" />
+                    <h3 className="font-medium text-slate-800">Pruning</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <Input
+                      label="Frequency"
+                      value={formData.pruning.frequency}
+                      onChange={(value) => updateFormData('pruning.frequency', value)}
+                      placeholder="e.g., As needed, Annually in spring"
+                    />
+                    <Input
+                      label="Method"
+                      value={formData.pruning.method}
+                      onChange={(value) => updateFormData('pruning.method', value)}
+                      placeholder="e.g., Pinch back, Cut above node, Deadheading"
+                    />
+                    <Input
+                      label="Best Season"
+                      value={formData.pruning.season}
+                      onChange={(value) => updateFormData('pruning.season', value)}
+                      placeholder="e.g., Spring, After flowering"
+                    />
+                    <TextArea
+                      label="Tips"
+                      value={formData.pruning.tips}
+                      onChange={(value) => updateFormData('pruning.tips', value)}
+                      placeholder="Pruning tips and best practices..."
                       rows={2}
                     />
                   </div>

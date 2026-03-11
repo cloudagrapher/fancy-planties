@@ -48,6 +48,12 @@ const CareGuideCreateSchema = z.object({
     frequency: z.string().optional(),
     tips: z.string().optional(),
   }).optional(),
+  pruning: z.object({
+    frequency: z.string().optional(),
+    method: z.string().optional(),
+    season: z.string().optional(),
+    tips: z.string().optional(),
+  }).optional(),
   propagation: z.object({
     methods: z.string().optional(),
     tips: z.string().optional(),
@@ -96,6 +102,7 @@ export async function POST(request: NextRequest) {
       humidity: validatedData.humidity || null,
       soil: validatedData.soil || null,
       repotting: validatedData.repotting || null,
+      pruning: validatedData.pruning || null,
       propagation: validatedData.propagation || null,
       rootStructure: validatedData.rootStructure || null,
       generalTips: validatedData.generalTips || null,
