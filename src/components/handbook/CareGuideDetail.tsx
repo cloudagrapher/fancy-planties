@@ -91,12 +91,13 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
       water: guide.watering?.frequency || null,
       fertilizer: guide.fertilizing?.frequency || guide.fertilizing?.type || null,
       soil: guide.soil?.type || null,
+      roots: guide.rootStructure?.type || guide.rootStructure?.growthHabits || null,
       tips: guide.generalTips?.split('\n')[0] || null, // First line of general tips as quick tip
     };
   };
 
   const tldr = getTLDRData();
-  const hasTLDR = tldr.light || tldr.water || tldr.fertilizer || tldr.soil || tldr.tips;
+  const hasTLDR = tldr.light || tldr.water || tldr.fertilizer || tldr.soil || tldr.roots || tldr.tips;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -220,6 +221,15 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
                         <div>
                           <span className="text-xs font-medium text-slate-500 uppercase">Soil</span>
                           <p className="text-sm text-slate-700">{tldr.soil}</p>
+                        </div>
+                      </div>
+                    )}
+                    {tldr.roots && (
+                      <div className="flex items-start gap-2.5">
+                        <TreeDeciduous className="h-4 w-4 text-amber-700 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <span className="text-xs font-medium text-slate-500 uppercase">Roots</span>
+                          <p className="text-sm text-slate-700">{tldr.roots}</p>
                         </div>
                       </div>
                     )}
