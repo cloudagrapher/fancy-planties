@@ -779,18 +779,18 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                 </Card>
 
-                {/* General Tips Section */}
+                {/* Good to Know Section */}
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-4">
                     <MessageCircle className="h-4 w-4 text-slate-600" />
-                    <h3 className="font-medium text-slate-800">General Tips</h3>
+                    <h3 className="font-medium text-slate-800">Good to Know</h3>
                   </div>
                   <div className="space-y-3">
                     <TextArea
-                      label="General Tips"
+                      label="Good to Know"
                       value={formData.generalTips}
                       onChange={(value) => updateFormData('generalTips', value)}
-                      placeholder="Additional general care tips and advice..."
+                      placeholder="Quirks, fun facts, or anything worth knowing about this plant..."
                       rows={3}
                     />
                   </div>
