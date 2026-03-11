@@ -5,6 +5,7 @@ import type {
   PlantInstanceSearchResult,
 } from "@/lib/types/plant-instance-types";
 import { plantInstanceHelpers } from "@/lib/types/plant-instance-types";
+import { parseFertilizerScheduleToDays } from "@/lib/utils/schedule-parser";
 import type {
   BulkPlantInstanceOperation,
   PlantInstanceFilter,
@@ -251,25 +252,13 @@ export class PlantInstanceQueries {
       // Calculate next fertilizer due date based on schedule
       let nextDue: Date | null = null;
       if (currentInstance.fertilizerSchedule) {
-        const scheduleMatch = currentInstance.fertilizerSchedule.match(
-          /(\d+)\s*(day|week|month)s?/i
+        // Use the shared parser which handles all schedule formats:
+        // "weekly", "monthly", "every 2 weeks", "14", etc.
+        const intervalDays = parseFertilizerScheduleToDays(
+          currentInstance.fertilizerSchedule
         );
-        if (scheduleMatch) {
-          const [, amount, unit] = scheduleMatch;
-          nextDue = new Date(now);
-
-          switch (unit.toLowerCase()) {
-            case "day":
-              nextDue.setDate(nextDue.getDate() + parseInt(amount, 10));
-              break;
-            case "week":
-              nextDue.setDate(nextDue.getDate() + parseInt(amount, 10) * 7);
-              break;
-            case "month":
-              nextDue.setMonth(nextDue.getMonth() + parseInt(amount, 10));
-              break;
-          }
-        }
+        nextDue = new Date(now);
+        nextDue.setDate(nextDue.getDate() + intervalDays);
       }
 
       const [instance] = await db
