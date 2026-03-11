@@ -4,6 +4,7 @@ import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { createPlantInstanceSchema, plantInstanceFilterSchema, type EnhancedPlantInstanceFilter } from '@/lib/validation/plant-schemas';
 import { validateVerifiedRequest } from '@/lib/auth/server';
 import { S3ImageService } from '@/lib/services/s3-image-service';
+import { parseFertilizerScheduleToDays } from '@/lib/utils/schedule-parser';
 
 // GET /api/plant-instances - Get plant instances with optional filtering
 export async function GET(request: NextRequest) {
@@ -204,26 +205,13 @@ export async function POST(request: NextRequest) {
     if (validatedData.fertilizerSchedule && !validatedData.fertilizerDue) {
       // Use lastFertilized as the base date if provided, otherwise use today
       const baseDate = validatedData.lastFertilized ? new Date(validatedData.lastFertilized) : new Date();
-      const scheduleMatch = validatedData.fertilizerSchedule.match(/(\d+)\s*(day|week|month)s?/i);
-      
-      if (scheduleMatch) {
-        const [, amount, unit] = scheduleMatch;
-        const dueDate = new Date(baseDate);
-        
-        switch (unit.toLowerCase()) {
-          case 'day':
-            dueDate.setDate(dueDate.getDate() + parseInt(amount, 10));
-            break;
-          case 'week':
-            dueDate.setDate(dueDate.getDate() + (parseInt(amount, 10) * 7));
-            break;
-          case 'month':
-            dueDate.setMonth(dueDate.getMonth() + parseInt(amount, 10));
-            break;
-        }
-        
-        validatedData.fertilizerDue = dueDate;
-      }
+      // Use the shared parser which handles all formats: "weekly", "monthly",
+      // "every 2 weeks", "14", etc. — fixes parseInt fallback that ignored
+      // named schedules (weekly/monthly/biweekly) and returned wrong values.
+      const intervalDays = parseFertilizerScheduleToDays(validatedData.fertilizerSchedule);
+      const dueDate = new Date(baseDate);
+      dueDate.setDate(dueDate.getDate() + intervalDays);
+      validatedData.fertilizerDue = dueDate;
     }
 
     // Create the plant instance
