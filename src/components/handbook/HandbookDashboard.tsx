@@ -347,6 +347,12 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
         frequency: guide.repotting?.frequency || '',
         tips: guide.repotting?.tips || ''
       },
+      pruning: {
+        frequency: guide.pruning?.frequency || '',
+        method: guide.pruning?.method || '',
+        season: guide.pruning?.season || '',
+        tips: guide.pruning?.tips || ''
+      },
       propagation: {
         methods: guide.propagation?.methods || '',
         tips: guide.propagation?.tips || ''

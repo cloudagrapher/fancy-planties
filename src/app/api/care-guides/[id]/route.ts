@@ -48,6 +48,12 @@ const CareGuideUpdateSchema = z.object({
     frequency: z.string().optional(),
     tips: z.string().optional(),
   }).optional(),
+  pruning: z.object({
+    frequency: z.string().optional(),
+    method: z.string().optional(),
+    season: z.string().optional(),
+    tips: z.string().optional(),
+  }).optional(),
   propagation: z.object({
     methods: z.string().optional(),
     tips: z.string().optional(),
@@ -160,6 +166,7 @@ export async function PUT(
     if (validatedData.humidity !== undefined) updateData.humidity = validatedData.humidity;
     if (validatedData.soil !== undefined) updateData.soil = validatedData.soil;
     if (validatedData.repotting !== undefined) updateData.repotting = validatedData.repotting;
+    if (validatedData.pruning !== undefined) updateData.pruning = validatedData.pruning;
     if (validatedData.propagation !== undefined) updateData.propagation = validatedData.propagation;
     if (validatedData.rootStructure !== undefined) updateData.rootStructure = validatedData.rootStructure || null;
     if (validatedData.generalTips !== undefined) updateData.generalTips = validatedData.generalTips || null;

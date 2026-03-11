@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Edit, Leaf, Droplets, FlaskConical, Sun, Thermometer, Wind, Mountain, RotateCcw, Sprout, Lightbulb, TreeDeciduous } from 'lucide-react';
+import { X, Edit, Leaf, Droplets, FlaskConical, Sun, Thermometer, Wind, Mountain, RotateCcw, Sprout, Scissors, Lightbulb, TreeDeciduous } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
 import S3Image from '@/components/shared/S3Image';
 
@@ -370,6 +370,26 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit }: Care
                     )}
                     {guide.repotting.tips && (
                       <p className="text-slate-600">{guide.repotting.tips}</p>
+                    )}
+                  </BlogSection>
+                )}
+
+                {/* Pruning */}
+                {guide.pruning && (guide.pruning.frequency || guide.pruning.method || guide.pruning.season || guide.pruning.tips) && (
+                  <BlogSection icon={Scissors} title="Pruning" iconColor="text-green-600">
+                    <div className="space-y-2 text-slate-700">
+                      {guide.pruning.frequency && (
+                        <p><strong className="text-slate-800">Frequency:</strong> {guide.pruning.frequency}</p>
+                      )}
+                      {guide.pruning.method && (
+                        <p><strong className="text-slate-800">Method:</strong> {guide.pruning.method}</p>
+                      )}
+                      {guide.pruning.season && (
+                        <p><strong className="text-slate-800">Best Season:</strong> {guide.pruning.season}</p>
+                      )}
+                    </div>
+                    {guide.pruning.tips && (
+                      <p className="text-slate-600 mt-3">{guide.pruning.tips}</p>
                     )}
                   </BlogSection>
                 )}
