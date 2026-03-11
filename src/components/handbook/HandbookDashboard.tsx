@@ -289,6 +289,25 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
     }
   };
 
+  const handleDeleteGuide = async (guideId: number) => {
+    try {
+      const response = await apiFetch(`/api/care-guides/${guideId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete care guide');
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['care-guides', userId] });
+      setSelectedGuide(null);
+    } catch (error) {
+      console.error('Failed to delete care guide:', error);
+      alert(`Failed to delete care guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   const handleOpenDetail = (guide: CareGuide) => {
     setSelectedGuide(guide);
   };
@@ -426,9 +445,27 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-slate-600">
-            {Object.values(stats.byLevel).reduce((a, b) => Math.max(a, b), 0)}
+            {(() => {
+              const levels = stats.byLevel as Record<string, number>;
+              const topLevel = Object.entries(levels).reduce(
+                (best, [level, count]) => count > best.count ? { level, count } : best,
+                { level: 'none', count: 0 }
+              );
+              return topLevel.count > 0 ? topLevel.count : '—';
+            })()}
           </div>
-          <div className="text-sm text-slate-600">Most Common Level</div>
+          <div className="text-sm text-slate-600">
+            {(() => {
+              const levels = stats.byLevel as Record<string, number>;
+              const topLevel = Object.entries(levels).reduce(
+                (best, [level, count]) => count > best.count ? { level, count } : best,
+                { level: 'none', count: 0 }
+              );
+              return topLevel.count > 0
+                ? `${topLevel.level.charAt(0).toUpperCase() + topLevel.level.slice(1)}-Level Guides`
+                : 'No Guides Yet';
+            })()}
+          </div>
         </Card>
       </div>
 
@@ -549,6 +586,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
           userId={userId}
           onClose={handleCloseDetail}
           onEdit={handleEditGuide}
+          onDelete={handleDeleteGuide}
         />
       )}
     </div>

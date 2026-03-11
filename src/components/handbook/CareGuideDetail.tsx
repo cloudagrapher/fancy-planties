@@ -1,6 +1,7 @@
 'use client';
 
-import { X, Edit, Leaf, Droplets, FlaskConical, Sun, Thermometer, Wind, Mountain, RotateCcw, Sprout, Scissors, Lightbulb, TreeDeciduous } from 'lucide-react';
+import { useState } from 'react';
+import { X, Edit, Trash2, Leaf, Droplets, FlaskConical, Sun, Thermometer, Wind, Mountain, RotateCcw, Sprout, Scissors, Lightbulb, TreeDeciduous } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
 import S3Image from '@/components/shared/S3Image';
 
@@ -9,6 +10,7 @@ export interface CareGuideDetailProps {
   userId: number;
   onClose: () => void;
   onEdit: () => void;
+  onDelete?: (guideId: number) => void;
 }
 
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -65,8 +67,9 @@ const BlogSection = ({
   </div>
 );
 
-export default function CareGuideDetail({ guide, userId, onClose, onEdit }: CareGuideDetailProps) {
+export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDelete }: CareGuideDetailProps) {
   const isOwner = guide.userId === userId;
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   /**
    * Builds a formatted taxonomy string from the care guide's taxonomy fields
    * Handles different taxonomy levels (family, genus, species, cultivar)
@@ -110,10 +113,22 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit }: Care
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               {isOwner && (
-                <Button variant="ghost" onClick={onEdit}>
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </Button>
+                <>
+                  <Button variant="ghost" onClick={onEdit}>
+                    <Edit className="h-4 w-4" />
+                    Edit
+                  </Button>
+                  {onDelete && (
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-medium transition border bg-white/70 border-red-200/70 hover:bg-red-50 text-red-600"
+                      title="Delete care guide"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Delete</span>
+                    </button>
+                  )}
+                </>
               )}
               <button
                 onClick={onClose}
@@ -425,6 +440,39 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit }: Care
               )}
             </article>
           </div>
+
+          {/* Delete Confirmation Dialog */}
+          {showDeleteConfirm && onDelete && (
+            <div className="flex-shrink-0 border-t border-slate-200/50 p-4 bg-red-50/50">
+              <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-red-800">
+                    Delete &ldquo;{guide.title}&rdquo;?
+                  </p>
+                  <p className="text-xs text-red-600 mt-0.5">
+                    This action cannot be undone.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => {
+                      onDelete(guide.id);
+                      setShowDeleteConfirm(false);
+                    }}
+                    className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 border border-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </div>
