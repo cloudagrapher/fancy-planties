@@ -92,7 +92,11 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
       fertilizer: guide.fertilizing?.frequency || guide.fertilizing?.type || null,
       soil: guide.soil?.type || null,
       roots: guide.rootStructure?.type || guide.rootStructure?.growthHabits || null,
-      tips: guide.generalTips?.split('\n')[0] || null, // First line of general tips as quick tip
+      tips: (() => {
+        const firstLine = guide.generalTips?.split('\n')[0] || null;
+        if (!firstLine) return null;
+        return firstLine.length > 120 ? firstLine.slice(0, 120) + '…' : firstLine;
+      })(), // First line of general tips, capped at 120 chars for the quick reference card
     };
   };
 

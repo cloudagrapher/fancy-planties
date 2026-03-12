@@ -86,6 +86,27 @@ const SectionHeader = ({
   </div>
 );
 
+// Module-level helpers — pure functions, no need to recreate per render
+const getTaxonomyIcon = (level: string) => {
+  switch (level) {
+    case 'family': return '🌳';
+    case 'genus': return '🌿';
+    case 'species': return '🌱';
+    case 'cultivar': return '🏷️';
+    default: return '📖';
+  }
+};
+
+const getTaxonomyLevelLabel = (level: string) => {
+  switch (level) {
+    case 'family': return 'Family';
+    case 'genus': return 'Genus';
+    case 'species': return 'Species';
+    case 'cultivar': return 'Cultivar';
+    default: return 'Guide';
+  }
+};
+
 const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => void }) => {
   const getTaxonomyDisplay = (guide: CareGuide) => {
     switch (guide.taxonomyLevel) {
@@ -99,16 +120,6 @@ const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => vo
         return `${guide.species} '${guide.cultivar}'` || 'Cultivar';
       default:
         return 'Unknown';
-    }
-  };
-
-  const getTaxonomyIcon = (level: string) => {
-    switch (level) {
-      case 'family': return '🌳';
-      case 'genus': return '🌿';
-      case 'species': return '🌱';
-      case 'cultivar': return '🏷️';
-      default: return '📖';
     }
   };
 
@@ -211,7 +222,7 @@ const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => vo
         {/* Metadata */}
         <div className="text-xs text-slate-500 flex items-center justify-between pt-2 border-t border-slate-200/50">
           <span>
-            {guide.taxonomyLevel.charAt(0).toUpperCase() + guide.taxonomyLevel.slice(1)} level
+            {getTaxonomyLevelLabel(guide.taxonomyLevel)} level
           </span>
           <span>
             {new Date(guide.updatedAt).toLocaleDateString()}
@@ -590,15 +601,6 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
           /* List View */
           <Card className="p-0 overflow-hidden divide-y divide-slate-100">
             {filteredGuides.map((guide) => {
-              const getTaxonomyIcon = (level: string) => {
-                switch (level) {
-                  case 'family': return '🌳';
-                  case 'genus': return '🌿';
-                  case 'species': return '🌱';
-                  case 'cultivar': return '🏷️';
-                  default: return '📖';
-                }
-              };
               const careIcons = [];
               if (guide.watering) careIcons.push(<Droplets key="water" className="h-3.5 w-3.5 text-blue-400" aria-label="Watering" />);
               if (guide.fertilizing) careIcons.push(<FlaskConical key="fert" className="h-3.5 w-3.5 text-amber-400" aria-label="Fertilizing" />);
@@ -645,7 +647,10 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
                         <Lock className="h-3 w-3 text-slate-400 flex-shrink-0" />
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500 flex-shrink-0">
+                        {getTaxonomyLevelLabel(guide.taxonomyLevel)}
+                      </span>
                       {guide.commonName && (
                         <span className="text-xs text-slate-500 truncate">{guide.commonName}</span>
                       )}
