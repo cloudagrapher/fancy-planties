@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Edit, Trash2, Leaf, Droplets, FlaskConical, Sun, Thermometer, Wind, Mountain, RotateCcw, Sprout, Scissors, Lightbulb, TreeDeciduous } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
 import S3Image from '@/components/shared/S3Image';
@@ -70,6 +70,25 @@ const BlogSection = ({
 export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDelete }: CareGuideDetailProps) {
   const isOwner = guide.userId === userId;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Close on Escape key & lock body scroll while open
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    // Prevent background scroll while modal is open
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
   /**
    * Builds a formatted taxonomy string from the care guide's taxonomy fields
    * Handles different taxonomy levels (family, genus, species, cultivar)
