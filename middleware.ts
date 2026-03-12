@@ -1,23 +1,19 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// Define protected routes that require authentication
-const protectedRoutes = [
+// All routes under these prefixes require authentication AND email verification.
+// Instead of listing individual API routes (which risks missing new ones),
+// we protect everything under /dashboard and /api, then carve out exceptions
+// via publicApiRoutes below.
+const protectedPrefixes = [
   '/dashboard',
-  '/api/plants',
-  '/api/propagations',
-  '/api/care',
-  '/api/user',
+  '/admin',
+  '/api/',
 ];
 
-// Define routes that require email verification
-const verificationRequiredRoutes = [
-  '/dashboard',
-  '/api/plants',
-  '/api/propagations',
-  '/api/care',
-  '/api/user',
-];
+// Legacy aliases — kept for clarity, both point to the same prefixes
+const protectedRoutes = protectedPrefixes;
+const verificationRequiredRoutes = protectedPrefixes;
 
 // Define auth routes that should redirect if already authenticated
 const authRoutes = [
@@ -36,6 +32,7 @@ const publicApiRoutes = [
   '/api/auth/check-verification',
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
+  '/api/csrf',   // CSRF tokens must be fetchable by unverified users (e.g. to sign out)
   '/api/health',
 ];
 
