@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   BookOpen, 
@@ -20,10 +20,12 @@ import {
   TreeDeciduous
 } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
-import CareGuideForm from './CareGuideForm';
 import type { CareGuideFormData } from './CareGuideForm';
-import CareGuideDetail from './CareGuideDetail';
 import S3Image from '@/components/shared/S3Image';
+
+// Lazy load heavy modal components — only needed when user opens a form/detail view
+const CareGuideForm = lazy(() => import('./CareGuideForm'));
+const CareGuideDetail = lazy(() => import('./CareGuideDetail'));
 import { apiFetch } from '@/lib/api-client';
 
 interface HandbookDashboardProps {
@@ -707,34 +709,42 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
         </Card>
       )}
 
-      {/* Care Guide Creation Form */}
-      <CareGuideForm
-        isOpen={showCreateForm}
-        onClose={() => setShowCreateForm(false)}
-        onSubmit={handleCreateGuide}
-        userId={userId}
-      />
-
-      {/* Care Guide Edit Form */}
-      {editingGuide && (
-        <CareGuideForm
-          isOpen={true}
-          onClose={() => setEditingGuide(null)}
-          onSubmit={handleUpdateGuide}
-          userId={userId}
-          initialData={convertGuideToFormData(editingGuide)}
-        />
+      {/* Care Guide Creation Form (lazy loaded) */}
+      {showCreateForm && (
+        <Suspense fallback={null}>
+          <CareGuideForm
+            isOpen={showCreateForm}
+            onClose={() => setShowCreateForm(false)}
+            onSubmit={handleCreateGuide}
+            userId={userId}
+          />
+        </Suspense>
       )}
 
-      {/* Care Guide Detail Modal */}
+      {/* Care Guide Edit Form (lazy loaded) */}
+      {editingGuide && (
+        <Suspense fallback={null}>
+          <CareGuideForm
+            isOpen={true}
+            onClose={() => setEditingGuide(null)}
+            onSubmit={handleUpdateGuide}
+            userId={userId}
+            initialData={convertGuideToFormData(editingGuide)}
+          />
+        </Suspense>
+      )}
+
+      {/* Care Guide Detail Modal (lazy loaded) */}
       {selectedGuide && (
-        <CareGuideDetail
-          guide={selectedGuide}
-          userId={userId}
-          onClose={handleCloseDetail}
-          onEdit={handleEditGuide}
-          onDelete={handleDeleteGuide}
-        />
+        <Suspense fallback={null}>
+          <CareGuideDetail
+            guide={selectedGuide}
+            userId={userId}
+            onClose={handleCloseDetail}
+            onEdit={handleEditGuide}
+            onDelete={handleDeleteGuide}
+          />
+        </Suspense>
       )}
     </div>
   );

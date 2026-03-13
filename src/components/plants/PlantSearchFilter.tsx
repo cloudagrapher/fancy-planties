@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
-import AdvancedSearchInterface from '@/components/search/AdvancedSearchInterface';
+
+// Lazy load heavy search interface — only rendered when advanced search panel is open
+const AdvancedSearchInterface = lazy(() => import('@/components/search/AdvancedSearchInterface'));
 import SearchResults from '@/components/search/SearchResults';
 import SearchPresetManager from '@/components/search/SearchPresetManager';
 import SearchHistory from '@/components/search/SearchHistory';
@@ -564,9 +566,10 @@ export default function PlantSearchFilter({
         </div>
       )}
 
-      {/* Advanced Search Panel */}
+      {/* Advanced Search Panel (lazy loaded) */}
       {showAdvancedPanel && showAdvancedSearch && (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <Suspense fallback={<div className="animate-pulse h-32 bg-gray-100 rounded" />}>
           <AdvancedSearchInterface
             onResults={handleSearchResults}
             onFiltersChange={handleEnhancedFiltersChange}
@@ -576,6 +579,7 @@ export default function PlantSearchFilter({
             showHistory={false}
             compact={true}
           />
+          </Suspense>
         </div>
       )}
 
