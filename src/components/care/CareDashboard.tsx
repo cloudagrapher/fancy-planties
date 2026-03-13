@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CareDashboardData } from '@/lib/types/care-types';
 import CareTaskCard from './CareTaskCard';
@@ -8,12 +8,23 @@ import CareTaskCard from './CareTaskCard';
 import CareStatistics from './CareStatistics';
 import { apiFetch } from '@/lib/api-client';
 
+/** Invalidate all care-related query caches after logging care */
+function invalidateCareQueries(queryClient: ReturnType<typeof useQueryClient>, userId: number) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: ['care-dashboard', userId] }),
+    queryClient.invalidateQueries({ queryKey: ['plant-instances'] }),
+    queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'] }),
+    queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
+  ]);
+}
+
 interface CareDashboardProps {
   userId: number;
 }
 
 export default function CareDashboard({ userId }: CareDashboardProps) {
   const [selectedTab, setSelectedTab] = useState<'overdue' | 'today' | 'soon' | 'recent'>('overdue');
+  const [hasAutoSelectedTab, setHasAutoSelectedTab] = useState(false);
   const [quickCareLoading, setQuickCareLoading] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
@@ -32,6 +43,24 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
+
+  // Auto-select the first non-empty tab on initial data load
+  useEffect(() => {
+    if (hasAutoSelectedTab || !dashboardData) return;
+    setHasAutoSelectedTab(true);
+
+    const tabOrder: Array<{ id: 'overdue' | 'today' | 'soon' | 'recent'; plants: unknown[] }> = [
+      { id: 'overdue', plants: dashboardData.overdue },
+      { id: 'today', plants: dashboardData.dueToday },
+      { id: 'soon', plants: dashboardData.dueSoon },
+      { id: 'recent', plants: dashboardData.recentlyCared },
+    ];
+
+    const firstNonEmpty = tabOrder.find(tab => tab.plants.length > 0);
+    if (firstNonEmpty) {
+      setSelectedTab(firstNonEmpty.id);
+    }
+  }, [dashboardData, hasAutoSelectedTab]);
 
   const handleQuickCare = useCallback(async (plantInstanceId: number, careType: string) => {
     try {
@@ -53,10 +82,9 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
         throw new Error('Failed to log care');
       }
 
-      // Invalidate and refetch dashboard data
-      await queryClient.invalidateQueries({ 
-        queryKey: ['care-dashboard', userId],
-      });
+      // Invalidate all care-related caches so dashboard stats, plant lists,
+      // and care dashboard all reflect the logged care action.
+      await invalidateCareQueries(queryClient, userId);
     } catch (err) {
       console.error('Error logging quick care:', err);
       // Could show a toast notification here instead
@@ -103,11 +131,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       const result = await response.json();
 
       if (result.successCount > 0) {
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ['care-dashboard', userId] }),
-          queryClient.invalidateQueries({ queryKey: ['plant-instances'] }),
-          queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'] }),
-        ]);
+        await invalidateCareQueries(queryClient, userId);
       } else {
         throw new Error('Failed to log care for any plants');
       }
