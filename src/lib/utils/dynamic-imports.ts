@@ -11,6 +11,7 @@ export const LazyAdvancedSearchInterface = lazy(() => import('@/components/searc
 export const LazyPropagationForm = lazy(() => import('@/components/propagations/PropagationForm'));
 export const LazyPlantInstanceForm = lazy(() => import('@/components/plants/PlantInstanceForm'));
 export const LazyCareGuideForm = lazy(() => import('@/components/handbook/CareGuideForm'));
+export const LazyCareGuideDetail = lazy(() => import('@/components/handbook/CareGuideDetail'));
 export const LazyFertilizerCalendar = lazy(() => import('@/components/calendar/FertilizerCalendar'));
 
 // Lazy load dashboard components for tab-based loading
@@ -28,6 +29,8 @@ export const preloadCSVImportModal = () => import('@/components/import/CSVImport
 export const preloadAdvancedSearch = () => import('@/components/search/AdvancedSearchInterface');
 export const preloadPropagationForm = () => import('@/components/propagations/PropagationForm');
 export const preloadPlantInstanceForm = () => import('@/components/plants/PlantInstanceForm');
+export const preloadCareGuideForm = () => import('@/components/handbook/CareGuideForm');
+export const preloadCareGuideDetail = () => import('@/components/handbook/CareGuideDetail');
 
 // Bundle splitting configuration
 export const componentBundles = {
@@ -59,6 +62,7 @@ export const componentBundles = {
     'AdvancedSearchInterface',
     'FertilizerCalendar',
     'CareGuideForm',
+    'CareGuideDetail',
     'DataImport'
   ]
 };
