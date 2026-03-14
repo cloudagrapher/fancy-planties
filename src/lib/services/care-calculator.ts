@@ -526,9 +526,6 @@ export class CareCalculator {
     careHistory: CareHistory[]
   ): PlantCareStatistics {
     const currentDate = new Date();
-    const _plantAge = Math.floor(
-      (currentDate.getTime() - plantInstance.createdAt.getTime()) / (1000 * 60 * 60 * 24)
-    );
 
     // Filter fertilizer care events
     const fertilizerEvents = careHistory
