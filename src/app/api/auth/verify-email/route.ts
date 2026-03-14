@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
         if (isValid) {
           if (process.env.NODE_ENV === 'development') {
-            if (process.env.NODE_ENV === 'development') console.log(`Email verification successful for ${email}`);
+            console.log(`Email verification successful for ${email}`);
           }
 
           // Get the verified user
@@ -59,14 +59,23 @@ export async function POST(request: NextRequest) {
           await setSessionCookie(session.id);
 
           if (process.env.NODE_ENV === 'development') {
-            if (process.env.NODE_ENV === 'development') console.log(`Session created for verified user ${email}: ${session.id}`);
+            console.log(`Session created for verified user ${email}: ${session.id}`);
           }
 
-          return NextResponse.json({
+          // Set email-verified cookie for middleware perf optimization
+          const response = NextResponse.json({
             success: true,
             message: 'Email verified successfully! You can now access your account.',
             redirectTo: '/dashboard'
           });
+          response.cookies.set('ev', '1', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 30,
+          });
+          return response;
         }
         
         // This shouldn't happen if validateCode works correctly, but just in case
@@ -117,7 +126,7 @@ export async function POST(request: NextRequest) {
           }
           
           if (process.env.NODE_ENV === 'development') {
-            if (process.env.NODE_ENV === 'development') console.log(`Email verification failed for ${email}: ${error.code} - ${errorMessage}`);
+            console.log(`Email verification failed for ${email}: ${error.code} - ${errorMessage}`);
           }
           
           return NextResponse.json(

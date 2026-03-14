@@ -18,10 +18,19 @@ export async function POST(_request: NextRequest) {
     await signOut(session.id);
     await clearSessionCookie();
     
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: 'Signed out successfully',
     });
+    // Clear email-verified cookie
+    response.cookies.set('ev', '', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+    });
+    return response;
     
   } catch (error) {
     console.error('Sign out error:', error);

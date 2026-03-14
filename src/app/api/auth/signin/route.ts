@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      return NextResponse.json({
+      // Set email-verified cookie for middleware perf optimization
+      const response = NextResponse.json({
         success: true,
         user: {
           id: result.user.id,
@@ -56,6 +57,15 @@ export async function POST(request: NextRequest) {
           isEmailVerified: result.user.isEmailVerified,
         },
       });
+      response.cookies.set('ev', '1', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        // Match session cookie lifetime (~30 days)
+        maxAge: 60 * 60 * 24 * 30,
+      });
+      return response;
 
     } catch (error) {
       console.error('Sign in error:', error);

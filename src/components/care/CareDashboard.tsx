@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CareDashboardData } from '@/lib/types/care-types';
 import CareTaskCard from './CareTaskCard';
-// import QuickCareActions from './QuickCareActions';
 import CareStatistics from './CareStatistics';
 import { apiFetch } from '@/lib/api-client';
 
