@@ -5,15 +5,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { PlantsGrid } from '@/components/plants';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { apiFetch } from '@/lib/api-client';
+import { useToast } from '@/hooks/useToast';
+import ToastContainer from '@/components/shared/ToastContainer';
 
 // Lazy load heavy modal components — they're not needed until user interaction
 const PlantDetailModal = lazy(() => import('@/components/plants/PlantDetailModal'));
 const PlantInstanceForm = lazy(() => import('@/components/plants/PlantInstanceForm'));
-
-interface ToastState {
-  message: string;
-  type: 'success' | 'error';
-}
 
 interface PlantsPageClientProps {
   userId: number;
@@ -25,12 +22,7 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingPlant, setEditingPlant] = useState<EnhancedPlantInstance | null>(null);
-  const [toast, setToast] = useState<ToastState | null>(null);
-
-  const showToast = useCallback((message: string, type: 'success' | 'error') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  }, []);
+  const { toasts, showToast, dismissToast } = useToast();
 
   const refreshPlantData = useCallback(async () => {
     await Promise.all([
@@ -79,47 +71,59 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
     }
   }, [refreshPlantData, showToast]);
 
-  // Handle bulk actions — routes deactivate to archive endpoint, care actions to quick-log
+  // Handle bulk actions — uses the /api/care/bulk endpoint for care, individual calls for archive
   const handleBulkAction = useCallback(async (plants: EnhancedPlantInstance[], action: string) => {
     try {
-      let promises: Promise<Response>[];
-
       if (action === 'deactivate') {
         // Archive: PATCH isActive=false on each plant instance
-        promises = plants.map(plant =>
-          apiFetch(`/api/plant-instances/${plant.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ isActive: false }),
-          })
+        const results = await Promise.allSettled(
+          plants.map(plant =>
+            apiFetch(`/api/plant-instances/${plant.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ isActive: false }),
+            })
+          )
         );
-      } else {
-        // Care action: log via quick-log endpoint
-        const careType = action === 'fertilize' ? 'fertilizer' : action;
-        promises = plants.map(plant =>
-          apiFetch('/api/care/quick-log', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              plantInstanceId: plant.id,
-              careType,
-              careDate: new Date().toISOString(),
-            }),
-          })
-        );
+        const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok));
+        const succeeded = results.length - failed.length;
+
+        await refreshPlantData();
+
+        if (failed.length === 0) {
+          showToast(`Archived ${succeeded} plant${succeeded !== 1 ? 's' : ''} ✓`, 'success');
+        } else {
+          showToast(`${succeeded} archived, ${failed.length} failed`, 'error');
+        }
+        return;
       }
 
-      const results = await Promise.allSettled(promises);
-      const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok));
-      const succeeded = results.length - failed.length;
+      // Care actions: use the bulk endpoint (single request instead of N)
+      const careType = action === 'fertilize' ? 'fertilizer' : action;
+      const plantIds = plants.map(p => p.id);
 
+      const response = await apiFetch('/api/care/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plantInstanceIds: plantIds,
+          careType,
+          careDate: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Bulk care request failed');
+      }
+
+      const result = await response.json();
       await refreshPlantData();
 
-      if (failed.length === 0) {
-        const label = action === 'deactivate' ? 'Archived' : action === 'fertilize' ? 'Fertilized' : `${action} logged for`;
-        showToast(`${label} ${succeeded} plant${succeeded !== 1 ? 's' : ''} ✓`, 'success');
-      } else if (succeeded > 0) {
-        showToast(`${succeeded} succeeded, ${failed.length} failed`, 'error');
+      if (result.successCount > 0 && result.failureCount === 0) {
+        const label = action === 'fertilize' ? 'Fertilized' : `${action} logged for`;
+        showToast(`${label} ${result.successCount} plant${result.successCount !== 1 ? 's' : ''} ✓`, 'success');
+      } else if (result.successCount > 0) {
+        showToast(`${result.successCount} succeeded, ${result.failureCount} failed`, 'error');
       } else {
         showToast(`Bulk ${action} failed for all ${plants.length} plants`, 'error');
       }
@@ -158,26 +162,8 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
 
   return (
     <div className="page">
-      {/* Toast notification */}
-      {toast && (
-        <div
-          className={`fixed top-4 right-4 z-50 max-w-sm w-full rounded-lg shadow-lg p-4 transition-all ${
-            toast.type === 'success'
-              ? 'bg-green-50 border border-green-200 text-green-800'
-              : 'bg-red-50 border border-red-200 text-red-800'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium">{toast.message}</p>
-            <button
-              onClick={() => setToast(null)}
-              className="ml-3 text-current opacity-60 hover:opacity-100"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       <div className="container">
         <div className="page-content">
           {/* Main Plants Card */}
