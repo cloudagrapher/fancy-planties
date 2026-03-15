@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CareDashboardData } from '@/lib/types/care-types';
+import type { CareDashboardData, EnhancedPlantInstance } from '@/lib/types/care-types';
 import CareTaskCard from './CareTaskCard';
 import CareStatistics from './CareStatistics';
 import { apiFetch } from '@/lib/api-client';
+import { useToast } from '@/hooks/useToast';
+import ToastContainer from '@/components/shared/ToastContainer';
 
 /** Invalidate all care-related query caches after logging care */
 function invalidateCareQueries(queryClient: ReturnType<typeof useQueryClient>, userId: number) {
@@ -17,6 +19,9 @@ function invalidateCareQueries(queryClient: ReturnType<typeof useQueryClient>, u
   ]);
 }
 
+const TAB_IDS = ['overdue', 'today', 'soon', 'recent'] as const;
+type TabId = typeof TAB_IDS[number];
+
 interface CareDashboardProps {
   userId: number;
 }
@@ -26,6 +31,8 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
   const [hasAutoSelectedTab, setHasAutoSelectedTab] = useState(false);
   const [quickCareLoading, setQuickCareLoading] = useState<number | null>(null);
   const queryClient = useQueryClient();
+  const { toasts, showToast, dismissToast } = useToast();
+  const tabListRef = useRef<HTMLDivElement>(null);
 
   // Use React Query for dashboard data
   const { data: dashboardData, isLoading: loading, error } = useQuery({
@@ -84,13 +91,16 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
       // Invalidate all care-related caches so dashboard stats, plant lists,
       // and care dashboard all reflect the logged care action.
       await invalidateCareQueries(queryClient, userId);
+
+      const label = careType === 'fertilizer' ? 'Fertilized' : careType === 'water' ? 'Watered' : 'Inspected';
+      showToast(`${label} ✓`, 'success');
     } catch (err) {
       console.error('Error logging quick care:', err);
-      // Could show a toast notification here instead
+      showToast('Failed to log care', 'error');
     } finally {
       setQuickCareLoading(null);
     }
-  }, [userId, queryClient]);
+  }, [userId, queryClient, showToast]);
 
   const handleBulkQuickCare = useCallback(async (careType: string) => {
     if (!dashboardData) return;
@@ -131,16 +141,53 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
       if (result.successCount > 0) {
         await invalidateCareQueries(queryClient, userId);
+        showToast(`Logged care for ${result.successCount} plant${result.successCount !== 1 ? 's' : ''} ✓`, 'success');
       } else {
         throw new Error('Failed to log care for any plants');
       }
     } catch (err) {
       console.error('Error with bulk care:', err);
-      // Could show a toast notification here instead
+      showToast('Failed to log bulk care', 'error');
     } finally {
       setQuickCareLoading(null);
     }
-  }, [dashboardData, userId, queryClient]);
+  }, [dashboardData, userId, queryClient, showToast]);
+
+  // Tab definitions — memoized to avoid re-creating on every render.
+  // Uses empty arrays when dashboardData is not yet loaded.
+  const tabs = useMemo(() => {
+    if (!dashboardData) return [] as Array<{ id: TabId; label: string; count: number; plants: EnhancedPlantInstance[] }>;
+    return [
+      { id: 'overdue' as const, label: 'Overdue', count: dashboardData.statistics.overdueCount, plants: dashboardData.overdue },
+      { id: 'today' as const, label: 'Due Today', count: dashboardData.statistics.dueTodayCount, plants: dashboardData.dueToday },
+      { id: 'soon' as const, label: 'Due Soon', count: dashboardData.statistics.dueSoonCount, plants: dashboardData.dueSoon },
+      { id: 'recent' as const, label: 'Recent Care', count: dashboardData.recentlyCared.length, plants: dashboardData.recentlyCared },
+    ];
+  }, [dashboardData]);
+
+  // Keyboard navigation for tabs (Left/Right arrow keys, Home/End)
+  const handleTabKeyDown = useCallback((e: React.KeyboardEvent<HTMLButtonElement>) => {
+    const currentIdx = TAB_IDS.indexOf(selectedTab);
+    let nextIdx = -1;
+
+    if (e.key === 'ArrowRight') {
+      nextIdx = (currentIdx + 1) % TAB_IDS.length;
+    } else if (e.key === 'ArrowLeft') {
+      nextIdx = (currentIdx - 1 + TAB_IDS.length) % TAB_IDS.length;
+    } else if (e.key === 'Home') {
+      nextIdx = 0;
+    } else if (e.key === 'End') {
+      nextIdx = TAB_IDS.length - 1;
+    }
+
+    if (nextIdx >= 0) {
+      e.preventDefault();
+      setSelectedTab(TAB_IDS[nextIdx]);
+      // Focus the newly selected tab button
+      const tabButtons = tabListRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]');
+      tabButtons?.[nextIdx]?.focus();
+    }
+  }, [selectedTab]);
 
   if (loading) {
     return (
@@ -181,18 +228,14 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     return null;
   }
 
-  const tabs = [
-    { id: 'overdue', label: 'Overdue', count: dashboardData.statistics.overdueCount, plants: dashboardData.overdue },
-    { id: 'today', label: 'Due Today', count: dashboardData.statistics.dueTodayCount, plants: dashboardData.dueToday },
-    { id: 'soon', label: 'Due Soon', count: dashboardData.statistics.dueSoonCount, plants: dashboardData.dueSoon },
-    { id: 'recent', label: 'Recent Care', count: dashboardData.recentlyCared.length, plants: dashboardData.recentlyCared },
-  ] as const;
-
   const activeTab = tabs.find(tab => tab.id === selectedTab);
   const activePlants = activeTab?.plants || [];
 
   return (
     <div className="space-y-6" data-testid="care-dashboard">
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Plant Care</h1>
@@ -250,11 +293,22 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
 
       {/* Care Tasks Tabs */}
       <div>
-        <div className="flex space-x-1 mb-4 bg-white/50 p-1 rounded-xl border border-slate-200/70 backdrop-blur overflow-x-auto">
+        <div
+          ref={tabListRef}
+          role="tablist"
+          aria-label="Care task categories"
+          className="flex space-x-1 mb-4 bg-white/50 p-1 rounded-xl border border-slate-200/70 backdrop-blur overflow-x-auto"
+        >
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              role="tab"
+              id={`care-tab-${tab.id}`}
+              aria-selected={selectedTab === tab.id}
+              aria-controls={`care-tabpanel-${tab.id}`}
+              tabIndex={selectedTab === tab.id ? 0 : -1}
               onClick={() => setSelectedTab(tab.id)}
+              onKeyDown={handleTabKeyDown}
               disabled={loading}
               className={`
                 flex-1 px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors relative whitespace-nowrap touch-manipulation min-w-fit
@@ -290,7 +344,12 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
         </div>
 
         {/* Care Tasks List */}
-        <div className="space-y-3">
+        <div
+          role="tabpanel"
+          id={`care-tabpanel-${selectedTab}`}
+          aria-labelledby={`care-tab-${selectedTab}`}
+          className="space-y-3"
+        >
           {activePlants.length === 0 ? (
             <div className="rounded-2xl shadow-sm border border-slate-200/70 bg-white/50 backdrop-blur p-8 text-center">
               <div className="text-4xl mb-4">
