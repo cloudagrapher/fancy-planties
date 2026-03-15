@@ -3,7 +3,7 @@ import { defineConfig } from 'cypress'
 export default defineConfig({
   e2e: {
     baseUrl: 'http://localhost:3000',
-    setupNodeEvents(on, config) {
+    setupNodeEvents(_on, _config) {
       // implement node event listeners here
     },
     supportFile: 'cypress/support/e2e.ts',
@@ -16,7 +16,7 @@ export default defineConfig({
       framework: 'next',
       bundler: 'webpack',
     },
-    setupNodeEvents(on, config) {
+    setupNodeEvents(_on, _config) {
       // implement node event listeners here
     },
     supportFile: 'cypress/support/component.ts',

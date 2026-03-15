@@ -285,7 +285,7 @@ describe('AuthGuard', () => {
 
       // Test different ReactNode types
       const nodeTypes = [
-        <div>Element</div>,
+        <div key="element">Element</div>,
         'String child',
         123,
         null,

@@ -525,8 +525,6 @@ export class CareCalculator {
     plantInstance: PlantInstance,
     careHistory: CareHistory[]
   ): PlantCareStatistics {
-    const currentDate = new Date();
-
     // Filter fertilizer care events
     const fertilizerEvents = careHistory
       .filter(care => care.careType === 'fertilizer')

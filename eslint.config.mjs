@@ -17,6 +17,7 @@ const eslintConfig = [
       ".next/**",
       "out/**",
       "build/**",
+      "coverage/**",
       "next-env.d.ts",
       "cdk/**",
       "cypress/**",
@@ -42,6 +43,20 @@ const eslintConfig = [
           destructuredArrayIgnorePattern: "^_",
         },
       ],
+    },
+  },
+  // Relax rules for test files — `any` types and require() are common in mocks/fixtures
+  {
+    files: [
+      "src/test-utils/**",
+      "src/__tests__/**",
+      "**/*.test.{ts,tsx,js,jsx}",
+      "**/*.spec.{ts,tsx,js,jsx}",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-require-imports": "off",
+      "@next/next/no-assign-module-variable": "off",
     },
   },
 ];
