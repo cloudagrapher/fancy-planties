@@ -37,10 +37,12 @@ const navigationMock = {
 
 const imageMock = (() => {
   const React = require('react');
-  return React.forwardRef((props, ref) => {
-    const { src, alt, width, height, fill, priority, placeholder, blurDataURL, sizes, quality, loader, onLoad, onError, ...rest } = props;
+  const NextImageMock = React.forwardRef((props, ref) => {
+    const { src, alt, width: _width, height: _height, fill: _fill, priority: _priority, placeholder: _placeholder, blurDataURL: _blurDataURL, sizes: _sizes, quality: _quality, loader: _loader, onLoad: _onLoad, onError: _onError, ...rest } = props;
     return React.createElement('img', { ref, src, alt, ...rest });
   });
+  NextImageMock.displayName = 'NextImageMock';
+  return NextImageMock;
 })();
 
 const serverMock = {

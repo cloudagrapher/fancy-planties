@@ -265,7 +265,7 @@ export const createRealisticCareSchedule = (
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - months);
 
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
   const endDate = new Date();
 
   while (currentDate <= endDate) {

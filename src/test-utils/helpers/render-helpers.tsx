@@ -366,7 +366,7 @@ interface WaitForElementOptions {
  * @param options - Wait options
  * @returns Promise that resolves when element appears
  */
-export const waitForElement = async <T>(
+export const waitForElement = async <T,>(
   query: () => T,
   options: WaitForElementOptions = {}
 ): Promise<T> => {
@@ -381,15 +381,17 @@ export const waitForElement = async <T>(
  * @param mockValue - The value to provide
  * @returns Mock provider component
  */
-export const createMockProvider = <T>(
+export const createMockProvider = <T,>(
   ProviderComponent: React.ComponentType<any>,
   mockValue: T
 ): React.FC<{ children: React.ReactNode }> => {
-  return ({ children }) => (
+  const MockProvider = ({ children }: { children: React.ReactNode }) => (
     <ProviderComponent value={mockValue}>
       {children}
     </ProviderComponent>
   );
+  MockProvider.displayName = `MockProvider(${ProviderComponent.displayName || 'Unknown'})`;
+  return MockProvider;
 };
 
 /**
