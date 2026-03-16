@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { requireVerifiedSession } from '@/lib/auth/server';
 import { DataImport } from '@/components/import/DataImport';
+import ExportMyData from '@/components/profile/ExportMyData';
 import LogoutButton from '@/components/auth/LogoutButton';
-import { User, Database, FileText, Download, Upload } from 'lucide-react';
+import { User, Database } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Profile — Fancy Planties',
@@ -21,7 +22,7 @@ export default async function ProfilePage() {
             <div>
               <h1 className="text-2xl font-bold text-neutral-900">Profile</h1>
               <p className="text-neutral-600 text-sm">
-                Manage your account and import plant data
+                Manage your account and plant data
               </p>
             </div>
           </div>
@@ -68,77 +69,28 @@ export default async function ProfilePage() {
             </div>
           </div>
 
-          {/* Data Management Section */}
-          <div className="card card--flat">
+          {/* Export My Data */}
+          <div className="card card--flat mb-6">
             <div className="card-header">
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-mint-100 rounded-lg">
-                  <Database className="w-6 h-6 text-mint-600" />
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <Database className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-neutral-900">Data Management</h2>
-                  <p className="text-sm text-neutral-600">Import and export your plant data</p>
+                  <h2 className="text-lg font-semibold text-neutral-900">Your Data</h2>
+                  <p className="text-sm text-neutral-600">Export your plant collection</p>
                 </div>
               </div>
             </div>
             <div className="card-body">
-              <DataImport />
+              <ExportMyData />
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="card card--flat mt-6">
-            <div className="card-header">
-              <h3 className="text-lg font-semibold text-neutral-900">Quick Actions</h3>
-              <p className="text-sm text-neutral-600">Common profile tasks</p>
-            </div>
+          {/* Data Import Section */}
+          <div className="card card--flat">
             <div className="card-body">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Download className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-neutral-900">Export Data</h4>
-                      <p className="text-sm text-neutral-600">Download your plant collection</p>
-                    </div>
-                  </div>
-                  <button className="btn btn--sm btn--outline">
-                    Export
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <Upload className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-neutral-900">Bulk Import</h4>
-                      <p className="text-sm text-neutral-600">Import multiple plants at once</p>
-                    </div>
-                  </div>
-                  <button className="btn btn--sm btn--outline">
-                    Import
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between p-4 border border-neutral-200 rounded-lg hover:bg-neutral-50 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <FileText className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-neutral-900">Data Templates</h4>
-                      <p className="text-sm text-neutral-600">Download CSV templates</p>
-                    </div>
-                  </div>
-                  <button className="btn btn--sm btn--outline">
-                    Download
-                  </button>
-                </div>
-              </div>
+              <DataImport />
             </div>
           </div>
         </div>
