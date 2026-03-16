@@ -19,10 +19,11 @@ export default function ExportMyData() {
       setStatus('loading');
       setErrorMessage('');
 
-      // Fetch all plant instances (high limit to get everything)
-      const [plantsRes, propsRes] = await Promise.all([
+      // Fetch all plant instances, propagations, and care history
+      const [plantsRes, propsRes, careRes] = await Promise.all([
         apiFetch('/api/plant-instances?limit=1000&offset=0'),
         apiFetch('/api/propagations'),
+        apiFetch('/api/care/history'),
       ]);
 
       if (!plantsRes.ok || !propsRes.ok) {
@@ -31,6 +32,7 @@ export default function ExportMyData() {
 
       const plantsData = await plantsRes.json();
       const propsData = await propsRes.json();
+      const careData = careRes.ok ? await careRes.json() : [];
 
       // Normalise — API may return { plantInstances: [...] } or just [...]
       const plants = Array.isArray(plantsData)
@@ -110,6 +112,37 @@ export default function ExportMyData() {
 
       const propsCsv = [propHeaders.join(','), ...propRows].join('\n');
 
+      // ---------- Build Care History CSV ----------
+      const careHistory = Array.isArray(careData) ? careData : [];
+
+      const careHeaders = [
+        'Date',
+        'Care Type',
+        'Plant Nickname',
+        'Common Name',
+        'Notes',
+        'Fertilizer Type',
+        'Pot Size',
+        'Soil Type',
+      ];
+
+      const careRows = careHistory.map((c: Record<string, unknown>) => {
+        const pi = (c.plantInstance ?? {}) as Record<string, unknown>;
+        const plant = (pi.plant ?? {}) as Record<string, unknown>;
+        return [
+          formatDate(c.careDate),
+          csvEscape(c.careTypeDisplay ?? c.careType),
+          csvEscape(pi.nickname),
+          csvEscape(plant.commonName),
+          csvEscape(c.notes),
+          csvEscape(c.fertilizerType),
+          csvEscape(c.potSize),
+          csvEscape(c.soilType),
+        ].join(',');
+      });
+
+      const careCsv = [careHeaders.join(','), ...careRows].join('\n');
+
       // ---------- Download ----------
       const today = new Date().toISOString().slice(0, 10);
 
@@ -120,6 +153,12 @@ export default function ExportMyData() {
         setTimeout(() => {
           downloadCsv(`fancy-planties-propagations-${today}.csv`, propsCsv);
         }, 250);
+      }
+
+      if (careHistory.length > 0) {
+        setTimeout(() => {
+          downloadCsv(`fancy-planties-care-history-${today}.csv`, careCsv);
+        }, 500);
       }
 
       setStatus('success');
@@ -141,7 +180,7 @@ export default function ExportMyData() {
         <div>
           <h4 className="font-medium text-neutral-900">Export My Data</h4>
           <p className="text-sm text-neutral-600">
-            Download your plants &amp; propagations as CSV
+            Download your plants, propagations &amp; care history as CSV
           </p>
         </div>
       </div>

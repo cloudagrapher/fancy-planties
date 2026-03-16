@@ -9,6 +9,7 @@ import S3Image from '../shared/S3Image';
 import PlantTaxonomySelector from './PlantTaxonomySelector';
 import S3ImageUpload from '../shared/S3ImageUpload';
 import Modal from '../shared/Modal';
+import ConfirmDialog from '../shared/ConfirmDialog';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
 import { apiFetch } from '@/lib/api-client';
@@ -501,11 +502,14 @@ export default function PlantInstanceForm({
     };
   }, [isOpen, hasUnsavedChanges]);
 
+  // State for the unsaved changes confirmation dialog
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+
   // Handle close with unsaved changes warning
   const handleClose = useCallback(() => {
     if (hasUnsavedChanges) {
-      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to close?');
-      if (!confirmed) return;
+      setShowCloseConfirm(true);
+      return;
     }
     onClose();
   }, [hasUnsavedChanges, onClose]);
@@ -559,6 +563,7 @@ export default function PlantInstanceForm({
   );
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
@@ -1206,5 +1211,20 @@ export default function PlantInstanceForm({
             </div>
       </form>
     </Modal>
+
+    {/* Unsaved changes confirmation dialog */}
+    {showCloseConfirm && (
+      <ConfirmDialog
+        title="Unsaved changes"
+        message="You have unsaved changes. Are you sure you want to close?"
+        confirmLabel="Discard changes"
+        onConfirm={() => {
+          setShowCloseConfirm(false);
+          onClose();
+        }}
+        onCancel={() => setShowCloseConfirm(false)}
+      />
+    )}
+    </>
   );
 }
