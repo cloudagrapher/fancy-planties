@@ -174,13 +174,15 @@ export default function PlantsGrid({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
   const [useSearchResults, setUseSearchResults] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('plants-view-mode');
-      if (saved === 'list' || saved === 'grid') return saved;
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Restore persisted view mode after hydration to avoid SSR mismatch
+  useEffect(() => {
+    const saved = localStorage.getItem('plants-view-mode');
+    if (saved === 'list' || saved === 'grid') {
+      setViewMode(saved);
     }
-    return 'grid';
-  });
+  }, []);
   const { triggerHaptic } = useHapticFeedback();
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
