@@ -1,7 +1,7 @@
 // Mock for oslo package to handle ES module issues in Jest
 // This provides mock implementations for crypto functions used in tests
 
-export const generateRandomString = (length, alphabet) => {
+export const generateRandomString = (length, _alphabet) => {
   return 'mock-random-string-' + length;
 };
 
@@ -27,7 +27,7 @@ export const decodeHex = (encoded) => {
 };
 
 // Export all functions as default for different import patterns
-export default {
+const osloMock = {
   generateRandomString,
   generateId,
   encodeBase32,
@@ -35,6 +35,7 @@ export default {
   encodeHex,
   decodeHex
 };
+export default osloMock;
 
 // Handle crypto module exports
 export const crypto = {

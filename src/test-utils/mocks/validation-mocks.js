@@ -169,6 +169,6 @@ export const createValidationError = (field, message) => {
  * @returns {Object} Mock schema that throws
  */
 export const createFailingSchema = (field = 'field', message = 'Validation failed') => {
-  const error = createValidationError(field, message);
+  const _error = createValidationError(field, message);
   return createMockZodSchema({}, true);
 };

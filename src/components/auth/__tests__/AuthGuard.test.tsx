@@ -50,7 +50,7 @@ describe('AuthGuard', () => {
       
       try {
         await AuthGuard({ children: <TestComponent /> });
-      } catch (error) {
+      } catch (_error) {
         // The redirect function throws to stop execution
       }
 
@@ -69,7 +69,7 @@ describe('AuthGuard', () => {
           children: <TestComponent />, 
           redirectTo: '/custom-login' 
         });
-      } catch (error) {
+      } catch (_error) {
         // The redirect function throws to stop execution
       }
 
@@ -93,7 +93,7 @@ describe('AuthGuard', () => {
         
         try {
           await AuthGuard({ children: <TestComponent /> });
-        } catch (redirectError) {
+        } catch (_redirectError) {
           // The redirect function throws to stop execution
         }
 
@@ -111,7 +111,7 @@ describe('AuthGuard', () => {
       
       try {
         await AuthGuard({ children: <TestComponent /> });
-      } catch (error) {
+      } catch (_error) {
         // The redirect function throws to stop execution
       }
 
@@ -218,7 +218,7 @@ describe('AuthGuard', () => {
       
       try {
         await AuthGuard({ children: <TestComponent /> });
-      } catch (error) {
+      } catch (_error) {
         // The redirect function throws to stop execution
       }
 
@@ -233,7 +233,7 @@ describe('AuthGuard', () => {
       
       try {
         await AuthGuard({ children: <TestComponent /> });
-      } catch (error) {
+      } catch (_error) {
         // The redirect function throws to stop execution
       }
 

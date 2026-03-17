@@ -5,7 +5,7 @@ import { render, screen, waitFor, RenderOptions, RenderResult } from '@testing-l
 import userEvent, { UserEvent } from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UserProvider } from '@/components/auth/UserProvider';
-import { createTestUser, createAuthenticatedTestUser } from '../factories/user-factory';
+import { createAuthenticatedTestUser } from '../factories/user-factory';
 import type { User } from '@/lib/auth/client';
 
 // Enhanced router mock with better type safety
@@ -134,7 +134,7 @@ export const renderWithProviders = (
     queryClient = createTestQueryClient(),
     route = '/',
     routerMock = {},
-    initialEntries = ['/'],
+    _initialEntries = ['/'],
     ...renderOptions
   } = options;
 
@@ -283,7 +283,7 @@ interface ApiMockConfig {
  * @param responses - Object mapping endpoints to response data
  */
 export const mockApiResponses = (responses: ApiMockConfig): void => {
-  global.fetch = jest.fn((url: string | URL, options?: RequestInit) => {
+  global.fetch = jest.fn((url: string | URL, _options?: RequestInit) => {
     const endpoint = url.toString();
 
     for (const [pattern, response] of Object.entries(responses)) {
@@ -328,7 +328,7 @@ export const mockApiError = (
   status = 500, 
   error: any = { error: 'Internal server error' }
 ): void => {
-  global.fetch = jest.fn((url: string | URL, options?: RequestInit) => {
+  global.fetch = jest.fn((url: string | URL, _options?: RequestInit) => {
     if (url.toString().includes(endpoint)) {
       return Promise.resolve({
         ok: false,
@@ -746,7 +746,7 @@ export const setupTestEnvironment = (options: {
   user: UserEvent;
   router: MockRouter;
 } => {
-  const { mockApis, user = null, route = '/' } = options;
+  const { mockApis, _user = null, route = '/' } = options;
 
   // Reset state first
   resetTestState();

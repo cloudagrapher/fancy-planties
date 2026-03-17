@@ -4,7 +4,6 @@
  * Provides optimized utilities for fast test data creation and cleanup.
  */
 
-import { testPerformanceMonitor } from './test-performance-monitor';
 
 interface TestDataPool<T> {
   available: T[];
@@ -154,7 +153,7 @@ class EfficientTestDataManager {
     await this.executeCleanup();
     
     // Clear all pools
-    for (const [poolName, pool] of this.pools) {
+    for (const [_poolName, pool] of this.pools) {
       // Cleanup all items in use
       for (const item of pool.inUse) {
         await pool.cleanup(item);

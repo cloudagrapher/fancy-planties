@@ -38,7 +38,7 @@ export const setupTest = (): void => {
   try {
     const { resetAllFactoryCounters } = require('./factories');
     resetAllFactoryCounters();
-  } catch (error) {
+  } catch (_error) {
     // Factory counters may not exist yet
   }
   
@@ -46,7 +46,7 @@ export const setupTest = (): void => {
   try {
     const { resetComponentMocks } = require('./mocks/component-mocks');
     resetComponentMocks();
-  } catch (error) {
+  } catch (_error) {
     // Component mocks may not exist yet
   }
   
@@ -54,7 +54,7 @@ export const setupTest = (): void => {
   try {
     const { resetApiMocks } = require('./helpers/api-helpers');
     resetApiMocks();
-  } catch (error) {
+  } catch (_error) {
     // API helpers may not exist yet
   }
 
@@ -62,7 +62,7 @@ export const setupTest = (): void => {
   try {
     const { resetTestState } = require('./helpers/render-helpers');
     resetTestState();
-  } catch (error) {
+  } catch (_error) {
     // Render helpers may not exist yet
   }
 };
@@ -79,7 +79,7 @@ export const cleanupTest = (): void => {
   try {
     const { resetServiceMocks } = require('./mocks/service-mocks');
     resetServiceMocks();
-  } catch (error) {
+  } catch (_error) {
     // Service mocks may not exist yet
   }
   
@@ -87,7 +87,7 @@ export const cleanupTest = (): void => {
   try {
     const { resetTestState } = require('./helpers/render-helpers');
     resetTestState();
-  } catch (error) {
+  } catch (_error) {
     // Render helpers may not exist yet
   }
 };
@@ -105,7 +105,7 @@ export const quickSetup = {
       
       applyCommonMocks();
       return createAuthenticatedTestUser();
-    } catch (error) {
+    } catch (_error) {
       console.warn('Could not setup authenticated component test:', error);
       return null;
     }
@@ -122,7 +122,7 @@ export const quickSetup = {
       
       mockBrowserAPIs();
       return applyAllAPIMocks();
-    } catch (error) {
+    } catch (_error) {
       console.warn('Could not setup API testing:', error);
       return null;
     }
@@ -145,7 +145,7 @@ export const quickSetup = {
       const { user, session } = createAuthenticatedTestUser();
       
       return { user, session, apiMocks };
-    } catch (error) {
+    } catch (_error) {
       console.warn('Could not setup integration testing:', error);
       return null;
     }
@@ -159,7 +159,7 @@ export const quickSetup = {
     try {
       const { setupTestEnvironment } = require('./helpers/render-helpers');
       return setupTestEnvironment();
-    } catch (error) {
+    } catch (_error) {
       console.warn('Could not setup render testing:', error);
       return null;
     }
@@ -176,7 +176,7 @@ export const quickSetup = {
       
       const { user } = createAuthenticatedTestUser();
       return setupTestEnvironment({ user });
-    } catch (error) {
+    } catch (_error) {
       console.warn('Could not setup authenticated render testing:', error);
       return null;
     }

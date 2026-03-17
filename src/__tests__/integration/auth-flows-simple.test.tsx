@@ -382,7 +382,7 @@ describe('Authentication Flow Integration Tests', () => {
         }),
       });
 
-      const { rerender } = renderWithProviders(<SignUpForm />);
+      renderWithProviders(<SignUpForm />);
 
       // Complete signup
       const nameInput = screen.getByLabelText(/full name/i);

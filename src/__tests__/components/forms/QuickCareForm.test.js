@@ -110,7 +110,7 @@ describe('QuickCareForm', () => {
     });
 
     it('shows conditional fields for fertilizer type', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       renderWithProviders(<QuickCareForm {...defaultProps} defaultCareType="fertilizer" />);
 
       expect(screen.getByLabelText(/fertilizer type/i)).toBeInTheDocument();

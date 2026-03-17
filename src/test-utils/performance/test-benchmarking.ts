@@ -332,7 +332,7 @@ class TestBenchmarkingSystem {
    * Set default performance thresholds
    */
   private setDefaultThresholds(): void {
-    const defaultThresholds: BenchmarkThresholds = {
+    const _defaultThresholds: BenchmarkThresholds = {
       maxDuration: 1000, // 1 second
       maxMemoryMB: 50, // 50MB
       regressionThreshold: 20, // 20% increase
@@ -384,9 +384,9 @@ export const testBenchmarkingSystem = new TestBenchmarkingSystem();
 /**
  * Jest helper for automatic benchmarking
  */
-export function withBenchmarking(testType: 'unit' | 'integration' | 'e2e' = 'unit') {
+export function withBenchmarking(_testType: 'unit' | 'integration' | 'e2e' = 'unit') {
   beforeEach(() => {
-    const testName = expect.getState().currentTestName || 'unknown';
+    const _testName = expect.getState().currentTestName || 'unknown';
     const startTime = performance.now();
     const startMemory = process.memoryUsage().heapUsed;
     
@@ -423,7 +423,7 @@ export function recordBenchmark(testName: string, duration: number, memoryUsage:
  * Generate and save benchmark report
  */
 export async function saveBenchmarkReport(outputPath: string = 'coverage/benchmark-report.json'): Promise<void> {
-  const report = testBenchmarkingSystem.generateReport();
+  const _report = testBenchmarkingSystem.generateReport();
   const data = testBenchmarkingSystem.exportData();
   
   try {

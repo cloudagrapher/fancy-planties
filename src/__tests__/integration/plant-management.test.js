@@ -2,9 +2,9 @@
 // Tests complete plant creation, editing, and deletion workflows
 
 import { screen, waitFor } from '@testing-library/react';
-import { renderWithProviders, userInteractions } from '@/test-utils';
+import { renderWithProviders } from '@/test-utils';
 import { mockApiResponse, mockApiError, resetApiMocks } from '../../test-utils/helpers/api-helpers';
-import { createTestUser, createAuthenticatedTestUser } from '@/test-utils/factories/user-factory';
+import { createAuthenticatedTestUser } from '@/test-utils/factories/user-factory';
 import { createTestPlant, createTestPlantInstance } from '@/test-utils/factories/plant-factory';
 
 // Mock Next.js router
@@ -65,7 +65,7 @@ const PlantManagementTestComponent = ({ onApiCall, children }) => {
       body: JSON.stringify(plantData),
     });
     const result = await response.json();
-    onApiCall && onApiCall('create', result);
+    if (onApiCall) onApiCall('create', result);
     return result;
   };
 
@@ -76,7 +76,7 @@ const PlantManagementTestComponent = ({ onApiCall, children }) => {
       body: JSON.stringify(plantData),
     });
     const result = await response.json();
-    onApiCall && onApiCall('update', result);
+    if (onApiCall) onApiCall('update', result);
     return result;
   };
 
@@ -85,7 +85,7 @@ const PlantManagementTestComponent = ({ onApiCall, children }) => {
       method: 'DELETE',
     });
     const result = await response.json();
-    onApiCall && onApiCall('delete', result);
+    if (onApiCall) onApiCall('delete', result);
     return result;
   };
 
@@ -107,7 +107,7 @@ const PlantManagementTestComponent = ({ onApiCall, children }) => {
 
 describe('Plant Management Integration Tests', () => {
   let testUser;
-  let testSession;
+  let _testSession;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -121,7 +121,7 @@ describe('Plant Management Integration Tests', () => {
     // Create authenticated test user
     const authData = createAuthenticatedTestUser();
     testUser = authData.user;
-    testSession = authData.session;
+    _testSession = authData.session;
   });
 
   afterEach(() => {

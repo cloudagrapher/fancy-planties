@@ -7,7 +7,7 @@ import { renderWithProviders } from '@/test-utils';
 import { mockApiResponse, mockApiError, resetApiMocks } from '@/test-utils/helpers/api-helpers';
 import { createAuthenticatedTestUser } from '@/test-utils/factories/user-factory';
 import { createTestPlantInstance } from '@/test-utils/factories/plant-factory';
-import { createTestCareRecord, createTestCareHistory, createCareTrackingTestData } from '@/test-utils/factories/care-factory';
+import { createTestCareRecord, createCareTrackingTestData } from '@/test-utils/factories/care-factory';
 import QuickCareForm from '@/components/care/QuickCareForm';
 import CareHistoryTimeline from '@/components/care/CareHistoryTimeline';
 

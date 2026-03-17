@@ -60,14 +60,14 @@ import { careValidation } from "@/lib/validation/care-schemas";
 
 describe("Care Tracking API Endpoints", () => {
   let testUser: any;
-  let testPlantInstance: any;
+  let _testPlantInstance: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
     resetApiMocks();
 
     testUser = createTestUser({ id: 1 });
-    testPlantInstance = createTestPlantInstance({ id: 1, userId: testUser.id });
+    _testPlantInstance = createTestPlantInstance({ id: 1, userId: testUser.id });
 
     // Default auth mocks
     (requireAuthSession as jest.Mock).mockResolvedValue({

@@ -13,7 +13,6 @@
 import { screen, waitFor, fireEvent } from '@testing-library/react';
 import { renderWithProviders } from '@/test-utils';
 import PropagationDashboard from '@/components/propagations/PropagationDashboard';
-import PropagationForm from '@/components/propagations/PropagationForm';
 
 describe('Propagation Status Changes Integration Tests', () => {
   const mockUserId = 1;

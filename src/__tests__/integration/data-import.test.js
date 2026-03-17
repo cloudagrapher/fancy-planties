@@ -42,14 +42,14 @@ const selectImportType = async (user, typeName) => {
 };
 
 describe('Data Import Integration Tests', () => {
-  let testUser;
+  let _testUser;
 
   beforeEach(() => {
     jest.clearAllMocks();
     resetApiMocks();
     
     const authData = createAuthenticatedTestUser();
-    testUser = authData.user;
+    _testUser = authData.user;
 
     // Reset FileReader mock to default working state
     global.FileReader = class {

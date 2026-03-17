@@ -153,7 +153,7 @@ describe("User and Authentication Database Queries", () => {
       const createdUser = await dbManager.createTestUser(testUser);
 
       // Check the actual return type from the delete operation
-      const result = await dbManager.deleteUser(createdUser.id);
+      const _result = await dbManager.deleteUser(createdUser.id);
 
       const foundUser = await UserQueries.getById(createdUser.id);
       expect(foundUser).toBeNull();

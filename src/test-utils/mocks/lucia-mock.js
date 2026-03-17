@@ -38,11 +38,11 @@ export class Lucia {
     };
   }
 
-  async invalidateSession(sessionId) {
+  async invalidateSession(_sessionId) {
     return true;
   }
 
-  async invalidateUserSessions(userId) {
+  async invalidateUserSessions(_userId) {
     return true;
   }
 
@@ -81,7 +81,8 @@ export class PostgresJsAdapter {
 }
 
 // Default export
-export default {
+const luciaMock = {
   Lucia,
   PostgresJsAdapter
 };
+export default luciaMock;

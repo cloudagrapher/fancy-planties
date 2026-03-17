@@ -1,5 +1,5 @@
 // Plant test data factory
-import type { NewPlant, NewPlantInstance, Plant, PlantInstance } from '@/lib/db/schema';
+import type { NewPlant, NewPlantInstance, Plant } from '@/lib/db/schema';
 
 // Counter for unique test data
 let plantCounter = 0;
@@ -204,7 +204,7 @@ export const createTestPlantInstanceForUser = (userId: number, overrides: Partia
 export const createTestPlantInstancesWithSchedules = (
   schedules: string[] = ['weekly', 'biweekly', 'every_4_weeks']
 ): NewPlantInstance[] => {
-  return schedules.map((schedule, index) => 
+  return schedules.map((schedule, _index) => 
     createTestPlantInstance({
       nickname: `Plant with ${schedule} schedule`,
       fertilizerSchedule: schedule,
