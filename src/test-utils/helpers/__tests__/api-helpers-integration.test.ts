@@ -9,7 +9,6 @@ import {
   createAuthHeaders,
   mockAuthenticatedApi,
   expectApiCall,
-  expectAuthenticatedApiCall,
   getApiCallCount,
   getAllApiCalls,
   resetApiMocks,

@@ -3,21 +3,13 @@ import { render, screen } from '@testing-library/react';
 import {
   createMockComponent,
   createTrackingMockComponent,
-  mockComponent,
-  mockComponents,
   selectiveMocks,
-  applyCommonMocks,
   resetComponentMocks,
   MockFactory,
   sharedComponentMocks,
   authComponentMocks,
   plantComponentMocks,
   careComponentMocks,
-  navigationComponentMocks,
-  importComponentMocks,
-  propagationComponentMocks,
-  adminComponentMocks,
-  providerComponentMocks,
 } from '../component-mocks.tsx';
 
 describe('Component Mock System', () => {

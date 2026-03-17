@@ -63,7 +63,7 @@ export const mockBrowserAPIs = () => {
   });
 
   // Mock IntersectionObserver
-  global.IntersectionObserver = jest.fn().mockImplementation((callback) => ({
+  global.IntersectionObserver = jest.fn().mockImplementation((_callback) => ({
     observe: jest.fn(),
     unobserve: jest.fn(),
     disconnect: jest.fn(),
@@ -73,7 +73,7 @@ export const mockBrowserAPIs = () => {
   }));
 
   // Mock ResizeObserver
-  global.ResizeObserver = jest.fn().mockImplementation((callback) => ({
+  global.ResizeObserver = jest.fn().mockImplementation((_callback) => ({
     observe: jest.fn(),
     unobserve: jest.fn(),
     disconnect: jest.fn(),

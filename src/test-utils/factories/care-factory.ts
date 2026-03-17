@@ -13,7 +13,7 @@ const CARE_TYPES = [
   "inspect",
   "other",
 ] as const;
-type CareType = (typeof CARE_TYPES)[number];
+type _CareType = (typeof CARE_TYPES)[number];
 
 const FERTILIZER_TYPES = [
   "Balanced liquid fertilizer (10-10-10)",

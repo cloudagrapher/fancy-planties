@@ -601,7 +601,7 @@ describe('Care Tracking API Endpoints', () => {
   describe('GET /api/dashboard - Dashboard statistics calculation', () => {
     it('should return dashboard statistics with plant and propagation data', async () => {
       // Arrange
-      const mockStats = {
+      const _mockStats = {
         totalPlants: 15,
         activePlants: 12,
         careDueToday: 3,

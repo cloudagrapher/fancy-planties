@@ -248,7 +248,7 @@ class TestErrorReporter {
   /**
    * Get retry count for a test
    */
-  private getRetryCount(testName: string): number {
+  private getRetryCount(_testName: string): number {
     // In real implementation, would track retry attempts
     return 0;
   }

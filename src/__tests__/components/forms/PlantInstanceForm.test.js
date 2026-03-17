@@ -3,11 +3,11 @@
  */
 
 import React from 'react';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, mockApiResponses, mockApiError } from '@/test-utils';
 import { createTestUser } from '@/test-utils/factories/user-factory';
-import { createTestPlant, createTestPlantInstance } from '@/test-utils/factories/plant-factory';
+import { createTestPlantInstance } from '@/test-utils/factories/plant-factory';
 import PlantInstanceForm from '@/components/plants/PlantInstanceForm';
 
 // Mock the PlantTaxonomySelector component
@@ -42,7 +42,7 @@ jest.mock('@/components/plants/PlantTaxonomySelector', () => {
 
 // Mock ImageUpload component
 jest.mock('@/components/shared/ImageUpload', () => {
-  return function MockImageUpload({ onImagesChange, maxImages = 10 }) {
+  return function MockImageUpload({ onImagesChange, _maxImages = 10 }) {
     const [files, setFiles] = React.useState([]);
 
     return (
@@ -71,7 +71,7 @@ describe('PlantInstanceForm', () => {
     userId: 1,
   };
 
-  const testUser = createTestUser({ id: 1 });
+  const _testUser = createTestUser({ id: 1 });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -137,7 +137,7 @@ describe('PlantInstanceForm', () => {
 
   describe('Form Validation', () => {
     it('shows validation errors for required fields', async () => {
-      const user = userEvent.setup();
+      const _user = userEvent.setup();
       renderWithProviders(<PlantInstanceForm {...defaultProps} />);
 
       const submitButton = screen.getByRole('button', { name: /add plant/i });

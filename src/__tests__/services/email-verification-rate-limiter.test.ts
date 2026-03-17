@@ -1,4 +1,4 @@
-import { EmailVerificationRateLimiter, DEFAULT_EMAIL_VERIFICATION_RATE_LIMIT_CONFIG } from '@/lib/services/email-verification-rate-limiter';
+import { EmailVerificationRateLimiter } from '@/lib/services/email-verification-rate-limiter';
 
 describe('EmailVerificationRateLimiter', () => {
   let rateLimiter: EmailVerificationRateLimiter;

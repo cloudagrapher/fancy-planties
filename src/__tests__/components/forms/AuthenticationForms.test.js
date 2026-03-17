@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders, mockApiResponses, mockApiError } from '@/test-utils';
 import SignInForm from '@/components/auth/SignInForm';

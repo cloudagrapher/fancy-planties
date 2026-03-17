@@ -31,7 +31,7 @@ jest.mock("@/lib/auth", () => ({
 }));
 
 const mockDb = require("@/lib/db").db;
-const mockGetUserByEmail = require("@/lib/auth").getUserByEmail;
+const _mockGetUserByEmail = require("@/lib/auth").getUserByEmail;
 const mockGetUserById = require("@/lib/auth").getUserById;
 
 describe("Email Verification Error Scenario Tests", () => {

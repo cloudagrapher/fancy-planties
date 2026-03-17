@@ -187,7 +187,7 @@ export const waitAndInteract = async (findElement, interaction, options = {}) =>
  * @param {Object} options - Key press options
  * @returns {Promise} Promise that resolves after key press
  */
-export const pressKey = async (key, user = null, options = {}) => {
+export const pressKey = async (key, user = null, _options = {}) => {
   const userEventInstance = user || userEvent.setup();
   await userEventInstance.keyboard(`{${key}}`);
 };

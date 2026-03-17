@@ -11,7 +11,6 @@ import {
   setupTransactionIsolation,
   setupErrorReporting,
   setupFailureAnalysis,
-  testPerformanceMonitor,
   testBenchmarkingSystem,
   efficientTestData,
   measureAsyncOperation,
@@ -41,7 +40,7 @@ describe('Comprehensive Test Setup Example', () => {
 
   describe('Performance Monitoring Examples', () => {
     it('should measure async operation performance', async () => {
-      const { result, duration, memoryDelta } = await measureAsyncOperation(
+      const { result, duration, _memoryDelta } = await measureAsyncOperation(
         async () => {
           // Simulate async work
           await new Promise(resolve => setTimeout(resolve, 100));
@@ -171,7 +170,7 @@ describe('Comprehensive Test Setup Example', () => {
       }
 
       let processedCount = 0;
-      for (const item of generateTestData(1000)) {
+      for (const _item of generateTestData(1000)) {
         processedCount++;
         // Process one item at a time to avoid memory buildup
       }

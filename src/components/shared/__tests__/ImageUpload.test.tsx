@@ -155,7 +155,7 @@ describe("ImageUpload Component", () => {
 
       // Create a simple test wrapper that simulates having files
       const TestWrapper = () => {
-        const [files] = React.useState<File[]>([
+        const [_files] = React.useState<File[]>([
           new File(["test"], "test.jpg", { type: "image/jpeg" }),
         ]);
 
