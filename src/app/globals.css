@@ -426,6 +426,16 @@ select {
   }
 }
 
+/* Tablet landscape: 4-col grid so stats don't waste space */
+@media (min-width: 768px) {
+  .stats-grid,
+  .dashboard-stats-grid,
+  .card-body .dashboard-stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 14px !important;
+  }
+}
+
 @media (min-width: 1280px) {
   .stats-grid,
   .dashboard-stats-grid,
@@ -623,11 +633,17 @@ select {
   overflow: hidden;
 }
 
-/* On mobile, use square aspect ratio so portrait plant photos don't get
-   aggressively cropped — 1:1 is more forgiving for mixed orientations. */
+/* Frame plant photos slightly above centre — most subjects sit in the
+   upper-third of the image, reducing aggressive crop on heads/crowns. */
+.plant-card-image img {
+  object-position: center 30%;
+}
+
+/* On mobile, use a 3:4 (portrait-leaning) aspect ratio instead of 1:1
+   — better for portrait plant photos while still compact. */
 @media (max-width: 480px) {
   .plant-card-image {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 3 / 4;
   }
 }
 
@@ -1352,6 +1368,8 @@ select {
   align-items: center;
   height: 70px;
   padding: 0 8px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .bottom-nav-item {
