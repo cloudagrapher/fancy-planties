@@ -295,27 +295,27 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
         >
           <Card className="h-full flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 pb-4 border-b border-slate-200/50 flex-shrink-0">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <Leaf className="h-6 w-6 text-emerald-600 flex-shrink-0" aria-hidden="true" />
+            <div className="flex items-center justify-between p-4 sm:p-6 pb-4 border-b border-slate-200/50 flex-shrink-0 gap-2">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <Leaf className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 flex-shrink-0" aria-hidden="true" />
                 <div className="min-w-0 flex-1">
-                  <h2 id={dialogTitleId} className="text-xl font-semibold text-slate-800 truncate">
+                  <h2 id={dialogTitleId} className="text-base sm:text-xl font-semibold text-slate-800 truncate">
                     {guide.title}
                   </h2>
-                  <p className="text-sm text-slate-600 truncate">{getTaxonomyDisplay()}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 truncate">{getTaxonomyDisplay()}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 {isOwner && (
                   <>
-                    <Button variant="ghost" onClick={onEdit}>
+                    <Button variant="ghost" onClick={onEdit} className="!px-2 !py-2 sm:!px-3.5 sm:!py-2.5">
                       <Edit className="h-4 w-4" aria-hidden="true" />
-                      Edit
+                      <span className="hidden sm:inline">Edit</span>
                     </Button>
                     {onDelete && (
                       <button
                         onClick={() => setShowDeleteConfirm(true)}
-                        className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-medium transition border bg-white/70 border-red-200/70 hover:bg-red-50 text-red-600"
+                        className="inline-flex items-center gap-1.5 rounded-xl px-2 py-2 sm:px-3 sm:py-2.5 text-sm font-medium transition border bg-white/70 border-red-200/70 hover:bg-red-50 text-red-600"
                         title="Delete care guide"
                       >
                         <Trash2 className="h-4 w-4" aria-hidden="true" />
@@ -336,7 +336,7 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-6">
+            <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-6">
               <article className="max-w-3xl mx-auto">
                 {/* Taxonomy and Common Name */}
                 <div className="mb-6 pb-6 border-b border-slate-200/50">
@@ -382,7 +382,7 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
                 {hasTLDR && (
                   <div className="mb-8 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100">
                     <h3 className="text-sm font-semibold text-emerald-800 uppercase tracking-wider mb-4">Quick Reference</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       {tldr.light && (
                         <div className="flex items-start gap-2.5">
                           <Sun className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
@@ -429,7 +429,7 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
                         </div>
                       )}
                       {tldr.tips && (
-                        <div className="flex items-start gap-2.5 sm:col-span-2">
+                        <div className="flex items-start gap-2.5 sm:col-span-2 md:col-span-3">
                           <Lightbulb className="h-4 w-4 text-emerald-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
                           <div>
                             <span className="text-xs font-medium text-slate-500 uppercase">Pro Tip</span>

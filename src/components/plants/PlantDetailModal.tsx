@@ -354,7 +354,7 @@ function PlantOverview({
       </div>
 
       {/* Plant Information */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
         {/* Basic Info */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900">Plant Information</h3>
