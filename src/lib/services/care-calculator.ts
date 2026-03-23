@@ -62,60 +62,6 @@ export class CareCalculator {
   }
 
   /**
-   * Parse schedule string into CareSchedule object
-   */
-  parseScheduleString(scheduleString: string): CareSchedule {
-    const normalized = scheduleString.toLowerCase().trim();
-    
-    // Handle "X weeks" format
-    const weeksMatch = normalized.match(/^(\d+)\s+weeks?$/);
-    if (weeksMatch) {
-      return {
-        frequency: 'weekly',
-        interval: parseInt(weeksMatch[1], 10),
-        careType: 'fertilizer'
-      };
-    }
-    
-    // Handle "X month" format
-    const monthMatch = normalized.match(/^(\d+)\s+months?$/);
-    if (monthMatch) {
-      return {
-        frequency: 'monthly',
-        interval: parseInt(monthMatch[1], 10),
-        careType: 'fertilizer'
-      };
-    }
-    
-    // Handle "every X days" format
-    const daysMatch = normalized.match(/^every\s+(\d+)\s+days?$/);
-    if (daysMatch) {
-      return {
-        frequency: 'custom',
-        interval: 1,
-        careType: 'fertilizer',
-        customDays: parseInt(daysMatch[1], 10)
-      };
-    }
-    
-    // Handle seasonal
-    if (normalized === 'seasonal') {
-      return {
-        frequency: 'seasonal',
-        interval: 1,
-        careType: 'fertilizer'
-      };
-    }
-    
-    // Default fallback
-    return {
-      frequency: 'monthly',
-      interval: 1,
-      careType: 'fertilizer'
-    };
-  }
-
-  /**
    * Calculate care urgency based on due date
    */
   calculateCareUrgency(dueDate: Date | null, currentDate: Date = new Date()): CareUrgency {
