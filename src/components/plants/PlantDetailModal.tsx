@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { EnhancedCareHistory } from '@/lib/types/care-types';
@@ -40,6 +40,9 @@ export default function PlantDetailModal({
   const [isImageGalleryOpen, setIsImageGalleryOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const queryClient = useQueryClient();
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
   // Fetch plant detail data
   const { data, isLoading, error, refetch } = useQuery({
@@ -134,24 +137,65 @@ export default function PlantDetailModal({
     }
   };
 
-  // Close modal on escape key and lock body scroll
+  // Store the element that was focused before the modal opened
+  useEffect(() => {
+    if (isOpen) {
+      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+    }
+  }, [isOpen]);
+
+  // Close modal on escape key, lock body scroll, and trap focus
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
         onClose();
+        return;
+      }
+
+      // Focus trapping: keep Tab/Shift+Tab within the modal
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusable = Array.from(
+          modalRef.current.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+          )
+        );
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
 
     // Save the current overflow value so we can restore it on cleanup
     const previousOverflow = document.body.style.overflow;
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
 
+    // Focus the close button on mount
+    requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
+
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = previousOverflow;
+      // Return focus to the previously focused element
+      previouslyFocusedRef.current?.focus();
     };
   }, [isOpen, onClose]);
 
@@ -160,6 +204,7 @@ export default function PlantDetailModal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div 
+        ref={modalRef}
         className="modal-content modal-content--large"
         role="dialog"
         aria-modal="true"
@@ -177,6 +222,7 @@ export default function PlantDetailModal({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center space-x-3 min-w-0">
                     <button
+                      ref={closeButtonRef}
                       onClick={onClose}
                       className="modal-close flex-shrink-0"
                       aria-label="Close modal"
