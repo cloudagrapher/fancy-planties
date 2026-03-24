@@ -195,6 +195,32 @@ export default function DashboardClient({ user }: DashboardClientProps) {
                 </Link>
               )}
 
+              {/* Quick Links — always visible */}
+              {!isLoading && displayStats.activePlants > 0 && (
+                <div className="grid grid-cols-2 gap-3 mt-6">
+                  <Link
+                    href="/dashboard/handbook"
+                    className="flex items-center gap-3 p-4 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50 to-teal-50 hover:shadow-md transition-shadow"
+                  >
+                    <span className="text-2xl flex-shrink-0">📖</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-emerald-900">Handbook</p>
+                      <p className="text-xs text-emerald-700 mt-0.5">Care guides &amp; tips</p>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/dashboard/plants"
+                    className="flex items-center gap-3 p-4 rounded-2xl border border-mint-200/70 bg-gradient-to-br from-mint-50 to-emerald-50 hover:shadow-md transition-shadow"
+                  >
+                    <span className="text-2xl flex-shrink-0">🔍</span>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-mint-900">Browse Plants</p>
+                      <p className="text-xs text-mint-700 mt-0.5">Search &amp; filter</p>
+                    </div>
+                  </Link>
+                </div>
+              )}
+
               {/* Calendar or Getting Started Card */}
               <div className="section--sm">
                 {displayStats.fertilizerEvents.length > 0 ? (
