@@ -10,7 +10,7 @@ import {
   type ImportConflict,
 } from '@/lib/validation/csv-schemas';
 import { importProgressStore } from '@/lib/db/import-progress';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export type ImportType = 'plant_taxonomy' | 'plant_instances' | 'propagations';
 
@@ -33,7 +33,7 @@ export class CSVImportService {
     });
 
     // Create import progress tracking
-    const importId = uuidv4();
+    const importId = randomUUID();
     const progress: ImportProgress = {
       id: importId,
       userId: fullConfig.userId,
