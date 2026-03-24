@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
 
   // Performance optimizations
   experimental: {
-    optimizePackageImports: ['lucide-react', '@tanstack/react-query', 'react-hook-form', 'zod', '@hookform/resolvers'],
+    optimizePackageImports: ['lucide-react', '@tanstack/react-query', 'react-hook-form', 'zod', '@hookform/resolvers', 'drizzle-orm'],
   },
 
   // Image optimization
