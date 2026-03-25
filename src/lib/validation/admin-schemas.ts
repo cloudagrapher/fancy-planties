@@ -59,7 +59,7 @@ export const plantApprovalSchema = z.object({
 export const bulkOperationSchema = z.object({
   operation: z.enum(['promote', 'demote', 'approve', 'reject', 'delete', 'export']),
   itemIds: z.array(z.number().positive()).min(1, 'At least one item must be selected').max(100, 'Too many items selected'),
-  options: z.record(z.string(), z.any()).optional(),
+  options: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
 });
 
 export const bulkUserOperationSchema = bulkOperationSchema.extend({
@@ -90,7 +90,7 @@ export const auditSortSchema = z.object({
 export const exportSchema = z.object({
   format: z.enum(['csv', 'json']).default('csv'),
   itemIds: z.array(z.number().positive()).optional(),
-  filters: z.record(z.string(), z.any()).optional(),
+  filters: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
   includeRelated: z.boolean().default(false),
 });
 
