@@ -187,9 +187,22 @@ export class S3ImageService {
   }
 
   /**
-   * Check if S3 integration is enabled
+   * Check if S3 image display is enabled (CloudFront domain configured).
+   *
+   * Previously this checked NEXT_PUBLIC_AWS_API_ENDPOINT (the upload Lambda
+   * endpoint), which caused photos to silently not load when the upload API
+   * wasn't configured but CloudFront was. Image *display* only requires
+   * NEXT_PUBLIC_CLOUDFRONT_DOMAIN; the upload endpoint is only needed for
+   * new uploads.
    */
   static isEnabled(): boolean {
+    return Boolean(process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN);
+  }
+
+  /**
+   * Check if image upload is available (requires Lambda upload endpoint).
+   */
+  static isUploadEnabled(): boolean {
     return Boolean(API_ENDPOINT);
   }
 
