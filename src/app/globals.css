@@ -639,11 +639,18 @@ select {
   object-position: center 30%;
 }
 
-/* On mobile, use a 3:4 (portrait-leaning) aspect ratio instead of 1:1
-   — better for portrait plant photos while still compact. */
+/* On mobile, use a square aspect ratio to avoid aggressive zoom/crop on
+   landscape photos.  3:4 looked elegant for portrait source photos but
+   caused "super zoomed-in" framing when photos were landscape. 1:1 is a
+   safe middle ground that works for both orientations. */
 @media (max-width: 480px) {
   .plant-card-image {
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 1 / 1;
+  }
+  /* Reset object-position to center on mobile — the 30% offset only
+     helps on wider desktop frames where top-heavy crops are common. */
+  .plant-card-image img {
+    object-position: center center;
   }
 }
 

@@ -266,6 +266,8 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
       fertilizer: guide.fertilizing?.frequency || guide.fertilizing?.type || null,
       soil: guide.soil?.type || null,
       roots: guide.rootStructure?.type || guide.rootStructure?.growthHabits || null,
+      temperature: guide.temperature?.range || null,
+      humidity: guide.humidity?.requirements || null,
       tips: (() => {
         const firstLine = guide.generalTips?.split('\n')[0] || null;
         if (!firstLine) return null;
@@ -275,7 +277,7 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
   };
 
   const tldr = getTLDRData();
-  const hasTLDR = tldr.light || tldr.water || tldr.fertilizer || tldr.soil || tldr.roots || tldr.tips;
+  const hasTLDR = tldr.light || tldr.water || tldr.fertilizer || tldr.soil || tldr.roots || tldr.temperature || tldr.humidity || tldr.tips;
 
   const dialogTitleId = `care-guide-title-${guide.id}`;
 
@@ -425,6 +427,24 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
                           <div>
                             <span className="text-xs font-medium text-slate-500 uppercase">Roots</span>
                             <p className="text-sm text-slate-700">{tldr.roots}</p>
+                          </div>
+                        </div>
+                      )}
+                      {tldr.temperature && (
+                        <div className="flex items-start gap-2.5">
+                          <Thermometer className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                          <div>
+                            <span className="text-xs font-medium text-slate-500 uppercase">Temperature</span>
+                            <p className="text-sm text-slate-700">{tldr.temperature}</p>
+                          </div>
+                        </div>
+                      )}
+                      {tldr.humidity && (
+                        <div className="flex items-start gap-2.5">
+                          <Wind className="h-4 w-4 text-cyan-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                          <div>
+                            <span className="text-xs font-medium text-slate-500 uppercase">Humidity</span>
+                            <p className="text-sm text-slate-700">{tldr.humidity}</p>
                           </div>
                         </div>
                       )}
