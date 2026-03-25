@@ -96,7 +96,15 @@ export class ResendEmailService implements EmailService {
   }
 
   private mapResendErrorCode(error: unknown): EmailServiceError['code'] {
-    const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
+    let rawMessage: string;
+    if (error instanceof Error) {
+      rawMessage = error.message;
+    } else if (error !== null && typeof error === 'object' && 'message' in error) {
+      rawMessage = String((error as { message: unknown }).message);
+    } else {
+      rawMessage = String(error);
+    }
+    const message = rawMessage.toLowerCase();
     
     if (message.includes('quota') || message.includes('limit')) {
       return 'QUOTA_EXCEEDED';
