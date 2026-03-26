@@ -5,6 +5,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
 import { Plus, TrendingUp, Clock, CheckCircle, Sprout, TreePine } from 'lucide-react';
 import PropagationCard from './PropagationCard';
+import { useToast } from '@/hooks/useToast';
+import ToastContainer from '@/components/shared/ToastContainer';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 
 // Lazy load the form — only needed when user clicks "Add"
@@ -26,6 +28,7 @@ export default function PropagationDashboard() {
   const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const { toasts, showToast, dismissToast } = useToast();
 
   // Fetch propagations using React Query
   const {
@@ -181,6 +184,7 @@ export default function PropagationDashboard() {
 
   return (
     <div>
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       {/* Header */}
       <div className="mb-6">
         {/* Mobile: Stacked layout */}
@@ -287,6 +291,7 @@ export default function PropagationDashboard() {
               key={propagation.id}
               propagation={propagation}
               onUpdate={handlePropagationUpdate}
+              onToast={showToast}
             />
           ))}
         </div>

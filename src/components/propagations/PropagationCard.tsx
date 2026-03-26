@@ -31,9 +31,10 @@ interface PropagationWithDetails extends Propagation {
 interface PropagationCardProps {
   propagation: PropagationWithDetails;
   onUpdate: () => void;
+  onToast?: (message: string, type: 'success' | 'error') => void;
 }
 
-export default memo(function PropagationCard({ propagation, onUpdate }: PropagationCardProps) {
+export default memo(function PropagationCard({ propagation, onUpdate, onToast }: PropagationCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -125,9 +126,10 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
 
       onUpdate();
       setShowMenu(false);
+      onToast?.(`Status updated to ${newStatus} ✓`, 'success');
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Failed to update propagation status');
+      onToast?.('Failed to update propagation status', 'error');
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -145,9 +147,10 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
       }
 
       onUpdate();
+      onToast?.(`Deleted "${propagation.nickname}" ✓`, 'success');
     } catch (error) {
       console.error('Error deleting propagation:', error);
-      alert('Failed to delete propagation');
+      onToast?.('Failed to delete propagation', 'error');
     }
   };
 
@@ -170,12 +173,12 @@ export default memo(function PropagationCard({ propagation, onUpdate }: Propagat
       }
 
       const result = await response.json();
-      alert(`Successfully converted to plant instance #${result.plantInstanceId}`);
+      onToast?.(`Converted to plant instance #${result.plantInstanceId} ✓`, 'success');
       onUpdate();
       setShowConvertModal(false);
     } catch (error) {
       console.error('Error converting propagation:', error);
-      alert('Failed to convert propagation to plant instance');
+      onToast?.('Failed to convert propagation to plant instance', 'error');
     }
   };
 
