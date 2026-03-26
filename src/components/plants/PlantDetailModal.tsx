@@ -13,6 +13,7 @@ import PlantLineage from './PlantLineage';
 import QuickCareActions from '../care/QuickCareActions';
 import S3Image from '@/components/shared/S3Image';
 import { apiFetch } from '@/lib/api-client';
+import { formatDaysToHumanSchedule, parseFertilizerScheduleToDays } from '@/lib/utils/schedule-parser';
 
 interface PlantDetailModalProps {
   plantId: number;
@@ -426,7 +427,7 @@ function PlantOverview({
           <dl className="space-y-3">
             <div>
               <dt className="text-sm font-medium text-gray-700">Fertilizer Schedule</dt>
-              <dd className="text-gray-900 capitalize">{plant.fertilizerSchedule}</dd>
+              <dd className="text-gray-900">{formatDaysToHumanSchedule(parseFertilizerScheduleToDays(plant.fertilizerSchedule))}</dd>
             </div>
             {plant.lastFertilized && (
               <div>
