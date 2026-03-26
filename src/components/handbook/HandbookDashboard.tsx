@@ -22,6 +22,8 @@ import {
 import type { CareGuide } from '@/lib/db/schema';
 import type { CareGuideFormData } from './CareGuideForm';
 import S3Image from '@/components/shared/S3Image';
+import { useToast } from '@/hooks/useToast';
+import ToastContainer from '@/components/shared/ToastContainer';
 
 // Lazy load heavy modal components — only needed when user opens a form/detail view
 const CareGuideForm = lazy(() => import('./CareGuideForm'));
@@ -251,6 +253,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
     return 'grid';
   });
   const queryClient = useQueryClient();
+  const { toasts, showToast, dismissToast } = useToast();
 
   // Use React Query with server-rendered data as initial value — no full-page reload needed
   const { data: careGuides = initialCareGuides } = useQuery<CareGuide[]>({
@@ -282,9 +285,10 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
       // Invalidate query to refetch — no full-page reload
       await queryClient.invalidateQueries({ queryKey: ['care-guides', userId] });
       setShowCreateForm(false);
+      showToast('Care guide created ✓', 'success');
     } catch (error) {
       console.error('Failed to create care guide:', error);
-      alert(`Failed to create care guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showToast(`Failed to create care guide: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     }
   };
 
@@ -308,9 +312,10 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
       // Invalidate query to refetch — no full-page reload
       await queryClient.invalidateQueries({ queryKey: ['care-guides', userId] });
       setEditingGuide(null);
+      showToast('Care guide updated ✓', 'success');
     } catch (error) {
       console.error('Failed to update care guide:', error);
-      alert(`Failed to update care guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showToast(`Failed to update care guide: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     }
   };
 
@@ -327,9 +332,10 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
 
       await queryClient.invalidateQueries({ queryKey: ['care-guides', userId] });
       setSelectedGuide(null);
+      showToast('Care guide deleted ✓', 'success');
     } catch (error) {
       console.error('Failed to delete care guide:', error);
-      alert(`Failed to delete care guide: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      showToast(`Failed to delete care guide: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
     }
   };
 
@@ -444,6 +450,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
 
   return (
     <div className="space-y-6">
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
