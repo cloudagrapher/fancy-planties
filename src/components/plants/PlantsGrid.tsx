@@ -10,6 +10,7 @@ import PlantCardSkeleton from './PlantCardSkeleton';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/shared/PullToRefreshIndicator';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { usePersistedViewMode } from '@/hooks/usePersistedViewMode';
 import type {
   EnhancedPlantInstance,
   PlantInstanceSearchResult,
@@ -174,15 +175,7 @@ export default function PlantsGrid({
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [searchResults, setSearchResults] = useState<AdvancedSearchResult | null>(null);
   const [useSearchResults, setUseSearchResults] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-
-  // Restore persisted view mode after hydration to avoid SSR mismatch
-  useEffect(() => {
-    const saved = localStorage.getItem('plants-view-mode');
-    if (saved === 'list' || saved === 'grid') {
-      setViewMode(saved);
-    }
-  }, []);
+  const [viewMode, setViewMode] = usePersistedViewMode('plants-view-mode');
   const { triggerHaptic } = useHapticFeedback();
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -557,7 +550,7 @@ export default function PlantsGrid({
               {/* View Toggle */}
               <div className="inline-flex rounded-lg border border-neutral-200 bg-neutral-50 p-0.5 flex-shrink-0">
                 <button
-                  onClick={() => { setViewMode('grid'); localStorage.setItem('plants-view-mode', 'grid'); }}
+                  onClick={() => setViewMode('grid')}
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
                     viewMode === 'grid'
                       ? 'bg-white text-neutral-900 shadow-sm'
@@ -571,7 +564,7 @@ export default function PlantsGrid({
                   Grid
                 </button>
                 <button
-                  onClick={() => { setViewMode('list'); localStorage.setItem('plants-view-mode', 'list'); }}
+                  onClick={() => setViewMode('list')}
                   className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
                     viewMode === 'list'
                       ? 'bg-white text-neutral-900 shadow-sm'

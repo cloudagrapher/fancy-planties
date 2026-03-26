@@ -23,6 +23,7 @@ import type { CareGuide } from '@/lib/db/schema';
 import type { CareGuideFormData } from './CareGuideForm';
 import S3Image from '@/components/shared/S3Image';
 import { useToast } from '@/hooks/useToast';
+import { usePersistedViewMode } from '@/hooks/usePersistedViewMode';
 import ToastContainer from '@/components/shared/ToastContainer';
 
 // Lazy load heavy modal components — only needed when user opens a form/detail view
@@ -245,13 +246,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedGuide, setSelectedGuide] = useState<CareGuide | null>(null);
   const [editingGuide, setEditingGuide] = useState<CareGuide | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('handbook-view-mode');
-      if (saved === 'list' || saved === 'grid') return saved as 'grid' | 'list';
-    }
-    return 'grid';
-  });
+  const [viewMode, setViewMode] = usePersistedViewMode('handbook-view-mode');
   const queryClient = useQueryClient();
   const { toasts, showToast, dismissToast } = useToast();
 
@@ -513,7 +508,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
               <div className="flex items-center gap-2">
                 <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
                   <button
-                    onClick={() => { setViewMode('grid'); localStorage.setItem('handbook-view-mode', 'grid'); }}
+                    onClick={() => setViewMode('grid')}
                     className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
                       viewMode === 'grid'
                         ? 'bg-white text-slate-900 shadow-sm'
@@ -527,7 +522,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
                     Grid
                   </button>
                   <button
-                    onClick={() => { setViewMode('list'); localStorage.setItem('handbook-view-mode', 'list'); }}
+                    onClick={() => setViewMode('list')}
                     className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
                       viewMode === 'list'
                         ? 'bg-white text-slate-900 shadow-sm'
