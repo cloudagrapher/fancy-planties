@@ -49,33 +49,13 @@ export default function PlantDetailModal({
     queryKey: ['plant-detail', plantId],
     queryFn: async (): Promise<PlantDetailData> => {
       // Fetch plant details first (needed to determine parentInstanceId)
-      const response = await apiFetch(`/api/plant-instances/${plantId}`);
+      // Consolidated endpoint: single request returns plant + care history +
+      // propagations + parent plant (replaces 1 sequential + 3 parallel fetches)
+      const response = await apiFetch(`/api/plant-instances/${plantId}/detail`);
       if (!response.ok) {
         throw new Error('Failed to fetch plant details');
       }
-      const plant = await response.json();
-
-      // Fetch care history, propagations, and parent plant in parallel
-      const [careHistory, propagations, parentPlant] = await Promise.all([
-        apiFetch(`/api/care/history/${plantId}`)
-          .then(r => r.ok ? r.json() : [])
-          .catch(() => []),
-        apiFetch(`/api/propagations?parentInstanceId=${plantId}`)
-          .then(r => r.ok ? r.json() : [])
-          .catch(() => []),
-        plant.parentInstanceId
-          ? apiFetch(`/api/plant-instances/${plant.parentInstanceId}`)
-              .then(r => r.ok ? r.json() : undefined)
-              .catch(() => undefined)
-          : Promise.resolve(undefined),
-      ]);
-
-      return {
-        plant,
-        careHistory,
-        propagations,
-        parentPlant,
-      };
+      return response.json() as Promise<PlantDetailData>;
     },
     enabled: isOpen && plantId > 0,
     staleTime: 1000 * 5, // 5 seconds (much more responsive to changes) 
@@ -404,65 +384,65 @@ function PlantOverview({
         {/* Basic Info */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900">Plant Information</h3>
-          <div className="space-y-3">
+          <dl className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-gray-700">Location</label>
-              <p className="text-gray-900">{plant.location}</p>
+              <dt className="text-sm font-medium text-gray-700">Location</dt>
+              <dd className="text-gray-900">{plant.location}</dd>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Family</label>
-              <p className="text-gray-900">{plant.plant.family}</p>
+              <dt className="text-sm font-medium text-gray-700">Family</dt>
+              <dd className="text-gray-900">{plant.plant.family}</dd>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Genus</label>
-              <p className="text-gray-900">{plant.plant.genus}</p>
+              <dt className="text-sm font-medium text-gray-700">Genus</dt>
+              <dd className="text-gray-900">{plant.plant.genus}</dd>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Species</label>
-              <p className="text-gray-900">{plant.plant.species}</p>
+              <dt className="text-sm font-medium text-gray-700">Species</dt>
+              <dd className="text-gray-900">{plant.plant.species}</dd>
             </div>
             {plant.plant.cultivar && (
               <div>
-                <label className="text-sm font-medium text-gray-700">Cultivar</label>
-                <p className="text-gray-900">{plant.plant.cultivar}</p>
+                <dt className="text-sm font-medium text-gray-700">Cultivar</dt>
+                <dd className="text-gray-900">{plant.plant.cultivar}</dd>
               </div>
             )}
             <div>
-              <label className="text-sm font-medium text-gray-700">Common Name</label>
-              <p className="text-gray-900">{plant.plant.commonName}</p>
+              <dt className="text-sm font-medium text-gray-700">Common Name</dt>
+              <dd className="text-gray-900">{plant.plant.commonName}</dd>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Added</label>
-              <p className="text-gray-900">
+              <dt className="text-sm font-medium text-gray-700">Added</dt>
+              <dd className="text-gray-900">
                 {new Date(plant.createdAt).toLocaleDateString()}
-              </p>
+              </dd>
             </div>
-          </div>
+          </dl>
         </div>
 
         {/* Care Information */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-900">Care Schedule</h3>
-          <div className="space-y-3">
+          <dl className="space-y-3">
             <div>
-              <label className="text-sm font-medium text-gray-700">Fertilizer Schedule</label>
-              <p className="text-gray-900 capitalize">{plant.fertilizerSchedule}</p>
+              <dt className="text-sm font-medium text-gray-700">Fertilizer Schedule</dt>
+              <dd className="text-gray-900 capitalize">{plant.fertilizerSchedule}</dd>
             </div>
             {plant.lastFertilized && (
               <div>
-                <label className="text-sm font-medium text-gray-700">Last Fertilized</label>
-                <p className="text-gray-900">
+                <dt className="text-sm font-medium text-gray-700">Last Fertilized</dt>
+                <dd className="text-gray-900">
                   {new Date(plant.lastFertilized).toLocaleDateString()}
                   <span className="text-sm text-gray-500 ml-2">
                     ({plant.daysSinceLastFertilized} days ago)
                   </span>
-                </p>
+                </dd>
               </div>
             )}
             {plant.fertilizerDue && (
               <div>
-                <label className="text-sm font-medium text-gray-700">Next Fertilizer Due</label>
-                <p className={`font-medium ${
+                <dt className="text-sm font-medium text-gray-700">Next Fertilizer Due</dt>
+                <dd className={`font-medium ${
                   plant.careStatus === 'overdue' ? 'text-red-600' :
                   plant.careStatus === 'due_today' ? 'text-amber-600' :
                   plant.careStatus === 'due_soon' ? 'text-yellow-600' :
@@ -476,32 +456,32 @@ function PlantOverview({
                         `${Math.abs(plant.daysUntilFertilizerDue)} days overdue`})
                     </span>
                   )}
-                </p>
+                </dd>
               </div>
             )}
             {plant.lastRepot && (
               <div>
-                <label className="text-sm font-medium text-gray-700">Last Repotted</label>
-                <p className="text-gray-900">
+                <dt className="text-sm font-medium text-gray-700">Last Repotted</dt>
+                <dd className="text-gray-900">
                   {new Date(plant.lastRepot).toLocaleDateString()}
                   <span className="text-sm text-gray-500 ml-2">
                     ({plant.daysSinceLastRepot} days ago)
                   </span>
-                </p>
+                </dd>
               </div>
             )}
             {plant.lastFlush && (
               <div>
-                <label className="text-sm font-medium text-gray-700">Last Flushed</label>
-                <p className="text-gray-900">
+                <dt className="text-sm font-medium text-gray-700">Last Flushed</dt>
+                <dd className="text-gray-900">
                   {new Date(plant.lastFlush).toLocaleDateString()}
                   <span className="text-sm text-gray-500 ml-2">
                     ({plant.daysSinceLastFlush} days ago)
                   </span>
-                </p>
+                </dd>
               </div>
             )}
-          </div>
+          </dl>
         </div>
       </div>
 
