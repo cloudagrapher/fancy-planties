@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface NavigationItem {
   id: string;
@@ -122,10 +122,23 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
     setTimeout(() => setPressedItem(null), 150);
   };
 
-  const toggleMenu = () => {
+  const toggleMenu = useCallback(() => {
     triggerHaptic('selection');
-    setIsMenuOpen(!isMenuOpen);
-  };
+    setIsMenuOpen(prev => !prev);
+  }, [triggerHaptic]);
+
+  // Close overflow menu on Escape key
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isMenuOpen]);
 
   const renderNavItem = (item: NavigationItem) => (
     <Link
@@ -140,6 +153,7 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
       onMouseDown={() => handleNavPress(item.id)}
       onClick={() => setIsMenuOpen(false)}
       aria-label={`Navigate to ${item.label}${item.badge ? ` (${item.badge} notifications)` : ''}`}
+      aria-current={isActive(item.href) ? 'page' : undefined}
       title={`Navigate to ${item.label}${item.badge ? ` (${item.badge} notifications)` : ''}`}
     >
       <div className="relative">
