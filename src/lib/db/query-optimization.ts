@@ -463,7 +463,7 @@ export const queryPerformance = {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      if (process.env.NODE_ENV === 'development') console.log(`Query ${queryName}: ${duration.toFixed(2)}ms`);
+      console.log(`Query ${queryName}: ${duration.toFixed(2)}ms`);
     }
 
     return result;
