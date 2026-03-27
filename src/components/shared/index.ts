@@ -11,7 +11,6 @@ export { default as LoadingSpinner, InlineLoadingSpinner } from './LoadingSpinne
 export { default as ErrorDisplay, InlineErrorDisplay, ErrorToast } from './ErrorDisplay';
 
 export { default as ImageUpload } from './ImageUpload';
-export { NetworkStatus } from './NetworkStatus';
 export { OptimizedImage } from './OptimizedImage';
 export { PullToRefreshIndicator } from './PullToRefreshIndicator';
 export { PWAInstallPrompt, StandaloneModeIndicator } from './PWAInstallPrompt';

@@ -96,7 +96,11 @@ export const importConflictSchema = z.object({
   type: z.enum(['duplicate_plant', 'missing_parent', 'invalid_taxonomy']),
   rowIndex: z.number().int().min(0),
   message: z.string(),
-  existingRecord: z.any().optional(),
+  existingRecord: z.object({
+    id: z.number(),
+    commonName: z.string().nullish(),
+    careInstructions: z.string().nullish(),
+  }).passthrough().optional(),
   suggestedAction: z.enum(['skip', 'merge', 'create_new', 'manual_review']),
 });
 
