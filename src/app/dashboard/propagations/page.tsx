@@ -8,13 +8,13 @@ export const metadata: Metadata = {
 };
 
 export default async function PropagationsPage() {
-  await requireVerifiedSession();
+  const { user } = await requireVerifiedSession();
 
   return (
     <div className="page">
       <div className="container">
         <div className="page-content">
-          <PropagationDashboard />
+          <PropagationDashboard userId={user.id} />
         </div>
       </div>
     </div>

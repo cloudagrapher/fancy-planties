@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Upload, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
+import S3ImageUpload from '../shared/S3ImageUpload';
+import S3Image from '../shared/S3Image';
 import PlantTaxonomySelector from '../plants/PlantTaxonomySelector';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
@@ -17,6 +19,7 @@ interface PropagationWithDetails extends Propagation {
 
 interface PropagationFormProps {
   propagation?: PropagationWithDetails;
+  userId: number;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -33,9 +36,10 @@ interface FormData {
   externalSourceDetails: string;
   notes: string;
   images: string[];
+  s3ImageKeys: string[];
 }
 
-export default function PropagationForm({ propagation, onClose, onSuccess }: PropagationFormProps) {
+export default function PropagationForm({ propagation, userId, onClose, onSuccess }: PropagationFormProps) {
   const queryClient = useQueryClient();
 
   const [formData, setFormData] = useState<FormData>({
@@ -52,6 +56,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
     externalSourceDetails: propagation?.externalSourceDetails || '',
     notes: propagation?.notes || '',
     images: propagation?.images || [],
+    s3ImageKeys: propagation?.s3ImageKeys || [],
   });
 
   const [selectedPlant, setSelectedPlant] = useState<Plant | null>(null);
@@ -145,14 +150,21 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
     alert(`Add new plant functionality would be implemented here for: ${query}`);
   };
 
-  const handleImageUpload = (imageData: string) => {
+  const handleS3UploadComplete = (s3Keys: string[]) => {
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, imageData],
+      s3ImageKeys: [...prev.s3ImageKeys, ...s3Keys],
     }));
   };
 
-  const handleImageRemove = (index: number) => {
+  const handleS3ImageRemove = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      s3ImageKeys: prev.s3ImageKeys.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleLegacyImageRemove = (index: number) => {
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
@@ -213,6 +225,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
           parentInstanceId: formData.sourceType === 'internal' ? formData.parentInstanceId : null,
           externalSource: formData.sourceType === 'external' ? formData.externalSource : null,
           externalSourceDetails: formData.sourceType === 'external' ? formData.externalSourceDetails : null,
+          s3ImageKeys: formData.s3ImageKeys,
         }),
       });
 
@@ -577,11 +590,36 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                     Images
                   </label>
 
-                  {/* Existing Images */}
+                  {/* Existing S3 Images */}
+                  {formData.s3ImageKeys.length > 0 && (
+                    <div className="grid grid-cols-4 gap-2 mb-3">
+                      {formData.s3ImageKeys.map((s3Key, index) => (
+                        <div key={`s3-${index}`} className="relative group aspect-square">
+                          <S3Image
+                            s3Key={s3Key}
+                            alt={`Propagation image ${index + 1}`}
+                            fill
+                            className="object-cover rounded-lg"
+                            thumbnailSize="small"
+                            sizes="80px"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleS3ImageRemove(index)}
+                            className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="w-2 h-2" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Legacy base64/URL Images (from before S3 migration) */}
                   {formData.images.length > 0 && (
                     <div className="grid grid-cols-4 gap-2 mb-3">
                       {formData.images.map((image, index) => (
-                        <div key={index} className="relative group">
+                        <div key={`legacy-${index}`} className="relative group">
                           <Image
                             src={image}
                             alt={`Propagation image ${index + 1}`}
@@ -592,7 +630,7 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                           />
                           <button
                             type="button"
-                            onClick={() => handleImageRemove(index)}
+                            onClick={() => handleLegacyImageRemove(index)}
                             className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <Trash2 className="w-2 h-2" />
@@ -602,37 +640,14 @@ export default function PropagationForm({ propagation, onClose, onSuccess }: Pro
                     </div>
                   )}
 
-                  {/* Image Upload */}
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary-400 transition-colors">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files || []);
-                        files.forEach(file => {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            if (event.target?.result) {
-                              handleImageUpload(event.target.result as string);
-                            }
-                          };
-                          reader.readAsDataURL(file);
-                        });
-                      }}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <label htmlFor="image-upload" className="cursor-pointer">
-                      <Upload className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                      <p className="text-sm text-gray-600">
-                        Click to upload images
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG up to 5MB each
-                      </p>
-                    </label>
-                  </div>
+                  {/* S3 Image Upload */}
+                  <S3ImageUpload
+                    userId={userId.toString()}
+                    entityType="propagation"
+                    entityId={propagation?.id?.toString() || 'new'}
+                    onUploadComplete={handleS3UploadComplete}
+                    maxImages={10 - formData.s3ImageKeys.length}
+                  />
                 </div>
               )}
 

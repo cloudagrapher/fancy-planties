@@ -20,6 +20,7 @@ const createPropagationSchema = z.object({
   externalSourceDetails: z.string().max(500).optional().nullable(),
   notes: z.string().max(2000).optional().nullable(),
   images: z.array(z.string()).max(10).default([]),
+  s3ImageKeys: z.array(z.string()).max(10).default([]),
 }).refine(
   (data) => {
     // externalSource is required when sourceType is 'external'
@@ -114,6 +115,7 @@ export async function POST(request: NextRequest) {
       externalSourceDetails: validatedData.externalSourceDetails,
       notes: validatedData.notes,
       images: validatedData.images,
+      s3ImageKeys: validatedData.s3ImageKeys,
     });
 
     return NextResponse.json(propagation, { status: 201 });
