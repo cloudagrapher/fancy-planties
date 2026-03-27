@@ -15,6 +15,7 @@ const updatePropagationSchema = z.object({
   status: z.enum(['started', 'rooting', 'ready', 'planted', 'converted']).optional(),
   notes: z.string().max(2000).optional().nullable(),
   images: z.array(z.string()).max(10).optional(),
+  s3ImageKeys: z.array(z.string()).max(10).optional(),
 });
 
 // GET /api/propagations/[id] - Get a specific propagation

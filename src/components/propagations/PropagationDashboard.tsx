@@ -24,7 +24,11 @@ interface PropagationStats {
   averageDaysToReady: number;
 }
 
-export default function PropagationDashboard() {
+interface PropagationDashboardProps {
+  userId: number;
+}
+
+export default function PropagationDashboard({ userId }: PropagationDashboardProps) {
   const queryClient = useQueryClient();
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
@@ -290,6 +294,7 @@ export default function PropagationDashboard() {
             <PropagationCard
               key={propagation.id}
               propagation={propagation}
+              userId={userId}
               onUpdate={handlePropagationUpdate}
               onToast={showToast}
             />
@@ -322,6 +327,7 @@ export default function PropagationDashboard() {
       {showAddForm && (
         <Suspense fallback={null}>
           <PropagationForm
+            userId={userId}
             onClose={() => setShowAddForm(false)}
             onSuccess={handlePropagationUpdate}
           />

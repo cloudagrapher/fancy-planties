@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, memo, lazy, Suspense } from 'react';
 import Image from 'next/image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
+import S3Image from '@/components/shared/S3Image';
 import { 
   Calendar, 
   MapPin, 
@@ -30,11 +31,12 @@ interface PropagationWithDetails extends Propagation {
 
 interface PropagationCardProps {
   propagation: PropagationWithDetails;
+  userId: number;
   onUpdate: () => void;
   onToast?: (message: string, type: 'success' | 'error') => void;
 }
 
-export default memo(function PropagationCard({ propagation, onUpdate, onToast }: PropagationCardProps) {
+export default memo(function PropagationCard({ propagation, userId, onUpdate, onToast }: PropagationCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -196,8 +198,17 @@ export default memo(function PropagationCard({ propagation, onUpdate, onToast }:
             aria-label={`${expanded ? 'Collapse' : 'Expand'} details for ${propagation.nickname}`}
           >
             {/* Propagation image */}
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-              {propagation.images && Array.isArray(propagation.images) && propagation.images.length > 0 ? (
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 relative">
+              {propagation.s3ImageKeys && propagation.s3ImageKeys.length > 0 ? (
+                <S3Image
+                  s3Key={propagation.s3ImageKeys[0]}
+                  alt={propagation.nickname}
+                  fill
+                  className="object-cover"
+                  thumbnailSize="tiny"
+                  sizes="64px"
+                />
+              ) : propagation.images && Array.isArray(propagation.images) && propagation.images.length > 0 ? (
                 propagation.images[0].startsWith('data:') ? (
                   // eslint-disable-next-line @next/next/no-img-element -- data: URLs not supported by next/image
                   <img
@@ -554,6 +565,7 @@ export default memo(function PropagationCard({ propagation, onUpdate, onToast }:
         <Suspense fallback={null}>
           <PropagationForm
             propagation={propagation}
+            userId={userId}
             onClose={() => setShowEditForm(false)}
             onSuccess={() => {
               setShowEditForm(false);
