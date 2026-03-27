@@ -1,10 +1,12 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirectIfAuthenticated } from '@/lib/auth/server';
 import { redirect } from 'next/navigation';
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 
-export const metadata = {
-  title: 'Reset Password - Fancy Planties',
-  description: 'Set a new password for your Fancy Planties account',
+export const metadata: Metadata = {
+  title: 'Reset Password — Fancy Planties',
+  description: 'Set a new password for your Fancy Planties account.',
 };
 
 interface PageProps {
@@ -41,12 +43,12 @@ export default async function ResetPasswordPage({ searchParams }: PageProps) {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Remember your password?{' '}
-            <a 
+            <Link 
               href="/auth/signin" 
               className="font-medium text-primary-600 hover:text-primary-500 transition-colors"
             >
               Sign in here
-            </a>
+            </Link>
           </p>
         </div>
       </div>

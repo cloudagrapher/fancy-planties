@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirectIfAuthenticated } from '@/lib/auth/server';
 import SignUpForm from '@/components/auth/SignUpForm';
+
+export const metadata: Metadata = {
+  title: 'Sign Up — Fancy Planties',
+  description: 'Create a Fancy Planties account to start tracking your plant collection.',
+};
 
 export default async function SignUpPage() {
   // Redirect if already authenticated
@@ -24,12 +31,12 @@ export default async function SignUpPage() {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <a 
+            <Link 
               href="/auth/signin" 
               className="font-medium text-primary-600 hover:text-primary-500 transition-colors"
             >
               Sign in here
-            </a>
+            </Link>
           </p>
         </div>
       </div>

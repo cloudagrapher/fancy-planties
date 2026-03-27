@@ -1,9 +1,11 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirectIfAuthenticated } from '@/lib/auth/server';
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 
-export const metadata = {
-  title: 'Forgot Password - Fancy Planties',
-  description: 'Reset your password for Fancy Planties',
+export const metadata: Metadata = {
+  title: 'Forgot Password — Fancy Planties',
+  description: 'Reset your password for Fancy Planties.',
 };
 
 export default async function ForgotPasswordPage() {
@@ -29,12 +31,12 @@ export default async function ForgotPasswordPage() {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Remember your password?{' '}
-            <a 
+            <Link 
               href="/auth/signin" 
               className="font-medium text-primary-600 hover:text-primary-500 transition-colors"
             >
               Sign in here
-            </a>
+            </Link>
           </p>
         </div>
       </div>

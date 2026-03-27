@@ -1,5 +1,12 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirectIfAuthenticated } from '@/lib/auth/server';
 import SignInForm from '@/components/auth/SignInForm';
+
+export const metadata: Metadata = {
+  title: 'Sign In — Fancy Planties',
+  description: 'Sign in to your Fancy Planties account to manage your plant collection.',
+};
 
 export default async function SignInPage() {
   // Redirect if already authenticated
@@ -24,12 +31,12 @@ export default async function SignInPage() {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Don&apos;t have an account?{' '}
-            <a 
+            <Link 
               href="/auth/signup" 
               className="font-medium text-primary-600 hover:text-primary-500 transition-colors py-2 px-4 inline-block"
             >
               Sign up here
-            </a>
+            </Link>
           </p>
         </div>
       </div>
