@@ -1,10 +1,11 @@
+import type { Metadata } from 'next';
 import { getAuthSession } from '@/lib/auth/server';
 import { redirect } from 'next/navigation';
 import EmailVerificationClient from './EmailVerificationClient';
 
-export const metadata = {
-  title: 'Verify Your Email - Fancy Planties',
-  description: 'Verify your email address to complete your account setup',
+export const metadata: Metadata = {
+  title: 'Verify Your Email — Fancy Planties',
+  description: 'Verify your email address to complete your account setup.',
 };
 
 interface PageProps {
