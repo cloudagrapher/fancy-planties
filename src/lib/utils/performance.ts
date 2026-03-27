@@ -80,38 +80,6 @@ export const imageOptimization = {
   },
 };
 
-// Virtual scrolling utilities
-export const virtualScrolling = {
-  // Calculate visible items for virtual scrolling
-  calculateVisibleItems: (
-    scrollTop: number,
-    containerHeight: number,
-    itemHeight: number,
-    totalItems: number,
-    overscan: number = 5
-  ) => {
-    const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
-    const endIndex = Math.min(
-      totalItems - 1,
-      Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
-    );
-    
-    return { startIndex, endIndex, visibleCount: endIndex - startIndex + 1 };
-  },
-
-  // Debounced scroll handler
-  createScrollHandler: (callback: (scrollTop: number) => void, delay: number = 16) => {
-    let timeoutId: NodeJS.Timeout;
-    
-    return (scrollTop: number) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => callback(scrollTop), delay);
-    };
-  },
-};
-
-
-
 // React optimization utilities
 export const reactOptimization = {
   // Optimized state update with startTransition

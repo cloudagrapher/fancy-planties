@@ -623,10 +623,11 @@ export default function PlantInstanceForm({
                     <div className="space-y-4">
                       {/* Common Name */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="pif-tax-common-name" className="block text-sm font-medium text-gray-700 mb-1">
                           Common Name *
                         </label>
                         <input
+                          id="pif-tax-common-name"
                           type="text"
                           value={taxonomyData.commonName}
                           onChange={(e) => setTaxonomyData(prev => ({ ...prev, commonName: e.target.value }))}
@@ -638,10 +639,11 @@ export default function PlantInstanceForm({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Family */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label htmlFor="pif-tax-family" className="block text-sm font-medium text-gray-700 mb-1">
                             Family *
                           </label>
                           <input
+                            id="pif-tax-family"
                             type="text"
                             value={taxonomyData.family}
                             onChange={(e) => setTaxonomyData(prev => ({ ...prev, family: e.target.value }))}
@@ -652,10 +654,11 @@ export default function PlantInstanceForm({
 
                         {/* Genus */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label htmlFor="pif-tax-genus" className="block text-sm font-medium text-gray-700 mb-1">
                             Genus *
                           </label>
                           <input
+                            id="pif-tax-genus"
                             type="text"
                             value={taxonomyData.genus}
                             onChange={(e) => setTaxonomyData(prev => ({ ...prev, genus: e.target.value }))}
@@ -668,10 +671,11 @@ export default function PlantInstanceForm({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Species */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label htmlFor="pif-tax-species" className="block text-sm font-medium text-gray-700 mb-1">
                             Species *
                           </label>
                           <input
+                            id="pif-tax-species"
                             type="text"
                             value={taxonomyData.species}
                             onChange={(e) => setTaxonomyData(prev => ({ ...prev, species: e.target.value }))}
@@ -682,10 +686,11 @@ export default function PlantInstanceForm({
 
                         {/* Cultivar */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label htmlFor="pif-tax-cultivar" className="block text-sm font-medium text-gray-700 mb-1">
                             Cultivar (optional)
                           </label>
                           <input
+                            id="pif-tax-cultivar"
                             type="text"
                             value={taxonomyData.cultivar}
                             onChange={(e) => setTaxonomyData(prev => ({ ...prev, cultivar: e.target.value }))}
@@ -925,7 +930,7 @@ export default function PlantInstanceForm({
               {/* Care History */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="pif-last-fertilized" className="block text-sm font-medium text-gray-700 mb-2">
                     Last Fertilized
                   </label>
                   <Controller
@@ -934,6 +939,7 @@ export default function PlantInstanceForm({
                     render={({ field }) => (
                       <input
                         {...field}
+                        id="pif-last-fertilized"
                         type="date"
                         max={new Date().toISOString().split('T')[0]}
                         className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -943,7 +949,7 @@ export default function PlantInstanceForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="pif-last-repotted" className="block text-sm font-medium text-gray-700 mb-2">
                     Last Repotted
                   </label>
                   <Controller
@@ -952,6 +958,7 @@ export default function PlantInstanceForm({
                     render={({ field }) => (
                       <input
                         {...field}
+                        id="pif-last-repotted"
                         type="date"
                         max={new Date().toISOString().split('T')[0]}
                         className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -961,7 +968,7 @@ export default function PlantInstanceForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="pif-last-flushed" className="block text-sm font-medium text-gray-700 mb-2">
                     Last Flushed
                   </label>
                   <Controller
@@ -970,6 +977,7 @@ export default function PlantInstanceForm({
                     render={({ field }) => (
                       <input
                         {...field}
+                        id="pif-last-flushed"
                         type="date"
                         max={new Date().toISOString().split('T')[0]}
                         className="w-full px-3 py-2 bg-white text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -981,7 +989,7 @@ export default function PlantInstanceForm({
 
               {/* Notes & Observations */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="pif-notes" className="block text-sm font-medium text-gray-700 mb-2">
                   Notes & Observations
                 </label>
 
@@ -998,6 +1006,7 @@ export default function PlantInstanceForm({
                 {/* New Note Input */}
                 <div className="space-y-2">
                   <textarea
+                    id="pif-notes"
                     value={newNoteInput}
                     onChange={(e) => setNewNoteInput(e.target.value)}
                     rows={3}
