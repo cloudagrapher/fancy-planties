@@ -548,12 +548,14 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
             <div className="flex-1 relative">
               <input
                 type="text"
+                id="handbook-search"
+                aria-label="Search care guides by name, plant, or content"
                 placeholder="Search guides by name, plant, or content..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-100"
               />
-              <Search className="h-4 w-4 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="h-4 w-4 text-slate-400 absolute left-3 top-2.5" aria-hidden="true" />
             </div>
           </div>
 

@@ -231,7 +231,9 @@ export default function PlantSearchFilter({
               </svg>
             </div>
             <input
+              id="psf-search"
               type="text"
+              aria-label="Search plants by name, location, or plant type"
               placeholder="Search plants..."
               value={localSearchQuery}
               onChange={(e) => handleSearchInput(e.target.value)}
@@ -471,10 +473,11 @@ export default function PlantSearchFilter({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Location Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="psf-location" className="block text-xs font-medium text-gray-700 mb-1">
                 Location
               </label>
               <select
+                id="psf-location"
                 value={filters.location || ''}
                 onChange={(e) => handleFilterChange('location', e.target.value || undefined)}
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-primary-500 focus:border-primary-500"
@@ -490,10 +493,11 @@ export default function PlantSearchFilter({
 
             {/* Care Status Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="psf-care-status" className="block text-xs font-medium text-gray-700 mb-1">
                 Care Status
               </label>
               <select
+                id="psf-care-status"
                 value={filters.overdueOnly ? 'overdue' : filters.dueSoonDays ? 'due_soon' : ''}
                 onChange={(e) => {
                   if (e.target.value === 'overdue') {
@@ -517,10 +521,11 @@ export default function PlantSearchFilter({
 
             {/* Active Status Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="psf-active-status" className="block text-xs font-medium text-gray-700 mb-1">
                 Status
               </label>
               <select
+                id="psf-active-status"
                 value={filters.isActive === undefined ? 'all' : filters.isActive ? 'active' : 'inactive'}
                 onChange={(e) => {
                   const value = e.target.value === 'all' ? undefined : e.target.value === 'active';
