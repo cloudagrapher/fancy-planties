@@ -111,13 +111,19 @@ const Button = ({
   </button>
 );
 
+/** Derive a stable element id from a label string. */
+function labelToId(label: string): string {
+  return `cgf-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+}
+
 const Input = ({ 
   label, 
   value, 
   onChange, 
   placeholder, 
   required = false,
-  className = ""
+  className = "",
+  id: idProp,
 }: {
   label: string;
   value: string;
@@ -125,21 +131,28 @@ const Input = ({
   placeholder?: string;
   required?: boolean;
   className?: string;
-}) => (
-  <div className={className}>
-    <label className="block text-sm font-medium text-slate-700 mb-1">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      required={required}
-      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-    />
-  </div>
-);
+  id?: string;
+}) => {
+  const id = idProp ?? labelToId(label);
+  return (
+    <div className={className}>
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700 mb-1">
+        {label} {required && <span className="text-red-500" aria-hidden="true">*</span>}
+        {required && <span className="sr-only">(required)</span>}
+      </label>
+      <input
+        id={id}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        required={required}
+        aria-required={required || undefined}
+        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+      />
+    </div>
+  );
+};
 
 const Select = ({
   label,
@@ -147,7 +160,8 @@ const Select = ({
   onChange,
   options,
   required = false,
-  className = ""
+  className = "",
+  id: idProp,
 }: {
   label: string;
   value: string;
@@ -155,25 +169,32 @@ const Select = ({
   options: { value: string; label: string }[];
   required?: boolean;
   className?: string;
-}) => (
-  <div className={className}>
-    <label className="block text-sm font-medium text-slate-700 mb-1">
-      {label} {required && <span className="text-red-500">*</span>}
-    </label>
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      required={required}
-      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </div>
-);
+  id?: string;
+}) => {
+  const id = idProp ?? labelToId(label);
+  return (
+    <div className={className}>
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700 mb-1">
+        {label} {required && <span className="text-red-500" aria-hidden="true">*</span>}
+        {required && <span className="sr-only">(required)</span>}
+      </label>
+      <select
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        aria-required={required || undefined}
+        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
 
 const TextArea = ({
   label,
@@ -181,7 +202,8 @@ const TextArea = ({
   onChange,
   placeholder,
   rows = 3,
-  className = ""
+  className = "",
+  id: idProp,
 }: {
   label: string;
   value: string;
@@ -189,20 +211,25 @@ const TextArea = ({
   placeholder?: string;
   rows?: number;
   className?: string;
-}) => (
-  <div className={className}>
-    <label className="block text-sm font-medium text-slate-700 mb-1">
-      {label}
-    </label>
-    <textarea
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={rows}
-      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
-    />
-  </div>
-);
+  id?: string;
+}) => {
+  const id = idProp ?? labelToId(label);
+  return (
+    <div className={className}>
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700 mb-1">
+        {label}
+      </label>
+      <textarea
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={rows}
+        className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+      />
+    </div>
+  );
+};
 
 export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initialData }: CareGuideFormProps) {
   const getInitialFormData = (): CareGuideFormData => {
@@ -510,12 +537,14 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <Input
+                      id="cgf-root-type"
                       label="Root Type"
                       value={formData.rootStructure.type}
                       onChange={(value) => updateFormData('rootStructure.type', value)}
                       placeholder="e.g., Fibrous, Tuberous, Aerial roots"
                     />
                     <TextArea
+                      id="cgf-root-growth-habits"
                       label="Growth Habits"
                       value={formData.rootStructure.growthHabits}
                       onChange={(value) => updateFormData('rootStructure.growthHabits', value)}
@@ -523,6 +552,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                       rows={2}
                     />
                     <TextArea
+                      id="cgf-root-tips"
                       label="Tips"
                       value={formData.rootStructure.tips}
                       onChange={(value) => updateFormData('rootStructure.tips', value)}
@@ -544,12 +574,14 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                       to simplify the form and focus on essential watering information
                     */}
                     <Input
+                      id="cgf-watering-frequency"
                       label="Frequency"
                       value={formData.watering.frequency}
                       onChange={(value) => updateFormData('watering.frequency', value)}
                       placeholder="e.g., Weekly, When soil is dry"
                     />
                     <TextArea
+                      id="cgf-watering-tips"
                       label="Tips"
                       value={formData.watering.tips}
                       onChange={(value) => updateFormData('watering.tips', value)}
@@ -567,24 +599,28 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <Input
+                      id="cgf-fertilizing-frequency"
                       label="Frequency"
                       value={formData.fertilizing.frequency}
                       onChange={(value) => updateFormData('fertilizing.frequency', value)}
                       placeholder="e.g., Monthly, Bi-weekly"
                     />
                     <Input
+                      id="cgf-fertilizing-type"
                       label="Type"
                       value={formData.fertilizing.type}
                       onChange={(value) => updateFormData('fertilizing.type', value)}
                       placeholder="e.g., Liquid fertilizer, Slow-release"
                     />
                     <Input
+                      id="cgf-fertilizing-schedule"
                       label="Schedule"
                       value={formData.fertilizing.schedule}
                       onChange={(value) => updateFormData('fertilizing.schedule', value)}
                       placeholder="e.g., Spring to Fall, Year-round"
                     />
                     <TextArea
+                      id="cgf-fertilizing-tips"
                       label="Tips"
                       value={formData.fertilizing.tips}
                       onChange={(value) => updateFormData('fertilizing.tips', value)}
@@ -602,18 +638,21 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <Input
+                      id="cgf-lighting-requirements"
                       label="Requirements"
                       value={formData.lighting.requirements}
                       onChange={(value) => updateFormData('lighting.requirements', value)}
                       placeholder="e.g., Bright indirect light"
                     />
                     <Input
+                      id="cgf-lighting-intensity"
                       label="Intensity"
                       value={formData.lighting.intensity}
                       onChange={(value) => updateFormData('lighting.intensity', value)}
                       placeholder="e.g., Medium to high"
                     />
                     <TextArea
+                      id="cgf-lighting-tips"
                       label="Tips"
                       value={formData.lighting.tips}
                       onChange={(value) => updateFormData('lighting.tips', value)}
@@ -631,12 +670,14 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <Input
+                      id="cgf-temperature-range"
                       label="Range"
                       value={formData.temperature.range}
                       onChange={(value) => updateFormData('temperature.range', value)}
                       placeholder="e.g., 65-80°F (18-27°C)"
                     />
                     <TextArea
+                      id="cgf-temperature-tips"
                       label="Tips"
                       value={formData.temperature.tips}
                       onChange={(value) => updateFormData('temperature.tips', value)}
@@ -654,12 +695,14 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <Input
+                      id="cgf-humidity-requirements"
                       label="Requirements"
                       value={formData.humidity.requirements}
                       onChange={(value) => updateFormData('humidity.requirements', value)}
                       placeholder="e.g., 40-60%, High humidity"
                     />
                     <TextArea
+                      id="cgf-humidity-tips"
                       label="Tips"
                       value={formData.humidity.tips}
                       onChange={(value) => updateFormData('humidity.tips', value)}
@@ -677,18 +720,21 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <Input
+                      id="cgf-soil-type"
                       label="Soil Type"
                       value={formData.soil.type}
                       onChange={(value) => updateFormData('soil.type', value)}
                       placeholder="e.g., Well-draining potting mix"
                     />
                     <Input
+                      id="cgf-soil-recipe"
                       label="Recipe"
                       value={formData.soil.recipe}
                       onChange={(value) => updateFormData('soil.recipe', value)}
                       placeholder="e.g., 1 part peat, 1 part perlite, 1 part bark"
                     />
                     <TextArea
+                      id="cgf-soil-tips"
                       label="Tips"
                       value={formData.soil.tips}
                       onChange={(value) => updateFormData('soil.tips', value)}
@@ -706,12 +752,14 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <Input
+                      id="cgf-repotting-frequency"
                       label="Frequency"
                       value={formData.repotting.frequency}
                       onChange={(value) => updateFormData('repotting.frequency', value)}
                       placeholder="e.g., Every 2-3 years, When root bound"
                     />
                     <TextArea
+                      id="cgf-repotting-tips"
                       label="Tips"
                       value={formData.repotting.tips}
                       onChange={(value) => updateFormData('repotting.tips', value)}
@@ -729,24 +777,28 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <Input
+                      id="cgf-pruning-frequency"
                       label="Frequency"
                       value={formData.pruning.frequency}
                       onChange={(value) => updateFormData('pruning.frequency', value)}
                       placeholder="e.g., As needed, Annually in spring"
                     />
                     <Input
+                      id="cgf-pruning-method"
                       label="Method"
                       value={formData.pruning.method}
                       onChange={(value) => updateFormData('pruning.method', value)}
                       placeholder="e.g., Pinch back, Cut above node, Deadheading"
                     />
                     <Input
+                      id="cgf-pruning-season"
                       label="Best Season"
                       value={formData.pruning.season}
                       onChange={(value) => updateFormData('pruning.season', value)}
                       placeholder="e.g., Spring, After flowering"
                     />
                     <TextArea
+                      id="cgf-pruning-tips"
                       label="Tips"
                       value={formData.pruning.tips}
                       onChange={(value) => updateFormData('pruning.tips', value)}
@@ -764,12 +816,14 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <Input
+                      id="cgf-propagation-methods"
                       label="Method(s)"
                       value={formData.propagation.methods}
                       onChange={(value) => updateFormData('propagation.methods', value)}
                       placeholder="e.g., Stem cuttings, Node cuttings, Division"
                     />
                     <TextArea
+                      id="cgf-propagation-tips"
                       label="Tips"
                       value={formData.propagation.tips}
                       onChange={(value) => updateFormData('propagation.tips', value)}
@@ -787,6 +841,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </div>
                   <div className="space-y-3">
                     <TextArea
+                      id="cgf-general-tips"
                       label="Good to Know"
                       value={formData.generalTips}
                       onChange={(value) => updateFormData('generalTips', value)}
