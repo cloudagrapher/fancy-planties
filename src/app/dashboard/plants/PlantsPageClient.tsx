@@ -75,25 +75,28 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
   const handleBulkAction = useCallback(async (plants: EnhancedPlantInstance[], action: string) => {
     try {
       if (action === 'deactivate') {
-        // Archive: PATCH isActive=false on each plant instance
-        const results = await Promise.allSettled(
-          plants.map(plant =>
-            apiFetch(`/api/plant-instances/${plant.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ isActive: false }),
-            })
-          )
-        );
-        const failed = results.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok));
-        const succeeded = results.length - failed.length;
+        // Archive: use bulk endpoint (single request instead of N individual PUTs)
+        const plantIds = plants.map(p => p.id);
+        const response = await apiFetch('/api/plant-instances/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            plantInstanceIds: plantIds,
+            operation: 'deactivate',
+          }),
+        });
 
+        if (!response.ok) {
+          throw new Error('Bulk archive request failed');
+        }
+
+        const result = await response.json();
         await refreshPlantData();
 
-        if (failed.length === 0) {
-          showToast(`Archived ${succeeded} plant${succeeded !== 1 ? 's' : ''} ✓`, 'success');
+        if (result.failureCount === 0) {
+          showToast(`Archived ${result.successCount} plant${result.successCount !== 1 ? 's' : ''} ✓`, 'success');
         } else {
-          showToast(`${succeeded} archived, ${failed.length} failed`, 'error');
+          showToast(`${result.successCount} archived, ${result.failureCount} failed`, 'error');
         }
         return;
       }

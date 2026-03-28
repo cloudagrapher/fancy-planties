@@ -179,7 +179,11 @@ export async function GET(request: NextRequest) {
       .where(and(...conditions))
       .orderBy(desc(careGuides.updatedAt));
 
-    return NextResponse.json(userCareGuides);
+    return NextResponse.json(userCareGuides, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to fetch care guides:', error);
     

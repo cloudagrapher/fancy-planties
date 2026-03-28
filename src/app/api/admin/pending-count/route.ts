@@ -16,7 +16,11 @@ export async function GET(_request: NextRequest) {
     // Get pending approval count
     const count = await AdminAnalyticsQueries.getPendingApprovalCount();
 
-    return NextResponse.json({ count });
+    return NextResponse.json({ count }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to get pending approval count:', error);
     return NextResponse.json(
