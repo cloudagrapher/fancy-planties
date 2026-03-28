@@ -236,13 +236,9 @@ export default function PropagationForm({ propagation, userId, onClose, onSucces
 
       // Comprehensive cache invalidation after successful propagation save
       await Promise.all([
-        // Invalidate propagation-related queries
+        // Invalidate all propagation queries (list, stats, dashboard combined)
         queryClient.invalidateQueries({
           queryKey: ['propagations'],
-          refetchType: 'all'
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ['propagations', 'stats'],
           refetchType: 'all'
         }),
 
