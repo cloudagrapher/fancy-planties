@@ -67,7 +67,11 @@ export async function GET(request: NextRequest) {
     // Transform S3 keys to CloudFront URLs
     result.instances.forEach(S3ImageService.transformS3KeysToUrls);
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Failed to get plant instances:', error);
     return NextResponse.json(
