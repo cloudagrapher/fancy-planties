@@ -11,24 +11,21 @@ jest.mock('@/lib/api-client', () => ({
 
 beforeEach(() => {
   mockApiFetch.mockImplementation((url: string) => {
-    if (url.includes('/stats')) {
+    if (url.includes('/api/propagations/dashboard')) {
       return Promise.resolve({
         ok: true,
         json: () => Promise.resolve({
-          totalPropagations: 2,
-          byStatus: { started: 1, rooting: 1 },
-          successRate: 0,
-          averageDaysToReady: 0,
+          propagations: [],
+          stats: {
+            totalPropagations: 2,
+            byStatus: { started: 1, rooting: 1 },
+            successRate: 0,
+            averageDaysToReady: 0,
+          },
         }),
       });
     }
-    if (url.includes('/propagations')) {
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve([]),
-      });
-    }
-    // curator-status and other calls
+    // fallback for any other calls
     return Promise.resolve({
       ok: true,
       json: () => Promise.resolve({}),
@@ -38,7 +35,7 @@ beforeEach(() => {
 
 describe('PropagationDashboard avg days empty state', () => {
   it('shows "--" when averageDaysToReady is 0/null', async () => {
-    renderWithProviders(<PropagationDashboard />);
+    renderWithProviders(<PropagationDashboard userId={1} />);
     
     await waitFor(() => {
       expect(screen.getByText('--')).toBeInTheDocument();
