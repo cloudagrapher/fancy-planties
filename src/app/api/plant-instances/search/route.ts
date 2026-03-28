@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { plantInstanceSearchSchema } from '@/lib/validation/plant-schemas';
 import { validateRequest } from '@/lib/auth/server';
@@ -37,9 +38,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Failed to search plant instances:', error);
     
-    if (error instanceof Error && error.message.includes('validation')) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid search parameters', details: error.message },
+        { error: 'Invalid search parameters', details: error.issues },
         { status: 400 }
       );
     }

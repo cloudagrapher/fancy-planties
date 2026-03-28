@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { bulkPlantInstanceOperationSchema } from '@/lib/validation/plant-schemas';
 import { validateRequest } from '@/lib/auth/server';
@@ -55,9 +56,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Failed to perform bulk operation:', error);
     
-    if (error instanceof Error && error.message.includes('validation')) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid bulk operation data', details: error.message },
+        { error: 'Invalid bulk operation data', details: error.issues },
         { status: 400 }
       );
     }

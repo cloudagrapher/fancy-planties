@@ -232,12 +232,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Failed to create plant instance:', error);
     
-    if (error instanceof Error && error.message.includes('validation')) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
         { 
           success: false,
           error: 'Invalid plant instance data', 
-          details: error.message 
+          details: error.issues 
         },
         { status: 400 }
       );

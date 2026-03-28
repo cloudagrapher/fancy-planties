@@ -4,6 +4,19 @@ import { PlantInstanceQueries } from '@/lib/db/queries/plant-instances';
 import { enhancedPlantInstanceFilterSchema } from '@/lib/validation/plant-schemas';
 import { validateVerifiedRequest } from '@/lib/auth/server';
 
+/**
+ * Safely parse a JSON string from a query parameter.
+ * Returns undefined on malformed input instead of throwing.
+ */
+function safeJsonParse(value: string | null): unknown | undefined {
+  if (!value) return undefined;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+}
+
 // GET /api/plant-instances/enhanced-search - Enhanced search with advanced filtering
 export async function GET(request: NextRequest) {
   try {
@@ -19,6 +32,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     
     // Parse enhanced filter parameters
+    // Note: JSON query params use safeJsonParse to avoid 500 errors on malformed input.
+    // Invalid JSON is treated as undefined and will be caught by Zod validation below.
     const filterParams = {
       userId: user.id,
       // Basic filters
@@ -36,10 +51,10 @@ export async function GET(request: NextRequest) {
       
       // Enhanced search features
       searchQuery: searchParams.get('searchQuery') || undefined,
-      searchFields: searchParams.get('searchFields') ? JSON.parse(searchParams.get('searchFields')!) : undefined,
+      searchFields: safeJsonParse(searchParams.get('searchFields')),
       hasImages: searchParams.get('hasImages') ? searchParams.get('hasImages') === 'true' : undefined,
-      imageCount: searchParams.get('imageCount') ? JSON.parse(searchParams.get('imageCount')!) : undefined,
-      fertilizerFrequency: searchParams.get('fertilizerFrequency') ? JSON.parse(searchParams.get('fertilizerFrequency')!) : undefined,
+      imageCount: safeJsonParse(searchParams.get('imageCount')),
+      fertilizerFrequency: safeJsonParse(searchParams.get('fertilizerFrequency')),
       datePreset: (searchParams.get('datePreset') as 'today' | 'this_week' | 'this_month' | 'last_month' | 'last_3_months') || undefined,
       
       // Sorting and pagination
