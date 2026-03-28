@@ -8,6 +8,7 @@ import { z } from 'zod';
 import S3Image from '../shared/S3Image';
 import PlantTaxonomySelector from './PlantTaxonomySelector';
 import S3ImageUpload from '../shared/S3ImageUpload';
+import { S3ImageService } from '@/lib/services/s3-image-service';
 import Modal from '../shared/Modal';
 import ConfirmDialog from '../shared/ConfirmDialog';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
@@ -1129,13 +1130,15 @@ export default function PlantInstanceForm({
                 )}
 
                 {/* New Image Upload - S3 */}
-                <S3ImageUpload
-                  userId={userId.toString()}
-                  entityType="plant_instance"
-                  entityId={plantInstance?.id?.toString() || 'new'}
-                  onUploadComplete={handleS3Upload}
-                  maxImages={6 - s3ImageKeys.length}
-                />
+                {S3ImageService.isUploadEnabled() ? (
+                  <S3ImageUpload
+                    userId={userId.toString()}
+                    entityType="plant_instance"
+                    entityId={plantInstance?.id?.toString() || 'new'}
+                    onUploadComplete={handleS3Upload}
+                    maxImages={6 - s3ImageKeys.length}
+                  />
+                ) : null}
               </div>
 
               {/* Active Status (for editing) */}

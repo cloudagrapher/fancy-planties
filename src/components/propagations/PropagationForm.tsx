@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
 import S3ImageUpload from '../shared/S3ImageUpload';
 import S3Image from '../shared/S3Image';
+import { S3ImageService } from '@/lib/services/s3-image-service';
 import PlantTaxonomySelector from '../plants/PlantTaxonomySelector';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
@@ -637,13 +638,15 @@ export default function PropagationForm({ propagation, userId, onClose, onSucces
                   )}
 
                   {/* S3 Image Upload */}
-                  <S3ImageUpload
-                    userId={userId.toString()}
-                    entityType="propagation"
-                    entityId={propagation?.id?.toString() || 'new'}
-                    onUploadComplete={handleS3UploadComplete}
-                    maxImages={10 - formData.s3ImageKeys.length}
-                  />
+                  {S3ImageService.isUploadEnabled() && (
+                    <S3ImageUpload
+                      userId={userId.toString()}
+                      entityType="propagation"
+                      entityId={propagation?.id?.toString() || 'new'}
+                      onUploadComplete={handleS3UploadComplete}
+                      maxImages={10 - formData.s3ImageKeys.length}
+                    />
+                  )}
                 </div>
               )}
 

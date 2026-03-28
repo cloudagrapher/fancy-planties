@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, Scissors, MessageCircle, TreeDeciduous } from 'lucide-react';
 import S3ImageUpload from '@/components/shared/S3ImageUpload';
+import { S3ImageService } from '@/lib/services/s3-image-service';
 import Modal from '@/components/shared/Modal';
 
 export interface CareGuideFormData {
@@ -316,6 +317,10 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
 
   const [formData, setFormData] = useState<CareGuideFormData>(getInitialFormData());
 
+  // Stable temp entity ID — must not change across re-renders so that all
+  // images uploaded for a new guide share the same S3 prefix.
+  const tempEntityIdRef = useRef<string>(`temp-${Date.now()}`);
+
   const [activeTab, setActiveTab] = useState<'basic' | 'care'>('basic');
 
   const updateFormData = (path: string, value: string | boolean | string[]) => {
@@ -515,14 +520,18 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                     - Uses temporary entityId for new guides (replaced with actual ID on save)
                     - Supports up to 6 images per care guide
                   */}
-                  <S3ImageUpload
-                    userId={userId.toString()}
-                    entityType="care_guide"
-                    entityId={`temp-${Date.now()}`}
-                    onUploadComplete={(s3Keys) => updateFormData('s3ImageKeys', s3Keys)}
-                    maxImages={6}
-                    className="mt-3"
-                  />
+                  {S3ImageService.isUploadEnabled() ? (
+                    <S3ImageUpload
+                      userId={userId.toString()}
+                      entityType="care_guide"
+                      entityId={tempEntityIdRef.current}
+                      onUploadComplete={(s3Keys) => updateFormData('s3ImageKeys', s3Keys)}
+                      maxImages={6}
+                      className="mt-3"
+                    />
+                  ) : (
+                    <p className="mt-3 text-sm text-slate-400 italic">Image upload not available in this environment.</p>
+                  )}
                 </Card>
               </div>
             )}
