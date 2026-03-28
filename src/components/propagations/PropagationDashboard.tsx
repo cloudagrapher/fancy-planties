@@ -24,6 +24,11 @@ interface PropagationStats {
   averageDaysToReady: number;
 }
 
+interface PropagationDashboardData {
+  propagations: PropagationWithDetails[];
+  stats: PropagationStats;
+}
+
 interface PropagationDashboardProps {
   userId: number;
 }
@@ -34,46 +39,27 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const { toasts, showToast, dismissToast } = useToast();
 
-  // Fetch propagations using React Query
+  // Fetch propagations + stats in a single request (eliminates waterfall)
   const {
-    data: propagations = [],
-    isLoading: propagationsLoading,
-    error: propagationsError,
-    refetch: refetchPropagations
+    data: dashboardData,
+    isLoading: loading,
+    error,
+    refetch,
   } = useQuery({
-    queryKey: ['propagations'],
-    queryFn: async (): Promise<PropagationWithDetails[]> => {
-      const response = await apiFetch('/api/propagations');
+    queryKey: ['propagations', 'dashboard'],
+    queryFn: async (): Promise<PropagationDashboardData> => {
+      const response = await apiFetch('/api/propagations/dashboard');
       if (!response.ok) {
         throw new Error('Failed to fetch propagations');
       }
       return response.json();
     },
-    staleTime: 1000 * 60, // 60 seconds — propagation data doesn't change frequently
+    staleTime: 1000 * 60, // 60 seconds
     gcTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch propagation stats using React Query  
-  const {
-    data: stats = null,
-    isLoading: statsLoading,
-    error: statsError,
-    refetch: refetchStats
-  } = useQuery({
-    queryKey: ['propagations', 'stats'],
-    queryFn: async (): Promise<PropagationStats> => {
-      const response = await apiFetch('/api/propagations/stats');
-      if (!response.ok) {
-        throw new Error('Failed to fetch propagation statistics');
-      }
-      return response.json();
-    },
-    staleTime: 1000 * 60 * 2, // 2 minutes — stats change even less frequently
-    gcTime: 1000 * 60 * 5, // 5 minutes
-  });
-
-  const loading = propagationsLoading || statsLoading;
-  const error = propagationsError || statsError;
+  const propagations = useMemo(() => dashboardData?.propagations ?? [], [dashboardData]);
+  const stats = dashboardData?.stats ?? null;
 
   // Group propagations by status (memoized to avoid recalculating on every render)
   const groupedPropagations = useMemo(() => 
@@ -134,17 +120,11 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
   };
 
   const handlePropagationUpdate = async () => {
-    // Invalidate and refetch propagation data after updates
-    await Promise.all([
-      queryClient.invalidateQueries({ 
-        queryKey: ['propagations'],
-        refetchType: 'all'
-      }),
-      queryClient.invalidateQueries({ 
-        queryKey: ['propagations', 'stats'],
-        refetchType: 'all'
-      })
-    ]);
+    // Invalidate the combined dashboard query + any legacy query keys
+    await queryClient.invalidateQueries({ 
+      queryKey: ['propagations'],
+      refetchType: 'all'
+    });
     setShowAddForm(false); // Close the form modal
   };
 
@@ -174,10 +154,7 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
           {error instanceof Error ? error.message : 'Failed to load propagations'}
         </p>
         <button
-          onClick={() => {
-            refetchPropagations();
-            refetchStats();
-          }}
+          onClick={() => refetch()}
           className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm"
         >
           Try Again

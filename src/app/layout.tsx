@@ -46,6 +46,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* Preconnect to CloudFront CDN — starts DNS + TCP + TLS early so
+            plant images load faster on first paint */}
+        {process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN && (
+          <>
+            <link rel="preconnect" href={`https://${process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN}`} />
+            <link rel="dns-prefetch" href={`https://${process.env.NEXT_PUBLIC_CLOUDFRONT_DOMAIN}`} />
+          </>
+        )}
         <link rel="apple-touch-icon" href="/icon.svg" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
