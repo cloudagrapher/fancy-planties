@@ -190,13 +190,6 @@ export async function PUT(
       );
     }
 
-    if (error instanceof Error && error.message.includes('validation')) {
-      return NextResponse.json(
-        { error: 'Invalid plant instance data', details: error.message },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
       { error: 'Failed to update plant instance' },
       { status: 500 }
