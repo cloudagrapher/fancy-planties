@@ -68,7 +68,11 @@ export async function GET(
       filters
     );
 
-    return NextResponse.json(careHistory);
+    return NextResponse.json(careHistory, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Failed to get care history:', error);
     return NextResponse.json(

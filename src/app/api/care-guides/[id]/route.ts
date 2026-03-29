@@ -99,7 +99,11 @@ export async function GET(
       return NextResponse.json({ error: 'Care guide not found' }, { status: 404 });
     }
 
-    return NextResponse.json(careGuide[0]);
+    return NextResponse.json(careGuide[0], {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to fetch care guide:', error);
     return NextResponse.json(

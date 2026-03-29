@@ -57,6 +57,10 @@ export async function GET(request: NextRequest) {
           cacheHit: !plantSearchService.getCacheStats().needsRefresh,
         },
       },
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
     });
   } catch (error) {
     console.error('Error searching plants:', error);
