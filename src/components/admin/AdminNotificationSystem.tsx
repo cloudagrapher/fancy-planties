@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
@@ -42,11 +42,7 @@ export function useAdminNotifications() {
   return context;
 }
 
-interface AdminNotificationProviderProps {
-  children: ReactNode;
-}
-
-export function AdminNotificationProvider({ children }: AdminNotificationProviderProps) {
+export function AdminNotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
 
   const removeNotification = useCallback((id: string) => {
@@ -64,7 +60,6 @@ export function AdminNotificationProvider({ children }: AdminNotificationProvide
 
     setNotifications(prev => [...prev, newNotification]);
 
-    // Auto-remove after duration (if not persistent)
     if (newNotification.duration && newNotification.duration > 0 && !newNotification.persistent) {
       setTimeout(() => {
         removeNotification(id);
@@ -121,7 +116,7 @@ function AdminNotificationContainer() {
   }
 
   return (
-    <div className="admin-notification-container">
+    <div className="fixed top-4 right-4 z-50 flex flex-col gap-3 max-w-sm w-full">
       {notifications.map((notification) => (
         <AdminNotificationItem
           key={notification.id}
@@ -133,245 +128,68 @@ function AdminNotificationContainer() {
   );
 }
 
-interface AdminNotificationItemProps {
+const TYPE_STYLES: Record<NotificationType, string> = {
+  success: 'border-emerald-300 bg-emerald-50',
+  error: 'border-red-300 bg-red-50',
+  warning: 'border-amber-300 bg-amber-50',
+  info: 'border-blue-300 bg-blue-50',
+};
+
+const TYPE_ICONS: Record<NotificationType, string> = {
+  success: '✅',
+  error: '❌',
+  warning: '⚠️',
+  info: 'ℹ️',
+};
+
+function AdminNotificationItem({
+  notification,
+  onDismiss,
+}: {
   notification: AdminNotification;
   onDismiss: () => void;
-}
-
-function AdminNotificationItem({ notification, onDismiss }: AdminNotificationItemProps) {
-  const getIcon = () => {
-    switch (notification.type) {
-      case 'success': return '✅';
-      case 'error': return '❌';
-      case 'warning': return '⚠️';
-      case 'info': return 'ℹ️';
-      default: return 'ℹ️';
-    }
-  };
-
+}) {
   return (
-    <div className={`admin-notification ${notification.type}`}>
-      <div className="notification-content">
-        <div className="notification-header">
-          <span className="notification-icon">{getIcon()}</span>
-          <h4 className="notification-title">{notification.title}</h4>
-          {notification.dismissible && (
-            <button 
-              onClick={onDismiss}
-              className="notification-close"
-              aria-label="Dismiss notification"
-            >
-              ×
-            </button>
+    <div
+      className={`rounded-xl border p-4 shadow-lg animate-in slide-in-from-right ${TYPE_STYLES[notification.type]}`}
+      role="alert"
+    >
+      <div className="flex items-start gap-3">
+        <span className="text-lg flex-shrink-0">{TYPE_ICONS[notification.type]}</span>
+        <div className="flex-1 min-w-0">
+          <h4 className="text-sm font-semibold text-neutral-900">{notification.title}</h4>
+          <p className="text-sm text-neutral-600 mt-0.5">{notification.message}</p>
+          {notification.actions && notification.actions.length > 0 && (
+            <div className="flex gap-2 mt-2">
+              {notification.actions.map((action, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    action.action();
+                    if (!notification.persistent) onDismiss();
+                  }}
+                  className={
+                    action.variant === 'primary'
+                      ? 'btn btn--primary btn--sm'
+                      : 'btn btn--ghost btn--sm'
+                  }
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
           )}
         </div>
-        
-        <p className="notification-message">{notification.message}</p>
-        
-        {notification.actions && notification.actions.length > 0 && (
-          <div className="notification-actions">
-            {notification.actions.map((action, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  action.action();
-                  if (!notification.persistent) {
-                    onDismiss();
-                  }
-                }}
-                className={`notification-action ${action.variant || 'secondary'}`}
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
+        {notification.dismissible && (
+          <button
+            onClick={onDismiss}
+            className="text-neutral-400 hover:text-neutral-600 transition-colors p-1 -mt-1 -mr-1"
+            aria-label="Dismiss notification"
+          >
+            ✕
+          </button>
         )}
       </div>
     </div>
   );
-}
-
-// Specialized notification hooks for common admin operations
-export function useBulkOperationNotifications() {
-  const { showSuccess, showError, showWarning, showInfo } = useAdminNotifications();
-
-  const notifyBulkStart = useCallback((operation: string, count: number) => {
-    return showInfo(
-      'Bulk Operation Started',
-      `Processing ${operation} for ${count} items...`,
-      []
-    );
-  }, [showInfo]);
-
-  const notifyBulkSuccess = useCallback((operation: string, successCount: number, totalCount: number) => {
-    return showSuccess(
-      'Bulk Operation Completed',
-      `Successfully ${operation} ${successCount} of ${totalCount} items.`
-    );
-  }, [showSuccess]);
-
-  const notifyBulkPartialSuccess = useCallback((
-    operation: string, 
-    successCount: number, 
-    failureCount: number, 
-     
-    _errors: Array<{ id: number; error: string }>
-  ) => {
-    return showWarning(
-      'Bulk Operation Partially Completed',
-      `${operation} completed for ${successCount} items, but ${failureCount} failed.`,
-      [
-        {
-          label: 'View Errors',
-          action: () => {
-            // TODO: Show detailed error modal with errors list
-          },
-          variant: 'secondary',
-        },
-        {
-          label: 'Retry Failed',
-          action: () => {
-            // TODO: Implement retry logic for failed items
-          },
-          variant: 'primary',
-        },
-      ]
-    );
-  }, [showWarning]);
-
-  const notifyBulkError = useCallback((operation: string, error: string) => {
-    return showError(
-      'Bulk Operation Failed',
-      `Failed to ${operation}: ${error}`,
-      [
-        {
-          label: 'Retry',
-          action: () => {
-            // TODO: Implement bulk operation retry
-          },
-          variant: 'primary',
-        },
-      ]
-    );
-  }, [showError]);
-
-  return {
-    notifyBulkStart,
-    notifyBulkSuccess,
-    notifyBulkPartialSuccess,
-    notifyBulkError,
-  };
-}
-
-export function useAuthorizationNotifications() {
-  const { showError, showWarning } = useAdminNotifications();
-
-  const notifyUnauthorized = useCallback(() => {
-    return showError(
-      'Access Denied',
-      'You don\'t have permission to perform this action.',
-      [
-        {
-          label: 'Return to Dashboard',
-          action: () => {
-            window.location.href = '/admin';
-          },
-          variant: 'primary',
-        },
-      ]
-    );
-  }, [showError]);
-
-  const notifySessionExpired = useCallback(() => {
-    return showWarning(
-      'Session Expired',
-      'Your session has expired. Please sign in again.',
-      [
-        {
-          label: 'Sign In',
-          action: () => {
-            window.location.href = '/auth/signin';
-          },
-          variant: 'primary',
-        },
-      ]
-    );
-  }, [showWarning]);
-
-  const notifyCuratorRequired = useCallback(() => {
-    return showError(
-      'Curator Access Required',
-      'This feature requires curator privileges.',
-      [
-        {
-          label: 'Contact Admin',
-          action: () => {
-            // TODO: Open contact form or email for curator access request
-          },
-          variant: 'secondary',
-        },
-      ]
-    );
-  }, [showError]);
-
-  return {
-    notifyUnauthorized,
-    notifySessionExpired,
-    notifyCuratorRequired,
-  };
-}
-
-export function useFormValidationNotifications() {
-  const { showError, showWarning } = useAdminNotifications();
-
-  const notifyValidationErrors = useCallback((errors: Record<string, string>) => {
-    const errorCount = Object.keys(errors).length;
-    const firstError = Object.values(errors)[0];
-    
-    return showError(
-      'Validation Failed',
-      errorCount === 1 ? firstError : `${errorCount} validation errors found.`,
-      [
-        {
-          label: 'Review Form',
-          action: () => {
-            // Scroll to first error field
-            const firstErrorField = document.querySelector('.field-error');
-            if (firstErrorField) {
-              firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          },
-          variant: 'primary',
-        },
-      ]
-    );
-  }, [showError]);
-
-  const notifyUnsavedChanges = useCallback(() => {
-    return showWarning(
-      'Unsaved Changes',
-      'You have unsaved changes that will be lost if you leave this page.',
-      [
-        {
-          label: 'Save Changes',
-          action: () => {
-            // TODO: Trigger form save
-          },
-          variant: 'primary',
-        },
-        {
-          label: 'Discard Changes',
-          action: () => {
-            // TODO: Implement discard changes
-          },
-          variant: 'secondary',
-        },
-      ]
-    );
-  }, [showWarning]);
-
-  return {
-    notifyValidationErrors,
-    notifyUnsavedChanges,
-  };
 }
