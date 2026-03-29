@@ -38,6 +38,10 @@ export async function GET(
         timestamp: new Date(),
         userId: user.id,
       },
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
     });
   } catch (error) {
     console.error('Error fetching plant:', error);

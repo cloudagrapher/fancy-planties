@@ -13,7 +13,11 @@ export async function GET(_request: NextRequest) {
     // Get unique locations for the user
     const locations = await PlantInstanceQueries.getUserLocations(user.id);
     
-    return NextResponse.json({ locations });
+    return NextResponse.json({ locations }, {
+      headers: {
+        'Cache-Control': 'private, max-age=120, stale-while-revalidate=300',
+      },
+    });
   } catch (error) {
     console.error('Failed to get user locations:', error);
     return NextResponse.json(

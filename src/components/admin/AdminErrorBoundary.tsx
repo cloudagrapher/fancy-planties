@@ -1,6 +1,6 @@
 'use client';
 
-import { Component, ReactNode } from 'react';
+import { Component, type ReactNode } from 'react';
 
 interface AdminErrorBoundaryState {
   hasError: boolean;
@@ -45,11 +45,8 @@ export default class AdminErrorBoundary extends Component<AdminErrorBoundaryProp
       errorInfo: errorInfoString,
     });
 
-    // Log error for monitoring
     console.error('Admin Error Boundary caught an error:', error);
-    console.error('Error Info:', errorInfoString);
 
-    // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfoString);
     }
@@ -93,41 +90,41 @@ function DefaultAdminErrorFallback({ error, errorInfo, resetError }: AdminErrorF
                         error.message.includes('network') ||
                         error.message.includes('timeout');
 
-  return (
-    <div className="admin-error-boundary">
-      <div className="error-container">
-        <div className="error-icon">
-          {isAuthError ? '🔒' : isDatabaseError ? '💾' : isNetworkError ? '🌐' : '⚠️'}
-        </div>
-        
-        <h2 className="error-title">
-          {isAuthError ? 'Access Denied' : 
-           isDatabaseError ? 'Database Error' :
-           isNetworkError ? 'Connection Error' :
-           'Something went wrong'}
-        </h2>
-        
-        <p className="error-message">
-          {isAuthError ? 
-            'You don\'t have permission to access this admin feature. Please contact an administrator if you believe this is an error.' :
-           isDatabaseError ?
-            'There was a problem connecting to the database. Please try again in a few moments.' :
-           isNetworkError ?
-            'Unable to connect to the server. Please check your internet connection and try again.' :
-            'An unexpected error occurred in the admin panel. Our team has been notified.'}
-        </p>
+  const icon = isAuthError ? '🔒' : isDatabaseError ? '💾' : isNetworkError ? '🌐' : '⚠️';
 
-        <div className="error-actions">
+  const title = isAuthError ? 'Access Denied' : 
+    isDatabaseError ? 'Database Error' :
+    isNetworkError ? 'Connection Error' :
+    'Something went wrong';
+
+  const message = isAuthError ? 
+    'You don\'t have permission to access this admin feature. Please contact an administrator if you believe this is an error.' :
+    isDatabaseError ?
+    'There was a problem connecting to the database. Please try again in a few moments.' :
+    isNetworkError ?
+    'Unable to connect to the server. Please check your internet connection and try again.' :
+    'An unexpected error occurred in the admin panel. Our team has been notified.';
+
+  return (
+    <div className="min-h-[400px] flex items-center justify-center p-8 bg-neutral-50 rounded-lg m-4">
+      <div className="max-w-lg text-center bg-white p-8 rounded-xl shadow-md border border-neutral-200">
+        <span className="text-5xl mb-4 block">{icon}</span>
+        
+        <h2 className="text-2xl font-semibold text-neutral-900 mb-2">{title}</h2>
+        
+        <p className="text-neutral-600 mb-6 leading-relaxed">{message}</p>
+
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <button 
             onClick={resetError}
-            className="retry-button primary"
+            className="btn btn--primary"
           >
             Try Again
           </button>
           
           <button 
             onClick={() => window.location.href = '/admin'}
-            className="home-button secondary"
+            className="btn btn--ghost"
           >
             Return to Admin Dashboard
           </button>
@@ -135,22 +132,26 @@ function DefaultAdminErrorFallback({ error, errorInfo, resetError }: AdminErrorF
           {!isAuthError && (
             <button 
               onClick={() => window.location.reload()}
-              className="refresh-button secondary"
+              className="btn btn--ghost"
             >
               Refresh Page
             </button>
           )}
         </div>
 
-        <details className="error-details">
-          <summary>Technical Details</summary>
-          <div className="error-technical">
+        <details className="mt-6 text-left">
+          <summary className="cursor-pointer text-sm text-neutral-500 hover:text-neutral-700">
+            Technical Details
+          </summary>
+          <div className="mt-2 p-3 bg-neutral-50 rounded-lg text-xs text-neutral-600 font-mono overflow-auto">
             <p><strong>Error:</strong> {error.message}</p>
             <p><strong>Type:</strong> {error.name}</p>
             {errorInfo && (
-              <div>
+              <div className="mt-2">
                 <p><strong>Component Stack:</strong></p>
-                <pre className="error-stack">{errorInfo}</pre>
+                <pre className="whitespace-pre-wrap break-words mt-1 text-[11px] max-h-48 overflow-auto">
+                  {errorInfo}
+                </pre>
               </div>
             )}
           </div>
