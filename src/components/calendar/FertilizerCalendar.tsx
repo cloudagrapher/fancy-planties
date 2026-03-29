@@ -62,6 +62,7 @@ const SectionHeader = ({
 
 export default memo(function FertilizerCalendar({ events = [] }: FertilizerCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
   
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -77,10 +78,12 @@ export default memo(function FertilizerCalendar({ events = [] }: FertilizerCalen
   
   const previousMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+    setSelectedDay(null);
   };
   
   const nextMonth = () => {
     setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+    setSelectedDay(null);
   };
   
   // Memoize calendar grid — only recompute when month, year, or events change
@@ -149,15 +152,31 @@ export default memo(function FertilizerCalendar({ events = [] }: FertilizerCalen
             return <div key={`empty-${index}`} className="aspect-square" />;
           }
           
-          const { day, events: dayEvents, isToday } = dayData;
+          const { day, dateString, events: dayEvents, isToday } = dayData;
           const hasFertilizer = dayEvents.length > 0;
+          const isSelected = selectedDay === dateString;
           
           return (
             <div
               key={`day-${day}`}
-              className={`aspect-square rounded-xl border text-slate-700 relative p-1 ${
+              role={hasFertilizer ? 'button' : undefined}
+              tabIndex={hasFertilizer ? 0 : undefined}
+              onClick={() => {
+                if (hasFertilizer) {
+                  setSelectedDay(isSelected ? null : dateString);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (hasFertilizer && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  setSelectedDay(isSelected ? null : dateString);
+                }
+              }}
+              aria-label={hasFertilizer ? `${day}: ${dayEvents.length} plant${dayEvents.length !== 1 ? 's' : ''} due` : undefined}
+              className={`aspect-square rounded-xl border text-slate-700 relative p-1 transition-colors ${
+                isSelected ? 'border-amber-400 bg-amber-50/70 ring-1 ring-amber-300' :
                 isToday ? 'border-emerald-500 bg-emerald-50/50' : 'border-slate-200'
-              }`}
+              } ${hasFertilizer ? 'cursor-pointer hover:border-amber-300 hover:bg-amber-50/30' : ''}`}
             >
               <div
                 className={`text-sm font-medium mb-1 ${
@@ -203,6 +222,38 @@ export default memo(function FertilizerCalendar({ events = [] }: FertilizerCalen
         })}
       </div>
       
+      {/* Selected Day Detail */}
+      {selectedDay && (() => {
+        const dayEvents = events.filter(e => e.date === selectedDay);
+        if (dayEvents.length === 0) return null;
+        const [y, m, d] = selectedDay.split('-').map(Number);
+        const label = new Date(y, m - 1, d).toLocaleDateString('en-US', {
+          weekday: 'long', month: 'long', day: 'numeric',
+        });
+        return (
+          <div className="mt-3 p-3 rounded-xl bg-amber-50/70 border border-amber-200/70">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-semibold text-amber-800">{label}</h4>
+              <button
+                onClick={() => setSelectedDay(null)}
+                className="text-amber-400 hover:text-amber-600 transition-colors p-1"
+                aria-label="Close day detail"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-1">
+              {dayEvents.map((event) => (
+                <div key={event.id} className="flex items-center gap-2 text-sm">
+                  <FlaskConical className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
+                  <span className="text-slate-800">{event.plantName}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Legend */}
       <div className="mt-3 flex items-center gap-4 text-xs text-slate-500">
         <span className="flex items-center gap-1">
