@@ -2,8 +2,6 @@
  * Performance optimization utilities
  */
 
-import { startTransition } from 'react';
-
 // Image optimization utilities
 export const imageOptimization = {
   // Compress base64 images
@@ -77,59 +75,6 @@ export const imageOptimization = {
         threshold: 0.1,
       }
     );
-  },
-};
-
-// React optimization utilities
-export const reactOptimization = {
-  // Optimized state update with startTransition
-  optimizedStateUpdate: (updateFn: () => void) => {
-    startTransition(() => {
-      updateFn();
-    });
-  },
-
-  // Debounced state update
-  debouncedStateUpdate: (updateFn: () => void, delay: number = 300) => {
-    let timeoutId: NodeJS.Timeout;
-    
-    return () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        startTransition(() => {
-          updateFn();
-        });
-      }, delay);
-    };
-  },
-
-  // Memoization helper for expensive calculations
-  memoizeExpensiveCalculation: <T, R>(
-    fn: (input: T) => R,
-    keyFn: (input: T) => string = (input) => JSON.stringify(input)
-  ) => {
-    const cache = new Map<string, R>();
-    
-    return (input: T): R => {
-      const key = keyFn(input);
-      
-      if (cache.has(key)) {
-        return cache.get(key)!;
-      }
-      
-      const result = fn(input);
-      cache.set(key, result);
-      
-      // Limit cache size to prevent memory leaks
-      if (cache.size > 100) {
-        const firstKey = cache.keys().next().value;
-        if (firstKey) {
-          cache.delete(firstKey);
-        }
-      }
-      
-      return result;
-    };
   },
 };
 
