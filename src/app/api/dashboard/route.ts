@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateRequest } from '@/lib/auth/server';
 import { db } from '@/lib/db';
-import { plantInstances, propagations } from '@/lib/db/schema';
+import { plantInstances, plants, propagations } from '@/lib/db/schema';
 import { eq, sql } from 'drizzle-orm';
 
 export interface FertilizerEvent {
@@ -52,7 +52,7 @@ export async function GET(_request: NextRequest) {
         care_due_today: number;
         overdue_count: number;
         event_id: number | null;
-        event_nickname: string | null;
+        event_display_name: string | null;
         event_fertilizer_due: string | null;
       }>(sql`
         WITH plant_stats AS (
@@ -65,16 +65,25 @@ export async function GET(_request: NextRequest) {
           WHERE ${plantInstances.userId} = ${userId}
         ),
         fertilizer_events AS (
-          SELECT ${plantInstances.id}, ${plantInstances.nickname}, ${plantInstances.fertilizerDue}
-          FROM ${plantInstances}
-          WHERE ${plantInstances.userId} = ${userId}
-            AND ${plantInstances.isActive} = true
-            AND ${plantInstances.fertilizerDue} IS NOT NULL
-            AND ${plantInstances.fertilizerDue} <= ${thirtyDaysFromNow.toISOString()}
+          SELECT
+            pi.id,
+            -- Use nickname if set, else fall back to plant common_name, else species
+            COALESCE(
+              NULLIF(pi.nickname, ''),
+              p.common_name,
+              CONCAT(p.genus, ' ', p.species)
+            ) AS display_name,
+            pi.fertilizer_due
+          FROM ${plantInstances} pi
+          LEFT JOIN ${plants} p ON pi.plant_id = p.id
+          WHERE pi.user_id = ${userId}
+            AND pi.is_active = true
+            AND pi.fertilizer_due IS NOT NULL
+            AND pi.fertilizer_due <= ${thirtyDaysFromNow.toISOString()}
         )
         SELECT
           ps.total_plants, ps.active_plants, ps.care_due_today, ps.overdue_count,
-          fe.id AS event_id, fe.nickname AS event_nickname, fe.fertilizer_due AS event_fertilizer_due
+          fe.id AS event_id, fe.display_name AS event_display_name, fe.fertilizer_due AS event_fertilizer_due
         FROM plant_stats ps
         LEFT JOIN fertilizer_events fe ON true
       `),
@@ -104,7 +113,7 @@ export async function GET(_request: NextRequest) {
       .filter((row) => row.event_id != null)
       .map((row) => ({
         id: `fertilizer-${row.event_id}`,
-        plantName: row.event_nickname ?? '',
+        plantName: row.event_display_name ?? 'Unknown Plant',
         plantId: String(row.event_id),
         date: row.event_fertilizer_due ? new Date(String(row.event_fertilizer_due)).toISOString().split('T')[0] : '',
         type: 'fertilize' as const,
