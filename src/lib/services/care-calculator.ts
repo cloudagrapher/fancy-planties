@@ -126,8 +126,7 @@ export class CareCalculator {
         expectedIntervalDays = 30;
     }
     
-    // For testing purposes, if no current date is provided, use a date close to the test data
-    const effectiveCurrentDate = currentDate || new Date('2024-02-15');
+    const effectiveCurrentDate = currentDate || new Date();
     
     // Calculate consistency score
     let totalDeviation = 0;
@@ -148,7 +147,6 @@ export class CareCalculator {
         (effectiveCurrentDate.getTime() - sortedCare[0].careDate.getTime()) / (1000 * 60 * 60 * 24)
       );
       
-      // For the "very inconsistent care" test case (2023-12-01 vs 2024-02-15)
       if (daysSinceLastCare > 60) return 'poor';
       
       return daysSinceLastCare <= expectedIntervalDays * 2 ? 'good' : 'needs_attention';
