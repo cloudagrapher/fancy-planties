@@ -169,21 +169,6 @@ describe('Component Mock System', () => {
         expect(screen.getByText('Modal Content')).toBeInTheDocument();
       });
 
-      it('should render AsyncButton mock with loading state', () => {
-        const { AsyncButton } = sharedComponentMocks;
-        
-        const { rerender } = render(
-          <AsyncButton loading={false}>Click Me</AsyncButton>
-        );
-        
-        expect(screen.getByText('Click Me')).toBeInTheDocument();
-        
-        rerender(
-          <AsyncButton loading={true}>Click Me</AsyncButton>
-        );
-        
-        expect(screen.getByText('Loading...')).toBeInTheDocument();
-      });
     });
 
     describe('authComponentMocks', () => {

@@ -748,8 +748,11 @@ export default function PlantsGrid({
                     )}
                   </div>
                   <div className="flex items-center gap-3 mt-0.5 text-xs text-neutral-500">
-                    {plant.plant?.commonName && plant.nickname && (
-                      <span className="truncate">{plant.plant.commonName}</span>
+                    {/* Show scientific name when available — mirrors the grid view subtitle */}
+                    {plant.plant?.genus && plant.plant?.species && (
+                      <span className="truncate italic">
+                        {plant.plant.genus} {plant.plant.species}
+                      </span>
                     )}
                     {plant.location && (
                       <span className="flex items-center gap-1 truncate">
