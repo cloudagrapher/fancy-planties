@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   BookOpen, 
@@ -186,6 +186,31 @@ const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => vo
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* At-a-glance care snippets — blog-like preview of the key facts */}
+        {(() => {
+          const snippets: { icon: React.ElementType; color: string; text: string }[] = [];
+          if (guide.lighting?.requirements || guide.lighting?.intensity) {
+            snippets.push({ icon: Sun, color: 'text-yellow-500', text: guide.lighting.requirements || guide.lighting.intensity! });
+          }
+          if (guide.watering?.frequency) {
+            snippets.push({ icon: Droplets, color: 'text-blue-500', text: guide.watering.frequency });
+          }
+          if (guide.fertilizing?.frequency) {
+            snippets.push({ icon: FlaskConical, color: 'text-amber-500', text: guide.fertilizing.frequency });
+          }
+          if (snippets.length === 0) return null;
+          return (
+            <div className="space-y-1 pt-1">
+              {snippets.slice(0, 2).map(({ icon: Icon, color, text }) => (
+                <div key={text} className="flex items-center gap-1.5 text-xs text-slate-600">
+                  <Icon className={`h-3 w-3 flex-shrink-0 ${color}`} />
+                  <span className="truncate">{text}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* Care Categories */}
         {(() => {
