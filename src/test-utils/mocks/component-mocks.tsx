@@ -241,82 +241,6 @@ export const sharedComponentMocks = {
     },
   }),
 
-  AsyncButton: createTrackingMockComponent('AsyncButton', {
-    renderContent: (props, children) => {
-      return React.createElement(
-        'button',
-        {
-          type: props.type || 'button',
-          disabled: props.loading || props.disabled,
-          'data-loading': props.loading,
-          onClick: props.onClick,
-          className: props.className,
-        },
-        props.loading ? 'Loading...' : children
-      );
-    },
-  }),
-
-  SubmitButton: createTrackingMockComponent('SubmitButton', {
-    renderContent: (props, children) => {
-      return React.createElement(
-        'button',
-        {
-          type: 'submit',
-          disabled: props.isLoading || props.disabled,
-          'data-loading': props.isLoading,
-        },
-        props.isLoading ? 'Submitting...' : (children || 'Submit')
-      );
-    },
-  }),
-
-  SaveButton: createTrackingMockComponent('SaveButton', {
-    renderContent: (props, children) => {
-      return React.createElement(
-        'button',
-        {
-          type: props.type || 'button',
-          disabled: props.isLoading || props.disabled,
-          'data-loading': props.isLoading,
-          onClick: props.onClick,
-        },
-        props.isLoading ? 'Saving...' : (children || 'Save')
-      );
-    },
-  }),
-
-  DeleteButton: createTrackingMockComponent('DeleteButton', {
-    renderContent: (props, children) => {
-      return React.createElement(
-        'button',
-        {
-          type: props.type || 'button',
-          disabled: props.isLoading || props.disabled,
-          'data-loading': props.isLoading,
-          onClick: props.onClick,
-          className: `${props.className || ''} delete-button`,
-        },
-        props.isLoading ? 'Deleting...' : (children || 'Delete')
-      );
-    },
-  }),
-
-  RetryButton: createTrackingMockComponent('RetryButton', {
-    renderContent: (props, children) => {
-      return React.createElement(
-        'button',
-        {
-          type: props.type || 'button',
-          disabled: props.isLoading || props.disabled,
-          'data-loading': props.isLoading,
-          onClick: props.onClick,
-        },
-        props.isLoading ? 'Retrying...' : (children || 'Try Again')
-      );
-    },
-  }),
-
   ImageUpload: createTrackingMockComponent('ImageUpload', {
     renderContent: (props) => {
       return React.createElement(
@@ -1223,13 +1147,6 @@ export const selectiveMocks = {
     mockComponent('@/components/care/QuickCareForm', 'QuickCareForm', careComponentMocks.QuickCareForm);
     mockComponent('@/components/auth/SignInForm', 'SignInForm', authComponentMocks.SignInForm);
     mockComponent('@/components/auth/SignUpForm', 'SignUpForm', authComponentMocks.SignUpForm);
-    mockComponent('@/components/shared/AsyncButton', 'AsyncButton', sharedComponentMocks.AsyncButton);
-    mockComponents('@/components/shared/AsyncButton', {
-      SubmitButton: sharedComponentMocks.SubmitButton,
-      SaveButton: sharedComponentMocks.SaveButton,
-      DeleteButton: sharedComponentMocks.DeleteButton,
-      RetryButton: sharedComponentMocks.RetryButton,
-    });
   },
 
   /**
