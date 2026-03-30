@@ -18,7 +18,11 @@ export async function GET(_request: NextRequest) {
 
     const offlineData = await OfflineService.getOfflineData(user.id);
     
-    return NextResponse.json(offlineData);
+    return NextResponse.json(offlineData, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=300',
+      },
+    });
   } catch (error) {
     console.error('Error getting offline data:', error);
     return NextResponse.json(

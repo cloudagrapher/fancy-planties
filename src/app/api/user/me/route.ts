@@ -22,7 +22,8 @@ export async function GET() {
       },
       {
         headers: {
-          'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+          // User profile data rarely changes — longer cache is safe
+          'Cache-Control': 'private, max-age=300, stale-while-revalidate=600',
         },
       }
     );
