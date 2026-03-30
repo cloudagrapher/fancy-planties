@@ -26,7 +26,11 @@ export async function GET(request: NextRequest) {
     // Get top plant families by usage
     const familyData = await AdminAnalyticsQueries.getTopPlantFamilies(limit);
 
-    return NextResponse.json({ data: familyData });
+    return NextResponse.json({ data: familyData }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to get top plant families:', error);
     

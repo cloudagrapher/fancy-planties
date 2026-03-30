@@ -16,7 +16,11 @@ export async function GET(_request: NextRequest) {
     // Get dashboard statistics
     const stats = await AdminAnalyticsQueries.getDashboardStats();
 
-    return NextResponse.json(stats);
+    return NextResponse.json(stats, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Failed to get dashboard stats:', error);
     return NextResponse.json(

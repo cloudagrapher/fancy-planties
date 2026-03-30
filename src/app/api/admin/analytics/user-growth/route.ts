@@ -16,7 +16,11 @@ export async function GET(_request: NextRequest) {
     // Get user growth data for the last 30 days
     const growthData = await AdminAnalyticsQueries.getUserGrowthData();
 
-    return NextResponse.json({ data: growthData });
+    return NextResponse.json({ data: growthData }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to get user growth data:', error);
     return NextResponse.json(

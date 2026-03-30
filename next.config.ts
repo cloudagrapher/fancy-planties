@@ -113,6 +113,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Security headers that are NOT set by middleware (unique to next.config).
+        // X-Frame-Options, X-Content-Type-Options, Referrer-Policy, X-XSS-Protection,
+        // and CSP are set in middleware.ts — do NOT duplicate them here to avoid
+        // conflicting values (e.g. Referrer-Policy was previously different).
         source: '/(.*)',
         headers: [
           {
@@ -123,18 +127,6 @@ const nextConfig: NextConfig = {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload'
           },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
-          }
         ]
       },
       {

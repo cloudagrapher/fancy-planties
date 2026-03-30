@@ -16,7 +16,11 @@ export async function GET(_request: NextRequest) {
     // Get curator activity summary
     const activityData = await AdminAnalyticsQueries.getCuratorActivity();
 
-    return NextResponse.json({ data: activityData });
+    return NextResponse.json({ data: activityData }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to get curator activity:', error);
     return NextResponse.json(

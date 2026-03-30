@@ -48,6 +48,10 @@ export async function GET(request: NextRequest) {
       page,
       pageSize,
       totalPages: Math.ceil(totalCount / pageSize),
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+      },
     });
   } catch (error) {
     console.error('Failed to get admin plants:', error);

@@ -77,6 +77,10 @@ export async function GET(request: NextRequest) {
       stats,
       page: validatedParams.page,
       pageSize: validatedParams.pageSize,
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
     });
   } catch (error) {
     console.error('Failed to get taxonomy hierarchy:', error);
