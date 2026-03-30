@@ -26,7 +26,11 @@ export async function GET(_request: NextRequest) {
       instances.forEach(S3ImageService.transformS3KeysToUrls)
     );
 
-    return NextResponse.json(dashboardData);
+    return NextResponse.json(dashboardData, {
+      headers: {
+        'Cache-Control': 'private, max-age=30, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Failed to get care dashboard data:', error);
     return NextResponse.json(

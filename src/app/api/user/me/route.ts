@@ -12,13 +12,20 @@ export async function GET() {
       );
     }
     
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+    return NextResponse.json(
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
       },
-    });
+      {
+        headers: {
+          'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+        },
+      }
+    );
     
   } catch (error) {
     console.error('Get user error:', error);
