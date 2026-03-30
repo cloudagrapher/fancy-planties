@@ -16,7 +16,11 @@ export async function GET(_request: NextRequest) {
     // Get system alerts
     const alerts = await AdminAnalyticsQueries.getSystemAlerts();
 
-    return NextResponse.json({ data: alerts });
+    return NextResponse.json({ data: alerts }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to get system alerts:', error);
     return NextResponse.json(

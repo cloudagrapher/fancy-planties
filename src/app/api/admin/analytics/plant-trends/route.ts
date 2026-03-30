@@ -16,7 +16,11 @@ export async function GET(_request: NextRequest) {
     // Get plant submission trends for the last 30 days
     const trendData = await AdminAnalyticsQueries.getPlantSubmissionTrends();
 
-    return NextResponse.json({ data: trendData });
+    return NextResponse.json({ data: trendData }, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to get plant submission trends:', error);
     return NextResponse.json(

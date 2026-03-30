@@ -10,7 +10,12 @@ export async function GET(_request: NextRequest) {
 
     const taxonomyOptions = await AdminPlantQueries.getTaxonomyOptions();
 
-    return NextResponse.json(taxonomyOptions);
+    return NextResponse.json(taxonomyOptions, {
+      headers: {
+        // Taxonomy options change infrequently — cache for 5 minutes
+        'Cache-Control': 'private, max-age=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     console.error('Failed to get taxonomy options:', error);
     return NextResponse.json(

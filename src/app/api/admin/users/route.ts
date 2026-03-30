@@ -63,7 +63,11 @@ export async function GET(request: NextRequest) {
       resultCount: result.users.length,
     });
     
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+      },
+    });
   } catch (error) {
     console.error('Failed to get users:', error);
     
