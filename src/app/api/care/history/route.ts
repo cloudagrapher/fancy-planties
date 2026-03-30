@@ -13,7 +13,11 @@ export async function GET(_request: NextRequest) {
     // Use high limit for export — getRecentCareHistory already joins plant data
     const careHistory = await CareHistoryQueries.getRecentCareHistory(user.id, 10000);
 
-    return NextResponse.json(careHistory);
+    return NextResponse.json(careHistory, {
+      headers: {
+        'Cache-Control': 'private, max-age=60, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     console.error('Failed to get care history:', error);
     return NextResponse.json(

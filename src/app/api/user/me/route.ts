@@ -12,13 +12,21 @@ export async function GET() {
       );
     }
     
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+    return NextResponse.json(
+      {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
       },
-    });
+      {
+        headers: {
+          // User profile data rarely changes — longer cache is safe
+          'Cache-Control': 'private, max-age=300, stale-while-revalidate=600',
+        },
+      }
+    );
     
   } catch (error) {
     console.error('Get user error:', error);

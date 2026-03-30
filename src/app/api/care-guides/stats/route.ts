@@ -14,7 +14,11 @@ export async function GET(_request: NextRequest) {
 
     const stats = await getUserCareGuideStats(user.id);
 
-    return NextResponse.json(stats);
+    return NextResponse.json(stats, {
+      headers: {
+        'Cache-Control': 'private, max-age=120, stale-while-revalidate=300',
+      },
+    });
   } catch (error) {
     console.error('Error fetching care guide stats:', error);
     return NextResponse.json(

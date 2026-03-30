@@ -30,10 +30,18 @@ export async function GET(request: NextRequest) {
       limit
     );
 
-    return NextResponse.json({
-      success: true,
-      data: { suggestions },
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: { suggestions },
+      },
+      {
+        headers: {
+          // Short cache for autocomplete — reduces repeat queries while typing
+          'Cache-Control': 'private, max-age=10, stale-while-revalidate=30',
+        },
+      }
+    );
 
   } catch (error) {
     console.error('Search suggestions error:', error);

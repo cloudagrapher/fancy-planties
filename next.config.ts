@@ -138,6 +138,9 @@ const nextConfig: NextConfig = {
         ]
       },
       {
+        // Default: prevent caching for API routes that don't set their own
+        // Cache-Control. Route handlers that explicitly set Cache-Control
+        // (e.g. `private, max-age=60`) override this default.
         source: '/api/(.*)',
         headers: [
           {
