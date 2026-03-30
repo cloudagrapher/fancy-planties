@@ -29,6 +29,10 @@ const eslintConfig = [
       "*.config.backup.js",
       "*.setup.js",
       "jest.*.js",
+      // Generated service worker files (next-pwa / Workbox output)
+      "public/custom-sw.js",
+      "public/workbox-*.js",
+      "public/sw.js",
     ],
   },
   {

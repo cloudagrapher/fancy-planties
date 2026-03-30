@@ -1,7 +1,13 @@
 import 'server-only';
+import type { Metadata } from 'next';
 import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
 import OptimizedPlantManagement from '@/components/admin/OptimizedPlantManagement';
 import AdminErrorBoundary from '@/components/admin/AdminErrorBoundary';
+
+export const metadata: Metadata = {
+  title: 'Plant Management — Admin — Fancy Planties',
+  description: 'Manage plant taxonomy, approve submissions, and curate the plant database.',
+};
 
 export default async function AdminPlants() {
   try {
@@ -26,9 +32,9 @@ export default async function AdminPlants() {
         <h1>Plant Management</h1>
         <div className="error-message">
           <p>Failed to load plant data. Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()}>
+          <a href="/admin/plants" className="btn btn--primary">
             Refresh Page
-          </button>
+          </a>
         </div>
       </div>
     );

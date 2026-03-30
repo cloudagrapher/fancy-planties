@@ -1,8 +1,14 @@
 import 'server-only';
+import type { Metadata } from 'next';
 import { requireAdminAccess } from '@/lib/auth/admin-middleware';
 import { AuditLogQueries } from '@/lib/db/queries/audit-logs';
 import OptimizedAuditLogViewer from '@/components/admin/OptimizedAuditLogViewer';
 import AdminErrorBoundary from '@/components/admin/AdminErrorBoundary';
+
+export const metadata: Metadata = {
+  title: 'Audit Log — Admin — Fancy Planties',
+  description: 'View admin activity and audit trail.',
+};
 
 interface SearchParams {
   page?: string;

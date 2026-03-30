@@ -34,9 +34,9 @@ export default async function OptimizedPlantManagementPage() {
         <h1>Plant Management</h1>
         <div className="error-message">
           <p>Failed to load plant data. Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()}>
+          <a href="/admin/plants/optimized" className="btn btn--primary">
             Refresh Page
-          </button>
+          </a>
         </div>
       </div>
     );

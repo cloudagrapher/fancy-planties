@@ -145,9 +145,9 @@ export default async function OptimizedAuditPage({
         <h1>Audit Logs</h1>
         <div className="error-message">
           <p>Failed to load audit logs. Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()}>
+          <a href="/admin/audit/optimized" className="btn btn--primary">
             Refresh Page
-          </button>
+          </a>
         </div>
       </div>
     );
