@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, Scissors, MessageCircle, TreeDeciduous } from 'lucide-react';
+import { useRef, useState, useCallback } from 'react';
+import { Save, Leaf, FlaskConical, Droplets, Sun, Thermometer, Wind, Info, FileText, Mountain, RotateCcw, Sprout, Scissors, MessageCircle, TreeDeciduous, Tag, X } from 'lucide-react';
 import S3ImageUpload from '@/components/shared/S3ImageUpload';
 import { S3ImageService } from '@/lib/services/s3-image-service';
 import Modal from '@/components/shared/Modal';
@@ -64,6 +64,7 @@ export interface CareGuideFormData {
     tips: string;
   };
   generalTips: string;
+  tags: string[];
   isPublic: boolean;
 }
 
@@ -292,6 +293,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
         tips: ''
       },
       generalTips: '',
+      tags: [],
       isPublic: false
     };
 
@@ -322,6 +324,31 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
   const tempEntityIdRef = useRef<string>(`temp-${Date.now()}`);
 
   const [activeTab, setActiveTab] = useState<'basic' | 'care'>('basic');
+
+  const [tagInput, setTagInput] = useState('');
+
+  const addTag = useCallback((raw: string) => {
+    const tag = raw.trim().toLowerCase().replace(/[^a-z0-9-_ ]/g, '');
+    if (!tag) return;
+    setFormData(prev => {
+      if (prev.tags.includes(tag)) return prev;
+      return { ...prev, tags: [...prev.tags, tag] };
+    });
+    setTagInput('');
+  }, []);
+
+  const removeTag = useCallback((tag: string) => {
+    setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
+  }, []);
+
+  const handleTagKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addTag(tagInput);
+    } else if (e.key === 'Backspace' && !tagInput) {
+      setFormData(prev => ({ ...prev, tags: prev.tags.slice(0, -1) }));
+    }
+  }, [tagInput, addTag]);
 
   const updateFormData = (path: string, value: string | boolean | string[]) => {
     setFormData(prev => {
@@ -857,6 +884,60 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                       placeholder="Quirks, fun facts, or anything worth knowing about this plant..."
                       rows={3}
                     />
+                  </div>
+                </Card>
+
+                {/* Tags Section */}
+                <Card className="p-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Tag className="h-4 w-4 text-slate-600" />
+                    <h3 className="font-medium text-slate-800">Tags</h3>
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-xs text-slate-500">
+                      Add tags to organise your guides (e.g. &quot;tropical&quot;, &quot;low-light&quot;, &quot;beginner-friendly&quot;). Press Enter or comma to add.
+                    </p>
+                    {/* Existing tags */}
+                    {formData.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {formData.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                          >
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => removeTag(tag)}
+                              className="hover:text-emerald-900 focus:outline-none"
+                              aria-label={`Remove tag ${tag}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {/* Tag input */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleTagKeyDown}
+                        onBlur={() => { if (tagInput.trim()) addTag(tagInput); }}
+                        placeholder="Add a tag…"
+                        className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-100 focus:border-emerald-300"
+                        aria-label="New tag"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => addTag(tagInput)}
+                        className="px-3 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
                   </div>
                 </Card>
               </div>

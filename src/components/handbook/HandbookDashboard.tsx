@@ -433,6 +433,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
         tips: guide.rootStructure?.tips || ''
       },
       generalTips: guide.generalTips || '',
+      tags: guide.tags || [],
       isPublic: guide.isPublic,
     };
   };
