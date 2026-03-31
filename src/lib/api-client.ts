@@ -12,9 +12,50 @@
  *   4. On a CSRF-related 403, refreshes the token and retries once.
  *
  * Usage:
- *   import { apiFetch } from '@/lib/api-client';
+ *   import { apiFetch, ApiError } from '@/lib/api-client';
  *   const res = await apiFetch('/api/plants', { method: 'POST', body: ... });
  */
+
+/**
+ * Error class that preserves the HTTP status code from failed API responses.
+ * The global QueryClient retry logic in QueryClientProvider uses the `status`
+ * property to decide whether to retry (transient 5xx) or bail (4xx auth errors).
+ *
+ * Usage in query functions:
+ *   const response = await apiFetch('/api/foo');
+ *   if (!response.ok) throw await ApiError.fromResponse(response);
+ *
+ * Or for simple cases:
+ *   if (!response.ok) throw new ApiError(response.status, 'Failed to fetch foo');
+ */
+export class ApiError extends Error {
+  public readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+
+  /**
+   * Create an ApiError from a fetch Response, extracting the error message
+   * from the JSON body when possible.
+   */
+  static async fromResponse(response: Response, fallbackMessage?: string): Promise<ApiError> {
+    let message = fallbackMessage || `Request failed with status ${response.status}`;
+    try {
+      const body = await response.json();
+      if (body?.error && typeof body.error === 'string') {
+        message = body.error;
+      } else if (body?.message && typeof body.message === 'string') {
+        message = body.message;
+      }
+    } catch {
+      // Response body wasn't JSON — use fallback message
+    }
+    return new ApiError(response.status, message);
+  }
+}
 
 let csrfToken: string | null = null;
 let csrfPromise: Promise<string> | null = null;

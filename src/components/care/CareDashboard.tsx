@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { CareDashboardData, EnhancedPlantInstance } from '@/lib/types/care-types';
 import CareTaskCard from './CareTaskCard';
 import CareStatistics from './CareStatistics';
-import { apiFetch } from '@/lib/api-client';
+import { apiFetch, ApiError } from '@/lib/api-client';
 import { useToast } from '@/hooks/useToast';
 import ToastContainer from '@/components/shared/ToastContainer';
 
@@ -40,7 +40,7 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     queryFn: async (): Promise<CareDashboardData> => {
       const response = await apiFetch('/api/care/dashboard');
       if (!response.ok) {
-        throw new Error('Failed to load care dashboard');
+        throw await ApiError.fromResponse(response, 'Failed to load care dashboard');
       }
       return response.json();
     },

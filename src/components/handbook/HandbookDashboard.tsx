@@ -29,7 +29,7 @@ import ToastContainer from '@/components/shared/ToastContainer';
 // Lazy load heavy modal components — only needed when user opens a form/detail view
 const CareGuideForm = lazy(() => import('./CareGuideForm'));
 const CareGuideDetail = lazy(() => import('./CareGuideDetail'));
-import { apiFetch } from '@/lib/api-client';
+import { apiFetch, ApiError } from '@/lib/api-client';
 
 interface HandbookDashboardProps {
   careGuides: CareGuide[];
@@ -280,7 +280,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
     queryKey: ['care-guides', userId],
     queryFn: async () => {
       const response = await apiFetch('/api/care-guides');
-      if (!response.ok) throw new Error('Failed to fetch care guides');
+      if (!response.ok) throw await ApiError.fromResponse(response, 'Failed to fetch care guides');
       return response.json();
     },
     initialData: initialCareGuides,
@@ -298,8 +298,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create care guide');
+        throw await ApiError.fromResponse(response, 'Failed to create care guide');
       }
 
       // Invalidate query to refetch — no full-page reload
@@ -325,8 +324,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update care guide');
+        throw await ApiError.fromResponse(response, 'Failed to update care guide');
       }
 
       // Invalidate query to refetch — no full-page reload
@@ -346,8 +344,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete care guide');
+        throw await ApiError.fromResponse(response, 'Failed to delete care guide');
       }
 
       await queryClient.invalidateQueries({ queryKey: ['care-guides', userId] });

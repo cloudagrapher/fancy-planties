@@ -4,7 +4,7 @@ import { lazy, Suspense, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import LogoutButton from '@/components/auth/LogoutButton';
-import { apiFetch } from '@/lib/api-client';
+import { apiFetch, ApiError } from '@/lib/api-client';
 import type { DashboardStats } from '@/app/api/dashboard/route';
 
 // Lazy load calendar — only needed when user has fertilizer events
@@ -38,7 +38,7 @@ export default function DashboardClient({ user }: DashboardClientProps) {
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
       const response = await apiFetch('/api/dashboard');
-      if (!response.ok) throw new Error('Failed to fetch dashboard stats');
+      if (!response.ok) throw await ApiError.fromResponse(response, 'Failed to fetch dashboard stats');
       return response.json() as Promise<DashboardStats>;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
