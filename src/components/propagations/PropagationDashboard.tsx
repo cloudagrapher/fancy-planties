@@ -2,7 +2,7 @@
 
 import { useState, useMemo, lazy, Suspense } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api-client';
+import { apiFetch, ApiError } from '@/lib/api-client';
 import { Plus, TrendingUp, Clock, CheckCircle, Sprout, TreePine } from 'lucide-react';
 import PropagationCard from './PropagationCard';
 import { useToast } from '@/hooks/useToast';
@@ -50,7 +50,7 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
     queryFn: async (): Promise<PropagationDashboardData> => {
       const response = await apiFetch('/api/propagations/dashboard');
       if (!response.ok) {
-        throw new Error('Failed to fetch propagations');
+        throw await ApiError.fromResponse(response, 'Failed to fetch propagations');
       }
       return response.json();
     },

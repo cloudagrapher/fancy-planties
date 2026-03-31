@@ -179,6 +179,13 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-XSS-Protection', '1; mode=block');
+  // Restrict access to sensitive browser APIs that the app doesn't use.
+  // camera/microphone/geolocation are left unset (browser default) since
+  // future features may need them; everything else is explicitly denied.
+  response.headers.set(
+    'Permissions-Policy',
+    'accelerometer=(), autoplay=(), encrypted-media=(), gyroscope=(), magnetometer=(), midi=(), payment=(), picture-in-picture=(), usb=()'
+  );
   
   // CSP header for enhanced security
   const cspHeader = [
