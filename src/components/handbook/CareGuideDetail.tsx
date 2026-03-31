@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { X, Edit, Trash2, Leaf, Droplets, FlaskConical, Sun, Thermometer, Wind, Mountain, RotateCcw, Sprout, Scissors, Lightbulb, TreeDeciduous, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
 import S3Image from '@/components/shared/S3Image';
@@ -258,8 +258,12 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
     return parts.join(' ');
   };
 
-  // Extract TLDR data from existing guide sections
-  const getTLDRData = () => {
+  // Extract TLDR data from existing guide sections (memoized — depends only on guide prop)
+  const tldr = useMemo(() => {
+    const firstLine = guide.generalTips?.split('\n')[0] || null;
+    const tips = firstLine
+      ? (firstLine.length > 120 ? firstLine.slice(0, 120) + '…' : firstLine)
+      : null;
     return {
       light: guide.lighting?.requirements || guide.lighting?.intensity || null,
       water: guide.watering?.frequency || null,
@@ -268,15 +272,10 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
       roots: guide.rootStructure?.type || guide.rootStructure?.growthHabits || null,
       temperature: guide.temperature?.range || null,
       humidity: guide.humidity?.requirements || null,
-      tips: (() => {
-        const firstLine = guide.generalTips?.split('\n')[0] || null;
-        if (!firstLine) return null;
-        return firstLine.length > 120 ? firstLine.slice(0, 120) + '…' : firstLine;
-      })(),
+      tips,
     };
-  };
+  }, [guide]);
 
-  const tldr = getTLDRData();
   const hasTLDR = tldr.light || tldr.water || tldr.fertilizer || tldr.soil || tldr.roots || tldr.temperature || tldr.humidity || tldr.tips;
 
   const dialogTitleId = `care-guide-title-${guide.id}`;
@@ -369,6 +368,19 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
                       </span>
                     )}
                   </div>
+                  {/* Tags */}
+                  {guide.tags && guide.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {guide.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* General Description */}

@@ -456,17 +456,25 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
   }), [careGuides, searchQuery, selectedLevel]);
 
   // Statistics (memoized — only depends on the full careGuides list)
-  const stats = useMemo(() => ({
-    total: careGuides.length,
-    public: careGuides.filter(g => g.isPublic).length,
-    private: careGuides.filter(g => !g.isPublic).length,
-    byLevel: {
+  const stats = useMemo(() => {
+    const byLevel = {
       family: careGuides.filter(g => g.taxonomyLevel === 'family').length,
       genus: careGuides.filter(g => g.taxonomyLevel === 'genus').length,
       species: careGuides.filter(g => g.taxonomyLevel === 'species').length,
       cultivar: careGuides.filter(g => g.taxonomyLevel === 'cultivar').length,
-    }
-  }), [careGuides]);
+    };
+    const topLevel = (Object.entries(byLevel) as [string, number][]).reduce(
+      (best, [level, count]) => count > best.count ? { level, count } : best,
+      { level: 'none', count: 0 }
+    );
+    return {
+      total: careGuides.length,
+      public: careGuides.filter(g => g.isPublic).length,
+      private: careGuides.filter(g => !g.isPublic).length,
+      byLevel,
+      topLevel,
+    };
+  }, [careGuides]);
 
   return (
     <div className="space-y-6">
@@ -499,26 +507,12 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
         </Card>
         <Card className="p-4">
           <div className="text-2xl font-bold text-slate-600">
-            {(() => {
-              const levels = stats.byLevel as Record<string, number>;
-              const topLevel = Object.entries(levels).reduce(
-                (best, [level, count]) => count > best.count ? { level, count } : best,
-                { level: 'none', count: 0 }
-              );
-              return topLevel.count > 0 ? topLevel.count : '—';
-            })()}
+            {stats.topLevel.count > 0 ? stats.topLevel.count : '—'}
           </div>
           <div className="text-sm text-slate-600">
-            {(() => {
-              const levels = stats.byLevel as Record<string, number>;
-              const topLevel = Object.entries(levels).reduce(
-                (best, [level, count]) => count > best.count ? { level, count } : best,
-                { level: 'none', count: 0 }
-              );
-              return topLevel.count > 0
-                ? `${topLevel.level.charAt(0).toUpperCase() + topLevel.level.slice(1)}-Level Guides`
-                : 'No Guides Yet';
-            })()}
+            {stats.topLevel.count > 0
+              ? `${stats.topLevel.level.charAt(0).toUpperCase() + stats.topLevel.level.slice(1)}-Level Guides`
+              : 'No Guides Yet'}
           </div>
         </Card>
       </div>
