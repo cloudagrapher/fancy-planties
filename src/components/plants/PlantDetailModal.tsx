@@ -12,7 +12,7 @@ import PlantImageGallery from './PlantImageGallery';
 import PlantLineage from './PlantLineage';
 import QuickCareActions from '../care/QuickCareActions';
 import S3Image from '@/components/shared/S3Image';
-import { apiFetch } from '@/lib/api-client';
+import { apiFetch, ApiError } from '@/lib/api-client';
 import { formatDaysToHumanSchedule, parseFertilizerScheduleToDays } from '@/lib/utils/schedule-parser';
 
 interface PlantDetailModalProps {
@@ -54,7 +54,7 @@ export default function PlantDetailModal({
       // propagations + parent plant (replaces 1 sequential + 3 parallel fetches)
       const response = await apiFetch(`/api/plant-instances/${plantId}/detail`);
       if (!response.ok) {
-        throw new Error('Failed to fetch plant details');
+        throw await ApiError.fromResponse(response, 'Failed to fetch plant details');
       }
       return response.json() as Promise<PlantDetailData>;
     },
@@ -81,7 +81,7 @@ export default function PlantDetailModal({
       });
       
       if (!response.ok) {
-        throw new Error('Failed to log care');
+        throw await ApiError.fromResponse(response, 'Failed to log care');
       }
       
       return response.json();
