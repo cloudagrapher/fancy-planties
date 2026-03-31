@@ -29,6 +29,10 @@ const eslintConfig = [
       "*.config.backup.js",
       "*.setup.js",
       "jest.*.js",
+      // Ignore minified service worker build artifacts in public/
+      "public/custom-sw.js",
+      "public/workbox-*.js",
+      "public/sw.js",
     ],
   },
   {

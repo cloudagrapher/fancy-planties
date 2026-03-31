@@ -42,6 +42,10 @@ export async function GET(
     return NextResponse.json({
       user: userDetails,
       activity: activitySummary,
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+      },
     });
   } catch (error) {
     console.error('Failed to get user details:', error);

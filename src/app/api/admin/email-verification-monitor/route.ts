@@ -55,7 +55,11 @@ export async function GET(_request: NextRequest) {
       alerts: generateAlerts(systemStatus, emailHealth),
     };
     
-    return NextResponse.json(monitoringData);
+    return NextResponse.json(monitoringData, {
+      headers: {
+        'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+      },
+    });
     
   } catch (error) {
     console.error('Error fetching email verification monitoring data:', error);

@@ -30,6 +30,10 @@ export async function GET(
 
     return NextResponse.json({
       defaultImage: plant.defaultImage,
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=120, stale-while-revalidate=300',
+      },
     });
   } catch (error) {
     console.error('Failed to get plant image:', error);
