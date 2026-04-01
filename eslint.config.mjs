@@ -29,6 +29,8 @@ const eslintConfig = [
       "*.config.backup.js",
       "*.setup.js",
       "jest.*.js",
+      // Minified public assets (service workers, workbox bundles) — not source code
+      "public/**",
     ],
   },
   {

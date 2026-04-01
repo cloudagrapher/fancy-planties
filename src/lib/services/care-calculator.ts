@@ -317,18 +317,23 @@ export class CareCalculator {
     const nextDue = new Date(lastFertilized);
     const normalized = schedule.toLowerCase().trim();
 
-    // Detect month-based schedules and use calendar month arithmetic
-    const monthMatch = normalized.match(/^(\d+)\s*months?$/i);
-    const bimonthlyMatch = normalized === 'bimonthly';
-    const quarterlyMatch = normalized === 'quarterly';
+    // Detect month-based schedules and use calendar month arithmetic.
+    // Handles: "monthly", "bimonthly", "quarterly",
+    //          "every month", "every 1 month",
+    //          "<N> months", "every <N> months" (e.g. "every 6 months")
+    const numericMonthMatch =
+      normalized.match(/^(\d+)\s*months?$/i) ||         // "2 months", "1 month"
+      normalized.match(/^every\s+(\d+)\s*months?$/i);   // "every 2 months", "every 6 months"
 
     let months = 0;
-    if (monthMatch) {
-      months = parseInt(monthMatch[1], 10);
-    } else if (bimonthlyMatch) {
+    if (normalized === 'monthly' || normalized === 'every month' || normalized === 'every 1 month') {
+      months = 1;
+    } else if (normalized === 'bimonthly') {
       months = 2;
-    } else if (quarterlyMatch) {
+    } else if (normalized === 'quarterly') {
       months = 3;
+    } else if (numericMonthMatch) {
+      months = parseInt(numericMonthMatch[1], 10);
     }
 
     if (months > 0) {
