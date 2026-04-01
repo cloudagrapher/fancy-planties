@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import type { EnhancedCareHistory } from '@/lib/types/care-types';
@@ -14,6 +14,9 @@ import QuickCareActions from '../care/QuickCareActions';
 import S3Image from '@/components/shared/S3Image';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import { formatDaysToHumanSchedule, parseFertilizerScheduleToDays } from '@/lib/utils/schedule-parser';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useScrollLock } from '@/hooks/useScrollLock';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface PlantDetailModalProps {
   plantId: number;
@@ -41,9 +44,11 @@ export default function PlantDetailModal({
   const [isImageGalleryOpen, setIsImageGalleryOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const queryClient = useQueryClient();
-  const modalRef = useRef<HTMLDivElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
+
+  // Shared hooks replace ~40 lines of manual focus trap, scroll lock, and escape handling
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
+  useScrollLock(isOpen);
+  useEscapeKey(onClose, isOpen);
 
   // Fetch plant detail data
   const { data, isLoading, error, refetch } = useQuery({
@@ -118,74 +123,12 @@ export default function PlantDetailModal({
     }
   };
 
-  // Store the element that was focused before the modal opened
-  useEffect(() => {
-    if (isOpen) {
-      previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
-    }
-  }, [isOpen]);
-
-  // Close modal on escape key, lock body scroll, and trap focus
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-        return;
-      }
-
-      // Focus trapping: keep Tab/Shift+Tab within the modal
-      if (e.key === 'Tab' && modalRef.current) {
-        const focusable = Array.from(
-          modalRef.current.querySelectorAll<HTMLElement>(
-            'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
-          )
-        );
-        if (focusable.length === 0) return;
-
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-
-        if (e.shiftKey) {
-          if (document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else {
-          if (document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-          }
-        }
-      }
-    };
-
-    // Save the current overflow value so we can restore it on cleanup
-    const previousOverflow = document.body.style.overflow;
-    document.addEventListener('keydown', handleKeyDown);
-    document.body.style.overflow = 'hidden';
-
-    // Focus the close button on mount
-    requestAnimationFrame(() => {
-      closeButtonRef.current?.focus();
-    });
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-      // Return focus to the previously focused element
-      previouslyFocusedRef.current?.focus();
-    };
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div 
-        ref={modalRef}
+        ref={focusTrapRef}
         className="modal-content modal-content--large"
         role="dialog"
         aria-modal="true"
@@ -203,7 +146,6 @@ export default function PlantDetailModal({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center space-x-3 min-w-0">
                     <button
-                      ref={closeButtonRef}
                       onClick={onClose}
                       className="modal-close flex-shrink-0"
                       aria-label="Close modal"

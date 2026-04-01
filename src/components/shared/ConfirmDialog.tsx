@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useScrollLock } from '@/hooks/useScrollLock';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface ConfirmDialogProps {
   title: string;
@@ -25,19 +26,8 @@ export default function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const focusTrapRef = useFocusTrap<HTMLDivElement>(true);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [onCancel]);
+  useScrollLock(true);
+  useEscapeKey(onCancel);
 
   return (
     <div

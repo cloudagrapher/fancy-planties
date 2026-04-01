@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import S3Image from '@/components/shared/S3Image';
 import { shouldUnoptimizeImage } from '@/lib/image-loader';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 interface PlantImageGalleryProps {
   images: string[];
@@ -91,19 +92,8 @@ export default function PlantImageGallery({
     setTouchStart(null);
   };
 
-  // Prevent body scroll when gallery is open.
-  // Save and restore the previous overflow value so closing the gallery
-  // doesn't clobber the parent modal's own overflow:hidden.
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isOpen]);
+  // Prevent body scroll when gallery is open
+  useScrollLock(isOpen);
 
   if (!isOpen) return null;
 
