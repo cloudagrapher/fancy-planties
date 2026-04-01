@@ -64,6 +64,7 @@ const CareGuideUpdateSchema = z.object({
     tips: z.string().optional(),
   }).optional(),
   generalTips: z.string().optional(),
+  tags: z.array(z.string()).optional(),
   isPublic: z.boolean().optional(),
 });
 
@@ -174,6 +175,7 @@ export async function PUT(
     if (validatedData.propagation !== undefined) updateData.propagation = validatedData.propagation;
     if (validatedData.rootStructure !== undefined) updateData.rootStructure = validatedData.rootStructure || null;
     if (validatedData.generalTips !== undefined) updateData.generalTips = validatedData.generalTips || null;
+    if (validatedData.tags !== undefined) updateData.tags = validatedData.tags;
     if (validatedData.isPublic !== undefined) updateData.isPublic = validatedData.isPublic;
 
     const updated = await db

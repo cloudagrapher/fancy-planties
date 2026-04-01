@@ -15,15 +15,18 @@ interface CareActionButtonProps {
   icon: string;
   label: string;
   plantName: string;
+  /** True when THIS button's action is in progress (shows spinner) */
   isLoading: boolean;
+  /** True when ANY action on this card is in progress (disables all buttons) */
+  isDisabled: boolean;
   onAction: (careType: string) => void;
 }
 
-function CareActionButton({ careType, bgColor, hoverColor, icon, label, plantName, isLoading, onAction }: CareActionButtonProps) {
+function CareActionButton({ careType, bgColor, hoverColor, icon, label, plantName, isLoading, isDisabled, onAction }: CareActionButtonProps) {
   return (
     <button
       onClick={() => onAction(careType)}
-      disabled={isLoading}
+      disabled={isDisabled}
       className={`${bgColor} text-white rounded-md ${hoverColor} disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-manipulation
         flex-1 px-2 py-2 text-xs min-h-[44px] sm:flex-none sm:px-3 sm:py-1.5 sm:text-sm sm:min-h-0
         inline-flex items-center justify-center gap-1`}
@@ -49,16 +52,18 @@ interface CareTaskCardProps {
 }
 
 const CareTaskCard = memo(function CareTaskCard({ plant, onQuickCare, showUrgency = false }: CareTaskCardProps) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingCareType, setLoadingCareType] = useState<string | null>(null);
 
   const handleQuickCare = async (careType: string) => {
-    setIsLoading(true);
+    setLoadingCareType(careType);
     try {
       await onQuickCare(plant.id, careType);
     } finally {
-      setIsLoading(false);
+      setLoadingCareType(null);
     }
   };
+
+  const isLoading = loadingCareType !== null;
 
   const statusInfo = useMemo(() => {
     switch (plant.careStatus) {
@@ -152,9 +157,9 @@ const CareTaskCard = memo(function CareTaskCard({ plant, onQuickCare, showUrgenc
 
         {/* Quick Actions — stacks horizontally, adapts sizing at sm */}
         <div className="flex gap-2 sm:ml-4 sm:flex-shrink-0">
-          <CareActionButton careType="fertilizer" bgColor="bg-green-600" hoverColor="hover:bg-green-700" icon="🌱" label="Fertilize" plantName={plant.displayName} isLoading={isLoading} onAction={handleQuickCare} />
-          <CareActionButton careType="water" bgColor="bg-blue-600" hoverColor="hover:bg-blue-700" icon="💧" label="Water" plantName={plant.displayName} isLoading={isLoading} onAction={handleQuickCare} />
-          <CareActionButton careType="inspect" bgColor="bg-indigo-600" hoverColor="hover:bg-indigo-700" icon="🔍" label="Inspect" plantName={plant.displayName} isLoading={isLoading} onAction={handleQuickCare} />
+          <CareActionButton careType="fertilizer" bgColor="bg-green-600" hoverColor="hover:bg-green-700" icon="🌱" label="Fertilize" plantName={plant.displayName} isLoading={loadingCareType === 'fertilizer'} isDisabled={isLoading} onAction={handleQuickCare} />
+          <CareActionButton careType="water" bgColor="bg-blue-600" hoverColor="hover:bg-blue-700" icon="💧" label="Water" plantName={plant.displayName} isLoading={loadingCareType === 'water'} isDisabled={isLoading} onAction={handleQuickCare} />
+          <CareActionButton careType="inspect" bgColor="bg-indigo-600" hoverColor="hover:bg-indigo-700" icon="🔍" label="Inspect" plantName={plant.displayName} isLoading={loadingCareType === 'inspect'} isDisabled={isLoading} onAction={handleQuickCare} />
         </div>
       </div>
 

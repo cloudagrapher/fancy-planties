@@ -46,6 +46,10 @@ export async function GET(
     return NextResponse.json({
       success: true,
       data: result,
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+      },
     });
 
   } catch (error) {

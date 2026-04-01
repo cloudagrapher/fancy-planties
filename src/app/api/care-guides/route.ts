@@ -64,6 +64,7 @@ const CareGuideCreateSchema = z.object({
     tips: z.string().optional(),
   }).optional(),
   generalTips: z.string().optional(),
+  tags: z.array(z.string()).default([]),
   isPublic: z.boolean().default(false),
 });
 
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
       propagation: validatedData.propagation || null,
       rootStructure: validatedData.rootStructure || null,
       generalTips: validatedData.generalTips || null,
+      tags: validatedData.tags,
       isPublic: validatedData.isPublic,
       createdAt: new Date(),
       updatedAt: new Date(),

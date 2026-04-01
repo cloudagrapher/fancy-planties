@@ -48,7 +48,11 @@ export async function GET(request: NextRequest) {
     // Get audit logs
     const result = await AuditLogQueries.getPaginatedAuditLogs(filters, page, pageSize);
     
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'private, max-age=15, stale-while-revalidate=60',
+      },
+    });
     
   } catch (error) {
     console.error('Error fetching audit logs:', error);
