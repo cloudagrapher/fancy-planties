@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -53,6 +54,9 @@ export default function Modal({
     };
   }, [isOpen]);
 
+  // Focus trap — keeps keyboard navigation inside the modal when open
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
+
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -64,6 +68,7 @@ export default function Modal({
   const modalContent = (
     <div className="modal-overlay" onClick={handleBackdropClick}>
       <div
+        ref={focusTrapRef}
         className={`modal-content ${
           size === "large" ? "modal-content--large" : ""
         }`}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ConfirmDialogProps {
   title: string;
@@ -12,8 +13,8 @@ interface ConfirmDialogProps {
 }
 
 /**
- * Reusable confirmation dialog with Escape key support and body scroll lock.
- * Renders as a modal overlay.
+ * Reusable confirmation dialog with Escape key support, body scroll lock,
+ * and focus trapping for keyboard accessibility.
  */
 export default function ConfirmDialog({
   title,
@@ -23,6 +24,8 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(true);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onCancel();
@@ -46,7 +49,7 @@ export default function ConfirmDialog({
       aria-modal="true"
       aria-label={title}
     >
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
+      <div ref={focusTrapRef} className="bg-white rounded-lg max-w-md w-full p-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
         <p className="text-gray-600 mb-6">{message}</p>
         <div className="flex justify-end space-x-3">
