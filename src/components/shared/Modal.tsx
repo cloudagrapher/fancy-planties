@@ -3,6 +3,8 @@
 import { ReactNode, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useScrollLock } from "@/hooks/useScrollLock";
+import { useEscapeKey } from "@/hooks/useEscapeKey";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -27,34 +29,9 @@ export default function Modal({
   closeOnEscape = true,
   footer,
 }: ModalProps) {
-  // Handle escape key
-  useEffect(() => {
-    if (!isOpen || !closeOnEscape) return;
-
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [isOpen, closeOnEscape, onClose]);
-
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
-
-  // Focus trap — keeps keyboard navigation inside the modal when open
+  // Shared hooks for modal behavior
+  useEscapeKey(onClose, isOpen && closeOnEscape);
+  useScrollLock(isOpen);
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
   if (!isOpen) return null;

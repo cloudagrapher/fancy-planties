@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { QuickCareAction } from '@/lib/types/care-types';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { careHelpers } from '@/lib/types/care-types';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 interface QuickCareActionsProps {
   plantInstance: EnhancedPlantInstance;
@@ -24,14 +25,7 @@ export default function QuickCareActions({
   const actions = careHelpers.getDefaultQuickCareActions();
 
   // Lock body scroll when notes modal is open (prevents background scroll on mobile)
-  useEffect(() => {
-    if (!showNotesModal) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [showNotesModal]);
+  useScrollLock(showNotesModal);
 
   const handleActionClick = (action: QuickCareAction) => {
     setSelectedAction(action);

@@ -12,6 +12,8 @@ import PlantTaxonomySelector from '../plants/PlantTaxonomySelector';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 import type { PlantSuggestion } from '@/lib/validation/plant-schemas';
 import { apiFetch } from '@/lib/api-client';
+import { useScrollLock } from '@/hooks/useScrollLock';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface PropagationWithDetails extends Propagation {
   plant: Plant;
@@ -65,23 +67,9 @@ export default function PropagationForm({ propagation, userId, onClose, onSucces
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Close on Escape key and lock body scroll
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [onClose]);
+  // Shared hooks for modal behavior
+  useScrollLock(true);
+  useEscapeKey(onClose);
 
   // Load plant data if editing
   useEffect(() => {

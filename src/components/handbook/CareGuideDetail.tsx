@@ -4,6 +4,9 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { X, Edit, Trash2, Leaf, Droplets, FlaskConical, Sun, Thermometer, Wind, Mountain, RotateCcw, Sprout, Scissors, Lightbulb, TreeDeciduous, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
 import S3Image from '@/components/shared/S3Image';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useScrollLock } from '@/hooks/useScrollLock';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 export interface CareGuideDetailProps {
   guide: CareGuide;
@@ -172,79 +175,15 @@ function ImageLightbox({
   );
 }
 
-/**
- * Helper: collect all focusable elements inside a container.
- */
-function getFocusableElements(container: HTMLElement): HTMLElement[] {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
-    )
-  );
-}
-
 export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDelete }: CareGuideDetailProps) {
   const isOwner = guide.userId === userId;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
-  // Store the element that was focused before the modal opened
-  useEffect(() => {
-    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
-  }, []);
-
-  // Close on Escape key, lock body scroll, manage focus
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-        return;
-      }
-
-      // Focus trapping: keep Tab/Shift+Tab within the modal
-      if (e.key === 'Tab' && modalRef.current) {
-        const focusable = getFocusableElements(modalRef.current);
-        if (focusable.length === 0) return;
-
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-
-        if (e.shiftKey) {
-          if (document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else {
-          if (document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
-          }
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    // Prevent background scroll while modal is open
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    // Focus the close button on mount
-    requestAnimationFrame(() => {
-      closeButtonRef.current?.focus();
-    });
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = prevOverflow;
-      // Return focus to the previously focused element
-      previouslyFocusedRef.current?.focus();
-    };
-  }, [onClose]);
+  // Shared hooks replace ~40 lines of manual focus trap, scroll lock, and escape handling
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(true);
+  useScrollLock(true);
+  useEscapeKey(onClose);
 
   /**
    * Builds a formatted taxonomy string from the care guide's taxonomy fields
@@ -290,7 +229,7 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
         aria-labelledby={dialogTitleId}
       >
         <div
-          ref={modalRef}
+          ref={focusTrapRef}
           className="relative w-full max-w-4xl h-[90vh] flex flex-col mx-4"
           onClick={(e) => e.stopPropagation()}
         >
@@ -326,7 +265,6 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
                   </>
                 )}
                 <button
-                  ref={closeButtonRef}
                   onClick={onClose}
                   className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
                   aria-label="Close care guide"
