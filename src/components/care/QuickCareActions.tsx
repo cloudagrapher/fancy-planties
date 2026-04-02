@@ -10,12 +10,15 @@ interface QuickCareActionsProps {
   plantInstance: EnhancedPlantInstance;
   onCareAction: (careType: string, notes?: string) => void;
   isLoading?: boolean;
+  /** Render a single-row compact layout for sticky footers */
+  compact?: boolean;
 }
 
 export default function QuickCareActions({ 
   plantInstance, 
   onCareAction, 
-  isLoading = false 
+  isLoading = false,
+  compact = false,
 }: QuickCareActionsProps) {
   const [selectedAction, setSelectedAction] = useState<QuickCareAction | null>(null);
   const [notes, setNotes] = useState('');
@@ -45,23 +48,28 @@ export default function QuickCareActions({
 
   return (
     <>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className={compact ? "flex gap-2" : "grid grid-cols-2 sm:grid-cols-3 gap-3"}>
         {actions.map((action) => (
           <button
             key={action.id}
             onClick={() => handleActionClick(action)}
             disabled={!action.isEnabled || isLoading}
             aria-label={`Log ${action.label} care`}
-            className={`
-              flex flex-col items-center justify-center p-4 rounded-lg transition-all min-h-[72px]
-              ${action.isEnabled && !isLoading
-                ? `${action.color} hover:shadow-md active:scale-95`
-                : 'bg-gray-100 cursor-not-allowed opacity-50'
-              }
-            `}
+            className={compact
+              ? `flex items-center justify-center gap-1.5 flex-1 px-3 py-2.5 rounded-xl text-sm font-medium transition-all min-h-[44px] ${
+                  action.isEnabled && !isLoading
+                    ? `${action.color} hover:shadow-md active:scale-95`
+                    : 'bg-gray-100 cursor-not-allowed opacity-50'
+                }`
+              : `flex flex-col items-center justify-center p-4 rounded-lg transition-all min-h-[72px] ${
+                  action.isEnabled && !isLoading
+                    ? `${action.color} hover:shadow-md active:scale-95`
+                    : 'bg-gray-100 cursor-not-allowed opacity-50'
+                }`
+            }
           >
-            <span className="text-2xl mb-2" aria-hidden="true">{action.icon}</span>
-            <span className="text-sm font-medium text-white">{action.label}</span>
+            <span className={compact ? "text-base" : "text-2xl mb-2"} aria-hidden="true">{action.icon}</span>
+            <span className={`font-medium text-white ${compact ? "text-xs" : "text-sm"}`}>{action.label}</span>
           </button>
         ))}
       </div>

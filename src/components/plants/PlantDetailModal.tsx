@@ -212,8 +212,6 @@ export default function PlantDetailModal({
                   <PlantOverview 
                     plant={data.plant}
                     onImageClick={handleImageClick}
-                    onQuickCare={handleQuickCare}
-                    isLoading={quickCareMutation.isPending}
                   />
                 )}
                 
@@ -241,6 +239,16 @@ export default function PlantDetailModal({
                 )}
                 </div>
               </div>
+
+              {/* Sticky Quick Care Footer — always visible across all tabs */}
+              <div className="flex-shrink-0 border-t border-gray-200 bg-white/95 backdrop-blur-sm px-4 py-3 sm:px-6">
+                <QuickCareActions
+                  plantInstance={data.plant}
+                  onCareAction={handleQuickCare}
+                  isLoading={quickCareMutation.isPending}
+                  compact
+                />
+              </div>
             </>
           ) : null}
       </div>
@@ -264,68 +272,16 @@ export default function PlantDetailModal({
 function PlantOverview({ 
   plant, 
   onImageClick, 
-  onQuickCare, 
-  isLoading 
 }: { 
   plant: EnhancedPlantInstance;
   onImageClick: (index: number) => void;
-  onQuickCare: (careType: string, notes?: string) => void;
-  isLoading: boolean;
 }) {
   return (
     <div className="p-6 space-y-6">
-      {/* Plant Images */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Photos</h3>
-        {plant.s3ImageKeys && plant.s3ImageKeys.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {plant.s3ImageKeys.slice(0, 6).map((s3Key, index) => (
-              <button
-                key={index}
-                onClick={() => onImageClick(index)}
-                className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 hover:opacity-90 transition-opacity"
-              >
-                <S3Image
-                  s3Key={s3Key}
-                  alt={`${plant.displayName} photo ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  thumbnailSize="small"
-                  sizes="(max-width: 640px) 50vw, 33vw"
-                />
-                {index === 0 && (
-                  <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                    Primary
-                  </div>
-                )}
-              </button>
-            ))}
-            {plant.s3ImageKeys.length > 6 && (
-              <button
-                onClick={() => onImageClick(6)}
-                className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
-              >
-                <div className="text-center">
-                  <div className="text-2xl mb-1">+{plant.s3ImageKeys.length - 6}</div>
-                  <div className="text-xs">more</div>
-                </div>
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="aspect-video rounded-lg bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <div className="text-4xl mb-2">📷</div>
-              <p className="text-sm">No photos yet</p>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Plant Information */}
+      {/* Plant Information — care schedule first for quick reference on mobile */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
         {/* Basic Info */}
-        <div className="space-y-4">
+        <div className="space-y-4 order-2 sm:order-1">
           <h3 className="text-lg font-medium text-gray-900">Plant Information</h3>
           <dl className="space-y-3">
             <div>
@@ -363,8 +319,8 @@ function PlantOverview({
           </dl>
         </div>
 
-        {/* Care Information */}
-        <div className="space-y-4">
+        {/* Care Information — shown first on mobile (most actionable) */}
+        <div className="space-y-4 order-1 sm:order-2">
           <h3 className="text-lg font-medium text-gray-900">Care Schedule</h3>
           <dl className="space-y-3">
             <div>
@@ -428,16 +384,6 @@ function PlantOverview({
         </div>
       </div>
 
-      {/* Quick Care Actions */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900">Quick Actions</h3>
-        <QuickCareActions
-          plantInstance={plant}
-          onCareAction={onQuickCare}
-          isLoading={isLoading}
-        />
-      </div>
-
       {/* Care Instructions */}
       {plant.plant.careInstructions && (
         <div className="space-y-4">
@@ -447,6 +393,54 @@ function PlantOverview({
           </div>
         </div>
       )}
+
+      {/* Plant Images — below info so mobile users see actionable data first */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium text-gray-900">Photos</h3>
+        {plant.s3ImageKeys && plant.s3ImageKeys.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {plant.s3ImageKeys.slice(0, 6).map((s3Key, index) => (
+              <button
+                key={index}
+                onClick={() => onImageClick(index)}
+                className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 hover:opacity-90 transition-opacity"
+              >
+                <S3Image
+                  s3Key={s3Key}
+                  alt={`${plant.displayName} photo ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  thumbnailSize="small"
+                  sizes="(max-width: 640px) 50vw, 33vw"
+                />
+                {index === 0 && (
+                  <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                    Primary
+                  </div>
+                )}
+              </button>
+            ))}
+            {plant.s3ImageKeys.length > 6 && (
+              <button
+                onClick={() => onImageClick(6)}
+                className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                <div className="text-center">
+                  <div className="text-2xl mb-1">+{plant.s3ImageKeys.length - 6}</div>
+                  <div className="text-xs">more</div>
+                </div>
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="aspect-video rounded-lg bg-gradient-to-br from-primary-50 to-secondary-50 flex items-center justify-center">
+            <div className="text-center text-gray-500">
+              <div className="text-4xl mb-2">📷</div>
+              <p className="text-sm">No photos yet</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
