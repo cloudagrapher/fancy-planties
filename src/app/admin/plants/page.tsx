@@ -2,6 +2,7 @@ import 'server-only';
 import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
 import OptimizedPlantManagement from '@/components/admin/OptimizedPlantManagement';
 import AdminErrorBoundary from '@/components/admin/AdminErrorBoundary';
+import RefreshPageButton from '@/components/shared/RefreshPageButton';
 
 export default async function AdminPlants() {
   try {
@@ -26,9 +27,7 @@ export default async function AdminPlants() {
         <h1>Plant Management</h1>
         <div className="error-message">
           <p>Failed to load plant data. Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()}>
-            Refresh Page
-          </button>
+          <RefreshPageButton />
         </div>
       </div>
     );

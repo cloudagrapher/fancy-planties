@@ -2,6 +2,7 @@ import 'server-only';
 import { requireAdminAccess } from '@/lib/auth/admin-middleware';
 import { AuditLogQueries } from '@/lib/db/queries/audit-logs';
 import OptimizedAuditLogViewer from '@/components/admin/OptimizedAuditLogViewer';
+import RefreshPageButton from '@/components/shared/RefreshPageButton';
 
 interface SearchParams {
   page?: string;
@@ -145,9 +146,7 @@ export default async function OptimizedAuditPage({
         <h1>Audit Logs</h1>
         <div className="error-message">
           <p>Failed to load audit logs. Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()}>
-            Refresh Page
-          </button>
+          <RefreshPageButton />
         </div>
       </div>
     );

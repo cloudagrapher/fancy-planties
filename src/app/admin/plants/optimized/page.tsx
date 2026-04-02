@@ -2,6 +2,7 @@ import 'server-only';
 import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
 import OptimizedPlantManagement from '@/components/admin/OptimizedPlantManagement';
 import { requireAdminAccess } from '@/lib/auth/admin-middleware';
+import RefreshPageButton from '@/components/shared/RefreshPageButton';
 
 export default async function OptimizedPlantManagementPage() {
   await requireAdminAccess();
@@ -34,9 +35,7 @@ export default async function OptimizedPlantManagementPage() {
         <h1>Plant Management</h1>
         <div className="error-message">
           <p>Failed to load plant data. Please try refreshing the page.</p>
-          <button onClick={() => window.location.reload()}>
-            Refresh Page
-          </button>
+          <RefreshPageButton />
         </div>
       </div>
     );
