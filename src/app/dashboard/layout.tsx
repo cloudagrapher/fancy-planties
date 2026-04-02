@@ -14,7 +14,9 @@ export default async function DashboardLayout({
     <AuthGuard>
       <UserProvider user={user}>
         <div className="min-h-screen bg-gray-50 pb-20">
-          {children}
+          <main id="main-content">
+            {children}
+          </main>
           <BottomNavigation />
         </div>
       </UserProvider>

@@ -6,6 +6,8 @@ import PlantReviewCard from './PlantReviewCard';
 import { useBulkOperations } from '@/hooks/useBulkOperations';
 import BulkOperationsToolbar from './BulkOperationsToolbar';
 import { apiFetch } from '@/lib/api-client';
+import { useToast } from '@/hooks/useToast';
+import ToastContainer from '@/components/shared/ToastContainer';
 
 interface PlantApprovalQueueProps {
   pendingPlants: PlantWithDetails[];
@@ -19,6 +21,7 @@ export default function PlantApprovalQueue({
   const [plants, setPlants] = useState(initialPlants);
   const [totalCount, setTotalCount] = useState(initialCount);
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
+  const { toasts, showToast, dismissToast } = useToast();
 
   // Bulk operations
   const {
@@ -114,7 +117,7 @@ export default function PlantApprovalQueue({
       document.body.removeChild(a);
     } catch (error) {
       console.error('Export failed:', error);
-      alert('Failed to export plants');
+      showToast('Failed to export plants', 'error');
     }
   };
 
@@ -147,6 +150,7 @@ export default function PlantApprovalQueue({
 
   return (
     <div className="plant-approval-queue">
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       <div className="approval-queue-header">
         <div className="approval-stats">
           <span className="approval-count">
@@ -182,6 +186,7 @@ export default function PlantApprovalQueue({
             onProcessingEnd={handleProcessingEnd}
             isSelected={isSelected(plant.id)}
             onSelect={() => selectPlant(plant.id)}
+            onToast={showToast}
           />
         ))}
       </div>

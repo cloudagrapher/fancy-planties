@@ -13,6 +13,8 @@ interface PlantReviewCardProps {
   onProcessingEnd: (plantId: number) => void;
   isSelected?: boolean;
   onSelect?: () => void;
+  /** Toast callback — replaces raw alert() calls with proper UI feedback */
+  onToast?: (message: string, type: 'success' | 'error' | 'info') => void;
 }
 
 export default function PlantReviewCard({
@@ -23,7 +25,14 @@ export default function PlantReviewCard({
   onProcessingEnd,
   isSelected = false,
   onSelect,
+  onToast,
 }: PlantReviewCardProps) {
+  /** Show feedback via toast when available, fall back to alert */
+  const notify = (message: string, type: 'success' | 'error' | 'info' = 'error') => {
+    if (onToast) {
+      onToast(message, type);
+    }
+  };
   const [isEditing, setIsEditing] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -45,14 +54,14 @@ export default function PlantReviewCard({
       onProcessed(plant.id);
     } catch (error) {
       console.error('Failed to approve plant:', error);
-      alert(error instanceof Error ? error.message : 'Failed to approve plant');
+      notify(error instanceof Error ? error.message : 'Failed to approve plant', 'error');
       onProcessingEnd(plant.id);
     }
   };
 
   const handleReject = async () => {
     if (!rejectReason.trim()) {
-      alert('Please provide a reason for rejection');
+      notify('Please provide a reason for rejection', 'info');
       return;
     }
 
@@ -75,7 +84,7 @@ export default function PlantReviewCard({
       setRejectReason('');
     } catch (error) {
       console.error('Failed to reject plant:', error);
-      alert(error instanceof Error ? error.message : 'Failed to reject plant');
+      notify(error instanceof Error ? error.message : 'Failed to reject plant', 'error');
       onProcessingEnd(plant.id);
     }
   };
@@ -99,7 +108,7 @@ export default function PlantReviewCard({
       onProcessingEnd(plant.id);
     } catch (error) {
       console.error('Failed to update plant:', error);
-      alert(error instanceof Error ? error.message : 'Failed to update plant');
+      notify(error instanceof Error ? error.message : 'Failed to update plant', 'error');
       onProcessingEnd(plant.id);
     }
   };

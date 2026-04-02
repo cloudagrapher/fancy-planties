@@ -63,6 +63,15 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#a7f3d0" />
       </head>
       <body className="antialiased">
+        {/* Skip-to-content link — keyboard/screen-reader users can bypass
+            navigation and jump straight to the page content. The target
+            id="main-content" is rendered in the dashboard & admin layouts. */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-white focus:text-emerald-700 focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-emerald-500 focus:text-sm focus:font-medium"
+        >
+          Skip to content
+        </a>
         <ServiceWorkerProvider>
           <QueryClientProvider>
             <StandaloneModeIndicator />

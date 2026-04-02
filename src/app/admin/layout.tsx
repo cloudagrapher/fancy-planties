@@ -19,7 +19,7 @@ export default async function AdminLayout({
         <AdminErrorBoundary>
           <div className="admin-layout">
             <AdminNavigation />
-            <main className="admin-content">
+            <main id="main-content" className="admin-content">
               {children}
             </main>
           </div>

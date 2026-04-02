@@ -136,7 +136,8 @@ export default function PropagationForm({ propagation, userId, onClose, onSucces
   const handleAddNewPlant = (query: string) => {
     // For now, we'll just show an alert. In a full implementation,
     // this would open a plant creation form
-    alert(`Add new plant functionality would be implemented here for: ${query}`);
+    // TODO: Open a plant creation form for the given query
+    console.info(`Add new plant requested for: ${query}`);
   };
 
   const handleS3UploadComplete = (s3Keys: string[]) => {
