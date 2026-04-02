@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useCallback, useMemo, lazy, Suspense, memo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   BookOpen, 
@@ -25,6 +25,7 @@ import S3Image from '@/components/shared/S3Image';
 import { useToast } from '@/hooks/useToast';
 import { usePersistedViewMode } from '@/hooks/usePersistedViewMode';
 import ToastContainer from '@/components/shared/ToastContainer';
+import ViewModeToggle from '@/components/shared/ViewModeToggle';
 
 // Lazy load heavy modal components — only needed when user opens a form/detail view
 const CareGuideForm = lazy(() => import('./CareGuideForm'));
@@ -112,7 +113,7 @@ const getTaxonomyLevelLabel = (level: string) => {
   }
 };
 
-const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => void }) => {
+const CareGuideCard = memo(function CareGuideCard({ guide, onClick }: { guide: CareGuide; onClick: () => void }) {
   const getTaxonomyDisplay = (guide: CareGuide) => {
     switch (guide.taxonomyLevel) {
       case 'family':
@@ -262,7 +263,7 @@ const CareGuideCard = ({ guide, onClick }: { guide: CareGuide; onClick: () => vo
       </Card>
     </div>
   );
-};
+});
 
 export default function HandbookDashboard({ careGuides: initialCareGuides, userId }: HandbookDashboardProps) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -356,20 +357,22 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
     }
   };
 
-  const handleOpenDetail = (guide: CareGuide) => {
+  const handleOpenDetail = useCallback((guide: CareGuide) => {
     setSelectedGuide(guide);
-  };
+  }, []);
 
-  const handleCloseDetail = () => {
+  const handleCloseDetail = useCallback(() => {
     setSelectedGuide(null);
-  };
+  }, []);
 
-  const handleEditGuide = () => {
-    if (selectedGuide) {
-      setEditingGuide(selectedGuide);
-      handleCloseDetail();
-    }
-  };
+  const handleEditGuide = useCallback(() => {
+    setSelectedGuide((current) => {
+      if (current) {
+        setEditingGuide(current);
+      }
+      return null;
+    });
+  }, []);
 
   const convertGuideToFormData = (guide: CareGuide) => {
     return {
@@ -523,36 +526,10 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
             title="Browse Care Guides"
             actions={
               <div className="flex items-center gap-2">
-                <div className="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                      viewMode === 'grid'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                    title="Grid view"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                    Grid
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                      viewMode === 'list'
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                    title="List view"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                    </svg>
-                    List
-                  </button>
-                </div>
+                <ViewModeToggle
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                />
                 <Button variant="ghost" onClick={() => setShowFilters(!showFilters)}>
                   <Filter className="h-4 w-4" />
                   Filters
