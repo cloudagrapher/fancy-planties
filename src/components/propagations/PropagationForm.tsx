@@ -297,7 +297,7 @@ export default function PropagationForm({ propagation, userId, onClose, onSucces
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="flex-1 overflow-auto max-h-[60vh] sm:max-h-[70vh]">
+          <form onSubmit={handleSubmit} className="flex-1 overflow-auto max-h-[60vh] sm:max-h-[70vh] [max-height:60dvh] sm:[max-height:70dvh]">
             <div className="p-6 space-y-6">
               {/* Plant Selection */}
               <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">

@@ -230,7 +230,7 @@ export default function CareGuideDetail({ guide, userId, onClose, onEdit, onDele
       >
         <div
           ref={focusTrapRef}
-          className="relative w-full max-w-4xl h-[90vh] flex flex-col mx-4"
+          className="relative w-full max-w-4xl h-[90vh] [height:90dvh] flex flex-col mx-4"
           onClick={(e) => e.stopPropagation()}
         >
           <Card className="h-full flex flex-col">
