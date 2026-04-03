@@ -13,10 +13,19 @@ import PlantLineage from './PlantLineage';
 import QuickCareActions from '../care/QuickCareActions';
 import S3Image from '@/components/shared/S3Image';
 import { apiFetch, ApiError } from '@/lib/api-client';
+import { invalidateCareQueries } from '@/lib/utils/query-helpers';
 import { formatDaysToHumanSchedule, parseFertilizerScheduleToDays } from '@/lib/utils/schedule-parser';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
+
+// Static tab definitions — hoisted to avoid re-creation on each render
+const DETAIL_TABS = [
+  { id: 'overview', label: 'Overview', icon: '🌱' },
+  { id: 'care', label: 'Care History', icon: '💚' },
+  { id: 'notes', label: 'Notes', icon: '📝' },
+  { id: 'lineage', label: 'Lineage', icon: '🌿' },
+] as const;
 
 interface PlantDetailModalProps {
   plantId: number;
@@ -92,12 +101,9 @@ export default function PlantDetailModal({
       return response.json();
     },
     onSuccess: () => {
-      // Refetch plant data and invalidate related queries
+      // Refetch plant data and invalidate all care-related caches
       refetch();
-      queryClient.invalidateQueries({ queryKey: ['plant-instances'] });
-      queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'] });
-      queryClient.invalidateQueries({ queryKey: ['care-dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      invalidateCareQueries(queryClient);
     },
     onError: (error) => {
       console.error('Quick care mutation failed:', error);
@@ -190,12 +196,7 @@ export default function PlantDetailModal({
 
               {/* Tab Navigation */}
               <div className="modal-tabs">
-                {[
-                  { id: 'overview', label: 'Overview', icon: '🌱' },
-                  { id: 'care', label: 'Care History', icon: '💚' },
-                  { id: 'notes', label: 'Notes', icon: '📝' },
-                  { id: 'lineage', label: 'Lineage', icon: '🌿' },
-                ].map((tab) => (
+                {DETAIL_TABS.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as 'overview' | 'care' | 'notes' | 'lineage')}
