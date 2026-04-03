@@ -16,11 +16,12 @@ interface NavigationItem {
   requiresCurator?: boolean;
 }
 
-interface BottomNavigationProps {
-  careNotificationCount?: number;
+interface DashboardStats {
+  overdueCount: number;
+  careDueToday: number;
 }
 
-export default function BottomNavigation({ careNotificationCount = 0 }: BottomNavigationProps) {
+export default function BottomNavigation() {
   const pathname = usePathname();
   const { triggerHaptic } = useHapticFeedback();
   const [pressedItem, setPressedItem] = useState<string | null>(null);
@@ -40,6 +41,23 @@ export default function BottomNavigation({ careNotificationCount = 0 }: BottomNa
   });
 
   const isCurator = curatorData?.isCurator ?? false;
+
+  // Fetch care notification count — shares cache with DashboardClient (same queryKey)
+  // This gives BottomNav a live badge count without an extra API call when the
+  // dashboard has already been visited in this session.
+  const { data: dashboardStats } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: async () => {
+      const response = await apiFetch('/api/dashboard');
+      if (!response.ok) return { overdueCount: 0, careDueToday: 0 } as DashboardStats;
+      return response.json() as Promise<DashboardStats>;
+    },
+    staleTime: 1000 * 60 * 2, // 2 minutes — avoid extra fetches on nav changes
+    gcTime: 1000 * 60 * 5,
+    retry: 1,
+  });
+
+  const careNotificationCount = (dashboardStats?.overdueCount ?? 0) + (dashboardStats?.careDueToday ?? 0);
 
   // Fetch pending approval count — only when user is a curator
   const { data: pendingData } = useQuery({

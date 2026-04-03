@@ -787,7 +787,7 @@ export const navigationComponentMocks = {
         {
           'data-testid': 'bottom-navigation',
           'data-active-route': props.activeRoute,
-          'data-care-notifications': props.careNotificationCount,
+          'data-care-notifications': 0,
         },
         React.createElement('a', { href: '/dashboard' }, 'Dashboard'),
         React.createElement('a', { href: '/plants' }, 'Plants'),

@@ -13,10 +13,11 @@ describe('BottomNavigation', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Mock API responses
+    // Mock API responses — include dashboard stats for care badge
     mockApiResponses({
       '/api/auth/curator-status': { isCurator: false },
       '/api/admin/pending-count': { count: 0 },
+      '/api/dashboard': { overdueCount: 0, careDueToday: 0 },
     });
   });
 
@@ -112,29 +113,58 @@ describe('BottomNavigation', () => {
   });
 
   describe('Badge Notifications', () => {
-    it('should display care notification badge', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={5} />, { route: '/dashboard' });
+    it('should display care notification badge from dashboard stats', async () => {
+      mockApiResponses({
+        '/api/auth/curator-status': { isCurator: false },
+        '/api/admin/pending-count': { count: 0 },
+        '/api/dashboard': { overdueCount: 3, careDueToday: 2 },
+      });
 
-      const careLink = screen.getByRole('link', { name: /navigate to care \(5 notifications\)/i });
-      expect(careLink).toBeInTheDocument();
+      renderWithProviders(<BottomNavigation />, { route: '/dashboard' });
+
+      // Wait for dashboard stats to load
+      await waitFor(() => {
+        const careLink = screen.getByRole('link', { name: /navigate to care \(5 notifications\)/i });
+        expect(careLink).toBeInTheDocument();
+      });
       
       const badge = screen.getByRole('status', { name: /5 notifications/i });
       expect(badge).toBeInTheDocument();
       expect(badge).toHaveTextContent('5');
     });
 
-    it('should display 99+ for large notification counts', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={150} />, { route: '/dashboard' });
+    it('should display 99+ for large notification counts', async () => {
+      mockApiResponses({
+        '/api/auth/curator-status': { isCurator: false },
+        '/api/admin/pending-count': { count: 0 },
+        '/api/dashboard': { overdueCount: 100, careDueToday: 50 },
+      });
 
-      const badge = screen.getByRole('status', { name: /150 notifications/i });
-      expect(badge).toHaveTextContent('99+');
+      renderWithProviders(<BottomNavigation />, { route: '/dashboard' });
+
+      await waitFor(() => {
+        const badge = screen.getByRole('status', { name: /150 notifications/i });
+        expect(badge).toHaveTextContent('99+');
+      });
     });
 
-    it('should not display badge when count is zero', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={0} />, { route: '/dashboard' });
+    it('should not display badge when count is zero', async () => {
+      mockApiResponses({
+        '/api/auth/curator-status': { isCurator: false },
+        '/api/admin/pending-count': { count: 0 },
+        '/api/dashboard': { overdueCount: 0, careDueToday: 0 },
+      });
+
+      renderWithProviders(<BottomNavigation />, { route: '/dashboard' });
+
+      // Wait for the query to settle
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith('/api/dashboard', expect.anything());
+      });
 
       const careLink = screen.getByRole('link', { name: /navigate to care/i });
       expect(careLink).toBeInTheDocument();
+      // No status badges should be present (no care or admin badges)
       expect(screen.queryByRole('status')).not.toBeInTheDocument();
     });
 
@@ -142,6 +172,7 @@ describe('BottomNavigation', () => {
       mockApiResponses({
         '/api/auth/curator-status': { isCurator: true },
         '/api/admin/pending-count': { count: 7 },
+        '/api/dashboard': { overdueCount: 0, careDueToday: 0 },
       });
 
       const { user } = renderWithProviders(<BottomNavigation />, { route: '/dashboard' });
@@ -274,12 +305,20 @@ describe('BottomNavigation', () => {
   });
 
   describe('Accessibility', () => {
-    it('should have proper ARIA labels for navigation links', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={3} />, { route: '/dashboard' });
+    it('should have proper ARIA labels for navigation links with care badge', async () => {
+      mockApiResponses({
+        '/api/auth/curator-status': { isCurator: false },
+        '/api/admin/pending-count': { count: 0 },
+        '/api/dashboard': { overdueCount: 2, careDueToday: 1 },
+      });
 
-      const careLink = screen.getByRole('link', { name: /navigate to care \(3 notifications\)/i });
-      expect(careLink).toHaveAttribute('aria-label', 'Navigate to Care (3 notifications)');
-      expect(careLink).toHaveAttribute('title', 'Navigate to Care (3 notifications)');
+      renderWithProviders(<BottomNavigation />, { route: '/dashboard' });
+
+      await waitFor(() => {
+        const careLink = screen.getByRole('link', { name: /navigate to care \(3 notifications\)/i });
+        expect(careLink).toHaveAttribute('aria-label', 'Navigate to Care (3 notifications)');
+        expect(careLink).toHaveAttribute('title', 'Navigate to Care (3 notifications)');
+      });
     });
 
     it('should have proper ARIA attributes for overflow menu', async () => {
@@ -293,12 +332,20 @@ describe('BottomNavigation', () => {
       expect(moreButton).toHaveAttribute('aria-expanded', 'true');
     });
 
-    it('should have proper role attributes for badges', () => {
-      renderWithProviders(<BottomNavigation careNotificationCount={5} />, { route: '/dashboard' });
+    it('should have proper role attributes for badges', async () => {
+      mockApiResponses({
+        '/api/auth/curator-status': { isCurator: false },
+        '/api/admin/pending-count': { count: 0 },
+        '/api/dashboard': { overdueCount: 3, careDueToday: 2 },
+      });
 
-      const badge = screen.getByRole('status', { name: /5 notifications/i });
-      expect(badge).toHaveAttribute('role', 'status');
-      expect(badge).toHaveAttribute('aria-label', '5 notifications');
+      renderWithProviders(<BottomNavigation />, { route: '/dashboard' });
+
+      await waitFor(() => {
+        const badge = screen.getByRole('status', { name: /5 notifications/i });
+        expect(badge).toHaveAttribute('role', 'status');
+        expect(badge).toHaveAttribute('aria-label', '5 notifications');
+      });
     });
 
     it('should hide decorative icons from screen readers', () => {

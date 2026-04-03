@@ -28,6 +28,7 @@ export default function PlantsPageClient({ userId }: PlantsPageClientProps) {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'], exact: false }),
       queryClient.invalidateQueries({ queryKey: ['care-dashboard'], exact: false }),
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
     ]);
   }, [queryClient]);
 
