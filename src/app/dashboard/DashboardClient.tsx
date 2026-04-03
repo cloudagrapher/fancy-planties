@@ -1,10 +1,12 @@
 'use client';
 
-import { lazy, Suspense, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { lazy, Suspense, useMemo, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import LogoutButton from '@/components/auth/LogoutButton';
 import { apiFetch, ApiError } from '@/lib/api-client';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { PullToRefreshIndicator } from '@/components/shared/PullToRefreshIndicator';
 import type { DashboardStats } from '@/app/api/dashboard/route';
 
 // Lazy load calendar — only needed when user has fertilizer events
@@ -20,6 +22,24 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ user }: DashboardClientProps) {
+  const queryClient = useQueryClient();
+
+  // Pull-to-refresh for mobile
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
+      queryClient.invalidateQueries({ queryKey: ['curator-status'] }),
+    ]);
+  }, [queryClient]);
+
+  const {
+    elementRef: pullToRefreshRef,
+    isRefreshing,
+    isPulling,
+    pullDistance,
+    progress: refreshProgress,
+  } = usePullToRefresh({ onRefresh: handleRefresh });
+
   // Check curator status via useQuery for proper caching and deduplication
   const { data: curatorData } = useQuery({
     queryKey: ['curator-status'],
@@ -75,7 +95,14 @@ export default function DashboardClient({ user }: DashboardClientProps) {
   }, [isLoading, stats, displayStats]);
 
   return (
-    <div className="page">
+    <div ref={pullToRefreshRef} className="page">
+      {/* Pull-to-refresh indicator (mobile) */}
+      <PullToRefreshIndicator
+        isVisible={isPulling || pullDistance > 0}
+        isRefreshing={isRefreshing}
+        progress={refreshProgress}
+      />
+
       <div className="container">
         <div className="page-content">
           {/* Header */}

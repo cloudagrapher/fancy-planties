@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import { Plus, TrendingUp, Clock, CheckCircle, Sprout, TreePine } from 'lucide-react';
 import PropagationCard from './PropagationCard';
 import { useToast } from '@/hooks/useToast';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import ToastContainer from '@/components/shared/ToastContainer';
+import { PullToRefreshIndicator } from '@/components/shared/PullToRefreshIndicator';
 import type { Propagation, Plant, PlantInstance } from '@/lib/db/schema';
 
 // Lazy load the form — only needed when user clicks "Add"
@@ -38,6 +40,19 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const { toasts, showToast, dismissToast } = useToast();
+
+  // Pull-to-refresh for mobile
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['propagations'] });
+  }, [queryClient]);
+
+  const {
+    elementRef: pullToRefreshRef,
+    isRefreshing,
+    isPulling,
+    pullDistance,
+    progress: refreshProgress,
+  } = usePullToRefresh({ onRefresh: handleRefresh });
 
   // Fetch propagations + stats in a single request (eliminates waterfall)
   const {
@@ -164,7 +179,14 @@ export default function PropagationDashboard({ userId }: PropagationDashboardPro
   }
 
   return (
-    <div>
+    <div ref={pullToRefreshRef}>
+      {/* Pull-to-refresh indicator (mobile) */}
+      <PullToRefreshIndicator
+        isVisible={isPulling || pullDistance > 0}
+        isRefreshing={isRefreshing}
+        progress={refreshProgress}
+      />
+
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       {/* Header */}
       <div className="mb-6">

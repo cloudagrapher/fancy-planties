@@ -24,7 +24,9 @@ import type { CareGuideFormData } from './CareGuideForm';
 import S3Image from '@/components/shared/S3Image';
 import { useToast } from '@/hooks/useToast';
 import { usePersistedViewMode } from '@/hooks/usePersistedViewMode';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import ToastContainer from '@/components/shared/ToastContainer';
+import { PullToRefreshIndicator } from '@/components/shared/PullToRefreshIndicator';
 import ViewModeToggle from '@/components/shared/ViewModeToggle';
 
 // Lazy load heavy modal components — only needed when user opens a form/detail view
@@ -276,6 +278,19 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
   const queryClient = useQueryClient();
   const { toasts, showToast, dismissToast } = useToast();
 
+  // Pull-to-refresh for mobile
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['care-guides', userId] });
+  }, [queryClient, userId]);
+
+  const {
+    elementRef: pullToRefreshRef,
+    isRefreshing,
+    isPulling,
+    pullDistance,
+    progress: refreshProgress,
+  } = usePullToRefresh({ onRefresh: handleRefresh });
+
   // Use React Query with server-rendered data as initial value — no full-page reload needed
   const { data: careGuides = initialCareGuides } = useQuery<CareGuide[]>({
     queryKey: ['care-guides', userId],
@@ -478,7 +493,14 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
   }, [careGuides]);
 
   return (
-    <div className="space-y-6">
+    <div ref={pullToRefreshRef} className="space-y-6">
+      {/* Pull-to-refresh indicator (mobile) */}
+      <PullToRefreshIndicator
+        isVisible={isPulling || pullDistance > 0}
+        isRefreshing={isRefreshing}
+        progress={refreshProgress}
+      />
+
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       {/* Header */}
       <div className="flex items-center justify-between">

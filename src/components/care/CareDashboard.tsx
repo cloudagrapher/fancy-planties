@@ -8,6 +8,8 @@ import CareStatistics from './CareStatistics';
 import { apiFetch, ApiError } from '@/lib/api-client';
 import { useToast } from '@/hooks/useToast';
 import ToastContainer from '@/components/shared/ToastContainer';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { PullToRefreshIndicator } from '@/components/shared/PullToRefreshIndicator';
 
 /** Invalidate all care-related query caches after logging care */
 function invalidateCareQueries(queryClient: ReturnType<typeof useQueryClient>, userId: number) {
@@ -165,6 +167,19 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
     ];
   }, [dashboardData]);
 
+  // Pull-to-refresh for mobile
+  const handleRefresh = useCallback(async () => {
+    await invalidateCareQueries(queryClient, userId);
+  }, [queryClient, userId]);
+
+  const {
+    elementRef: pullToRefreshRef,
+    isRefreshing,
+    isPulling,
+    pullDistance,
+    progress: refreshProgress,
+  } = usePullToRefresh({ onRefresh: handleRefresh });
+
   // Keyboard navigation for tabs (Left/Right arrow keys, Home/End)
   const handleTabKeyDown = useCallback((e: React.KeyboardEvent<HTMLButtonElement>) => {
     const currentIdx = TAB_IDS.indexOf(selectedTab);
@@ -232,7 +247,14 @@ export default function CareDashboard({ userId }: CareDashboardProps) {
   const activePlants = activeTab?.plants || [];
 
   return (
-    <div className="space-y-6" data-testid="care-dashboard">
+    <div ref={pullToRefreshRef} className="space-y-6" data-testid="care-dashboard">
+      {/* Pull-to-refresh indicator (mobile) */}
+      <PullToRefreshIndicator
+        isVisible={isPulling || pullDistance > 0}
+        isRefreshing={isRefreshing}
+        progress={refreshProgress}
+      />
+
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
 
