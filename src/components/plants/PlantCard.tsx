@@ -26,6 +26,32 @@ interface PlantCardProps {
   className?: string;
 }
 
+// Size configurations — static, hoisted out of render to avoid re-creation
+// Cards fill their grid cell — the grid's minmax() controls actual width
+// NOTE: The image aspect ratio is driven by CSS (.plant-card-image) which
+// switches from 4:3 to 1:1 on mobile (≤480px) to reduce aggressive
+// cropping of portrait plant photos.
+const SIZE_CONFIG = {
+  small: {
+    container: 'w-full',
+    image: '',
+    text: 'text-xs',
+    title: 'text-sm',
+  },
+  medium: {
+    container: 'w-full',
+    image: '',
+    text: 'text-xs',
+    title: 'text-sm',
+  },
+  large: {
+    container: 'w-full',
+    image: '',
+    text: 'text-sm',
+    title: 'text-base',
+  },
+} as const;
+
 function PlantCard({
   plant,
   size = 'medium',
@@ -47,34 +73,7 @@ function PlantCard({
   const [isSwipeActive, setIsSwipeActive] = useState(false);
   const { triggerHaptic } = useHapticFeedback();
 
-  // Size configurations with aspect-ratio-based image sizing
-  // Cards fill their grid cell — the grid's minmax() controls actual width
-  // NOTE: The image aspect ratio is driven by CSS (.plant-card-image) which
-  // switches from 4:3 to 1:1 on mobile (≤480px) to reduce aggressive
-  // cropping of portrait plant photos. The Tailwind class here is just a
-  // fallback / initial value.
-  const sizeConfig = {
-    small: {
-      container: 'w-full',
-      image: '',
-      text: 'text-xs',
-      title: 'text-sm',
-    },
-    medium: {
-      container: 'w-full',
-      image: '',
-      text: 'text-xs',
-      title: 'text-sm',
-    },
-    large: {
-      container: 'w-full',
-      image: '',
-      text: 'text-sm',
-      title: 'text-base',
-    },
-  };
-
-  const config = sizeConfig[size];
+  const config = SIZE_CONFIG[size];
 
   // Handle swipe gestures
   const swipeRef = useSwipeGestures({

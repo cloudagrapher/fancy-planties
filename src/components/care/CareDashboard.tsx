@@ -6,18 +6,9 @@ import type { CareDashboardData, EnhancedPlantInstance } from '@/lib/types/care-
 import CareTaskCard from './CareTaskCard';
 import CareStatistics from './CareStatistics';
 import { apiFetch, ApiError } from '@/lib/api-client';
+import { invalidateCareQueries } from '@/lib/utils/query-helpers';
 import { useToast } from '@/hooks/useToast';
 import ToastContainer from '@/components/shared/ToastContainer';
-
-/** Invalidate all care-related query caches after logging care */
-function invalidateCareQueries(queryClient: ReturnType<typeof useQueryClient>, userId: number) {
-  return Promise.all([
-    queryClient.invalidateQueries({ queryKey: ['care-dashboard', userId] }),
-    queryClient.invalidateQueries({ queryKey: ['plant-instances'] }),
-    queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'] }),
-    queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
-  ]);
-}
 
 const TAB_IDS = ['overdue', 'today', 'soon', 'recent'] as const;
 type TabId = typeof TAB_IDS[number];

@@ -65,6 +65,13 @@ const CareTaskCard = memo(function CareTaskCard({ plant, onQuickCare, showUrgenc
 
   const isLoading = loadingCareType !== null;
 
+  // Memoize schedule display — parseFertilizerSchedule + formatDaysToHumanSchedule
+  // are called on every card render; cache the result per schedule string.
+  const scheduleDisplay = useMemo(
+    () => formatDaysToHumanSchedule(careHelpers.parseFertilizerSchedule(plant.fertilizerSchedule)),
+    [plant.fertilizerSchedule]
+  );
+
   const statusInfo = useMemo(() => {
     switch (plant.careStatus) {
       case 'overdue':
@@ -167,7 +174,7 @@ const CareTaskCard = memo(function CareTaskCard({ plant, onQuickCare, showUrgenc
       <div className="mt-3 pt-3 border-t border-gray-200">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 text-xs text-gray-500">
           <span className="truncate">
-            Schedule: {formatDaysToHumanSchedule(careHelpers.parseFertilizerSchedule(plant.fertilizerSchedule))}
+            Schedule: {scheduleDisplay}
           </span>
           {plant.fertilizerDue && (
             <span className="truncate sm:text-right">
