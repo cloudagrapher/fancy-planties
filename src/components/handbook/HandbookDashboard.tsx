@@ -17,7 +17,8 @@ import {
   Thermometer,
   Scissors,
   RefreshCw,
-  TreeDeciduous
+  TreeDeciduous,
+  X
 } from 'lucide-react';
 import type { CareGuide } from '@/lib/db/schema';
 import type { CareGuideFormData } from './CareGuideForm';
@@ -569,9 +570,19 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
                 placeholder="Search guides by name, plant, or content..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-100"
+                className={`w-full pl-10 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-100 ${searchQuery ? 'pr-8' : 'pr-4'}`}
               />
               <Search className="h-4 w-4 text-slate-400 absolute left-3 top-2.5" aria-hidden="true" />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           </div>
 
