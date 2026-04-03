@@ -37,7 +37,7 @@ function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
             <p className="text-sm font-medium">{toast.message}</p>
             <button
               onClick={() => onDismiss(toast.id)}
-              className="ml-2 text-current opacity-60 hover:opacity-100 flex-shrink-0"
+              className="ml-2 text-current opacity-60 hover:opacity-100 flex-shrink-0 p-1 rounded -mr-1 -my-1 min-w-[32px] min-h-[32px] flex items-center justify-center"
               aria-label="Dismiss notification"
             >
               ✕

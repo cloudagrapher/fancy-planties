@@ -738,6 +738,14 @@ select {
   height: auto;
 }
 
+/* Restore touch-target minimum on touch devices so quick-action buttons
+   remain accessible even though the plant-card .btn--sm rule clears min-height. */
+@media (hover: none) {
+  .plant-card .btn--sm {
+    min-height: 44px;
+  }
+}
+
 /* Override button transforms in plant cards to prevent layout issues */
 .plant-card .btn:hover {
   transform: none;
