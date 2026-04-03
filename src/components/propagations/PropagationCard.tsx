@@ -424,7 +424,7 @@ export default memo(function PropagationCard({ propagation, userId, onUpdate, on
                 <button
                   onClick={() => handleStatusUpdate(currentStatus.nextStatus!)}
                   disabled={isUpdatingStatus}
-                  className="flex items-center justify-center px-3 py-2 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 min-h-[36px] touch-manipulation"
+                  className="flex items-center justify-center px-3 py-2 text-sm bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 min-h-[44px] touch-manipulation"
                 >
                   <ArrowRight className="w-4 h-4 mr-1" />
                   {isUpdatingStatus ? 'Updating...' : (
@@ -440,7 +440,7 @@ export default memo(function PropagationCard({ propagation, userId, onUpdate, on
               {propagation.status === 'planted' && (
                 <button
                   onClick={() => setShowConvertModal(true)}
-                  className="flex items-center justify-center px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors min-h-[36px] touch-manipulation"
+                  className="flex items-center justify-center px-3 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors min-h-[44px] touch-manipulation"
                 >
                   <TreePine className="w-4 h-4 mr-1" />
                   Convert to Plant
@@ -451,7 +451,7 @@ export default memo(function PropagationCard({ propagation, userId, onUpdate, on
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={() => setShowEditForm(true)}
-                  className="flex items-center justify-center px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors flex-1"
+                  className="flex items-center justify-center px-3 py-1.5 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors flex-1 min-h-[44px]"
                   aria-label={`Edit ${propagation.nickname || 'propagation'}`}
                 >
                   <Edit className="w-3 h-3 mr-1" />
@@ -460,7 +460,7 @@ export default memo(function PropagationCard({ propagation, userId, onUpdate, on
                 <div ref={menuRef} className="relative">
                   <button
                     onClick={() => setShowMenu(!showMenu)}
-                    className="p-2 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100 transition-colors"
+                    className="p-3 text-gray-400 hover:text-gray-600 rounded hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                     aria-label="More options"
                     aria-expanded={showMenu}
                     aria-haspopup="true"

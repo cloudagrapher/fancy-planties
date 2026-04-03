@@ -303,7 +303,7 @@ export default function SearchResults({
             {results.relatedSearches.map((search, index) => (
               <button
                 key={index}
-                className="px-3 py-1 text-sm text-gray-600 border border-gray-300 rounded-full hover:bg-gray-50"
+                className="px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-full hover:bg-gray-50 min-h-[44px]"
               >
                 {search}
               </button>

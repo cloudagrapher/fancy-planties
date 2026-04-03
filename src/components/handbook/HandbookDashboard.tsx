@@ -580,7 +580,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedLevel('all')}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition min-h-[36px] sm:min-h-0 ${
                     selectedLevel === 'all'
                       ? 'bg-emerald-100 text-emerald-800'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -592,7 +592,7 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
                   <button
                     key={level}
                     onClick={() => setSelectedLevel(level)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition capitalize ${
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition capitalize min-h-[36px] sm:min-h-0 ${
                       selectedLevel === level
                         ? 'bg-emerald-100 text-emerald-800'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'

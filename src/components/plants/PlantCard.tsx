@@ -190,7 +190,7 @@ function PlantCard({
         {onCareAction && (
           <button
             onClick={(e) => handleCareAction('fertilize', e)}
-            className="btn btn--sm btn--outline min-h-[36px] min-w-[44px]"
+            className="btn btn--sm btn--outline min-h-[44px] min-w-[44px]"
             title="Quick care"
             aria-label={`Quick care for ${plant.displayName}`}
           >
@@ -200,7 +200,7 @@ function PlantCard({
         {onEdit && (
           <button
             onClick={handleEdit}
-            className="btn btn--sm btn--secondary min-h-[36px] min-w-[44px]"
+            className="btn btn--sm btn--secondary min-h-[44px] min-w-[44px]"
             title="Edit plant"
             aria-label={`Edit ${plant.displayName}`}
           >

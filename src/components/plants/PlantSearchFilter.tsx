@@ -551,7 +551,7 @@ export default function PlantSearchFilter({
                   key={option.field}
                   onClick={() => handleSortChange(option.field)}
                   className={`
-                    px-3 py-1 text-xs rounded-full border transition-colors
+                    px-3 py-1.5 text-xs rounded-full border transition-colors min-h-[36px] sm:min-h-0
                     ${sortBy === option.field
                       ? 'bg-primary-100 border-primary-300 text-primary-700'
                       : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'

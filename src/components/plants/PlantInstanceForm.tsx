@@ -1048,7 +1048,7 @@ export default function PlantInstanceForm({
                         }
                       }}
                       disabled={!newNoteInput.trim()}
-                      className="px-3 py-1 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-2 text-sm bg-primary-600 text-white rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                     >
                       Add Note
                     </button>

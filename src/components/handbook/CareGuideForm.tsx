@@ -909,7 +909,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                             <button
                               type="button"
                               onClick={() => removeTag(tag)}
-                              className="hover:text-emerald-900 focus:outline-none"
+                              className="hover:text-emerald-900 focus:outline-none p-0.5 -mr-0.5"
                               aria-label={`Remove tag ${tag}`}
                             >
                               <X className="h-3 w-3" />
@@ -933,7 +933,7 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                       <button
                         type="button"
                         onClick={() => addTag(tagInput)}
-                        className="px-3 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+                        className="px-3 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors min-h-[44px]"
                       >
                         Add
                       </button>
