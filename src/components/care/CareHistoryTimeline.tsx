@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import Image from 'next/image';
+import S3Image from '@/components/shared/S3Image';
 import type { EnhancedCareHistory } from '@/lib/types/care-types';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { careHelpers } from '@/lib/types/care-types';
@@ -46,7 +47,12 @@ export default memo(function CareHistoryTimeline({
           {displayHistory.map((care) => {
             const careTypeDisplay = careHelpers.getCareTypeDisplay(care.careType as 'fertilizer' | 'water' | 'repot' | 'prune' | 'inspect' | 'other');
 
-            
+            // Prefer S3 image keys (CloudFront-served, authenticated) over legacy
+            // public URL images. Fall back to old images[] for pre-S3 care entries.
+            const s3Keys = care.s3ImageKeys && care.s3ImageKeys.length > 0 ? care.s3ImageKeys : null;
+            const legacyImages = !s3Keys && care.images && care.images.length > 0 ? care.images : null;
+            const imageCount = s3Keys ? s3Keys.length : (legacyImages ? legacyImages.length : 0);
+
             return (
               <div key={care.id} className="relative flex items-start space-x-4">
                 {/* Timeline dot */}
@@ -107,22 +113,37 @@ export default memo(function CareHistoryTimeline({
                     )}
                   </div>
 
-                  {/* Images */}
-                  {care.images && care.images.length > 0 && (
+                  {/* Images — prefer CloudFront S3 thumbnails, fall back to legacy URLs */}
+                  {imageCount > 0 && (
                     <div className="flex space-x-2 mt-3">
-                      {care.images.slice(0, 3).map((image, imgIndex) => (
-                        <Image
-                          key={imgIndex}
-                          src={image}
-                          alt={`Care photo ${imgIndex + 1}`}
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 rounded-lg object-cover border border-gray-200"
-                        />
-                      ))}
-                      {care.images.length > 3 && (
-                        <div key="more-images" className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                          <span className="text-xs text-gray-500">+{care.images.length - 3}</span>
+                      {s3Keys ? (
+                        s3Keys.slice(0, 3).map((s3Key, imgIndex) => (
+                          <div key={s3Key} className="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                            <S3Image
+                              s3Key={s3Key}
+                              alt={`Care photo ${imgIndex + 1}`}
+                              fill
+                              className="object-cover"
+                              thumbnailSize="tiny"
+                              sizes="48px"
+                            />
+                          </div>
+                        ))
+                      ) : (
+                        legacyImages!.slice(0, 3).map((image, imgIndex) => (
+                          <Image
+                            key={imgIndex}
+                            src={image}
+                            alt={`Care photo ${imgIndex + 1}`}
+                            width={48}
+                            height={48}
+                            className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                          />
+                        ))
+                      )}
+                      {imageCount > 3 && (
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs text-gray-500">+{imageCount - 3}</span>
                         </div>
                       )}
                     </div>
