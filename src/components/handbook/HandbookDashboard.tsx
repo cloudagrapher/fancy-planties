@@ -268,6 +268,7 @@ const CareGuideCard = memo(function CareGuideCard({ guide, onClick }: { guide: C
 export default function HandbookDashboard({ careGuides: initialCareGuides, userId }: HandbookDashboardProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('all');
+  const [sortOrder, setSortOrder] = useState<'updated' | 'alpha'>('updated');
   const [showFilters, setShowFilters] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedGuide, setSelectedGuide] = useState<CareGuide | null>(null);
@@ -438,23 +439,31 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
     };
   };
 
-  // Filter care guides (memoized to avoid recalc on unrelated state changes)
-  const filteredGuides = useMemo(() => careGuides.filter((guide) => {
-    const query = searchQuery.toLowerCase();
-    const matchesSearch = !searchQuery || 
-      guide.title.toLowerCase().includes(query) ||
-      guide.description?.toLowerCase().includes(query) ||
-      guide.commonName?.toLowerCase().includes(query) ||
-      guide.family?.toLowerCase().includes(query) ||
-      guide.genus?.toLowerCase().includes(query) ||
-      guide.species?.toLowerCase().includes(query) ||
-      guide.cultivar?.toLowerCase().includes(query) ||
-      (guide.tags && guide.tags.some(tag => tag.toLowerCase().includes(query)));
-    
-    const matchesLevel = selectedLevel === 'all' || guide.taxonomyLevel === selectedLevel;
-    
-    return matchesSearch && matchesLevel;
-  }), [careGuides, searchQuery, selectedLevel]);
+  // Filter and sort care guides (memoized to avoid recalc on unrelated state changes)
+  const filteredGuides = useMemo(() => {
+    const filtered = careGuides.filter((guide) => {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = !searchQuery || 
+        guide.title.toLowerCase().includes(query) ||
+        guide.description?.toLowerCase().includes(query) ||
+        guide.commonName?.toLowerCase().includes(query) ||
+        guide.family?.toLowerCase().includes(query) ||
+        guide.genus?.toLowerCase().includes(query) ||
+        guide.species?.toLowerCase().includes(query) ||
+        guide.cultivar?.toLowerCase().includes(query) ||
+        (guide.tags && guide.tags.some(tag => tag.toLowerCase().includes(query)));
+      
+      const matchesLevel = selectedLevel === 'all' || guide.taxonomyLevel === selectedLevel;
+      
+      return matchesSearch && matchesLevel;
+    });
+
+    if (sortOrder === 'alpha') {
+      return [...filtered].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    // Default: recently updated (server already returns desc updatedAt order)
+    return filtered;
+  }, [careGuides, searchQuery, selectedLevel, sortOrder]);
 
   // Statistics (memoized — only depends on the full careGuides list)
   const stats = useMemo(() => {
@@ -530,6 +539,16 @@ export default function HandbookDashboard({ careGuides: initialCareGuides, userI
                   viewMode={viewMode}
                   onViewModeChange={setViewMode}
                 />
+                <button
+                  onClick={() => setSortOrder(s => s === 'updated' ? 'alpha' : 'updated')}
+                  className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium border bg-white/70 border-slate-200/70 text-slate-700 hover:bg-white transition"
+                  title={sortOrder === 'updated' ? 'Currently: Recently Updated — click for A–Z' : 'Currently: A–Z — click for Recently Updated'}
+                >
+                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                  </svg>
+                  <span className="hidden sm:inline">{sortOrder === 'updated' ? 'Recent' : 'A–Z'}</span>
+                </button>
                 <Button variant="ghost" onClick={() => setShowFilters(!showFilters)}>
                   <Filter className="h-4 w-4" />
                   Filters

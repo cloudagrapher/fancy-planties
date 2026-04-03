@@ -253,7 +253,7 @@ export default function PropagationForm({ propagation, userId, onClose, onSucces
           refetchType: 'all'
         }),
         queryClient.invalidateQueries({
-          queryKey: ['care-dashboard-stats'],
+          queryKey: ['dashboard-stats'],
           refetchType: 'all'
         })
       ]);

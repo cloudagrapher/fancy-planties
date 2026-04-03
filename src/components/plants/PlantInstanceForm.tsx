@@ -301,7 +301,7 @@ export default function PlantInstanceForm({
         refetchType: 'all'
       });
       await queryClient.invalidateQueries({ queryKey: ['care-dashboard'] });
-      await queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      await queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       await queryClient.invalidateQueries({ queryKey: ['user-locations'] });
 
       // Force refetch of active queries
