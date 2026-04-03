@@ -177,34 +177,45 @@ describe('Navigation Integration Flows', () => {
   });
 
   describe('Notification Badge Integration', () => {
-    it('should display care notification badges', () => {
+    it('should display care notification badges from dashboard stats', async () => {
+      mockApiResponses({
+        '/api/auth/curator-status': { isCurator: false },
+        '/api/admin/pending-count': { count: 0 },
+        '/api/dashboard': { overdueCount: 4, careDueToday: 3 },
+      });
+
       renderWithProviders(
-        <BottomNavigation careNotificationCount={7} />, 
+        <BottomNavigation />, 
         { route: '/dashboard' }
       );
 
-      // Should show care badge
-      expect(screen.getByRole('status', { name: /7 notifications/i })).toBeInTheDocument();
-      expect(screen.getByRole('status', { name: /7 notifications/i })).toHaveTextContent('7');
+      // Wait for dashboard stats to load
+      await waitFor(() => {
+        expect(screen.getByRole('status', { name: /7 notifications/i })).toBeInTheDocument();
+        expect(screen.getByRole('status', { name: /7 notifications/i })).toHaveTextContent('7');
+      });
     });
 
     it('should handle badge overflow correctly', async () => {
       mockApiResponses({
         '/api/auth/curator-status': { isCurator: true },
         '/api/admin/pending-count': { count: 150 },
+        '/api/dashboard': { overdueCount: 120, careDueToday: 80 },
       });
 
       const { user } = renderWithProviders(
-        <BottomNavigation careNotificationCount={200} />, 
+        <BottomNavigation />, 
         { route: '/dashboard' }
       );
 
-      // Care badge should show 99+
-      expect(screen.getByRole('status', { name: /200 notifications/i })).toHaveTextContent('99+');
+      // Wait for dashboard stats to load, then care badge should show 99+
+      await waitFor(() => {
+        expect(screen.getByRole('status', { name: /200 notifications/i })).toHaveTextContent('99+');
+      });
 
       // Wait for admin status to load
       await waitFor(() => {
-        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status');
+        expect(global.fetch).toHaveBeenCalledWith('/api/auth/curator-status', expect.anything());
       }, { timeout: 3000 });
 
       // Open overflow menu to see admin badge

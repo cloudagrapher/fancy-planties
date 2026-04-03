@@ -95,7 +95,9 @@ export default function PlantDetailModal({
       // Refetch plant data and invalidate related queries
       refetch();
       queryClient.invalidateQueries({ queryKey: ['plant-instances'] });
+      queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'] });
       queryClient.invalidateQueries({ queryKey: ['care-dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
     onError: (error) => {
       console.error('Quick care mutation failed:', error);
