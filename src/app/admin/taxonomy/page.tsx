@@ -1,7 +1,13 @@
 import 'server-only';
+import type { Metadata } from 'next';
 import { requireCuratorSession } from '@/lib/auth/server';
 import TaxonomyManagementClient from './TaxonomyManagementClient';
 import { getTaxonomyHierarchy, getTaxonomyStats } from '@/lib/db/queries/admin-taxonomy';
+
+export const metadata: Metadata = {
+  title: 'Taxonomy Management — Fancy Planties Admin',
+  description: 'Manage plant taxonomy hierarchy and relationships.',
+};
 
 export default async function TaxonomyManagementPage() {
   await requireCuratorSession();

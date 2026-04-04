@@ -1,8 +1,14 @@
 import 'server-only';
+import type { Metadata } from 'next';
 import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
 import OptimizedPlantManagement from '@/components/admin/OptimizedPlantManagement';
 import AdminErrorBoundary from '@/components/admin/AdminErrorBoundary';
 import RefreshPageButton from '@/components/shared/RefreshPageButton';
+
+export const metadata: Metadata = {
+  title: 'Plant Management — Fancy Planties Admin',
+  description: 'Manage the plant database and submissions.',
+};
 
 export default async function AdminPlants() {
   try {

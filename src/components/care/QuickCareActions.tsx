@@ -5,6 +5,8 @@ import type { QuickCareAction } from '@/lib/types/care-types';
 import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { careHelpers } from '@/lib/types/care-types';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 interface QuickCareActionsProps {
   plantInstance: EnhancedPlantInstance;
@@ -29,6 +31,17 @@ export default function QuickCareActions({
 
   // Lock body scroll when notes modal is open (prevents background scroll on mobile)
   useScrollLock(showNotesModal);
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(showNotesModal);
+
+  const closeModal = () => {
+    if (!isLoading) {
+      setShowNotesModal(false);
+      setSelectedAction(null);
+      setNotes('');
+    }
+  };
+
+  useEscapeKey(closeModal, showNotesModal && !isLoading);
 
   const handleActionClick = (action: QuickCareAction) => {
     setSelectedAction(action);
@@ -78,22 +91,19 @@ export default function QuickCareActions({
       {showNotesModal && selectedAction && (
         <div
           className="modal-overlay"
-          onClick={() => {
-            if (!isLoading) {
-              setShowNotesModal(false);
-              setSelectedAction(null);
-              setNotes('');
-            }
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeModal();
           }}
           role="dialog"
           aria-modal="true"
-          aria-label={`Log ${selectedAction.label}`}
+          aria-labelledby="quick-care-modal-title"
         >
           <div
+            ref={focusTrapRef}
             className="bg-white rounded-lg max-w-md w-full mx-4 p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold mb-4">
+            <h3 id="quick-care-modal-title" className="text-lg font-semibold mb-4">
               Log {selectedAction.label} for {plantInstance.displayName}
             </h3>
             
@@ -117,11 +127,7 @@ export default function QuickCareActions({
 
             <div className="flex flex-col-reverse sm:flex-row sm:space-x-3 gap-2 sm:gap-0">
               <button
-                onClick={() => {
-                  setShowNotesModal(false);
-                  setSelectedAction(null);
-                  setNotes('');
-                }}
+                onClick={closeModal}
                 disabled={isLoading}
                 className="btn btn--ghost min-h-[44px]"
               >
