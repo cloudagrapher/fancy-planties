@@ -99,18 +99,7 @@ function PlantCard({
   // Handle card press
   const handlePress = () => {
     triggerHaptic('selection');
-    
-    if (isSelectionMode) {
-      // In selection mode, toggle selection
-      if (onSelect) {
-        onSelect(plant);
-      }
-    } else {
-      // Normal mode, open plant detail
-      if (onSelect) {
-        onSelect(plant);
-      }
-    }
+    onSelect?.(plant);
   };
 
   // Handle care action

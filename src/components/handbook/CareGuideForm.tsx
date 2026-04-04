@@ -412,9 +412,13 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
             <div className="space-y-4">
 
                 {/* Tabs */}
-                <div className="flex gap-2 mb-6">
+                <div role="tablist" aria-label="Care guide sections" className="flex gap-2 mb-6">
                   <button
                     type="button"
+                    role="tab"
+                    aria-selected={activeTab === 'basic'}
+                    aria-controls="cgf-panel-basic"
+                    id="cgf-tab-basic"
                     onClick={() => setActiveTab('basic')}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                       activeTab === 'basic'
@@ -426,6 +430,10 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </button>
                   <button
                     type="button"
+                    role="tab"
+                    aria-selected={activeTab === 'care'}
+                    aria-controls="cgf-panel-care"
+                    id="cgf-tab-care"
                     onClick={() => setActiveTab('care')}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                       activeTab === 'care'
@@ -437,7 +445,12 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
                   </button>
                 </div>
             {activeTab === 'basic' && (
-              <div className="space-y-6">
+              <div
+                role="tabpanel"
+                id="cgf-panel-basic"
+                aria-labelledby="cgf-tab-basic"
+                className="space-y-6"
+              >
                 {/* Taxonomy Section */}
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-4">
@@ -564,7 +577,12 @@ export default function CareGuideForm({ isOpen, onClose, onSubmit, userId, initi
             )}
 
             {activeTab === 'care' && (
-              <div className="space-y-6">
+              <div
+                role="tabpanel"
+                id="cgf-panel-care"
+                aria-labelledby="cgf-tab-care"
+                className="space-y-6"
+              >
                 {/* Root Structure & Growth Habits Section */}
                 <Card className="p-4">
                   <div className="flex items-center gap-2 mb-4">

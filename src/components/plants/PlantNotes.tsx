@@ -17,38 +17,48 @@ interface PlantNotesProps {
   onNotesUpdate: () => void;
 }
 
+/**
+ * Parse stored notes text into structured entries.
+ * Handles both the modern JSON array format and legacy plain-text notes.
+ * Hoisted outside the component so it's stable across renders.
+ */
+function parseNotes(notesText: string): NoteEntry[] {
+  if (!notesText.trim()) return [];
+
+  // Try to parse as structured notes first
+  try {
+    const parsed = JSON.parse(notesText);
+    if (Array.isArray(parsed) && parsed.every(entry => entry.id && entry.content && entry.timestamp)) {
+      return parsed;
+    }
+  } catch {
+    // If not JSON or invalid structure, treat as legacy single note
+  }
+
+  // Convert legacy single note to structured format
+  return [{
+    id: 'legacy-' + Date.now(),
+    content: notesText,
+    timestamp: new Date().toISOString()
+  }];
+}
+
+/**
+ * Serialize note entries back to a JSON string for storage.
+ * Strips the UI-only `isEditing` flag before persisting.
+ * Hoisted outside the component so it's stable across renders.
+ */
+function serializeNotes(entries: NoteEntry[]): string {
+  if (entries.length === 0) return '';
+  return JSON.stringify(entries.map(({ isEditing: _isEditing, ...entry }) => entry));
+}
+
 export default function PlantNotes({ plantId, initialNotes, onNotesUpdate }: PlantNotesProps) {
-  const [noteEntries, setNoteEntries] = useState<NoteEntry[]>([]);
+  // Lazy initializer avoids an empty-then-populated flash on first render.
+  // The useEffect below handles subsequent prop changes (e.g. after a refetch).
+  const [noteEntries, setNoteEntries] = useState<NoteEntry[]>(() => parseNotes(initialNotes));
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState('');
-
-  // Parse existing notes into structured entries
-  const parseNotes = (notesText: string): NoteEntry[] => {
-    if (!notesText.trim()) return [];
-    
-    // Try to parse as structured notes first
-    try {
-      const parsed = JSON.parse(notesText);
-      if (Array.isArray(parsed) && parsed.every(entry => entry.id && entry.content && entry.timestamp)) {
-        return parsed;
-      }
-    } catch {
-      // If not JSON or invalid structure, treat as legacy single note
-    }
-    
-    // Convert legacy single note to structured format
-    return [{
-      id: 'legacy-' + Date.now(),
-      content: notesText,
-      timestamp: new Date().toISOString()
-    }];
-  };
-
-  // Serialize note entries back to string for storage
-  const serializeNotes = (entries: NoteEntry[]): string => {
-    if (entries.length === 0) return '';
-    return JSON.stringify(entries.map(({ isEditing: _isEditing, ...entry }) => entry));
-  };
 
   // Update notes mutation
   const updateNotesMutation = useMutation({
@@ -72,7 +82,9 @@ export default function PlantNotes({ plantId, initialNotes, onNotesUpdate }: Pla
     },
   });
 
-  // Initialize notes from props
+  // Sync when the parent re-fetches and provides updated initialNotes
+  // (e.g. after another tab edits the plant, or after a full refetch).
+  // The lazy useState initializer above handles the first render without a flash.
   useEffect(() => {
     setNoteEntries(parseNotes(initialNotes));
   }, [initialNotes]);
