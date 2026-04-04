@@ -221,7 +221,6 @@ export default function PlantDetailModal({
                 {activeTab === 'care' && (
                   <CareHistoryTimeline 
                     careHistory={data.careHistory}
-                    plantInstance={data.plant}
                   />
                 )}
                 
