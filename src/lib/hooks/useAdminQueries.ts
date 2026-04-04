@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiFetch, ApiError } from '@/lib/api-client';
 import type { 
   PaginatedUsers, 
   UserFilters, 
@@ -13,10 +14,6 @@ import type {
 } from '@/lib/db/queries/admin-plants';
 import type { AdminDashboardStats } from '@/lib/types/admin-types';
 import type { AuditLogFilters } from '@/lib/db/queries/audit-logs';
-
-interface FetchError extends Error {
-  status?: number;
-}
 
 // Query keys
 export const adminQueryKeys = {
@@ -66,12 +63,10 @@ export function useAdminUsers(
         params.set('emailVerified', filters.emailVerified.toString());
       }
 
-      const response = await fetch(`/api/admin/users?${params.toString()}`);
+      const response = await apiFetch(`/api/admin/users?${params.toString()}`);
       
       if (!response.ok) {
-        const error: FetchError = new Error('Failed to fetch users');
-        error.status = response.status;
-        throw error;
+        throw await ApiError.fromResponse(response, 'Failed to fetch users');
       }
 
       return response.json();
@@ -105,12 +100,10 @@ export function useAdminPlants(
         params.set('isVerified', filters.isVerified.toString());
       }
 
-      const response = await fetch(`/api/admin/plants?${params.toString()}`);
+      const response = await apiFetch(`/api/admin/plants?${params.toString()}`);
       
       if (!response.ok) {
-        const error: FetchError = new Error('Failed to fetch plants');
-        error.status = response.status;
-        throw error;
+        throw await ApiError.fromResponse(response, 'Failed to fetch plants');
       }
 
       return response.json();
@@ -123,10 +116,10 @@ export function useAdminPlantTaxonomy() {
   return useQuery({
     queryKey: adminQueryKeys.plants.taxonomy(),
     queryFn: async () => {
-      const response = await fetch('/api/admin/plants/taxonomy');
+      const response = await apiFetch('/api/admin/plants/taxonomy');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch taxonomy options');
+        throw await ApiError.fromResponse(response, 'Failed to fetch taxonomy options');
       }
 
       return response.json();
@@ -156,10 +149,10 @@ export function useAdminAuditLogs(
         }
       });
 
-      const response = await fetch(`/api/admin/audit?${params.toString()}`);
+      const response = await apiFetch(`/api/admin/audit?${params.toString()}`);
       
       if (!response.ok) {
-        throw new Error('Failed to fetch audit logs');
+        throw await ApiError.fromResponse(response, 'Failed to fetch audit logs');
       }
 
       return response.json();
@@ -173,10 +166,10 @@ export function useAdminDashboardStats() {
   return useQuery<AdminDashboardStats>({
     queryKey: adminQueryKeys.dashboard.stats(),
     queryFn: async () => {
-      const response = await fetch('/api/admin/dashboard/stats');
+      const response = await apiFetch('/api/admin/dashboard/stats');
       
       if (!response.ok) {
-        throw new Error('Failed to fetch dashboard stats');
+        throw await ApiError.fromResponse(response, 'Failed to fetch dashboard stats');
       }
 
       return response.json() as Promise<AdminDashboardStats>;
@@ -192,15 +185,14 @@ export function useUpdateCuratorStatus() {
 
   return useMutation({
     mutationFn: async ({ userId, action }: { userId: number; action: 'promote' | 'demote' }) => {
-      const response = await fetch(`/api/admin/users/${userId}/curator-status`, {
+      const response = await apiFetch(`/api/admin/users/${userId}/curator-status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action }),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Failed to update curator status' }));
-        throw new Error(error.error || 'Failed to update curator status');
+        throw await ApiError.fromResponse(response, 'Failed to update curator status');
       }
 
       return response.json();
@@ -217,15 +209,14 @@ export function useUpdatePlant() {
 
   return useMutation({
     mutationFn: async ({ plantId, data }: { plantId: number; data: Partial<PlantWithDetails> }) => {
-      const response = await fetch(`/api/admin/plants/${plantId}`, {
+      const response = await apiFetch(`/api/admin/plants/${plantId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Failed to update plant' }));
-        throw new Error(error.error || 'Failed to update plant');
+        throw await ApiError.fromResponse(response, 'Failed to update plant');
       }
 
       return response.json();
@@ -242,15 +233,14 @@ export function useBulkUserOperation() {
 
   return useMutation({
     mutationFn: async ({ operation, userIds }: { operation: string; userIds: number[] }) => {
-      const response = await fetch('/api/admin/users/bulk-operations', {
+      const response = await apiFetch('/api/admin/users/bulk-operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ operation, userIds }),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Bulk operation failed' }));
-        throw new Error(error.error || 'Bulk operation failed');
+        throw await ApiError.fromResponse(response, 'Bulk operation failed');
       }
 
       return response.json();
@@ -266,15 +256,14 @@ export function useBulkPlantOperation() {
 
   return useMutation({
     mutationFn: async ({ operation, plantIds }: { operation: string; plantIds: number[] }) => {
-      const response = await fetch('/api/admin/plants/bulk-operations', {
+      const response = await apiFetch('/api/admin/plants/bulk-operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ operation, plantIds }),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Bulk operation failed' }));
-        throw new Error(error.error || 'Bulk operation failed');
+        throw await ApiError.fromResponse(response, 'Bulk operation failed');
       }
 
       return response.json();
