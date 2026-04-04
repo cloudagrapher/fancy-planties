@@ -1,6 +1,12 @@
 import 'server-only';
+import type { Metadata } from 'next';
 import { AdminPlantQueries } from '@/lib/db/queries/admin-plants';
 import PlantApprovalQueue from '@/components/admin/PlantApprovalQueue';
+
+export const metadata: Metadata = {
+  title: 'Pending Approvals — Fancy Planties Admin',
+  description: 'Review and approve user-submitted plants.',
+};
 
 export default async function AdminPendingPlants() {
   // Get pending plants (unverified)

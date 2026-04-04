@@ -1,8 +1,14 @@
 import 'server-only';
+import type { Metadata } from 'next';
 import OptimizedUserManagement from '@/components/admin/OptimizedUserManagement';
 import { AdminUserErrorBoundary } from '@/components/admin/AdminErrorBoundary';
 import { requirePermission } from '@/lib/auth/admin-auth';
 import { safeValidate, userFiltersSchema, userSortSchema } from '@/lib/validation/admin-schemas';
+
+export const metadata: Metadata = {
+  title: 'User Management — Fancy Planties Admin',
+  description: 'Manage user accounts, roles, and permissions.',
+};
 
 // Force dynamic rendering for search params
 export const dynamic = 'force-dynamic';

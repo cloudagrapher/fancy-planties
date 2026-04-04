@@ -18,5 +18,8 @@ export function invalidateCareQueries(
     queryClient.invalidateQueries({ queryKey: ['plant-instances'] }),
     queryClient.invalidateQueries({ queryKey: ['plant-instances-enhanced'] }),
     queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
+    // Invalidate any open plant detail modals so care history + status
+    // stay fresh after logging care from the dashboard or other surfaces.
+    queryClient.invalidateQueries({ queryKey: ['plant-detail'] }),
   ]);
 }
