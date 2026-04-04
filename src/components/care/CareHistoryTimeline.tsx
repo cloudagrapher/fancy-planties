@@ -2,14 +2,13 @@
 
 import { memo } from 'react';
 import Image from 'next/image';
+import S3Image from '@/components/shared/S3Image';
 import type { EnhancedCareHistory } from '@/lib/types/care-types';
-import type { EnhancedPlantInstance } from '@/lib/types/plant-instance-types';
 import { careHelpers } from '@/lib/types/care-types';
+import { shouldUnoptimizeImage } from '@/lib/image-loader';
 
 interface CareHistoryTimelineProps {
   careHistory: EnhancedCareHistory[];
-  /** @deprecated Unused — kept for backward compatibility. */
-  plantInstance?: EnhancedPlantInstance;
   limit?: number;
   showPlantName?: boolean;
 }
@@ -107,22 +106,37 @@ export default memo(function CareHistoryTimeline({
                     )}
                   </div>
 
-                  {/* Images */}
-                  {care.images && care.images.length > 0 && (
+                  {/* Images — prefer S3 keys (signed-cookie auth) over legacy URLs */}
+                  {((care.s3ImageKeys && care.s3ImageKeys.length > 0) || (care.images && care.images.length > 0)) && (
                     <div className="flex space-x-2 mt-3">
-                      {care.images.slice(0, 3).map((image, imgIndex) => (
-                        <Image
-                          key={imgIndex}
-                          src={image}
-                          alt={`Care photo ${imgIndex + 1}`}
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 rounded-lg object-cover border border-gray-200"
-                        />
-                      ))}
-                      {care.images.length > 3 && (
-                        <div key="more-images" className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                          <span className="text-xs text-gray-500">+{care.images.length - 3}</span>
+                      {care.s3ImageKeys && care.s3ImageKeys.length > 0
+                        ? care.s3ImageKeys.slice(0, 3).map((s3Key, imgIndex) => (
+                            <div key={s3Key} className="w-12 h-12 rounded-lg overflow-hidden border border-gray-200 relative flex-shrink-0">
+                              <S3Image
+                                s3Key={s3Key}
+                                alt={`Care photo ${imgIndex + 1}`}
+                                fill
+                                className="object-cover"
+                                thumbnailSize="tiny"
+                                sizes="48px"
+                              />
+                            </div>
+                          ))
+                        : care.images!.slice(0, 3).map((image, imgIndex) => (
+                            <Image
+                              key={imgIndex}
+                              src={image}
+                              alt={`Care photo ${imgIndex + 1}`}
+                              width={48}
+                              height={48}
+                              className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                              unoptimized={shouldUnoptimizeImage(image)}
+                            />
+                          ))
+                      }
+                      {((care.s3ImageKeys?.length ?? 0) > 3 || (care.images?.length ?? 0) > 3) && (
+                        <div key="more-images" className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs text-gray-500">+{((care.s3ImageKeys?.length ?? care.images?.length ?? 0) - 3)}</span>
                         </div>
                       )}
                     </div>

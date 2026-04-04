@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import LogoutButton from '@/components/auth/LogoutButton';
 import { apiFetch, ApiError } from '@/lib/api-client';
+import { useCuratorStatus } from '@/hooks/useCuratorStatus';
 import type { DashboardStats } from '@/app/api/dashboard/route';
 
 // Lazy load calendar — only needed when user has fertilizer events
@@ -20,18 +21,8 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ user }: DashboardClientProps) {
-  // Check curator status via useQuery for proper caching and deduplication
-  const { data: curatorData } = useQuery({
-    queryKey: ['curator-status'],
-    queryFn: async () => {
-      const response = await apiFetch('/api/auth/curator-status');
-      if (!response.ok) return { isCurator: false };
-      return response.json() as Promise<{ isCurator: boolean }>;
-    },
-    staleTime: 1000 * 60 * 30, // 30 minutes — curator status rarely changes
-  });
-
-  const isCurator = curatorData?.isCurator ?? false;
+  // Shared hook — deduplicates the ['curator-status'] query across all consumers
+  const { isCurator } = useCuratorStatus();
 
   // Fetch dashboard stats
   const { data: stats, isLoading } = useQuery({

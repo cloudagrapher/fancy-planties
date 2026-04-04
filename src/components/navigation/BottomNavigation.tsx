@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api-client';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { useCuratorStatus } from '@/hooks/useCuratorStatus';
 import { useState, useEffect, useCallback } from 'react';
 
 interface NavigationItem {
@@ -27,20 +28,8 @@ export default function BottomNavigation() {
   const [pressedItem, setPressedItem] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Check curator status — shared cache with DashboardClient (same queryKey)
-  const { data: curatorData } = useQuery({
-    queryKey: ['curator-status'],
-    queryFn: async () => {
-      const response = await apiFetch('/api/auth/curator-status');
-      if (!response.ok) return { isCurator: false };
-      return response.json() as Promise<{ isCurator: boolean }>;
-    },
-    staleTime: 1000 * 60 * 30, // 30 minutes — curator status rarely changes
-    gcTime: 1000 * 60 * 30,
-    retry: 1,
-  });
-
-  const isCurator = curatorData?.isCurator ?? false;
+  // Shared hook — deduplicates the ['curator-status'] query across all consumers
+  const { isCurator } = useCuratorStatus();
 
   // Fetch care notification count — shares cache with DashboardClient (same queryKey)
   // This gives BottomNav a live badge count without an extra API call when the
