@@ -3,58 +3,66 @@
 interface PlantCardSkeletonProps {
   size?: 'small' | 'medium' | 'large';
   count?: number;
+  /** Render list-view skeletons instead of grid cards */
+  viewMode?: 'grid' | 'list';
 }
 
 export default function PlantCardSkeleton({ 
   size = 'medium', 
-  count = 6 
+  count = 6,
+  viewMode = 'grid',
 }: PlantCardSkeletonProps) {
-  // Size configurations
-  const sizeConfig = {
-    small: {
-      container: 'w-32 h-40',
-      image: 'h-20',
-    },
-    medium: {
-      container: 'w-40 h-48',
-      image: 'h-24',
-    },
-    large: {
-      container: 'w-48 h-56',
-      image: 'h-32',
-    },
-  };
-
-  const config = sizeConfig[size];
-
-  // Grid columns based on screen size
+  // Grid columns match PlantsGrid's getGridColumns() — use the same
+  // responsive classes so skeletons occupy the exact same space as real cards.
   const getGridColumns = () => {
     switch (size) {
       case 'small':
-        return 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8';
+        return 'grid gap-3 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8';
       case 'medium':
-        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
+        return 'grid-plants';
       case 'large':
-        return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+        return 'grid-responsive';
       default:
-        return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
+        return 'grid-plants';
     }
   };
 
+  if (viewMode === 'list') {
+    return (
+      <div className="divide-y divide-neutral-100 p-2" role="status" aria-label="Loading plants">
+        {Array.from({ length: count }).map((_, index) => (
+          <div key={index} className="flex items-center gap-4 p-3 animate-pulse">
+            {/* Thumbnail */}
+            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-200" />
+            {/* Info */}
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="h-4 bg-gray-200 rounded w-2/5" />
+              <div className="flex gap-3">
+                <div className="h-3 bg-gray-200 rounded w-1/4" />
+                <div className="h-3 bg-gray-200 rounded w-1/5" />
+              </div>
+            </div>
+            {/* Actions */}
+            <div className="flex-shrink-0 flex gap-1">
+              <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+              <div className="w-4 h-4 bg-gray-200 rounded self-center" />
+            </div>
+          </div>
+        ))}
+        <span className="sr-only">Loading plants…</span>
+      </div>
+    );
+  }
+
   return (
-    <div className={`grid gap-4 p-4 ${getGridColumns()}`}>
+    <div className={`${getGridColumns()} p-4`} role="status" aria-label="Loading plants">
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className={`
-            ${config.container}
-            bg-white rounded-xl shadow-soft
-            border border-gray-100 overflow-hidden
-            animate-pulse
-          `}
+          className="w-full bg-white rounded-xl shadow-soft border border-gray-100 overflow-hidden animate-pulse"
         >
-          {/* Image Skeleton */}
-          <div className={`${config.image} bg-gray-200`} />
+          {/* Image Skeleton — matches .plant-card-image aspect ratio */}
+          <div className="w-full aspect-[4/3] max-[480px]:aspect-square bg-gray-200" />
 
           {/* Content Skeleton */}
           <div className="p-3 space-y-2">
@@ -81,6 +89,7 @@ export default function PlantCardSkeleton({
           </div>
         </div>
       ))}
+      <span className="sr-only">Loading plants…</span>
     </div>
   );
 }

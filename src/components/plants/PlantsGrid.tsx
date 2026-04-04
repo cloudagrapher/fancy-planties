@@ -618,7 +618,7 @@ export default function PlantsGrid({
           style={getRefreshIndicatorStyle()}
         />
         {isLoading ? (
-          <PlantCardSkeleton size={cardSize} count={12} />
+          <PlantCardSkeleton size={cardSize} count={12} viewMode={viewMode} />
         ) : plants.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">
