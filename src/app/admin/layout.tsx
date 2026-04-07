@@ -4,6 +4,7 @@ import AdminNavigation from '@/components/navigation/AdminNavigation';
 import AdminErrorBoundary from '@/components/admin/AdminErrorBoundary';
 import { AdminNotificationProvider } from '@/components/admin/AdminNotificationSystem';
 import AdminQueryProvider from '@/components/admin/AdminQueryProvider';
+import SkipToContent from '@/components/shared/SkipToContent';
 
 export default async function AdminLayout({
   children,
@@ -18,8 +19,9 @@ export default async function AdminLayout({
       <AdminNotificationProvider>
         <AdminErrorBoundary>
           <div className="admin-layout">
+            <SkipToContent />
             <AdminNavigation />
-            <main className="admin-content">
+            <main id="main-content" className="admin-content" tabIndex={-1}>
               {children}
             </main>
           </div>

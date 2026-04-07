@@ -233,15 +233,53 @@ select {
   background-size: 468px 100%;
 }
 
+/* Respect reduced-motion preferences — disable non-essential animations
+   and transitions for users who find motion distracting or triggering.
+   WCAG 2.1 Level AAA (2.3.3 Animation from Interactions). */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-soft,
+  .animate-float,
+  .animate-shimmer,
+  .spinner {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 /* Focus styles for accessibility */
 .focus-ring {
   outline: 2px solid transparent;
   outline-offset: 2px;
 }
 
-.focus-ring:focus {
+.focus-ring:focus-visible {
   outline: 2px solid var(--color-primary-400);
   outline-offset: 2px;
+}
+
+/* Global focus-visible: show outlines only for keyboard navigation.
+   Prevents distracting focus rings on mouse/touch clicks. */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-primary-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible),
+[tabindex]:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Modern Button Styles */
@@ -604,10 +642,16 @@ select {
   }
 }
 
-/* Ensure consistent behavior across browsers */
-.plant-card:focus {
+/* Show focus outlines only for keyboard navigation (not mouse clicks).
+   This keeps the UI clean for pointer users while maintaining keyboard
+   accessibility. Falls back to :focus for browsers without :focus-visible. */
+.plant-card:focus-visible {
   outline: 2px solid var(--color-primary-400);
   outline-offset: 2px;
+}
+
+.plant-card:focus:not(:focus-visible) {
+  outline: none;
 }
 
 @media (hover: hover) {

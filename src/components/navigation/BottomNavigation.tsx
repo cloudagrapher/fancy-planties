@@ -185,7 +185,7 @@ export default function BottomNavigation() {
   );
 
   return (
-    <nav className="bottom-nav">
+    <nav className="bottom-nav" aria-label="Main navigation">
       <div className="bottom-nav-container">
         {primaryItems.map((item) => renderNavItem(item))}
         
