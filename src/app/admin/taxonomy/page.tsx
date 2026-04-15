@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description: 'Manage plant taxonomy hierarchy and relationships.',
 };
 
+// Admin pages query the DB at render time; skip static prerendering
+export const dynamic = 'force-dynamic';
+
 export default async function TaxonomyManagementPage() {
   await requireCuratorSession();
 

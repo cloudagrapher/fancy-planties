@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description: 'Review and approve user-submitted plants.',
 };
 
+// Admin pages query the DB at render time; skip static prerendering
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPendingPlants() {
   // Get pending plants (unverified)
   const { plants: pendingPlants, totalCount } = await AdminPlantQueries.getPlantsWithDetails(

@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: 'Manage the plant database and submissions.',
 };
 
+// Admin pages query the DB at render time; skip static prerendering
+export const dynamic = 'force-dynamic';
+
 export default async function OptimizedPlantManagementPage() {
   await requireAdminAccess();
 
