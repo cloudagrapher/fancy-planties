@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: 'View admin action history and audit trail.',
 };
 
+// Admin pages query the DB at render time; skip static prerendering
+export const dynamic = 'force-dynamic';
+
 interface SearchParams {
   page?: string;
   pageSize?: string;

@@ -168,7 +168,9 @@ describe("Modal Component", () => {
 
       rerender(<Modal {...defaultProps} isOpen={false} />);
 
-      expect(document.body.style.overflow).toBe("unset");
+      // useScrollLock restores the previous overflow value (empty string by default)
+      // rather than a hardcoded "unset", so nested modals don't clobber each other.
+      expect(document.body.style.overflow).toBe("");
     });
   });
 

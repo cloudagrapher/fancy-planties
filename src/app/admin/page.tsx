@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: 'Admin dashboard with analytics and management tools.',
 };
 
+// Admin pages query the DB at render time; skip static prerendering
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
   // Ensure admin authentication
   await requireAdminAuth();
