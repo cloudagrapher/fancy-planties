@@ -795,8 +795,14 @@ select {
   align-items: center;
   justify-content: center;
   z-index: 100;
-  padding: 16px;
+  /* Use dynamic viewport height so iOS PWA / Safari UI chrome is accounted for */
+  height: 100vh;
+  height: 100dvh;
+  /* Pad by safe-area insets so the overlay doesn't extend behind the status bar / home indicator */
+  padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
+    calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
   backdrop-filter: blur(4px);
+  overflow: hidden;
 }
 
 .modal-content {
@@ -805,7 +811,8 @@ select {
   border-radius: 16px;
   max-width: 500px;
   width: 100%;
-  max-height: 90vh;
+  /* Constrain to the overlay's padded area so bottom actions stay visible */
+  max-height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -850,7 +857,9 @@ select {
 .modal-body {
   padding: 20px;
   overflow-y: auto;
-  flex: 1;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  flex: 1 1 auto;
   min-height: 0;
 }
 
@@ -1067,13 +1076,15 @@ select {
   /* Anchor modals to top on mobile so content isn't pushed off-screen */
   .modal-overlay {
     align-items: flex-start;
-    padding: 8px;
+    padding: calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right))
+      calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
   }
 
   .modal-content {
     margin: 0;
-    max-width: calc(100vw - 16px);
-    max-height: calc(100vh - 16px);
+    max-width: 100%;
+    /* Fill the overlay's padded area; overlay already uses dvh + safe-area */
+    max-height: 100%;
     border-radius: 12px;
   }
   
